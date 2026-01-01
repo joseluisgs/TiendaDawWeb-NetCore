@@ -15,15 +15,18 @@ public class PurchaseService : IPurchaseService
 {
     private readonly ApplicationDbContext _context;
     private readonly ICarritoService _carritoService;
+    private readonly IPdfService _pdfService;
     private readonly ILogger<PurchaseService> _logger;
 
     public PurchaseService(
         ApplicationDbContext context,
         ICarritoService carritoService,
+        IPdfService pdfService,
         ILogger<PurchaseService> logger)
     {
         _context = context;
         _carritoService = carritoService;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -256,12 +259,10 @@ public class PurchaseService : IPurchaseService
                 return Result.Failure<byte[], DomainError>(purchaseResult.Error);
             }
 
-            // TODO: Implementar generación de PDF con iText7
-            // Por ahora, devolvemos un placeholder
-            _logger.LogWarning("Generación de PDF no implementada aún para compra {PurchaseId}", purchaseId);
+            var purchase = purchaseResult.Value;
             
-            var placeholderPdf = System.Text.Encoding.UTF8.GetBytes("PDF placeholder");
-            return Result.Success<byte[], DomainError>(placeholderPdf);
+            // Generar PDF usando el servicio de PDF
+            return await _pdfService.GenerateInvoicePdfAsync(purchase);
         }
         catch (Exception ex)
         {
