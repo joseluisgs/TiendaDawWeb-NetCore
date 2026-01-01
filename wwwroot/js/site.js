@@ -39,6 +39,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Normalizar inputs de precio antes de submit
+    const priceInputs = document.querySelectorAll('input[name="Precio"]');
+    
+    priceInputs.forEach(input => {
+        input.closest('form')?.addEventListener('submit', function(e) {
+            // Reemplazar coma por punto antes de enviar
+            input.value = input.value.replace(',', '.');
+        });
+    });
 });
 
 // Función para formatear precio

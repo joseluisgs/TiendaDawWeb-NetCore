@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
+using TiendaDawWeb.Binders;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -83,7 +84,10 @@ builder.Services.AddHostedService<CarritoCleanupService>();
 builder.Services.AddHostedService<ReservaCleanupService>();
 
 // MVC + Razor Pages (removed Blazor Server)
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
+});
 builder.Services.AddRazorPages();
 
 // Add antiforgery for AJAX requests
@@ -144,6 +148,16 @@ if (app.Environment.IsDevelopment())
     }
     Directory.CreateDirectory(uploadPath);
     Log.Information("✅ Directorio uploads inicializado correctamente");
+}
+else
+{
+    // En producción, crear el directorio si no existe (sin limpiar)
+    var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
+    if (!Directory.Exists(uploadPath))
+    {
+        Directory.CreateDirectory(uploadPath);
+        Log.Information("📁 Directorio de uploads creado: {Path}", uploadPath);
+    }
 }
 
 // Middleware Pipeline
