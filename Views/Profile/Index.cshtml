@@ -1,0 +1,206 @@
+@model TiendaDawWeb.Models.User
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">
+                <i class="bi bi-person-circle"></i> Mi Perfil
+            </h1>
+            <p class="text-muted">Información de tu cuenta</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información del Perfil -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    @if (!string.IsNullOrEmpty(Model.Avatar))
+                    {
+                        <img src="@Model.Avatar" alt="Avatar" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 150px; height: 150px;">
+                            <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
+                        </div>
+                    }
+                    
+                    <h4 class="mb-1">@Model.Nombre @Model.Apellidos</h4>
+                    <p class="text-muted mb-3">@@@Model.UserName</p>
+                    
+                    <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-pencil"></i> Editar Perfil
+                    </a>
+                    
+                    <a href="@Url.Action("ChangePassword", "Profile")" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-key"></i> Cambiar Contraseña
+                    </a>
+                </div>
+            </div>
+
+            <!-- Información de Cuenta -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Información de Cuenta</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Email</small>
+                        <p class="mb-0"><strong>@Model.Email</strong></p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Nombre de Usuario</small>
+                        <p class="mb-0"><strong>@Model.UserName</strong></p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Rol</small>
+                        <p class="mb-0">
+                            <span class="badge bg-primary">@Model.Rol</span>
+                        </p>
+                    </div>
+                    <div>
+                        <small class="text-muted">Miembro desde</small>
+                        <p class="mb-0">@Model.FechaAlta.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas y Actividad -->
+        <div class="col-md-8">
+            <!-- Estadísticas Rápidas -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-info text-center">
+                        <div class="card-body">
+                            <i class="bi bi-box-seam fs-1 text-info"></i>
+                            <h3 class="mt-2 mb-0">@Model.Products.Count(p => !p.Deleted)</h3>
+                            <p class="text-muted mb-0">Productos Publicados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-success text-center">
+                        <div class="card-body">
+                            <i class="bi bi-cart-check fs-1 text-success"></i>
+                            <h3 class="mt-2 mb-0">@Model.Purchases.Count</h3>
+                            <p class="text-muted mb-0">Compras Realizadas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-warning text-center">
+                        <div class="card-body">
+                            <i class="bi bi-heart-fill fs-1 text-warning"></i>
+                            <h3 class="mt-2 mb-0">@Model.Favorites.Count</h3>
+                            <p class="text-muted mb-0">Favoritos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mis Productos Recientes -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-box-seam"></i> Productos Recientes</h5>
+                        <a href="@Url.Action("MyProducts", "Product")" class="btn btn-sm btn-outline-primary">
+                            Ver Todos <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Products.Any(p => !p.Deleted))
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var producto in Model.Products.Where(p => !p.Deleted).OrderByDescending(p => p.CreatedAt).Take(5))
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(producto.Imagen))
+                                        {
+                                            <img src="@producto.Imagen" alt="@producto.Nombre" class="rounded me-3" 
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                        }
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@producto.Nombre</h6>
+                                            <small class="text-muted">@producto.Categoria</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong class="text-success d-block">@producto.Precio.ToString("C")</strong>
+                                            @if (producto.CompraId != null)
+                                            {
+                                                <span class="badge bg-danger">Vendido</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Disponible</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">
+                            <i class="bi bi-inbox"></i> No has publicado productos aún
+                        </p>
+                    }
+                </div>
+            </div>
+
+            <!-- Compras Recientes -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-cart-check"></i> Compras Recientes</h5>
+                        <a href="@Url.Action("Index", "Purchase")" class="btn btn-sm btn-outline-success">
+                            Ver Todas <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Purchases.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var compra in Model.Purchases.OrderByDescending(c => c.FechaCompra).Take(5))
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Compra #@compra.Id</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> @compra.FechaCompra.ToString("dd/MM/yyyy")
+                                                <span class="mx-2">|</span>
+                                                <i class="bi bi-box"></i> @compra.Products.Count items
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong class="text-success d-block">@compra.Total.ToString("C")</strong>
+                                            <a href="@Url.Action("Details", "Purchase", new { id = compra.Id })" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">
+                            <i class="bi bi-inbox"></i> No has realizado compras aún
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

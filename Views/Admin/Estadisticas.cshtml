@@ -1,0 +1,294 @@
+@{
+    ViewData["Title"] = "Estadísticas Avanzadas";
+    var productosMasVendidos = ViewBag.ProductosMasVendidos as IEnumerable<dynamic>;
+    var compradoresActivos = ViewBag.CompradoresActivos as IEnumerable<dynamic>;
+    var vendedoresActivos = ViewBag.VendedoresActivos as IEnumerable<dynamic>;
+    var ventasPorMes = ViewBag.VentasPorMes as IEnumerable<dynamic>;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">
+                        <i class="bi bi-graph-up-arrow"></i> Estadísticas Avanzadas
+                    </h1>
+                    <p class="text-muted">Análisis detallado de la actividad del marketplace</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos Más Vendidos por Categoría -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-trophy"></i> Categorías Más Vendidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (productosMasVendidos != null && productosMasVendidos.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var item in productosMasVendidos)
+                            {
+                                var total = productosMasVendidos.Sum(x => (int)x.Cantidad);
+                                var porcentaje = total > 0 ? ((int)item.Cantidad * 100 / total) : 0;
+                                
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <h6 class="mb-0">@item.Categoria</h6>
+                                            <small class="text-muted">@item.Cantidad productos vendidos</small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">@porcentaje%</span>
+                                    </div>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: @porcentaje%" 
+                                             aria-valuenow="@porcentaje" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            @porcentaje%
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">No hay datos de ventas por categoría</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Compradores Más Activos -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill"></i> Top 10 Compradores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (compradoresActivos != null && compradoresActivos.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Comprador</th>
+                                        <th>Compras</th>
+                                        <th>Total Gastado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int posicion = 1;
+                                    }
+                                    @foreach (var comprador in compradoresActivos)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (posicion <= 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-trophy-fill"></i> @posicion
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@posicion</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("UsuarioDetails", "Admin", new { id = comprador.CompradorId })">
+                                                    Usuario #@comprador.CompradorId
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@comprador.TotalCompras</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">@((decimal)comprador.TotalGastado).ToString("C")</strong>
+                                            </td>
+                                        </tr>
+                                        posicion++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">No hay datos de compradores activos</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendedores Más Activos -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shop"></i> Top 10 Vendedores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (vendedoresActivos != null && vendedoresActivos.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Vendedor</th>
+                                        <th>Productos Vendidos</th>
+                                        <th>Progreso</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int posicionVendedor = 1;
+                                        var maxVentas = vendedoresActivos.Max(v => (int)v.ProductosVendidos);
+                                    }
+                                    @foreach (var vendedor in vendedoresActivos)
+                                    {
+                                        var porcentajeVendedor = maxVentas > 0 ? ((int)vendedor.ProductosVendidos * 100 / maxVentas) : 0;
+                                        
+                                        <tr>
+                                            <td>
+                                                @if (posicionVendedor <= 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-trophy-fill"></i> @posicionVendedor
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@posicionVendedor</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("UsuarioDetails", "Admin", new { id = vendedor.PropietarioId })">
+                                                    Usuario #@vendedor.PropietarioId
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@vendedor.ProductosVendidos productos</span>
+                                            </td>
+                                            <td style="width: 40%;">
+                                                <div class="progress" style="height: 25px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" 
+                                                         style="width: @porcentajeVendedor%" 
+                                                         aria-valuenow="@porcentajeVendedor" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        @vendedor.ProductosVendidos
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        posicionVendedor++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">No hay datos de vendedores activos</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventas por Mes (Últimos 12 meses) -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar3"></i> Ventas de los Últimos 12 Meses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (ventasPorMes != null && ventasPorMes.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mes</th>
+                                        <th>Año</th>
+                                        <th>Número de Compras</th>
+                                        <th>Total Ventas</th>
+                                        <th>Ticket Medio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var venta in ventasPorMes)
+                                    {
+                                        var nombreMes = new DateTime(venta.Año, venta.Mes, 1).ToString("MMMM");
+                                        var ticketMedio = venta.NumeroCompras > 0 ? (venta.TotalVentas / venta.NumeroCompras) : 0;
+                                        
+                                        <tr>
+                                            <td>
+                                                <strong>@nombreMes</strong>
+                                            </td>
+                                            <td>@venta.Año</td>
+                                            <td>
+                                                <span class="badge bg-primary">@venta.NumeroCompras</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">@((decimal)venta.TotalVentas).ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">@((decimal)ticketMedio).ToString("C")</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="2" class="text-end"><strong>Total:</strong></td>
+                                        <td>
+                                            <strong class="badge bg-primary">
+                                                @ventasPorMes.Sum(v => (int)v.NumeroCompras)
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">
+                                                @ventasPorMes.Sum(v => (decimal)v.TotalVentas).ToString("C")
+                                            </strong>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-4">No hay datos de ventas mensuales</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

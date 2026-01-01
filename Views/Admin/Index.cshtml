@@ -1,0 +1,186 @@
+@model TiendaDawWeb.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Panel de Administración";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">
+                <i class="bi bi-speedometer2"></i> Dashboard Administrativo
+            </h1>
+            <p class="lead text-muted">Resumen general del sistema</p>
+        </div>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Usuarios</h6>
+                            <h2 class="mb-0">@Model.TotalUsuarios</h2>
+                            <small class="text-success">
+                                <i class="bi bi-arrow-up"></i> @Model.UsuariosActivos activos
+                            </small>
+                        </div>
+                        <div class="fs-1 text-primary">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-info h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Productos</h6>
+                            <h2 class="mb-0">@Model.TotalProductos</h2>
+                            <small class="text-info">
+                                <i class="bi bi-box"></i> @Model.ProductosDisponibles disponibles
+                            </small>
+                        </div>
+                        <div class="fs-1 text-info">
+                            <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Compras</h6>
+                            <h2 class="mb-0">@Model.TotalCompras</h2>
+                            <small class="text-warning">
+                                <i class="bi bi-calendar-check"></i> @Model.ComprasHoy hoy
+                            </small>
+                        </div>
+                        <div class="fs-1 text-warning">
+                            <i class="bi bi-cart-check-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Ventas Totales</h6>
+                            <h2 class="mb-0">@Model.TotalVentas.ToString("C")</h2>
+                            <small class="text-success">
+                                <i class="bi bi-cash"></i> @Model.VentasHoy.ToString("C") hoy
+                            </small>
+                        </div>
+                        <div class="fs-1 text-success">
+                            <i class="bi bi-currency-euro"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas por Período -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Hoy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Compras:</span>
+                        <strong>@Model.ComprasHoy</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Ventas:</span>
+                        <strong>@Model.VentasHoy.ToString("C")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Esta Semana</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Compras:</span>
+                        <strong>@Model.ComprasSemana</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Ventas:</span>
+                        <strong>@Model.VentasSemana.ToString("C")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-month"></i> Este Mes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Compras:</span>
+                        <strong>@Model.ComprasMes</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Ventas:</span>
+                        <strong>@Model.VentasMes.ToString("C")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enlaces Rápidos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Usuarios", "Admin")" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-people"></i> Gestionar Usuarios
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Productos", "Admin")" class="btn btn-outline-info w-100">
+                                <i class="bi bi-box-seam"></i> Gestionar Productos
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Compras", "Admin")" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-cart-check"></i> Ver Compras
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Estadisticas", "Admin")" class="btn btn-outline-success w-100">
+                                <i class="bi bi-graph-up"></i> Estadísticas Avanzadas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

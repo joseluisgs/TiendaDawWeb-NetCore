@@ -1,0 +1,174 @@
+@model IEnumerable<TiendaDawWeb.Models.User>
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 20;
+    var totalUsuarios = ViewBag.TotalUsuarios as int? ?? 0;
+    var totalPages = (int)Math.Ceiling((double)totalUsuarios / pageSize);
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">
+                        <i class="bi bi-people-fill"></i> Usuarios
+                    </h1>
+                    <p class="text-muted">Gestión completa de usuarios del sistema</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Total de usuarios activos: <strong>@totalUsuarios</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Lista de Usuarios</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> No hay usuarios registrados en el sistema.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Avatar</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Fecha Alta</th>
+                                        <th>Productos</th>
+                                        <th>Compras</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var usuario in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(usuario.Avatar))
+                                                {
+                                                    <img src="@usuario.Avatar" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="bi bi-person-fill text-white"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>@usuario.UserName</strong>
+                                            </td>
+                                            <td>@usuario.Email</td>
+                                            <td>@usuario.Nombre @usuario.Apellidos</td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @usuario.FechaAlta.ToShortDateString()
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    @usuario.Products.Count
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    @usuario.Purchases.Count
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="@Url.Action("UsuarioDetails", "Admin", new { id = usuario.Id })" 
+                                                       class="btn btn-outline-primary" 
+                                                       title="Ver detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-danger" 
+                                                            onclick="confirmarEliminacion(@usuario.Id, '@usuario.UserName')"
+                                                            title="Eliminar usuario">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        @if (totalPages > 1)
+                        {
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("Usuarios", new { page = currentPage - 1, pageSize })">
+                                            <i class="bi bi-chevron-left"></i> Anterior
+                                        </a>
+                                    </li>
+                                    
+                                    @for (int i = 1; i <= totalPages; i++)
+                                    {
+                                        <li class="page-item @(i == currentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Usuarios", new { page = i, pageSize })">@i</a>
+                                        </li>
+                                    }
+                                    
+                                    <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("Usuarios", new { page = currentPage + 1, pageSize })">
+                                            Siguiente <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<form id="deleteForm" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        function confirmarEliminacion(userId, username) {
+            if (confirm(`¿Estás seguro de que deseas eliminar al usuario "${username}"?\n\nEsta acción realizará una eliminación lógica (soft delete).`)) {
+                const form = document.getElementById('deleteForm');
+                form.action = `/admin/usuarios/${userId}/eliminar`;
+                form.submit();
+            }
+        }
+    </script>
+}

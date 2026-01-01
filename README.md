@@ -64,18 +64,19 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
 ### Funcionalidades Principales
 
 - 🛍️ **Marketplace de Segunda Mano**: Compra y vende productos usados
-- 🔐 **Sistema de Roles**: ADMIN, USER, MODERATOR con permisos diferenciados
-- 🌍 **Internacionalización**: Soporte completo para Español e Inglés
+- 🔐 **Sistema de Roles**: ADMIN, USER, MODERATOR con permisos diferenciados  
 - 📧 **Notificaciones por Email**: Confirmación automática asíncrona de compras con templates HTML
-- 📊 **Dashboard Administrativo**: Estadísticas y gráficos con Chart.js
+- 📊 **Panel de Administración Completo**: Dashboard con estadísticas en tiempo real, gestión de usuarios, productos y compras
 - 🔍 **Búsqueda Avanzada**: Filtros por nombre, categoría y precio
-- 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático
+- 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático con ImageSharp
 - 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
-- ⚡ **Cache Inteligente**: Mejora de rendimiento con Spring Cache
-- 📄 **Generación de PDFs**: Facturas automáticas con cálculo de IVA y diseño profesional
-- ❤️ **Sistema de Favoritos**: Gestiona tus productos preferidos con Blazor Server
-- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas y comentarios
+- 📄 **Generación de PDFs**: Facturas automáticas con iText7 y diseño profesional
+- ❤️ **Sistema de Favoritos**: Componentes Blazor Server en tiempo real
+- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivas
+- 🛒 **Carrito de Compras**: Control de concurrencia con transacciones SERIALIZABLE
 - 🛡️ **Seguridad CSRF**: Protección completa contra ataques Cross-Site Request Forgery
+- 👤 **Gestión de Perfil**: Edición de perfil con avatar y cambio de contraseña
+- 🔄 **Control de Concurrencia**: Manejo de race conditions con Optimistic Concurrency Control
 
 ### Productos 2024-2025
 
@@ -93,7 +94,12 @@ La aplicación incluye productos actuales y relevantes:
 - **Razor Views** - Motor de vistas del lado servidor
 - **Entity Framework Core InMemory** - ORM con base de datos en memoria
 - **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
-- **Blazor Server** - Componentes interactivos en tiempo real (favoritos)
+- **Blazor Server** - Componentes interactivos en tiempo real
+  - FavoriteButton - Añadir/quitar favoritos sin recarga
+  - FavoritesList - Grid de productos favoritos
+  - RatingStars - Estrellas interactivas para valoraciones
+  - ProductRatingDisplay - Display completo de reviews
+  - CartSummary - Badge del carrito en tiempo real
 - **SignalR** - Comunicación bidireccional en tiempo real
 - **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
 - **Bootstrap 5.3** - Framework CSS responsive
@@ -224,19 +230,37 @@ TiendaDawWeb-NetCore/
 │   ├── Interfaces/
 │   └── Implementations/
 ├── Controllers/                    # Controladores MVC
-│   ├── PublicController.cs
-│   ├── AuthController.cs
-│   ├── ProductController.cs
-│   └── FavoriteController.cs
+│   ├── PublicController.cs       # Página pública y búsqueda
+│   ├── AuthController.cs         # Autenticación (login/register)
+│   ├── ProductController.cs      # CRUD de productos
+│   ├── FavoriteController.cs     # Gestión de favoritos
+│   ├── CarritoController.cs      # Carrito de compras
+│   ├── PurchaseController.cs     # Compras y facturas
+│   ├── RatingController.cs       # Valoraciones
+│   ├── AdminController.cs        # Panel de administración
+│   └── ProfileController.cs      # Gestión de perfil
 ├── ViewModels/                     # ViewModels para formularios
 ├── Views/                          # Vistas Razor
 │   ├── Shared/
 │   ├── Public/
 │   ├── Auth/
 │   ├── Product/
-│   └── Favorite/
-├── Components/                     # Componentes Blazor
-│   └── FavoriteButton.razor
+│   ├── Favorite/
+│   ├── Carrito/
+│   ├── Purchase/
+│   ├── Profile/
+│   └── Admin/                    # Panel de administración
+│       ├── Index.cshtml          # Dashboard
+│       ├── Usuarios.cshtml       # Gestión de usuarios
+│       ├── Productos.cshtml      # Gestión de productos
+│       ├── Compras.cshtml        # Historial de compras
+│       └── Estadisticas.cshtml   # Estadísticas avanzadas
+├── Components/                     # Componentes Blazor Server
+│   ├── FavoriteButton.razor      # Botón de favorito interactivo
+│   ├── FavoritesList.razor       # Lista de favoritos
+│   ├── RatingStars.razor         # Estrellas de valoración
+│   ├── ProductRatingDisplay.razor # Display de valoraciones
+│   └── CartSummary.razor         # Resumen del carrito
 ├── Errors/                         # Errores de dominio (ROP)
 └── wwwroot/                        # Archivos estáticos
     ├── css/
@@ -288,11 +312,18 @@ Sistema completo de autenticación y autorización:
 
 ## 🔒 Seguridad
 
-- Autenticación basada en formularios
-- Autorización por roles (ADMIN, USER)
-- Protección CSRF habilitada
-- Validación de subida de archivos
-- Sanitización de nombres de archivo
+- ✅ Autenticación basada en ASP.NET Core Identity
+- ✅ Autorización por roles ([Authorize(Roles = "ADMIN")])
+- ✅ Protección CSRF con Anti-Forgery Tokens
+- ✅ Validación de subida de archivos (tipo y tamaño)
+- ✅ Sanitización de nombres de archivo
+- ✅ Control de concurrencia optimista (RowVersion)
+- ✅ Transacciones SERIALIZABLE para carrito/compras
+- ✅ Soft delete para usuarios y productos
+- ✅ Password hashing seguro (Identity)
+- ✅ Validación de propiedad de recursos
+- ✅ Nullable reference types habilitadas
+- ✅ TreatWarningsAsErrors activo
 
 ## 🌐 Características
 
@@ -301,17 +332,27 @@ Sistema completo de autenticación y autorización:
 - ✅ Registro y login seguro
 - ✅ Perfil con avatar personalizable
 - ✅ Publicar productos con imágenes
-- ✅ Sistema de valoraciones
-- ✅ Gestión de favoritos
-- ✅ Carrito de compras
+- ✅ Editar y eliminar productos propios
+- ✅ Sistema de valoraciones con estrellas
+- ✅ Gestión de favoritos en tiempo real (Blazor Server)
+- ✅ Carrito de compras con control de concurrencia
+- ✅ Proceso de checkout completo
+- ✅ Historial de compras
+- ✅ Descarga de facturas en PDF
 
 ### Para Administradores
 
-- ✅ Panel de control completo
-- ✅ Gestión de usuarios
-- ✅ Moderación de contenido
-- ✅ Estadísticas detalladas
-- ✅ Configuración del sistema
+- ✅ Panel de control completo (`/admin`)
+- ✅ Dashboard con estadísticas en tiempo real
+- ✅ Gestión de usuarios (ver, editar roles, eliminar)
+- ✅ Gestión de productos (ver, filtrar, eliminar)
+- ✅ Historial de todas las compras
+- ✅ Estadísticas avanzadas:
+  - Categorías más vendidas
+  - Top 10 compradores
+  - Top 10 vendedores
+  - Ventas por mes (últimos 12 meses)
+- ✅ Filtros por fecha y categoría
 
 ## 📊 Monitorización
 
@@ -344,13 +385,30 @@ Este proyecto es una migración completa del proyecto Java/Spring Boot:
 
 ### Características Implementadas
 
-✅ **100% de funcionalidad migrada**
-- Sistema completo de autenticación y autorización
-- CRUD de productos con imágenes
-- Sistema de favoritos en tiempo real (Blazor Server)
-- Gestión de usuarios con roles
-- Railway Oriented Programming
+✅ **100% de funcionalidad migrada desde Spring Boot**
+- Sistema completo de autenticación y autorización con ASP.NET Core Identity
+- CRUD de productos con imágenes y categorías
+- Sistema de favoritos en tiempo real con Blazor Server (5 componentes)
+- Carrito de compras con control de concurrencia (Optimistic Concurrency Control)
+- Sistema de valoraciones con estrellas interactivas
+- Panel de administración completo con estadísticas avanzadas
+- Gestión de usuarios con roles (ADMIN, USER, MODERATOR)
+- Historial de compras y generación de facturas PDF
+- Gestión de perfil de usuario con avatar
+- Railway Oriented Programming para manejo de errores
 - Diseño responsive con Bootstrap 5.3
+- Soft delete para usuarios y productos
+- Background services para limpieza de datos
+
+### Componentes Blazor Server
+
+El proyecto incluye 5 componentes Blazor Server para interactividad en tiempo real:
+
+1. **FavoriteButton**: Botón interactivo para añadir/quitar favoritos sin recarga
+2. **FavoritesList**: Grid de productos favoritos del usuario
+3. **RatingStars**: Componente de estrellas para valoraciones (modo lectura e interactivo)
+4. **ProductRatingDisplay**: Display completo de valoraciones con estadísticas
+5. **CartSummary**: Badge del carrito que se actualiza en tiempo real
 
 ### Tecnologías Clave
 
