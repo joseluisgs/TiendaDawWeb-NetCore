@@ -8,24 +8,8 @@
     var currentUser = await UserManager.GetUserAsync(User);
 }
 
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="jumbotron bg-light p-5 rounded-3">
-            <h1 class="display-4">
-                <i class="bi bi-shop text-primary"></i> Bienvenido a WalaDaw
-            </h1>
-            <p class="lead">Tu marketplace de confianza para comprar y vender productos de segunda mano</p>
-            <hr class="my-4">
-            <p>Descubre ofertas increíbles en smartphones, laptops, audio, gaming y más</p>
-            @if (!SignInManager.IsSignedIn(User))
-            {
-                <a class="btn btn-primary btn-lg" asp-controller="Auth" asp-action="Register">
-                    <i class="bi bi-person-plus"></i> Regístrate Ahora
-                </a>
-            }
-        </div>
-    </div>
-</div>
+@* Include carousel - matching Spring Boot original *@
+<partial name="_Carousel" />
 
 <div class="row mb-3">
     <div class="col-md-8">

@@ -46,19 +46,18 @@ public class CarritoServiceTests
         await _context.Products.AddAsync(producto);
         await _context.SaveChangesAsync();
 
-        // Act
-        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, 2);
+        // Act - no quantity parameter
+        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Cantidad.Should().Be(2);
-        result.Value.Subtotal.Should().Be(20.00m);
+        result.Value.Precio.Should().Be(10.00m);
         result.Value.ProductoId.Should().Be(producto.Id);
         result.Value.UsuarioId.Should().Be(usuario.Id);
     }
 
     [Test]
-    public async Task AddToCarritoAsync_ShouldUpdateQuantity_WhenItemAlreadyExists()
+    public async Task AddToCarritoAsync_ShouldFail_WhenItemAlreadyExists()
     {
         // Arrange
         var usuario = CreateTestUser(1, "test@test.com");
@@ -68,15 +67,14 @@ public class CarritoServiceTests
         await _context.SaveChangesAsync();
 
         // Add item first time
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, 1);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id);
 
-        // Act - add again
-        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, 2);
+        // Act - try to add again (should fail now)
+        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Cantidad.Should().Be(3); // 1 + 2
-        result.Value.Subtotal.Should().Be(30.00m);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<CarritoError>();
 
         // Verify only one item exists
         var items = await _context.CarritoItems.ToListAsync();
@@ -92,7 +90,7 @@ public class CarritoServiceTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _carritoService.AddToCarritoAsync(usuario.Id, 999, 1);
+        var result = await _carritoService.AddToCarritoAsync(usuario.Id, 999);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -111,65 +109,12 @@ public class CarritoServiceTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, 1);
+        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id);
 
         // Assert
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<CarritoError>();
         result.Error.Code.Should().Be("PRODUCT_NOT_AVAILABLE");
-    }
-
-    [Test]
-    public async Task AddToCarritoAsync_ShouldFail_WhenQuantityIsInvalid()
-    {
-        // Arrange
-        var usuario = CreateTestUser(1, "test@test.com");
-        var producto = CreateTestProduct(1, "Product 1", 10.00m, usuario.Id);
-        await _context.Users.AddAsync(usuario);
-        await _context.Products.AddAsync(producto);
-        await _context.SaveChangesAsync();
-
-        // Act
-        var result = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, -1);
-
-        // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<CarritoError>();
-        result.Error.Code.Should().Be("INVALID_QUANTITY");
-    }
-
-    [Test]
-    public async Task UpdateCantidadAsync_ShouldUpdateQuantity_WhenItemExists()
-    {
-        // Arrange
-        var usuario = CreateTestUser(1, "test@test.com");
-        var producto = CreateTestProduct(1, "Product 1", 10.00m, usuario.Id);
-        await _context.Users.AddAsync(usuario);
-        await _context.Products.AddAsync(producto);
-        await _context.SaveChangesAsync();
-
-        var addResult = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, 2);
-        var itemId = addResult.Value.Id;
-
-        // Act
-        var result = await _carritoService.UpdateCantidadAsync(itemId, 5);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Cantidad.Should().Be(5);
-        result.Value.Subtotal.Should().Be(50.00m);
-    }
-
-    [Test]
-    public async Task UpdateCantidadAsync_ShouldFail_WhenItemDoesNotExist()
-    {
-        // Act
-        var result = await _carritoService.UpdateCantidadAsync(999, 5);
-
-        // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<CarritoError>();
-        result.Error.Code.Should().Be("CARRITO_ITEM_NOT_FOUND");
     }
 
     [Test]
@@ -182,7 +127,7 @@ public class CarritoServiceTests
         await _context.Products.AddAsync(producto);
         await _context.SaveChangesAsync();
 
-        var addResult = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id, 2);
+        var addResult = await _carritoService.AddToCarritoAsync(usuario.Id, producto.Id);
         var itemId = addResult.Value.Id;
 
         // Act
@@ -207,8 +152,8 @@ public class CarritoServiceTests
         await _context.Products.AddRangeAsync(producto1, producto2);
         await _context.SaveChangesAsync();
 
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id, 1);
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id, 2);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id);
 
         // Act
         var result = await _carritoService.ClearCarritoAsync(usuario.Id);
@@ -232,15 +177,15 @@ public class CarritoServiceTests
         await _context.Products.AddRangeAsync(producto1, producto2);
         await _context.SaveChangesAsync();
 
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id, 2); // 20
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id, 3); // 60
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id); // 10
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id); // 20
 
         // Act
         var result = await _carritoService.GetTotalCarritoAsync(usuario.Id);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(80.00m);
+        result.Value.Should().Be(30.00m); // 10 + 20
     }
 
     [Test]
@@ -254,15 +199,15 @@ public class CarritoServiceTests
         await _context.Products.AddRangeAsync(producto1, producto2);
         await _context.SaveChangesAsync();
 
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id, 2);
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id, 3);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id);
 
         // Act
         var result = await _carritoService.GetCarritoCountAsync(usuario.Id);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(5); // 2 + 3
+        result.Value.Should().Be(2); // 2 items (no quantity)
     }
 
     [Test]
@@ -276,8 +221,8 @@ public class CarritoServiceTests
         await _context.Products.AddRangeAsync(producto1, producto2);
         await _context.SaveChangesAsync();
 
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id, 1);
-        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id, 2);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto1.Id);
+        await _carritoService.AddToCarritoAsync(usuario.Id, producto2.Id);
 
         // Act
         var result = await _carritoService.GetCarritoByUsuarioIdAsync(usuario.Id);

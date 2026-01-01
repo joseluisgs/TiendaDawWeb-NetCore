@@ -51,32 +51,16 @@
                                          alt="@item.Producto.Nombre" 
                                          class="img-fluid rounded">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <h5>@item.Producto.Nombre</h5>
                                     <p class="text-muted small mb-1">@item.Producto.Descripcion</p>
                                     <span class="badge bg-secondary">@item.Producto.Categoria</span>
                                 </div>
                                 <div class="col-md-2 text-center">
-                                    <label class="small text-muted">Precio unitario</label>
-                                    <p class="fw-bold">@item.Producto.Precio.ToString("C")</p>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="small text-muted">Cantidad</label>
-                                    <form asp-action="update" method="post" class="d-flex align-items-center">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="itemId" value="@item.Id" />
-                                        <input type="number" 
-                                               name="cantidad" 
-                                               value="@item.Cantidad" 
-                                               min="1" 
-                                               max="99"
-                                               class="form-control form-control-sm"
-                                               onchange="this.form.submit()">
-                                    </form>
+                                    <label class="small text-muted">Precio</label>
+                                    <p class="fw-bold text-primary">@item.Precio.ToString("C")</p>
                                 </div>
                                 <div class="col-md-2 text-end">
-                                    <label class="small text-muted">Subtotal</label>
-                                    <p class="fw-bold text-primary">@item.Subtotal.ToString("C")</p>
                                     <form asp-action="remove" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="itemId" value="@item.Id" />
@@ -149,12 +133,6 @@
 
 @section Scripts {
     <script>
-        // Auto-submit form when quantity changes
-        document.querySelectorAll('input[name="cantidad"]').forEach(input => {
-            input.addEventListener('change', function() {
-                if (this.value < 1) this.value = 1;
-                if (this.value > 99) this.value = 99;
-            });
-        });
+        // No quantity changes needed - products can only be added once
     </script>
 }

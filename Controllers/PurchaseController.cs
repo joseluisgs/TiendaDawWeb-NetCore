@@ -28,9 +28,10 @@ public class PurchaseController : Controller
     }
 
     /// <summary>
-    /// GET /app/compras - Mis compras (paginadas)
+    /// GET /app/compras or /Purchase/MyPurchases - Mis compras (paginadas)
     /// </summary>
     [HttpGet]
+    [HttpGet("/Purchase/MyPurchases")]
     public async Task<IActionResult> Index(int page = 1)
     {
         var user = await _userManager.GetUserAsync(User);

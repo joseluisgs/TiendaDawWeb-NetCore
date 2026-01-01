@@ -1,0 +1,179 @@
+@model TiendaDawWeb.Models.User
+@{
+    ViewData["Title"] = "Editar Perfil";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Editar Perfil
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="bi bi-check-circle"></i> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        
+                        <!-- Avatar actual -->
+                        <div class="row mb-4">
+                            <div class="col-md-12 text-center">
+                                @if (!string.IsNullOrEmpty(Model.Avatar))
+                                {
+                                    <img src="@Model.Avatar" alt="Avatar actual" 
+                                         class="rounded-circle mb-3" 
+                                         style="width: 150px; height: 150px; object-fit: cover;">
+                                    <div>
+                                        <form asp-action="DeleteAvatar" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('¿Eliminar avatar?')">
+                                                <i class="bi bi-trash"></i> Eliminar Avatar
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                                         style="width: 150px; height: 150px;">
+                                        <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="bi bi-person"></i> Nombre *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   value="@Model.Nombre" 
+                                   required
+                                   maxlength="100"
+                                   placeholder="Tu nombre">
+                        </div>
+
+                        <!-- Apellidos -->
+                        <div class="mb-3">
+                            <label for="apellidos" class="form-label">
+                                <i class="bi bi-person"></i> Apellidos *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="apellidos" 
+                                   name="apellidos" 
+                                   value="@Model.Apellidos" 
+                                   required
+                                   maxlength="100"
+                                   placeholder="Tus apellidos">
+                        </div>
+
+                        <!-- Avatar (nuevo) -->
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">
+                                <i class="bi bi-image"></i> Cambiar Avatar
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="avatar" 
+                                   name="avatar" 
+                                   accept="image/jpeg,image/jpg,image/png,image/gif">
+                            <div class="form-text">
+                                Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
+                            </div>
+                        </div>
+
+                        <!-- Email (solo lectura) -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   value="@Model.Email" 
+                                   readonly
+                                   disabled>
+                            <div class="form-text">
+                                El email no se puede cambiar
+                            </div>
+                        </div>
+
+                        <!-- Username (solo lectura) -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-at"></i> Usuario
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   value="@Model.UserName" 
+                                   readonly
+                                   disabled>
+                            <div class="form-text">
+                                El nombre de usuario no se puede cambiar
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <!-- Enlace para cambiar contraseña -->
+                    <div class="text-center">
+                        <a asp-action="ChangePassword" class="btn btn-outline-warning">
+                            <i class="bi bi-key"></i> Cambiar Contraseña
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Preview avatar before upload
+        document.getElementById('avatar').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.querySelector('.rounded-circle, .bg-secondary');
+                    if (img && img.tagName === 'IMG') {
+                        img.src = event.target.result;
+                    }
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    </script>
+}

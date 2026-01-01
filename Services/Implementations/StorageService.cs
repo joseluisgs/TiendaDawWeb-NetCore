@@ -6,6 +6,7 @@ namespace TiendaDawWeb.Services.Implementations;
 
 /// <summary>
 /// Servicio de gestión de almacenamiento de archivos
+/// Guarda archivos en wwwroot para acceso web directo
 /// </summary>
 public class StorageService : IStorageService
 {
@@ -45,7 +46,8 @@ public class StorageService : IStorageService
                 return Result.Failure<string, DomainError>(
                     ProductError.InvalidData($"Extensión de archivo no permitida. Permitidas: {string.Join(", ", _allowedExtensions)}"));
 
-            var uploadDir = Path.Combine(_environment.ContentRootPath, _uploadPath, folder);
+            // Usar wwwroot para que los archivos sean accesibles desde la web
+            var uploadDir = Path.Combine(_environment.WebRootPath, _uploadPath, folder);
             Directory.CreateDirectory(uploadDir);
 
             var fileName = $"{Guid.NewGuid()}{extension}";
@@ -56,6 +58,7 @@ public class StorageService : IStorageService
                 await file.CopyToAsync(stream);
             }
 
+            // Retornar ruta relativa desde wwwroot con / al inicio
             var relativePath = $"/{_uploadPath}/{folder}/{fileName}";
             _logger.LogInformation("Archivo guardado: {FilePath}", relativePath);
             
@@ -76,7 +79,8 @@ public class StorageService : IStorageService
             if (string.IsNullOrEmpty(filePath))
                 return Result.Success<bool, DomainError>(true);
 
-            var fullPath = Path.Combine(_environment.ContentRootPath, filePath.TrimStart('/'));
+            // Usar wwwroot
+            var fullPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
             
             if (File.Exists(fullPath))
             {
@@ -99,7 +103,7 @@ public class StorageService : IStorageService
         if (string.IsNullOrEmpty(filePath))
             return false;
 
-        var fullPath = Path.Combine(_environment.ContentRootPath, filePath.TrimStart('/'));
+        var fullPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
         return File.Exists(fullPath);
     }
 }

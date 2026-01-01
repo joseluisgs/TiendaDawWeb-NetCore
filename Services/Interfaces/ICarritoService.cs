@@ -5,7 +5,8 @@ using TiendaDawWeb.Models;
 namespace TiendaDawWeb.Services.Interfaces;
 
 /// <summary>
-/// Servicio para la gestión del carrito de compras con control de concurrencia
+/// Servicio para la gestión del carrito de compras
+/// Sin cantidad - cada producto solo puede añadirse una vez (coincide con Spring Boot original)
 /// </summary>
 public interface ICarritoService
 {
@@ -15,14 +16,9 @@ public interface ICarritoService
     Task<Result<IEnumerable<CarritoItem>, DomainError>> GetCarritoByUsuarioIdAsync(long usuarioId);
 
     /// <summary>
-    /// Agrega un producto al carrito (con control de concurrencia)
+    /// Agrega un producto al carrito - si ya existe, retorna error
     /// </summary>
-    Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId, int cantidad = 1);
-
-    /// <summary>
-    /// Actualiza la cantidad de un item en el carrito (con control de concurrencia)
-    /// </summary>
-    Task<Result<CarritoItem, DomainError>> UpdateCantidadAsync(long itemId, int nuevaCantidad);
+    Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId);
 
     /// <summary>
     /// Elimina un item del carrito
