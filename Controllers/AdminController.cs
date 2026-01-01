@@ -101,6 +101,8 @@ public class AdminController : Controller
         var skip = (page - 1) * pageSize;
         
         var usuarios = await _context.Users
+            .Include(u => u.Products.Where(p => !p.Deleted))
+            .Include(u => u.Purchases)
             .Where(u => !u.Deleted)
             .OrderByDescending(u => u.FechaAlta)
             .Skip(skip)
@@ -287,26 +289,24 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarProducto(long id)
     {
-        var producto = await _context.Products.FindAsync(id);
-        if (producto == null)
+        var adminUser = await _userManager.GetUserAsync(User);
+        if (adminUser == null)
         {
-            TempData["Error"] = "Producto no encontrado";
+            TempData["Error"] = "Usuario no encontrado";
             return RedirectToAction(nameof(Productos));
         }
 
-        // Soft delete
-        producto.Deleted = true;
-        producto.DeletedAt = DateTime.UtcNow;
-        
-        var adminUser = await _userManager.GetUserAsync(User);
-        producto.DeletedBy = adminUser?.Id.ToString();
+        var result = await _productService.DeleteAsync(id, adminUser.Id, true);
 
-        await _context.SaveChangesAsync();
+        if (result.IsFailure)
+        {
+            TempData["Error"] = result.Error.Message;
+        }
+        else
+        {
+            TempData["Success"] = "Producto eliminado correctamente";
+        }
 
-        _logger.LogInformation("Producto {ProductId} eliminado (soft delete) por admin {AdminId}", 
-            id, adminUser?.Id);
-        
-        TempData["Success"] = "Producto eliminado correctamente";
         return RedirectToAction(nameof(Productos));
     }
 

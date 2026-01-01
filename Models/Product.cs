@@ -50,4 +50,12 @@ public class Product
     // Propiedades calculadas
     public string ImagenOrDefault => Imagen ?? "/images/default-product.jpg";
     public double RatingPromedio => Ratings.Any() ? Ratings.Average(r => r.Puntuacion) : 0;
+    
+    // Métodos
+    public void SoftDelete(string deletedBy)
+    {
+        Deleted = true;
+        DeletedAt = DateTime.UtcNow;
+        DeletedBy = deletedBy;
+    }
 }

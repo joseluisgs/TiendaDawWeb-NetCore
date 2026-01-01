@@ -23,35 +23,17 @@ public class DecimalModelBinder : IModelBinder
             return Task.CompletedTask;
         }
 
-        // Validar que solo hay un separador decimal (coma o punto)
-        var commaCount = value.Count(c => c == ',');
-        var dotCount = value.Count(c => c == '.');
-        
-        if (commaCount + dotCount > 1)
+        // 🔴 SOLO ACEPTAR PUNTO - Rechazar comas
+        if (value.Contains(','))
         {
             bindingContext.ModelState.TryAddModelError(
                 bindingContext.ModelName,
-                $"El valor '{value}' no es un número decimal válido.");
+                "El precio debe usar punto (.) como separador decimal. Ejemplo: 19.99");
             return Task.CompletedTask;
         }
 
-        // Intentar parsear con cultura actual (español: coma)
-        if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var result))
-        {
-            bindingContext.Result = ModelBindingResult.Success(result);
-            return Task.CompletedTask;
-        }
-
-        // Intentar parsear con cultura invariante (inglés: punto)
-        if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
-        {
-            bindingContext.Result = ModelBindingResult.Success(result);
-            return Task.CompletedTask;
-        }
-
-        // Intentar reemplazar coma por punto y parsear
-        var normalized = value.Replace(',', '.');
-        if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+        if (decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, 
+            CultureInfo.InvariantCulture, out var result))
         {
             bindingContext.Result = ModelBindingResult.Success(result);
             return Task.CompletedTask;
@@ -59,7 +41,7 @@ public class DecimalModelBinder : IModelBinder
 
         bindingContext.ModelState.TryAddModelError(
             bindingContext.ModelName,
-            $"El valor '{value}' no es un número decimal válido.");
+            "El precio debe ser un número válido con punto como separador. Ejemplo: 19.99");
 
         return Task.CompletedTask;
     }

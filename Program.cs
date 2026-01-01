@@ -27,10 +27,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Use Serilog for logging
 builder.Host.UseSerilog();
 
-// Configurar cultura española
-var cultureInfo = new CultureInfo("es-ES");
-CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+// Configurar cultura española por defecto
+var defaultCulture = new CultureInfo("es");
+CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 // Entity Framework Core con InMemory
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -179,16 +179,17 @@ app.UseRouting();
 // Configurar localización con soporte para parámetro ?lang=
 var supportedCultures = new[] 
 { 
-    new CultureInfo("es-ES"), 
-    new CultureInfo("en-US"),
-    new CultureInfo("fr-FR"),
-    new CultureInfo("pt-PT")
+    new CultureInfo("es"),    // 🔴 Español primero (default)
+    new CultureInfo("en"),
+    new CultureInfo("fr"),
+    new CultureInfo("pt")
 };
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture("es-ES"),
+    DefaultRequestCulture = new RequestCulture("es"), // 🔴 Español por defecto
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures,
+    ApplyCurrentCultureToResponseHeaders = true,
     RequestCultureProviders = new List<IRequestCultureProvider>
     {
         new QueryStringRequestCultureProvider(), // Permite ?lang=en o ?culture=en

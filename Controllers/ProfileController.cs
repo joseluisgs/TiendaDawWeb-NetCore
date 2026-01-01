@@ -184,18 +184,18 @@ public class ProfileController : Controller
     }
 
     /// <summary>
-    /// GET /app/perfil/cambiar-contraseña - Formulario para cambiar contraseña
+    /// GET /app/perfil/cambiar-password - Formulario para cambiar contraseña
     /// </summary>
-    [HttpGet("cambiar-contraseña")]
+    [HttpGet("cambiar-password")]
     public IActionResult ChangePassword()
     {
         return View();
     }
 
     /// <summary>
-    /// POST /app/perfil/cambiar-contraseña - Cambiar contraseña
+    /// POST /app/perfil/cambiar-password - Cambiar contraseña
     /// </summary>
-    [HttpPost("cambiar-contraseña")]
+    [HttpPost("cambiar-password")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
     {
