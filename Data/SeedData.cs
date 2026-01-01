@@ -15,11 +15,31 @@ public static class SeedData
     {
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
         var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(SeedData));
 
         logger.LogInformation("🔧 PERFIL DEV: Inicializando marketplace con datos de prueba...");
         logger.LogInformation("📅 Fecha: {Date}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+        // Crear roles primero
+        var roles = new[] { "ADMIN", "MODERATOR", "USER" };
+        foreach (var roleName in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                var result = await roleManager.CreateAsync(new IdentityRole<long>(roleName));
+                if (result.Succeeded)
+                {
+                    logger.LogInformation("✅ Rol {Role} creado", roleName);
+                }
+                else
+                {
+                    logger.LogError("❌ Error al crear rol {Role}: {Errors}", 
+                        roleName, string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+            }
+        }
 
         // Crear usuarios (idénticos al proyecto Java)
         var usuarios = new List<(User user, string password)>
@@ -139,7 +159,18 @@ public static class SeedData
         {
             if (await userManager.FindByEmailAsync(usuario.Email!) == null)
             {
-                await userManager.CreateAsync(usuario, password);
+                var result = await userManager.CreateAsync(usuario, password);
+                if (result.Succeeded)
+                {
+                    // Asignar el rol al usuario
+                    await userManager.AddToRoleAsync(usuario, usuario.Rol);
+                    logger.LogInformation("✅ Usuario {Email} creado con rol {Role}", usuario.Email, usuario.Rol);
+                }
+                else
+                {
+                    logger.LogError("❌ Error al crear usuario {Email}: {Errors}", 
+                        usuario.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
             }
         }
 

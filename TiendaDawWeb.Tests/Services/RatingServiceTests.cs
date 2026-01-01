@@ -188,6 +188,26 @@ public class RatingServiceTests
     public async Task DeleteRatingAsync_AsOwner_ReturnsSuccess()
     {
         // Arrange
+        var usuario = new User
+        {
+            Id = 1,
+            Nombre = "Test",
+            Apellidos = "User",
+            UserName = "testuser",
+            Email = "test@test.com",
+            Rol = "USER"
+        };
+
+        var producto = new Product
+        {
+            Id = 1,
+            Nombre = "Test Product",
+            Descripcion = "Description",
+            Precio = 100,
+            Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1
+        };
+
         var rating = new Rating
         {
             Id = 1,
@@ -198,6 +218,8 @@ public class RatingServiceTests
             CreatedAt = DateTime.UtcNow
         };
 
+        _context.Users.Add(usuario);
+        _context.Products.Add(producto);
         _context.Ratings.Add(rating);
         await _context.SaveChangesAsync();
 
@@ -206,7 +228,7 @@ public class RatingServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var deletedRating = await _context.Ratings.FindAsync(1L);
+        var deletedRating = await _context.Ratings.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == 1);
         deletedRating.Should().BeNull();
     }
 
@@ -214,6 +236,36 @@ public class RatingServiceTests
     public async Task DeleteRatingAsync_AsNonOwner_ReturnsFailure()
     {
         // Arrange
+        var usuario1 = new User
+        {
+            Id = 1,
+            Nombre = "Test",
+            Apellidos = "User",
+            UserName = "testuser",
+            Email = "test@test.com",
+            Rol = "USER"
+        };
+
+        var usuario2 = new User
+        {
+            Id = 2,
+            Nombre = "Test2",
+            Apellidos = "User2",
+            UserName = "testuser2",
+            Email = "test2@test.com",
+            Rol = "USER"
+        };
+
+        var producto = new Product
+        {
+            Id = 1,
+            Nombre = "Test Product",
+            Descripcion = "Description",
+            Precio = 100,
+            Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1
+        };
+
         var rating = new Rating
         {
             Id = 1,
@@ -224,6 +276,8 @@ public class RatingServiceTests
             CreatedAt = DateTime.UtcNow
         };
 
+        _context.Users.AddRange(usuario1, usuario2);
+        _context.Products.Add(producto);
         _context.Ratings.Add(rating);
         await _context.SaveChangesAsync();
 

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TiendaDawWeb.Data;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Services.Interfaces;
 
@@ -14,15 +16,18 @@ namespace TiendaDawWeb.Controllers;
 public class ProfileController : Controller
 {
     private readonly UserManager<User> _userManager;
+    private readonly ApplicationDbContext _context;
     private readonly IStorageService _storageService;
     private readonly ILogger<ProfileController> _logger;
 
     public ProfileController(
         UserManager<User> userManager,
+        ApplicationDbContext context,
         IStorageService storageService,
         ILogger<ProfileController> logger)
     {
         _userManager = userManager;
+        _context = context;
         _storageService = storageService;
         _logger = logger;
     }
@@ -38,6 +43,17 @@ public class ProfileController : Controller
         {
             return RedirectToAction("Login", "Auth");
         }
+
+        // Cargar las colecciones necesarias para la vista
+        await _context.Entry(user)
+            .Collection(u => u.Products)
+            .LoadAsync();
+        await _context.Entry(user)
+            .Collection(u => u.Purchases)
+            .LoadAsync();
+        await _context.Entry(user)
+            .Collection(u => u.Favorites)
+            .LoadAsync();
 
         return View(user);
     }
