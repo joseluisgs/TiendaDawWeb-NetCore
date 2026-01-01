@@ -1,0 +1,74 @@
+@model ProductViewModel
+@{
+    ViewData["Title"] = "Publicar Producto";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title mb-4">
+                    <i class="bi bi-plus-circle"></i> Publicar Nuevo Producto
+                </h2>
+                
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Nombre" class="form-label"></label>
+                        <input asp-for="Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Descripcion" class="form-label"></label>
+                        <textarea asp-for="Descripcion" class="form-control" rows="4" 
+                                  placeholder="Describe tu producto con detalle..."></textarea>
+                        <span asp-validation-for="Descripcion" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Precio" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Precio" class="form-control" placeholder="999.99" />
+                                <span class="input-group-text">€</span>
+                            </div>
+                            <span asp-validation-for="Precio" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Categoria" class="form-label"></label>
+                            <select asp-for="Categoria" class="form-select" asp-items="Html.GetEnumSelectList<ProductCategory>()">
+                                <option value="">-- Selecciona una categoría --</option>
+                            </select>
+                            <span asp-validation-for="Categoria" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="ImagenFile" class="form-label"></label>
+                        <input asp-for="ImagenFile" class="form-control" type="file" accept="image/*" />
+                        <span asp-validation-for="ImagenFile" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Publicar Producto
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

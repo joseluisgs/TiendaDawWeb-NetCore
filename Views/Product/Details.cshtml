@@ -1,0 +1,134 @@
+@model Product
+@using Microsoft.AspNetCore.Identity
+@using TiendaDawWeb.Models
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = Model.Nombre;
+    var currentUser = await UserManager.GetUserAsync(User);
+    var isOwner = currentUser != null && Model.PropietarioId == currentUser.Id;
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <img src="@Model.ImagenOrDefault" class="img-fluid rounded shadow" alt="@Model.Nombre">
+    </div>
+    <div class="col-md-6">
+        <h1 class="mb-3">@Model.Nombre</h1>
+        
+        <div class="mb-3">
+            <span class="badge bg-secondary">@Model.Categoria</span>
+            @if (Model.Ratings.Any())
+            {
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-star-fill"></i> @Model.RatingPromedio.ToString("F1") (@Model.Ratings.Count valoraciones)
+                </span>
+            }
+        </div>
+        
+        <h2 class="text-primary mb-4">
+            @Model.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
+        </h2>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Descripción</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">@Model.Descripcion</p>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Vendedor</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    @if (!string.IsNullOrEmpty(Model.Propietario.Avatar))
+                    {
+                        <img src="@Model.Propietario.Avatar" alt="Avatar" class="rounded-circle me-3" 
+                             style="width: 50px; height: 50px; object-fit: cover;">
+                    }
+                    <div>
+                        <h6 class="mb-0">@Model.Propietario.Nombre @Model.Propietario.Apellidos</h6>
+                        <small class="text-muted">@Model.Propietario.Email</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2 mb-3">
+            @if (isOwner)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" 
+                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este producto?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </form>
+            }
+            else
+            {
+                <button class="btn btn-success flex-grow-1">
+                    <i class="bi bi-cart-plus"></i> Añadir al Carrito
+                </button>
+                @if (currentUser != null)
+                {
+                    <component type="typeof(TiendaDawWeb.Components.FavoriteButton)" 
+                               render-mode="ServerPrerendered" 
+                               param-ProductId="@Model.Id"
+                               param-UserId="@currentUser.Id" />
+                }
+            }
+        </div>
+        
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h3><i class="bi bi-star"></i> Valoraciones</h3>
+        @if (Model.Ratings.Any())
+        {
+            @foreach (var rating in Model.Ratings.OrderByDescending(r => r.CreatedAt))
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">@rating.Usuario.Nombre @rating.Usuario.Apellidos</h6>
+                                <div class="mb-2">
+                                    @for (int i = 0; i < rating.Puntuacion; i++)
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    @for (int i = rating.Puntuacion; i < 5; i++)
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                </div>
+                            </div>
+                            <small class="text-muted">@rating.CreatedAt.ToString("dd/MM/yyyy")</small>
+                        </div>
+                        @if (!string.IsNullOrEmpty(rating.Comentario))
+                        {
+                            <p class="mb-0">@rating.Comentario</p>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Este producto aún no tiene valoraciones.
+            </div>
+        }
+    </div>
+</div>

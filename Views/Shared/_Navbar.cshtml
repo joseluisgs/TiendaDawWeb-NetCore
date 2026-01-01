@@ -1,0 +1,90 @@
+@using Microsoft.AspNetCore.Identity
+@using TiendaDawWeb.Models
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" asp-controller="Public" asp-action="Index">
+            <i class="bi bi-shop"></i> WalaDaw
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Public" asp-action="Index">
+                        <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Product" asp-action="Index">
+                            <i class="bi bi-grid"></i> Productos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Product" asp-action="Create">
+                            <i class="bi bi-plus-circle"></i> Vender
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Favorite" asp-action="Index">
+                            <i class="bi bi-heart"></i> Favoritos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Product" asp-action="MyProducts">
+                            <i class="bi bi-box-seam"></i> Mis Productos
+                        </a>
+                    </li>
+                }
+            </ul>
+            <ul class="navbar-nav">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var currentUser = await UserManager.GetUserAsync(User);
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            @if (!string.IsNullOrEmpty(currentUser?.Avatar))
+                            {
+                                <img src="@currentUser.Avatar" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
+                            }
+                            <span class="ms-1">@currentUser?.Nombre</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person-circle"></i> Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Auth" asp-action="Register">
+                            <i class="bi bi-person-plus"></i> Registrarse
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
