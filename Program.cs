@@ -212,13 +212,10 @@ app.UseSession();
 // Enrutamiento de controladores
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Public}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 // Removed MapBlazorHub - no longer using Blazor Server
-
-// Página de inicio
-app.MapGet("/", () => Results.Redirect("/Public/Index"));
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));

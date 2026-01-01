@@ -26,6 +26,9 @@ public static class UserError
     public static DomainError HasPurchases =>
         new BusinessError("USER_HAS_PURCHASES", "No se puede eliminar un usuario que ha realizado compras");
 
+    public static DomainError HasActiveProducts =>
+        new BusinessError("USER_HAS_ACTIVE_PRODUCTS", "No se puede eliminar un usuario con productos a la venta");
+
     private record NotFoundError(string Code, string Message) : DomainError(Code, Message);
     private record ConflictError(string Code, string Message) : DomainError(Code, Message);
     private record UnauthorizedError(string Code, string Message) : DomainError(Code, Message);
