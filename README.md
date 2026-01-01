@@ -69,7 +69,7 @@ WalaDaw es un marketplace moderno desarrollado con Spring Boot que permite a los
 - 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
 - ⚡ **Cache Inteligente**: Mejora de rendimiento con Spring Cache
 - 📄 **Generación de PDFs**: Facturas automáticas con cálculo de IVA y diseño profesional
-- ❤️ **Sistema de Favoritos**: Añade productos a favoritos con AJAX
+- ❤️ **Sistema de Favoritos**: Gestiona tus productos preferidos con Blazor Server
 - ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas y comentarios
 - 🛡️ **Seguridad CSRF**: Protección completa contra ataques Cross-Site Request Forgery
 
