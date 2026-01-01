@@ -54,7 +54,7 @@
                                     <a href="/app/productos/@product.Id" class="btn btn-primary btn-sm flex-grow-1">
                                         <i class="bi bi-eye"></i> Ver Detalles
                                     </a>
-                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveFavorite(favorite.Id)">
+                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveFavorite(product.Id)">
                                         <i class="bi bi-heart-fill"></i>
                                     </button>
                                 </div>
@@ -87,13 +87,12 @@
         var result = await FavoriteService.GetUserFavoritesAsync(UserId);
         if (result.IsSuccess)
         {
-            // Get favorites with products loaded - need to convert from Product list to Favorite list
-            // Since GetUserFavoritesAsync returns IEnumerable<Product>, we need a different approach
-            // We'll create temporary Favorite objects for display
+            // GetUserFavoritesAsync returns IEnumerable<Product>
+            // For removal, we'll need to use the product ID directly
             var products = result.Value.ToList();
             Favorites = products.Select(p => new Favorite 
             { 
-                Id = p.Id, // Using product ID as favorite ID for this display component
+                Id = 0, // Not used for removal
                 ProductoId = p.Id, 
                 Producto = p,
                 UsuarioId = UserId
@@ -113,6 +112,7 @@
         var favorite = Favorites?.FirstOrDefault(f => f.Id == favoriteId);
         if (favorite != null)
         {
+            // Use ProductoId for removal since we're working with the product list
             var result = await FavoriteService.RemoveFavoriteAsync(UserId, favorite.ProductoId);
             if (result.IsSuccess)
             {

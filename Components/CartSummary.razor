@@ -121,11 +121,13 @@
         await LoadCartSummary();
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         _timer?.Dispose();
     }
 }
+
+@implements IDisposable
 
 <style>
     .cart-summary {
