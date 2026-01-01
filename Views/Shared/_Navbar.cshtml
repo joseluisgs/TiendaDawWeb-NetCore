@@ -84,7 +84,7 @@
             </ul>
 
             <form action="@Url.Action("Index", "Public")" class="d-flex me-3" method="get" role="search">
-                <input class="form-control" name="q" placeholder="Buscar productos..." type="search" value="@ViewBag.Search">
+                <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="search" value="@ViewBag.Search">
                 <button class="btn btn-outline-light ms-2" type="submit"><i class="bi bi-search"></i></button>
             </form>
 
