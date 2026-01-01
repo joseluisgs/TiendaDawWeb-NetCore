@@ -1,0 +1,114 @@
+@using TiendaDawWeb.Services.Interfaces
+@inject IRatingService RatingService
+
+<div class="rating-stars">
+    @if (IsReadOnly)
+    {
+        <!-- Display mode -->
+        <div class="d-inline-flex align-items-center">
+            @for (int i = 1; i <= 5; i++)
+            {
+                var isFilled = i <= Value;
+                <i class="bi @(isFilled ? "bi-star-fill" : "bi-star") text-warning" style="font-size: @Size;"></i>
+            }
+            @if (ShowValue)
+            {
+                <span class="ms-2 text-muted">(@Value.ToString("0.0"))</span>
+            }
+            @if (ShowCount && TotalRatings > 0)
+            {
+                <span class="ms-1 text-muted small">(@TotalRatings valoraciones)</span>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Interactive mode -->
+        <div class="d-inline-flex align-items-center">
+            @for (int i = 1; i <= 5; i++)
+            {
+                var starIndex = i;
+                var isFilled = i <= HoverValue || (HoverValue == 0 && i <= SelectedValue);
+                <i class="bi @(isFilled ? "bi-star-fill" : "bi-star") text-warning rating-star-interactive" 
+                   style="font-size: @Size; cursor: pointer;"
+                   @onmouseover="() => OnHover(starIndex)"
+                   @onmouseleave="OnLeave"
+                   @onclick="() => OnClick(starIndex)"></i>
+            }
+            @if (SelectedValue > 0)
+            {
+                <span class="ms-2">@SelectedValue estrellas</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public double Value { get; set; } = 0;
+
+    [Parameter]
+    public bool IsReadOnly { get; set; } = true;
+
+    [Parameter]
+    public string Size { get; set; } = "1.2rem";
+
+    [Parameter]
+    public bool ShowValue { get; set; } = false;
+
+    [Parameter]
+    public bool ShowCount { get; set; } = false;
+
+    [Parameter]
+    public int TotalRatings { get; set; } = 0;
+
+    [Parameter]
+    public EventCallback<int> OnRatingChanged { get; set; }
+
+    private int SelectedValue { get; set; } = 0;
+    private int HoverValue { get; set; } = 0;
+
+    protected override void OnParametersSet()
+    {
+        if (IsReadOnly)
+        {
+            SelectedValue = (int)Math.Round(Value);
+        }
+    }
+
+    private void OnHover(int value)
+    {
+        if (!IsReadOnly)
+        {
+            HoverValue = value;
+            StateHasChanged();
+        }
+    }
+
+    private void OnLeave()
+    {
+        if (!IsReadOnly)
+        {
+            HoverValue = 0;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnClick(int value)
+    {
+        if (!IsReadOnly)
+        {
+            SelectedValue = value;
+            HoverValue = 0;
+            await OnRatingChanged.InvokeAsync(value);
+            StateHasChanged();
+        }
+    }
+}
+
+<style>
+    .rating-star-interactive:hover {
+        transform: scale(1.2);
+        transition: transform 0.1s ease;
+    }
+</style>

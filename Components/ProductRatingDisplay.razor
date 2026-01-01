@@ -1,0 +1,153 @@
+@using TiendaDawWeb.Services.Interfaces
+@using TiendaDawWeb.Models
+@inject IRatingService RatingService
+
+<div class="product-rating-display">
+    @if (IsLoading)
+    {
+        <div class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Cargando valoraciones...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Rating Summary -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center border-end">
+                        <h2 class="display-4 mb-0">@AverageRating.ToString("0.0")</h2>
+                        <RatingStars Value="@AverageRating" IsReadOnly="true" Size="1.5rem" />
+                        <p class="text-muted mb-0">@TotalRatings valoraciones</p>
+                    </div>
+                    <div class="col-md-8">
+                        @for (int stars = 5; stars >= 1; stars--)
+                        {
+                            var starCount = stars;
+                            var count = Ratings?.Count(r => r.Puntuacion == starCount) ?? 0;
+                            var percentage = TotalRatings > 0 ? (count * 100.0 / TotalRatings) : 0;
+                            
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="me-2" style="width: 60px;">@starCount <i class="bi bi-star-fill text-warning"></i></span>
+                                <div class="progress flex-grow-1" style="height: 20px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                         style="width: @percentage%" 
+                                         aria-valuenow="@percentage" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"></div>
+                                </div>
+                                <span class="ms-2 text-muted" style="width: 60px;">@count</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Individual Ratings -->
+        @if (Ratings != null && Ratings.Any())
+        {
+            <h5 class="mb-3">
+                <i class="bi bi-chat-left-text"></i> Comentarios de Usuarios
+            </h5>
+            
+            @foreach (var rating in Ratings.OrderByDescending(r => r.CreatedAt).Take(DisplayLimit))
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong>@rating.Usuario?.UserName</strong>
+                                <RatingStars Value="@rating.Puntuacion" IsReadOnly="true" Size="1rem" />
+                            </div>
+                            <small class="text-muted">@rating.CreatedAt.ToString("dd/MM/yyyy")</small>
+                        </div>
+                        @if (!string.IsNullOrEmpty(rating.Comentario))
+                        {
+                            <p class="mb-0">@rating.Comentario</p>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Ratings.Count() > DisplayLimit)
+            {
+                <div class="text-center">
+                    <button class="btn btn-outline-primary" @onclick="LoadMore">
+                        Ver más valoraciones (@(Ratings.Count() - DisplayLimit) restantes)
+                    </button>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Este producto aún no tiene valoraciones. ¡Sé el primero en valorarlo!
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public long ProductId { get; set; }
+
+    private List<Rating>? Ratings { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private double AverageRating { get; set; } = 0;
+    private int TotalRatings { get; set; } = 0;
+    private int DisplayLimit { get; set; } = 5;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRatings();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ProductId > 0)
+        {
+            await LoadRatings();
+        }
+    }
+
+    private async Task LoadRatings()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        var result = await RatingService.GetByProductoIdAsync(ProductId);
+        if (result.IsSuccess)
+        {
+            Ratings = result.Value.ToList();
+            TotalRatings = Ratings.Count;
+            
+            if (TotalRatings > 0)
+            {
+                AverageRating = Ratings.Average(r => r.Puntuacion);
+            }
+        }
+        else
+        {
+            Ratings = new List<Rating>();
+            TotalRatings = 0;
+            AverageRating = 0;
+        }
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private void LoadMore()
+    {
+        DisplayLimit += 5;
+        StateHasChanged();
+    }
+
+    public async Task RefreshRatings()
+    {
+        await LoadRatings();
+    }
+}
