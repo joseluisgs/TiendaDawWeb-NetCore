@@ -28,9 +28,10 @@ public class PurchaseController : Controller
     }
 
     /// <summary>
-    /// GET /app/compras - Mis compras (paginadas)
+    /// GET /app/compras or /Purchase/MyPurchases - Mis compras (paginadas)
     /// </summary>
     [HttpGet]
+    [HttpGet("/Purchase/MyPurchases")]
     public async Task<IActionResult> Index(int page = 1)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -49,15 +50,6 @@ public class PurchaseController : Controller
 
         ViewBag.CurrentPage = page;
         return View(result.Value);
-    }
-
-    /// <summary>
-    /// GET /Purchase/MyPurchases - Alias para Mis compras (matching navbar link)
-    /// </summary>
-    [HttpGet("/Purchase/MyPurchases")]
-    public async Task<IActionResult> MyPurchases(int page = 1)
-    {
-        return await Index(page);
     }
 
     /// <summary>

@@ -160,7 +160,6 @@ public class CarritoService : ICarritoService
         try
         {
             var total = await _context.CarritoItems
-                .Include(c => c.Producto)
                 .Where(c => c.UsuarioId == usuarioId)
                 .SumAsync(c => c.Precio);
 
