@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
     public DbSet<Purchase> Purchases => Set<Purchase>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<Rating> Ratings => Set<Rating>();
+    public DbSet<CarritoItem> CarritoItems => Set<CarritoItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -69,6 +70,27 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .WithMany(p => p.Ratings)
                 .HasForeignKey(r => r.ProductoId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de CarritoItem
+        builder.Entity<CarritoItem>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+
+            entity.HasOne(c => c.Usuario)
+                .WithMany(u => u.CarritoItems)
+                .HasForeignKey(c => c.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.Producto)
+                .WithMany()
+                .HasForeignKey(c => c.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(c => c.Subtotal).HasPrecision(18, 2);
+            
+            // Índice único por usuario y producto para evitar duplicados
+            entity.HasIndex(c => new { c.UsuarioId, c.ProductoId }).IsUnique();
         });
     }
 }
