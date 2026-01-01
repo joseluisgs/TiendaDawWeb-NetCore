@@ -193,8 +193,22 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Usuarios));
         }
 
+        // CRÍTICO: Impedir eliminar usuarios con productos activos (no vendidos)
+        var hasProductosActivos = await _context.Products
+            .IgnoreQueryFilters() // Ignorar filtro de soft delete para comprobar todos los productos
+            .Where(p => p.PropietarioId == id && !p.Deleted && p.CompraId == null)
+            .AnyAsync();
+
+        if (hasProductosActivos)
+        {
+            _logger.LogWarning("Intento de eliminar usuario {UserId} con productos activos a la venta", id);
+            TempData["Error"] = "No se puede eliminar un usuario con productos a la venta";
+            return RedirectToAction(nameof(Usuarios));
+        }
+
         // CRÍTICO: Impedir eliminar usuarios con productos vendidos
         var hasProductosVendidos = await _context.Products
+            .IgnoreQueryFilters()
             .Where(p => p.PropietarioId == id && p.CompraId != null)
             .AnyAsync();
 

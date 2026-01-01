@@ -83,11 +83,16 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddHostedService<CarritoCleanupService>();
 builder.Services.AddHostedService<ReservaCleanupService>();
 
+// Localization
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 // MVC + Razor Pages (removed Blazor Server)
 builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
-});
+})
+.AddViewLocalization() // Añadir localización para vistas
+.AddDataAnnotationsLocalization(); // Añadir localización para anotaciones
 builder.Services.AddRazorPages();
 
 // Add antiforgery for AJAX requests
@@ -136,29 +141,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Limpiar directorio de uploads en desarrollo
-if (app.Environment.IsDevelopment())
+// Limpiar directorio de uploads al iniciar (tanto en DEV como PROD)
+var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
+if (Directory.Exists(uploadPath))
 {
-    var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
-    if (Directory.Exists(uploadPath))
-    {
-        Log.Information("🔧 PERFIL DEV: Limpiando directorio uploads");
-        Directory.Delete(uploadPath, true);
-        Log.Information("🗑️ Directorio uploads limpiado en modo DEV");
-    }
-    Directory.CreateDirectory(uploadPath);
-    Log.Information("✅ Directorio uploads inicializado correctamente");
+    Log.Information("🗑️ Limpiando directorio uploads...");
+    Directory.Delete(uploadPath, true);
+    Log.Information("✅ Directorio uploads limpiado");
 }
-else
-{
-    // En producción, crear el directorio si no existe (sin limpiar)
-    var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
-    if (!Directory.Exists(uploadPath))
-    {
-        Directory.CreateDirectory(uploadPath);
-        Log.Information("📁 Directorio de uploads creado: {Path}", uploadPath);
-    }
-}
+Directory.CreateDirectory(uploadPath);
+Log.Information("📁 Directorio uploads inicializado correctamente");
 
 // Middleware Pipeline
 if (!app.Environment.IsDevelopment())
@@ -212,13 +204,10 @@ app.UseSession();
 // Enrutamiento de controladores
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Public}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 // Removed MapBlazorHub - no longer using Blazor Server
-
-// Página de inicio
-app.MapGet("/", () => Results.Redirect("/Public/Index"));
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));

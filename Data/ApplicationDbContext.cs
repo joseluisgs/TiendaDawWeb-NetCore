@@ -45,7 +45,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             entity.HasOne(f => f.Producto)
                 .WithMany(p => p.Favorites)
                 .HasForeignKey(f => f.ProductoId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(f => new { f.UsuarioId, f.ProductoId }).IsUnique();
             
@@ -61,6 +61,12 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .HasForeignKey(p => p.PropietarioId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasOne(p => p.Compra)
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CompraId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
             entity.Property(p => p.Precio).HasPrecision(18, 2);
             
             // Apply global query filter for soft delete
@@ -70,6 +76,11 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
         // Configuración de Purchase
         builder.Entity<Purchase>(entity =>
         {
+            entity.HasOne(p => p.Comprador)
+                .WithMany(u => u.Purchases)
+                .HasForeignKey(p => p.CompradorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.Property(p => p.Total).HasPrecision(18, 2);
         });
 
@@ -84,7 +95,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             entity.HasOne(r => r.Producto)
                 .WithMany(p => p.Ratings)
                 .HasForeignKey(r => r.ProductoId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             
             // Apply matching query filter to avoid EF warning
             entity.HasQueryFilter(r => !r.Producto.Deleted);

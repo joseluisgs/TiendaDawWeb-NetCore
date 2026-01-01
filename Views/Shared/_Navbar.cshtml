@@ -1,9 +1,11 @@
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
 @using TiendaDawWeb.Services.Interfaces
+@using Microsoft.Extensions.Localization
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 @inject ICarritoService CarritoService
+@inject IStringLocalizer<TiendaDawWeb.Resources.Messages> Localizer
 
 @{
     var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
@@ -27,24 +29,24 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Public" asp-action="Index">
-                        <i class="bi bi-house-door"></i> Inicio
+                        <i class="bi bi-house-door"></i> @Localizer["Home"]
                     </a>
                 </li>
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Product" asp-action="MyProducts">
-                            <i class="bi bi-bag"></i> Mis Productos
+                            <i class="bi bi-bag"></i> @Localizer["MyProducts"]
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Purchase" asp-action="MyPurchases">
-                            <i class="bi bi-receipt"></i> Mis Compras
+                            <i class="bi bi-receipt"></i> @Localizer["MyPurchases"]
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Favorite" asp-action="Index">
-                            <i class="bi bi-heart"></i> Favoritos
+                            <i class="bi bi-heart"></i> @Localizer["Nav.Favorites"]
                         </a>
                     </li>
                     @* Admin dropdown if isAdmin *@
@@ -52,27 +54,27 @@
                     {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-shield-check"></i> Admin
+                                <i class="bi bi-shield-check"></i> @Localizer["Nav.Admin"]
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
-                                        <i class="bi bi-speedometer2"></i> Dashboard
+                                        <i class="bi bi-speedometer2"></i> @Localizer["Dashboard"]
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Admin" asp-action="Usuarios">
-                                        <i class="bi bi-people"></i> Usuarios
+                                        <i class="bi bi-people"></i> @Localizer["Users"]
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Admin" asp-action="Productos">
-                                        <i class="bi bi-box-seam"></i> Productos
+                                        <i class="bi bi-box-seam"></i> @Localizer["Products"]
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Admin" asp-action="Ventas">
-                                        <i class="bi bi-cash-stack"></i> Ventas
+                                        <i class="bi bi-cash-stack"></i> @Localizer["Sales"]
                                     </a>
                                 </li>
                             </ul>
@@ -82,7 +84,7 @@
             </ul>
 
             <form action="@Url.Action("Index", "Public")" class="d-flex me-3" method="get" role="search">
-                <input class="form-control" name="search" placeholder="Buscar productos..." type="search" value="@ViewBag.Search">
+                <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="search" value="@ViewBag.Search">
                 <button class="btn btn-outline-light ms-2" type="submit"><i class="bi bi-search"></i></button>
             </form>
 
@@ -110,7 +112,7 @@
                 {
                     <li class="nav-item">
                         <a class="nav-link position-relative" asp-controller="Carrito" asp-action="Index">
-                            <i class="bi bi-cart3"></i> Carrito
+                            <i class="bi bi-cart3"></i> @Localizer["Cart"]
                             @if (cartCount > 0)
                             {
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -129,13 +131,13 @@
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
-                                    <i class="bi bi-person"></i> Mi Perfil
+                                    <i class="bi bi-person"></i> @Localizer["Nav.Profile"]
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit()">
-                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                    <i class="bi bi-box-arrow-right"></i> @Localizer["Logout"]
                                 </a>
                             </li>
                         </ul>
@@ -145,7 +147,7 @@
                 {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Auth" asp-action="Login">
-                            <i class="bi bi-person"></i> Iniciar Sesión
+                            <i class="bi bi-person"></i> @Localizer["Login"]
                         </a>
                     </li>
                 }

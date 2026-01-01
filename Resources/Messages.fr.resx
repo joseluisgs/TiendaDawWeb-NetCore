@@ -268,4 +268,23 @@
   <data name="Filter.Apply" xml:space="preserve">
     <value>Appliquer les filtres</value>
   </data>
+  
+  <!-- Additional Navigation -->
+  <data name="Nav.Favorites" xml:space="preserve">
+    <value>Favoris</value>
+  </data>
+  <data name="Nav.Profile" xml:space="preserve">
+    <value>Mon Profil</value>
+  </data>
+  <data name="Nav.Admin" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+  
+  <!-- Additional Errors -->
+  <data name="Error.CannotDeleteUserWithProducts" xml:space="preserve">
+    <value>Impossible de supprimer un utilisateur avec des produits à vendre</value>
+  </data>
+  <data name="Error.InvalidPrice" xml:space="preserve">
+    <value>Le prix doit être un nombre valide (utilisez . ou , comme séparateur décimal)</value>
+  </data>
 </root>

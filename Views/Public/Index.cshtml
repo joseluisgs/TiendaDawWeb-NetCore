@@ -1,8 +1,10 @@
 @model IEnumerable<Product>
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
+@using Microsoft.Extensions.Localization
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
+@inject IStringLocalizer<TiendaDawWeb.Resources.Messages> Localizer
 @{
     ViewData["Title"] = "Inicio - WalaDaw";
     var currentUser = await UserManager.GetUserAsync(User);
@@ -17,13 +19,13 @@
         <div class="card-body">
             <form action="@Url.Action("Index", "Public")" class="row g-3" method="get">
                 <div class="col-md-4">
-                    <label class="form-label">Buscar productos</label>
-                    <input class="form-control" name="search" placeholder="Buscar productos..." type="text" value="@ViewBag.Search">
+                    <label class="form-label">@Localizer["Search"]</label>
+                    <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="text" value="@ViewBag.Search">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Categoría</label>
+                    <label class="form-label">@Localizer["Category"]</label>
                     <select class="form-select" name="categoria">
-                        <option value="">Todas las categorías</option>
+                        <option value="">@Localizer["AllCategories"]</option>
                         @foreach (var categoria in Enum.GetValues<ProductCategory>())
                         {
                             var isSelected = ViewBag.Categoria == categoria.ToString();
@@ -34,11 +36,11 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Precio mínimo</label>
+                    <label class="form-label">@Localizer["MinPrice"]</label>
                     <input class="form-control" name="minPrecio" placeholder="0" type="number" step="0.01" value="@ViewBag.MinPrecio">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Precio máximo</label>
+                    <label class="form-label">@Localizer["MaxPrice"]</label>
                     <input class="form-control" name="maxPrecio" placeholder="9999" type="number" step="0.01" value="@ViewBag.MaxPrecio">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
@@ -61,26 +63,26 @@
             @foreach (var producto in Model)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm producto-card" 
-                         onclick="window.location='@Url.Action("Details", "Product", new { id = producto.Id })';" 
-                         style="cursor: pointer;">
-                        <img src="@producto.ImagenOrDefault" 
-                             class="card-img-top" 
-                             alt="@producto.Nombre" 
-                             style="height: 300px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            @if (!string.IsNullOrEmpty(producto.Descripcion))
-                            {
-                                var descripcion = producto.Descripcion ?? "";
-                                var maxLength = Math.Min(descripcion.Length, 80);
-                                var wasTruncated = descripcion.Length > 80;
-                                <p class="card-text text-muted small">
-                                    @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
-                                </p>
-                            }
-                            <span class="badge bg-info">@producto.Categoria</span>
-                        </div>
+                    <div class="card h-100 shadow-sm producto-card">
+                        <a href="@Url.Action("Details", "Product", new { id = producto.Id })" class="text-decoration-none text-dark">
+                            <img src="@producto.ImagenOrDefault" 
+                                 class="card-img-top" 
+                                 alt="@producto.Nombre" 
+                                 style="height: 300px; object-fit: cover; cursor: pointer;">
+                            <div class="card-body">
+                                <h5 class="card-title">@producto.Nombre</h5>
+                                @if (!string.IsNullOrEmpty(producto.Descripcion))
+                                {
+                                    var descripcion = producto.Descripcion ?? "";
+                                    var maxLength = Math.Min(descripcion.Length, 80);
+                                    var wasTruncated = descripcion.Length > 80;
+                                    <p class="card-text text-muted small">
+                                        @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
+                                    </p>
+                                }
+                                <span class="badge bg-info">@producto.Categoria</span>
+                            </div>
+                        </a>
                         <div class="card-footer bg-white">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
@@ -95,8 +97,7 @@
                                                   asp-action="Add" 
                                                   asp-route-productoId="@producto.Id" 
                                                   method="post"
-                                                  style="display: inline-block;"
-                                                  onclick="event.stopPropagation();">
+                                                  style="display: inline-block;">
                                                 <button type="submit" class="btn btn-success btn-sm">
                                                     <i class="bi bi-cart-plus"></i> Comprar
                                                 </button>
@@ -138,7 +139,7 @@
                             {
                                 <li class="page-item">
                                     <a class="page-link" 
-                                       href="?@(ViewBag.Search != null ? $"search={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
+                                       href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
                                         <i class="bi bi-chevron-left"></i> Anterior
                                     </a>
                                 </li>
@@ -163,7 +164,7 @@
                                 {
                                     <li class="page-item">
                                         <a class="page-link"
-                                           href="?@(ViewBag.Search != null ? $"search={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
+                                           href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
                                             @i
                                         </a>
                                     </li>
@@ -175,7 +176,7 @@
                             {
                                 <li class="page-item">
                                     <a class="page-link"
-                                       href="?@(ViewBag.Search != null ? $"search={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
+                                       href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
                                         Siguiente <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>
