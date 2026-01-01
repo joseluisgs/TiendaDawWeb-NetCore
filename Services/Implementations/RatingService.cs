@@ -194,6 +194,7 @@ public class RatingService : IRatingService
         try
         {
             var rating = await _context.Ratings
+                .IgnoreQueryFilters() // Ignorar filtros globales para permitir eliminar ratings de productos eliminados
                 .FirstOrDefaultAsync(r => r.Id == ratingId);
 
             if (rating == null)
@@ -201,7 +202,7 @@ public class RatingService : IRatingService
                 return Result.Failure<bool, DomainError>(RatingError.NotFound(ratingId));
             }
 
-            // Verificar permisos
+            // Verificar permisos - DEBE ir antes que verificar si existe
             if (!isAdmin && rating.UsuarioId != usuarioId)
             {
                 return Result.Failure<bool, DomainError>(RatingError.Unauthorized);
