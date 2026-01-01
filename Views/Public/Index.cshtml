@@ -61,26 +61,26 @@
             @foreach (var producto in Model)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm producto-card" 
-                         onclick="window.location='@Url.Action("Details", "Product", new { id = producto.Id })';" 
-                         style="cursor: pointer;">
-                        <img src="@producto.ImagenOrDefault" 
-                             class="card-img-top" 
-                             alt="@producto.Nombre" 
-                             style="height: 300px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            @if (!string.IsNullOrEmpty(producto.Descripcion))
-                            {
-                                var descripcion = producto.Descripcion ?? "";
-                                var maxLength = Math.Min(descripcion.Length, 80);
-                                var wasTruncated = descripcion.Length > 80;
-                                <p class="card-text text-muted small">
-                                    @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
-                                </p>
-                            }
-                            <span class="badge bg-info">@producto.Categoria</span>
-                        </div>
+                    <div class="card h-100 shadow-sm producto-card">
+                        <a href="@Url.Action("Details", "Product", new { id = producto.Id })" class="text-decoration-none text-dark">
+                            <img src="@producto.ImagenOrDefault" 
+                                 class="card-img-top" 
+                                 alt="@producto.Nombre" 
+                                 style="height: 300px; object-fit: cover; cursor: pointer;">
+                            <div class="card-body">
+                                <h5 class="card-title">@producto.Nombre</h5>
+                                @if (!string.IsNullOrEmpty(producto.Descripcion))
+                                {
+                                    var descripcion = producto.Descripcion ?? "";
+                                    var maxLength = Math.Min(descripcion.Length, 80);
+                                    var wasTruncated = descripcion.Length > 80;
+                                    <p class="card-text text-muted small">
+                                        @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
+                                    </p>
+                                }
+                                <span class="badge bg-info">@producto.Categoria</span>
+                            </div>
+                        </a>
                         <div class="card-footer bg-white">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
@@ -95,8 +95,7 @@
                                                   asp-action="Add" 
                                                   asp-route-productoId="@producto.Id" 
                                                   method="post"
-                                                  style="display: inline-block;"
-                                                  onclick="event.stopPropagation();">
+                                                  style="display: inline-block;">
                                                 <button type="submit" class="btn btn-success btn-sm">
                                                     <i class="bi bi-cart-plus"></i> Comprar
                                                 </button>
