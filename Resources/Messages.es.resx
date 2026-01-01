@@ -215,4 +215,57 @@
   <data name="Items" xml:space="preserve">
     <value>items</value>
   </data>
+  
+  <!-- Información de envío -->
+  <data name="Shipping.Title" xml:space="preserve">
+    <value>Información de Envío</value>
+  </data>
+  <data name="Shipping.Completed" xml:space="preserve">
+    <value>Envío Completado</value>
+  </data>
+  <data name="Shipping.Message" xml:space="preserve">
+    <value>Los productos han sido entregados al comprador.</value>
+  </data>
+  <data name="Shipping.Method" xml:space="preserve">
+    <value>Método</value>
+  </data>
+  <data name="Shipping.StandardMethod" xml:space="preserve">
+    <value>Envío estándar (3-5 días)</value>
+  </data>
+  
+  <!-- Valoraciones -->
+  <data name="Rating.Title" xml:space="preserve">
+    <value>Valoraciones</value>
+  </data>
+  <data name="Rating.Average" xml:space="preserve">
+    <value>Puntuación media</value>
+  </data>
+  <data name="Rating.AddYours" xml:space="preserve">
+    <value>Añade tu valoración</value>
+  </data>
+  <data name="Rating.MustPurchase" xml:space="preserve">
+    <value>Debes comprar este producto para valorarlo</value>
+  </data>
+  <data name="Rating.AlreadyRated" xml:space="preserve">
+    <value>Ya has valorado este producto</value>
+  </data>
+  
+  <!-- Errores de eliminación -->
+  <data name="Error.CannotDeleteSoldProduct" xml:space="preserve">
+    <value>No se puede eliminar un producto que ya ha sido vendido</value>
+  </data>
+  <data name="Error.CannotDeleteActiveUser" xml:space="preserve">
+    <value>No se puede eliminar un usuario con actividad comercial</value>
+  </data>
+  
+  <!-- Filtros -->
+  <data name="Filter.MinPrice" xml:space="preserve">
+    <value>Precio mínimo</value>
+  </data>
+  <data name="Filter.MaxPrice" xml:space="preserve">
+    <value>Precio máximo</value>
+  </data>
+  <data name="Filter.Apply" xml:space="preserve">
+    <value>Aplicar filtros</value>
+  </data>
 </root>

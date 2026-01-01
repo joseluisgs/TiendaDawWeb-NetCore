@@ -21,16 +21,14 @@ public class PublicController : Controller
     /// Página principal con listado de productos
     /// </summary>
     public async Task<IActionResult> Index(
-        string? search, 
+        string? q, 
         string? categoria, 
-        decimal? minPrecio, 
-        decimal? maxPrecio,
-        int page = 0,
-        int size = 9)
+        float? minPrecio, 
+        float? maxPrecio,
+        int page = 1,
+        int size = 12)
     {
-        var result = string.IsNullOrWhiteSpace(search) && string.IsNullOrWhiteSpace(categoria) && !minPrecio.HasValue && !maxPrecio.HasValue
-            ? await _productService.GetAllAsync()
-            : await _productService.SearchAsync(search, categoria);
+        var result = await _productService.GetAllAsync();
 
         if (result.IsFailure)
         {
@@ -38,39 +36,53 @@ public class PublicController : Controller
             return View(Enumerable.Empty<Models.Product>());
         }
 
-        // Apply price filtering if specified
+        // Apply filters
         var products = result.Value.AsEnumerable();
+        
+        // Filtro de búsqueda por nombre
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            products = products.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
+        }
+
+        // Filtro por categoría
+        if (!string.IsNullOrWhiteSpace(categoria) && Enum.TryParse<Models.Enums.ProductCategory>(categoria, out var cat))
+        {
+            products = products.Where(p => p.Categoria == cat);
+        }
+
+        // Filtro por rango de precio
         if (minPrecio.HasValue)
         {
-            products = products.Where(p => p.Precio >= minPrecio.Value);
+            products = products.Where(p => (float)p.Precio >= minPrecio.Value);
         }
         if (maxPrecio.HasValue)
         {
-            products = products.Where(p => p.Precio <= maxPrecio.Value);
+            products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
         }
 
+        // Ordenar por ID descendente (más recientes primero)
+        products = products.OrderByDescending(p => p.Id);
+
         // Calculate pagination
-        var totalElements = products.Count();
-        var totalPages = (int)Math.Ceiling(totalElements / (double)size);
-        var currentPage = Math.Max(0, Math.Min(page, totalPages - 1));
+        var totalItems = products.Count();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)size);
+        var currentPage = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
         
         // Get page of products
         var pagedProducts = products
-            .Skip(currentPage * size)
+            .Skip((currentPage - 1) * size)
             .Take(size)
             .ToList();
 
-        // Pass pagination data to view
-        ViewBag.Search = search;
-        ViewBag.Categoria = categoria;
-        ViewBag.MinPrecio = minPrecio;
-        ViewBag.MaxPrecio = maxPrecio;
-        ViewBag.CurrentPage = currentPage;
-        ViewBag.Size = size;
-        ViewBag.TotalPages = totalPages;
-        ViewBag.TotalElements = totalElements;
-        ViewBag.HasPrevious = currentPage > 0;
-        ViewBag.HasNext = currentPage < totalPages - 1;
+        // ViewData para mantener filtros activos
+        ViewData["q"] = q;
+        ViewData["categoriaActual"] = categoria;
+        ViewData["minPrecio"] = minPrecio;
+        ViewData["maxPrecio"] = maxPrecio;
+        ViewData["CurrentPage"] = currentPage;
+        ViewData["TotalPages"] = totalPages;
+        ViewData["PageSize"] = size;
         
         return View(pagedProducts);
     }

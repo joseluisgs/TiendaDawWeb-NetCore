@@ -11,6 +11,9 @@ public static class ProductError
     public static DomainError AlreadySold => 
         new BusinessError("PRODUCT_SOLD", "Este producto ya ha sido vendido");
     
+    public static DomainError CannotDeleteSold => 
+        new BusinessError("CANNOT_DELETE_SOLD", "No se puede eliminar un producto que ya ha sido vendido");
+    
     public static DomainError NotOwner => 
         new ForbiddenError("NOT_OWNER", "No eres el propietario de este producto");
 

@@ -164,8 +164,12 @@ public class ProductService : IProductService
             if (product.PropietarioId != userId)
                 return Result.Failure<bool, DomainError>(ProductError.NotOwner);
 
+            // CRÍTICO: Impedir eliminar productos vendidos
             if (product.CompraId != null)
-                return Result.Failure<bool, DomainError>(ProductError.AlreadySold);
+            {
+                _logger.LogWarning("Intento de eliminar producto vendido {ProductId} por usuario {UserId}", id, userId);
+                return Result.Failure<bool, DomainError>(ProductError.CannotDeleteSold);
+            }
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
