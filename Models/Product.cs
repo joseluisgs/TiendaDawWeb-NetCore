@@ -29,6 +29,7 @@ public class Product
 
     public bool Reservado { get; set; } = false;
     public DateTime? ReservadoHasta { get; set; }
+    public long? ReservadoPor { get; set; }
 
     public bool Deleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
