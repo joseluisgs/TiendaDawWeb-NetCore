@@ -4,6 +4,7 @@ using TiendaDawWeb.Data;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Services.Interfaces;
 using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Implementations.BackgroundServices;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 
@@ -60,6 +61,10 @@ builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
+
+// Background Services
+builder.Services.AddHostedService<CarritoCleanupService>();
+builder.Services.AddHostedService<ReservaCleanupService>();
 
 // MVC + Razor Pages + Blazor Server
 builder.Services.AddControllersWithViews();
