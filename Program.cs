@@ -83,6 +83,12 @@ builder.Services.AddHostedService<ReservaCleanupService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Add antiforgery for AJAX requests
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
 // Session para carrito de compras
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
