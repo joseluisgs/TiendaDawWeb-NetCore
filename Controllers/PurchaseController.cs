@@ -52,6 +52,15 @@ public class PurchaseController : Controller
     }
 
     /// <summary>
+    /// GET /Purchase/MyPurchases - Alias para Mis compras (matching navbar link)
+    /// </summary>
+    [HttpGet("/Purchase/MyPurchases")]
+    public async Task<IActionResult> MyPurchases(int page = 1)
+    {
+        return await Index(page);
+    }
+
+    /// <summary>
     /// GET /app/compras/{id} - Detalle de compra
     /// </summary>
     [HttpGet("{id}")]
