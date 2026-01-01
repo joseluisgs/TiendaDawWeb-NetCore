@@ -20,9 +20,15 @@ public class PublicController : Controller
     /// <summary>
     /// Página principal con listado de productos
     /// </summary>
-    public async Task<IActionResult> Index(string? search, string? categoria)
+    public async Task<IActionResult> Index(
+        string? search, 
+        string? categoria, 
+        decimal? minPrecio, 
+        decimal? maxPrecio,
+        int page = 0,
+        int size = 9)
     {
-        var result = string.IsNullOrWhiteSpace(search) && string.IsNullOrWhiteSpace(categoria)
+        var result = string.IsNullOrWhiteSpace(search) && string.IsNullOrWhiteSpace(categoria) && !minPrecio.HasValue && !maxPrecio.HasValue
             ? await _productService.GetAllAsync()
             : await _productService.SearchAsync(search, categoria);
 
@@ -32,8 +38,40 @@ public class PublicController : Controller
             return View(Enumerable.Empty<Models.Product>());
         }
 
+        // Apply price filtering if specified
+        var products = result.Value.AsEnumerable();
+        if (minPrecio.HasValue)
+        {
+            products = products.Where(p => p.Precio >= minPrecio.Value);
+        }
+        if (maxPrecio.HasValue)
+        {
+            products = products.Where(p => p.Precio <= maxPrecio.Value);
+        }
+
+        // Calculate pagination
+        var totalElements = products.Count();
+        var totalPages = (int)Math.Ceiling(totalElements / (double)size);
+        var currentPage = Math.Max(0, Math.Min(page, totalPages - 1));
+        
+        // Get page of products
+        var pagedProducts = products
+            .Skip(currentPage * size)
+            .Take(size)
+            .ToList();
+
+        // Pass pagination data to view
         ViewBag.Search = search;
         ViewBag.Categoria = categoria;
-        return View(result.Value);
+        ViewBag.MinPrecio = minPrecio;
+        ViewBag.MaxPrecio = maxPrecio;
+        ViewBag.CurrentPage = currentPage;
+        ViewBag.Size = size;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.TotalElements = totalElements;
+        ViewBag.HasPrevious = currentPage > 0;
+        ViewBag.HasNext = currentPage < totalPages - 1;
+        
+        return View(pagedProducts);
     }
 }

@@ -43,8 +43,10 @@ public class AdminController : Controller
 
     /// <summary>
     /// GET /admin - Dashboard principal con estadísticas
+    /// GET /admin/dashboard - Alias for Index (matches Spring Boot original)
     /// </summary>
     [HttpGet]
+    [HttpGet("dashboard")]
     public async Task<IActionResult> Index()
     {
         var viewModel = new AdminDashboardViewModel();
@@ -308,6 +310,15 @@ public class AdminController : Controller
         ViewBag.Hasta = hasta;
 
         return View(compras);
+    }
+
+    /// <summary>
+    /// GET /admin/ventas - Alias for Compras (matches Spring Boot original)
+    /// </summary>
+    [HttpGet("ventas")]
+    public async Task<IActionResult> Ventas(int page = 1, int pageSize = 20, DateTime? desde = null, DateTime? hasta = null)
+    {
+        return await Compras(page, pageSize, desde, hasta);
     }
 
     /// <summary>

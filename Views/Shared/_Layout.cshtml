@@ -37,10 +37,6 @@
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
-        
-        footer {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-        }
     </style>
 </head>
 <body>
@@ -72,15 +68,24 @@
         @RenderBody()
     </main>
 
-    <footer class="footer mt-auto py-4 bg-light">
-        <div class="container text-center">
-            <span class="text-muted">
-                &copy; 2025 WalaDaw - Tu tienda de confianza
-                <span class="mx-2">|</span>
-                <a href="https://github.com/joseluisgs" class="text-decoration-none">
-                    <i class="bi bi-github"></i> @@joseluisgs
-                </a>
-            </span>
+    <footer class="mt-auto py-3 bg-dark text-white-50">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-1">
+                    <i class="bi bi-c-circle"></i> @DateTime.Now.Year WalaDaw - Desarrollo Web en Entornos Servidor 2DAW
+                </p>
+                <p class="mb-1">
+                    <a class="text-white-50 text-decoration-none me-3" href="https://github.com/joseluisgs" target="_blank">
+                        <i class="bi bi-github"></i> José Luis González Sánchez
+                    </a>
+                    <a class="text-white-50 text-decoration-none" href="https://joseluisgs.dev" target="_blank">
+                        <i class="bi bi-globe"></i> JoseLuisGS.Dev
+                    </a>
+                </p>
+                <p class="mb-0">
+                    <i class="bi bi-building"></i> IES Luis Vives (Leganés)
+                </p>
+            </div>
         </div>
     </footer>
 
