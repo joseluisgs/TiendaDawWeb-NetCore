@@ -61,13 +61,18 @@ public class CarritoService : ICarritoService
                 return Result.Failure<CarritoItem, DomainError>(CarritoError.ProductNotAvailableWithName(producto.Nombre));
             }
 
-            // Si está reservado, verificar si la reserva expiró
+            // Si está reservado, verificar si la reserva expiró o es del usuario actual
             // NOTE: En producción con SQL, considerar usar transacciones o locks para evitar race conditions
             // El modelo CarritoItem ya tiene RowVersion para control de concurrencia optimista
             if (producto.Reservado)
             {
-                // Si no tiene fecha de reserva o la fecha es futura, está reservado
-                if (!producto.ReservadoHasta.HasValue || producto.ReservadoHasta.Value > DateTime.UtcNow)
+                // Si está reservado por el usuario actual, permitir añadirlo (aunque ya debería estar en carrito)
+                if (producto.ReservadoPor == usuarioId)
+                {
+                    // El usuario ya tiene este producto reservado, puede continuar
+                }
+                // Si no tiene fecha de reserva o la fecha es futura, está reservado por otro usuario
+                else if (!producto.ReservadoHasta.HasValue || producto.ReservadoHasta.Value > DateTime.UtcNow)
                 {
                     // Producto aún reservado por otro usuario
                     return Result.Failure<CarritoItem, DomainError>(CarritoError.ProductNotAvailableWithName(producto.Nombre));
@@ -77,6 +82,7 @@ public class CarritoService : ICarritoService
                     // Reserva expiró, liberar el producto
                     producto.Reservado = false;
                     producto.ReservadoHasta = null;
+                    producto.ReservadoPor = null;
                 }
             }
 
@@ -90,9 +96,10 @@ public class CarritoService : ICarritoService
                     CarritoError.ProductAlreadyInCartWithName(producto.Nombre));
             }
 
-            // Marcar producto como reservado (5 minutos)
+            // Marcar producto como reservado (5 minutos) para este usuario
             producto.Reservado = true;
             producto.ReservadoHasta = DateTime.UtcNow.AddMinutes(5);
+            producto.ReservadoPor = usuarioId;
 
             // Crear nuevo item sin cantidad
             var nuevoItem = new CarritoItem
@@ -146,6 +153,7 @@ public class CarritoService : ICarritoService
             {
                 item.Producto.Reservado = false;
                 item.Producto.ReservadoHasta = null;
+                item.Producto.ReservadoPor = null;
                 _logger.LogInformation("Liberada reserva del producto {ProductoId}", item.Producto.Id);
             }
 
@@ -184,6 +192,7 @@ public class CarritoService : ICarritoService
                 {
                     item.Producto.Reservado = false;
                     item.Producto.ReservadoHasta = null;
+                    item.Producto.ReservadoPor = null;
                 }
             }
 

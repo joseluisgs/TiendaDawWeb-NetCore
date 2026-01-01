@@ -1,0 +1,224 @@
+@model IEnumerable<TiendaDawWeb.Models.Purchase>
+@{
+    ViewData["Title"] = "Gestión de Ventas";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 20;
+    var totalCompras = ViewBag.TotalCompras as int? ?? 0;
+    var totalPages = (int)Math.Ceiling((double)totalCompras / pageSize);
+    var desde = ViewBag.Desde as DateTime?;
+    var hasta = ViewBag.Hasta as DateTime?;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">
+                        <i class="bi bi-currency-euro"></i> Ventas
+                    </h1>
+                    <p class="text-muted">Historial completo de ventas realizadas</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Ventas", "Admin")" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="desde" class="form-label">Desde</label>
+                            <input type="date" name="desde" id="desde" class="form-control" 
+                                   value="@(desde?.ToString("yyyy-MM-dd"))">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="hasta" class="form-label">Hasta</label>
+                            <input type="date" name="hasta" id="hasta" class="form-control" 
+                                   value="@(hasta?.ToString("yyyy-MM-dd"))">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Filtrar
+                            </button>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <a href="@Url.Action("Ventas", "Admin")" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-x-circle"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">@totalCompras</h3>
+                    <p class="mb-0">Total Ventas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="text-success">@Model.Sum(c => c.Total).ToString("C")</h3>
+                    <p class="mb-0">Ingresos Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">@Model.Sum(c => c.Products.Count)</h3>
+                    <p class="mb-0">Productos Vendidos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">@(totalCompras > 0 ? (Model.Sum(c => c.Total) / totalCompras).ToString("C") : "0€")</h3>
+                    <p class="mb-0">Ticket Medio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Ventas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Lista de Ventas</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> No hay ventas que mostrar en el período seleccionado.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Fecha</th>
+                                        <th>Comprador</th>
+                                        <th>Productos</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var venta in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>#@venta.Id</strong>
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-calendar-event text-primary"></i>
+                                                @venta.FechaCompra.ToString("dd/MM/yyyy")
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-clock"></i> @venta.FechaCompra.ToString("HH:mm:ss")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @if (venta.Comprador != null)
+                                                {
+                                                    <a href="@Url.Action("UsuarioDetails", "Admin", new { id = venta.CompradorId })" 
+                                                       class="text-decoration-none">
+                                                        <i class="bi bi-person"></i> @venta.Comprador.UserName
+                                                    </a>
+                                                    <br>
+                                                    <small class="text-muted">@venta.Comprador.Email</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Usuario desconocido</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-box"></i> @venta.Products.Count items
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success fs-5">@venta.Total.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="@Url.Action("Details", "Purchase", new { id = venta.Id })" 
+                                                       class="btn btn-outline-primary" 
+                                                       title="Ver detalles">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </a>
+                                                    <a href="@Url.Action("DownloadPdf", "Purchase", new { id = venta.Id })" 
+                                                       class="btn btn-outline-danger" 
+                                                       title="Descargar PDF">
+                                                        <i class="bi bi-file-pdf"></i> PDF
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                        <td colspan="2">
+                                            <strong class="text-success fs-5">@Model.Sum(c => c.Total).ToString("C")</strong>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        @if (totalPages > 1)
+                        {
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("Ventas", new { page = currentPage - 1, pageSize, desde, hasta })">
+                                            <i class="bi bi-chevron-left"></i> Anterior
+                                        </a>
+                                    </li>
+                                    
+                                    @for (int i = 1; i <= totalPages; i++)
+                                    {
+                                        <li class="page-item @(i == currentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Ventas", new { page = i, pageSize, desde, hasta })">@i</a>
+                                        </li>
+                                    }
+                                    
+                                    <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("Ventas", new { page = currentPage + 1, pageSize, desde, hasta })">
+                                            Siguiente <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

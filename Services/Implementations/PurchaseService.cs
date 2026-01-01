@@ -83,7 +83,8 @@ public class PurchaseService : IPurchaseService
                     }
 
                     // Verificar que no esté reservado por otro usuario
-                    if (producto.Reservado && producto.ReservadoHasta > DateTime.UtcNow)
+                    // Si está reservado por el usuario actual, permitir la compra
+                    if (producto.Reservado && producto.ReservadoPor != usuarioId && producto.ReservadoHasta > DateTime.UtcNow)
                     {
                         await transaction.RollbackAsync();
                         return Result.Failure<Purchase, DomainError>(
@@ -105,12 +106,13 @@ public class PurchaseService : IPurchaseService
                 _context.Purchases.Add(purchase);
                 await _context.SaveChangesAsync();
 
-                // 5. Asignar productos a la compra (marcar como vendidos)
+                // 5. Asignar productos a la compra (marcar como vendidos) y liberar reservas
                 foreach (var producto in productos)
                 {
                     producto.CompraId = purchase.Id;
                     producto.Reservado = false;
                     producto.ReservadoHasta = null;
+                    producto.ReservadoPor = null;
                 }
 
                 await _context.SaveChangesAsync();
