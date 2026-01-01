@@ -31,7 +31,12 @@
                         <div class="col-md-6 mb-3">
                             <label asp-for="Precio" class="form-label"></label>
                             <div class="input-group">
-                                <input asp-for="Precio" class="form-control" placeholder="999.99" type="number" step="0.01" min="0.01" />
+                                <input asp-for="Precio" 
+                                       class="form-control" 
+                                       type="text" 
+                                       inputmode="decimal"
+                                       pattern="[0-9]+([.,][0-9]{1,2})?"
+                                       placeholder="@(System.Globalization.CultureInfo.CurrentCulture.Name == "es-ES" ? "19,99" : "19.99")" />
                                 <span class="input-group-text">€</span>
                             </div>
                             <span asp-validation-for="Precio" class="text-danger"></span>
