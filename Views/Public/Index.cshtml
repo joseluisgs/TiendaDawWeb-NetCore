@@ -72,10 +72,8 @@
                             <h5 class="card-title">@producto.Nombre</h5>
                             @if (!string.IsNullOrEmpty(producto.Descripcion))
                             {
-                                @{
-                                    var descripcion = producto.Descripcion ?? "";
-                                    var maxLength = Math.Min(descripcion.Length, 80);
-                                }
+                                var descripcion = producto.Descripcion ?? "";
+                                var maxLength = Math.Min(descripcion.Length, 80);
                                 <p class="card-text text-muted small">
                                     @descripcion.Substring(0, maxLength)@(descripcion.Length > 80 ? "..." : "")
                                 </p>
