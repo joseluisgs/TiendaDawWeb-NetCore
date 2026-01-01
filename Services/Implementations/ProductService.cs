@@ -50,7 +50,7 @@ public class ProductService : IProductService
             var products = await _context.Products
                 .Include(p => p.Propietario)
                 .Include(p => p.Ratings)
-                .Where(p => !p.Deleted)
+                .Where(p => !p.Deleted && p.CompraId == null) // Ocultar productos ya comprados
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
@@ -71,7 +71,7 @@ public class ProductService : IProductService
             var query = _context.Products
                 .Include(p => p.Propietario)
                 .Include(p => p.Ratings)
-                .Where(p => !p.Deleted);
+                .Where(p => !p.Deleted && p.CompraId == null); // Ocultar productos ya comprados
 
             if (!string.IsNullOrWhiteSpace(nombre))
             {

@@ -15,8 +15,14 @@ public record CarritoError : DomainError
     public static CarritoError ProductNotAvailable(long productId) =>
         new("PRODUCT_NOT_AVAILABLE", $"El producto con ID {productId} no está disponible");
 
+    public static CarritoError ProductNotAvailableWithName(string productName) =>
+        new("PRODUCT_NOT_AVAILABLE", $"El producto '{productName}' no está disponible o está reservado por otro usuario");
+
     public static CarritoError ProductAlreadyInCart(long productId) =>
         new("PRODUCT_ALREADY_IN_CART", $"El producto con ID {productId} ya está en el carrito");
+
+    public static CarritoError ProductAlreadyInCartWithName(string productName) =>
+        new("PRODUCT_ALREADY_IN_CART", $"El producto '{productName}' ya está en el carrito");
 
     public static CarritoError InsufficientStock(long productId) =>
         new("INSUFFICIENT_STOCK", $"Stock insuficiente para el producto con ID {productId}");
