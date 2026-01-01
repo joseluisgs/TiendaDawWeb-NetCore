@@ -1,0 +1,36 @@
+services:
+  waladaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: waladaw-app
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      # Email Configuration (configure with your SMTP settings)
+      - Email__SmtpHost=
+      - Email__SmtpPort=587
+      - Email__SmtpUser=
+      - Email__SmtpPass=
+      - Email__FromEmail=noreply@waladaw.com
+      - Email__FromName=WalaDaw
+      # Application Settings
+      - Carrito__ExpirationMinutes=1440
+      - Carrito__CleanupIntervalMinutes=60
+      - Reservas__DurationMinutes=15
+      - Reservas__CleanupIntervalMinutes=5
+    volumes:
+      - waladaw-uploads:/app/upload-dir
+    restart: unless-stopped
+    networks:
+      - waladaw-network
+
+volumes:
+  waladaw-uploads:
+    driver: local
+
+networks:
+  waladaw-network:
+    driver: bridge
