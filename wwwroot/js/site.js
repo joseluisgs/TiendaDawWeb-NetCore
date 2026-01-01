@@ -41,13 +41,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Normalizar inputs de precio antes de submit
-    const priceInputs = document.querySelectorAll('input[name="Precio"]');
+    const forms = document.querySelectorAll('form');
     
-    priceInputs.forEach(input => {
-        input.closest('form')?.addEventListener('submit', function(e) {
-            // Reemplazar coma por punto antes de enviar
-            input.value = input.value.replace(',', '.');
-        });
+    forms.forEach(form => {
+        const priceInputs = form.querySelectorAll('input[name="Precio"]');
+        if (priceInputs.length > 0) {
+            form.addEventListener('submit', function(e) {
+                // Reemplazar todas las comas por puntos antes de enviar
+                priceInputs.forEach(input => {
+                    input.value = input.value.replace(/,/g, '.');
+                });
+            });
+        }
     });
 });
 

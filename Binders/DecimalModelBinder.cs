@@ -23,6 +23,18 @@ public class DecimalModelBinder : IModelBinder
             return Task.CompletedTask;
         }
 
+        // Validar que solo hay un separador decimal (coma o punto)
+        var commaCount = value.Count(c => c == ',');
+        var dotCount = value.Count(c => c == '.');
+        
+        if (commaCount + dotCount > 1)
+        {
+            bindingContext.ModelState.TryAddModelError(
+                bindingContext.ModelName,
+                $"El valor '{value}' no es un número decimal válido.");
+            return Task.CompletedTask;
+        }
+
         // Intentar parsear con cultura actual (español: coma)
         if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var result))
         {
