@@ -44,7 +44,13 @@
     </style>
 </head>
 <body>
+    @Html.AntiForgeryToken()
+    
     <partial name="_Navbar" />
+
+    <!-- Toast Container for notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11050;">
+    </div>
 
     <main role="main" class="container mt-4">
         @if (TempData["Success"] != null)
@@ -80,7 +86,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="_framework/blazor.server.js"></script>
+    <script src="~/js/favorites.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

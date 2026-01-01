@@ -7,8 +7,21 @@ using TiendaDawWeb.Services.Implementations;
 using TiendaDawWeb.Services.Implementations.BackgroundServices;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
+
+// Configure Serilog before building the application
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+        theme: AnsiConsoleTheme.Code)
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Use Serilog for logging
+builder.Host.UseSerilog();
 
 // Configurar cultura española
 var cultureInfo = new CultureInfo("es-ES");
@@ -66,10 +79,15 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddHostedService<CarritoCleanupService>();
 builder.Services.AddHostedService<ReservaCleanupService>();
 
-// MVC + Razor Pages + Blazor Server
+// MVC + Razor Pages (removed Blazor Server)
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+
+// Add antiforgery for AJAX requests
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 
 // Session para carrito de compras
 builder.Services.AddDistributedMemoryCache();
@@ -91,10 +109,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
+// Logging (handled by Serilog)
+// Removed default logging configuration
 
 var app = builder.Build();
 
@@ -147,7 +163,7 @@ app.MapControllerRoute(
     pattern: "{controller=Public}/{action=Index}/{id?}");
 
 app.MapRazorPages();
-app.MapBlazorHub();
+// Removed MapBlazorHub - no longer using Blazor Server
 
 // Página de inicio
 app.MapGet("/", () => Results.Redirect("/Public/Index"));
@@ -155,12 +171,24 @@ app.MapGet("/", () => Results.Redirect("/Public/Index"));
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-// SpringBoot-style startup banner
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-var urls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5000";
-var port = urls.Split(';').FirstOrDefault()?.Split(':').LastOrDefault() ?? "5000";
-logger.LogInformation("🌐 Acceso: http://localhost:{Port}/Public", port);
-logger.LogInformation("🔑 Login admin: admin@waladaw.com / admin");
-logger.LogInformation("🔑 Login user: prueba@prueba.com / prueba");
+// Startup banner - matching Spring Boot style
+var appUrls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5000";
+var port = appUrls.Split(';').FirstOrDefault()?.Split(':').LastOrDefault() ?? "5000";
+Log.Information("🌐 Acceso: http://localhost:{Port}/Public", port);
+Log.Information("🔑 Login admin: admin@waladaw.com / admin");
+Log.Information("🔑 Login user: prueba@prueba.com / prueba");
 
-app.Run();
+try
+{
+    Log.Information("🚀 Aplicación iniciada correctamente");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "💥 La aplicación falló al iniciar");
+    throw;
+}
+finally
+{
+    Log.CloseAndFlush();
+}

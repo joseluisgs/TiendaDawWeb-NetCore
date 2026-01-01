@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.*" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.42.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
-    <PackageReference Include="itext7" Version="8.0.5" />
+    <PackageReference Include="QuestPDF" Version="2024.12.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="MailKit" Version="4.9.0" />
   </ItemGroup>

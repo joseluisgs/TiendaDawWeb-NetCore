@@ -63,10 +63,11 @@
                             </a>
                             @if (currentUser != null)
                             {
-                                <component type="typeof(TiendaDawWeb.Components.FavoriteButton)" 
-                                           render-mode="ServerPrerendered" 
-                                           param-ProductId="@producto.Id"
-                                           param-UserId="@currentUser.Id" />
+                                <button class="btn btn-outline-danger favorite-btn" 
+                                        data-product-id="@producto.Id"
+                                        onclick="toggleFavorite(@producto.Id)">
+                                    <i class="bi bi-heart"></i>
+                                </button>
                             }
                         </div>
                     </div>
