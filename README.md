@@ -2,9 +2,10 @@
 
 ![logo](./logo.svg)
 
-[![Java](https://img.shields.io/badge/Java-25-orange)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen)](https://spring.io/projects/spring-boot)
-[![Gradle](https://img.shields.io/badge/Gradle-9.1.0-blue)](https://gradle.org/)
+[![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
+[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
+[![C#](https://img.shields.io/badge/C%23-14-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-7-blue)](https://docs.microsoft.com/en-us/ef/core/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
