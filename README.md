@@ -36,6 +36,7 @@ WalaDaw es un marketplace moderno desarrollado con Spring Boot que permite a los
   - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
     - [Desarrollo Local](#desarrollo-local)
     - [Docker (Producción)](#docker-producción)
+  - [⚒️ Diagrama](#️-diagrama)
   - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
   - [🐳 Docker](#-docker)
     - [Volúmenes de Datos](#volúmenes-de-datos)
@@ -121,6 +122,79 @@ docker-compose up -d
 
 # Parar servicios
 docker-compose down
+```
+
+## ⚒️ Diagrama
+
+```mermaid
+classDiagram
+    direction TB
+
+    class User {
+        +long id
+        +String nombre
+        +String apellidos
+        +String email
+        +String rol
+        +Boolean deleted
+    }
+
+    class Product {
+        +long id
+        +String nombre
+        +float precio
+        +boolean reservado
+        +Boolean deleted
+    }
+
+    class Purchase {
+        +long id
+        +Double total
+    }
+
+    class CarritoItem {
+        +long id
+        +int cantidad
+    }
+
+    class Favorite {
+        +long id
+    }
+
+    class Rating {
+        +long id
+        +int puntuacion
+    }
+
+    class Role {
+        <<enumeration>>
+        USER
+        ADMIN
+    }
+
+    class ProductCategory {
+        <<enumeration>>
+        SMARTPHONES
+        LAPTOPS
+        AUDIO
+        GAMING
+        ACCESSORIES
+    }
+
+    User "*" -- "1" Role : tiene
+    User "1" -- "*" Product : propietario
+    User "1" -- "*" Purchase : realiza
+    User "1" -- "*" CarritoItem : gestiona
+    User "1" -- "*" Favorite : marca
+    User "1" -- "*" Rating : escribe
+
+    Product "*" -- "1" ProductCategory : categoria
+    Product "*" -- "0..1" Purchase : compra
+    Product "1" -- "*" CarritoItem : item
+    Product "1" -- "*" Favorite : fav
+    Product "1" -- "*" Rating : val
+
+    Purchase "1" -- "*" Product : contiene
 ```
 
 ## 📂 Estructura del Proyecto
