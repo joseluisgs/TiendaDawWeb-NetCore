@@ -57,6 +57,9 @@ builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<ICarritoService, CarritoService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
 // MVC + Razor Pages + Blazor Server
 builder.Services.AddControllersWithViews();
