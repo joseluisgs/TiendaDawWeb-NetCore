@@ -131,6 +131,19 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Limpiar directorio de uploads en desarrollo
+if (app.Environment.IsDevelopment())
+{
+    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload-dir");
+    if (Directory.Exists(uploadPath))
+    {
+        Log.Information("🧹 PERFIL DEV: Limpiando directorio de uploads...");
+        Directory.Delete(uploadPath, true);
+        Log.Information("✅ Directorio de uploads limpiado");
+    }
+    Directory.CreateDirectory(uploadPath);
+}
+
 // Middleware Pipeline
 if (!app.Environment.IsDevelopment())
 {

@@ -20,7 +20,14 @@ public static class UserError
     public static DomainError Unauthorized =>
         new UnauthorizedError("UNAUTHORIZED", "No autorizado");
 
+    public static DomainError HasSoldProducts =>
+        new BusinessError("USER_HAS_SOLD_PRODUCTS", "No se puede eliminar un usuario que ha vendido productos");
+
+    public static DomainError HasPurchases =>
+        new BusinessError("USER_HAS_PURCHASES", "No se puede eliminar un usuario que ha realizado compras");
+
     private record NotFoundError(string Code, string Message) : DomainError(Code, Message);
     private record ConflictError(string Code, string Message) : DomainError(Code, Message);
     private record UnauthorizedError(string Code, string Message) : DomainError(Code, Message);
+    private record BusinessError(string Code, string Message) : DomainError(Code, Message);
 }
