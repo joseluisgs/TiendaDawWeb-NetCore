@@ -13,7 +13,12 @@ async function toggleFavorite(productId) {
         }
 
         // Get CSRF token
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput?.value;
+        
+        if (!token) {
+            console.warn('CSRF token not found, request may fail');
+        }
         
         const response = await fetch('/api/favorites/toggle', {
             method: 'POST',

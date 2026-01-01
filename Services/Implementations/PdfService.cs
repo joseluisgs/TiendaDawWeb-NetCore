@@ -14,6 +14,7 @@ namespace TiendaDawWeb.Services.Implementations;
 public class PdfService : IPdfService
 {
     private readonly ILogger<PdfService> _logger;
+    private const decimal IVA_RATE = 1.21m; // IVA 21% español
 
     public PdfService(ILogger<PdfService> logger)
     {
@@ -125,7 +126,7 @@ public class PdfService : IPdfService
                             });
 
                             // Totals
-                            var subtotal = purchase.Total / 1.21m; // IVA 21%
+                            var subtotal = purchase.Total / IVA_RATE; // IVA 21%
                             var iva = purchase.Total - subtotal;
 
                             column.Item().PaddingTop(20).AlignRight().Column(totalsColumn =>
