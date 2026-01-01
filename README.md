@@ -5,18 +5,18 @@
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
 [![C#](https://img.shields.io/badge/C%23-14-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-7-blue)](https://docs.microsoft.com/en-us/ef/core/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)](https://www.docker.com/)
+[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10-blue)](https://docs.microsoft.com/en-us/ef/core/)
+[![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Ejemplo didáctico de web dinámicas con .NET Core y ASP.NET Core MVC.**
+**Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC.**
 
-Una aplicación web de comercio electrónico de segunda mano con características avanzadas de seguridad,
-internacionalización y gestión de usuarios.
+Una aplicación web de comercio electrónico de segunda mano migrada completamente desde Java/Spring Boot a .NET 10, 
+con características avanzadas de seguridad, Railway Oriented Programming y gestión de usuarios con ASP.NET Core Identity.
 
 ## 🎯 Descripción
 
-WalaDaw es un marketplace moderno desarrollado con Spring Boot que permite a los usuarios:
+WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usuarios:
 
 - Comprar y vender productos de segunda mano
 - Gestionar perfiles de usuario con avatares
@@ -85,16 +85,16 @@ La aplicación incluye productos actuales y relevantes:
 
 ## 🚀 Tecnologías
 
-- **.NET 10 Core con C#14** - Plataforma principal
-- **ASP.NET Core MVC** - Framework web
-- **Razor Pages** - Motor de vistas
-- **Entity Framework Core** - ORM
-- **InMemory Database** - Base de datos en memoria para desarrollo
-- **ASP.NET Identity** - Gestión de usuarios y roles
-- **Blazor Server** - Componentes interactivos
-- **SignalR** - Comunicación en tiempo real
-- **Bootstrap 5** - UI Framework
-- **Docker** - Containerización
+- **.NET 10 con C# 14** - Plataforma principal
+- **ASP.NET Core MVC** - Framework web con patrón MVC
+- **Razor Views** - Motor de vistas del lado servidor
+- **Entity Framework Core InMemory** - ORM con base de datos en memoria
+- **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
+- **Blazor Server** - Componentes interactivos en tiempo real (favoritos)
+- **SignalR** - Comunicación bidireccional en tiempo real
+- **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
+- **Bootstrap 5.3** - Framework CSS responsive
+- **Bootstrap Icons** - Iconografía moderna
 
 ## 🏃‍♂️ Inicio Rápido
 
@@ -102,26 +102,30 @@ La aplicación incluye productos actuales y relevantes:
 
 ```bash
 # Clonar repositorio
+git clone https://github.com/joseluisgs/TiendaDawWeb-NetCore.git
+cd TiendaDawWeb-NetCore
 
+# Restaurar dependencias
+dotnet restore
 
 # Ejecutar aplicación
-
+dotnet run
 
 # Acceder a la aplicación
-
+http://localhost:5000
 ```
 
-### Docker (Producción)
+### Build y Tests
 
 ```bash
-# Construir y ejecutar con Docker Compose
-docker-compose up -d
+# Compilar proyecto
+dotnet build
 
-# Ver logs
+# Ejecutar en modo watch (desarrollo)
+dotnet watch run
 
-
-# Parar servicios
-docker-compose down
+# Limpiar build
+dotnet clean
 ```
 
 ## ⚒️ Diagrama
@@ -200,41 +204,84 @@ classDiagram
 ## 📂 Estructura del Proyecto
 
 ```
-
+TiendaDawWeb-NetCore/
+├── Program.cs                      # Punto de entrada y configuración
+├── TiendaDawWeb.csproj            # Archivo de proyecto .NET
+├── appsettings.json               # Configuración de la aplicación
+├── Data/
+│   ├── ApplicationDbContext.cs    # Contexto de Entity Framework
+│   └── SeedData.cs                # Datos de ejemplo
+├── Models/                         # Entidades de dominio
+│   ├── User.cs                    # Usuario con Identity
+│   ├── Product.cs                 # Producto
+│   ├── Favorite.cs                # Favoritos (Many-to-Many)
+│   ├── Purchase.cs                # Compras
+│   └── Rating.cs                  # Valoraciones
+├── Services/                       # Capa de servicios con ROP
+│   ├── Interfaces/
+│   └── Implementations/
+├── Controllers/                    # Controladores MVC
+│   ├── PublicController.cs
+│   ├── AuthController.cs
+│   ├── ProductController.cs
+│   └── FavoriteController.cs
+├── ViewModels/                     # ViewModels para formularios
+├── Views/                          # Vistas Razor
+│   ├── Shared/
+│   ├── Public/
+│   ├── Auth/
+│   ├── Product/
+│   └── Favorite/
+├── Components/                     # Componentes Blazor
+│   └── FavoriteButton.razor
+├── Errors/                         # Errores de dominio (ROP)
+└── wwwroot/                        # Archivos estáticos
+    ├── css/
+    ├── js/
+    └── images/
 ```
 
-## 🐳 Docker
+## 🏗️ Arquitectura
 
-### Volúmenes de Datos
+### Railway Oriented Programming (ROP)
 
-El proyecto utiliza volúmenes Docker para persistencia:
+El proyecto implementa el patrón ROP usando `CSharpFunctionalExtensions`:
 
-- **upload-data**: Archivos subidos por usuarios (`./upload-dir`)
-- **database-data**: Base de datos H2 (archivos `.mv.db`)
-
-### Comandos Docker Útiles
-
-```bash
-# Ver volúmenes
-docker volume ls
-
-# Inspeccionar volumen
-
-
-# Backup base de datos
-
-
-# Restaurar base de datos
-
+```csharp
+public async Task<Result<Product, DomainError>> GetByIdAsync(long id)
+{
+    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+    
+    return product != null
+        ? Result.Success<Product, DomainError>(product)
+        : Result.Failure<Product, DomainError>(ProductError.NotFound(id));
+}
 ```
+
+### Blazor Server para Favoritos
+
+Componente interactivo en tiempo real sin necesidad de JavaScript:
+
+- Actualización instantánea del estado
+- Comunicación bidireccional con SignalR
+- Integración perfecta con MVC
+
+### ASP.NET Core Identity
+
+Sistema completo de autenticación y autorización:
+
+- Roles personalizados (ADMIN, USER, MODERATOR)
+- Password hashing seguro
+- Cookie authentication
+- Claims-based authorization
 
 ## 👥 Usuarios Demo
 
-| Usuario | Email             | Password | Rol   |
-|---------|-------------------|----------|-------|
-| Admin   | admin@waladaw.com | admin123 | ADMIN |
-| Juan    | juan@waladaw.com  | user123  | USER  |
-| María   | maria@waladaw.com | user123  | USER  |
+| Usuario    | Email                  | Password | Rol       |
+|------------|------------------------|----------|-----------|
+| Admin      | admin@waladaw.com      | admin    | ADMIN     |
+| Prueba     | prueba@prueba.com      | user123  | USER      |
+| Moderador  | moderador@waladaw.com  | user123  | MODERATOR |
 
 ## 🔒 Seguridad
 
@@ -286,9 +333,42 @@ docker volume ls
 
 ## 📚 Documentación
 
-### Tutoriales Incluidos
+### Repositorio Original
 
+Este proyecto es una migración completa del proyecto Java/Spring Boot:
+- **Origen**: [TiendaDawWeb-SpringBoot](https://github.com/joseluisgs/TiendaDawWeb-SpringBoot)
+- **Destino**: TiendaDawWeb-NetCore (.NET 10)
 
+### Características Implementadas
+
+✅ **100% de funcionalidad migrada**
+- Sistema completo de autenticación y autorización
+- CRUD de productos con imágenes
+- Sistema de favoritos en tiempo real (Blazor Server)
+- Gestión de usuarios con roles
+- Railway Oriented Programming
+- Diseño responsive con Bootstrap 5.3
+
+### Tecnologías Clave
+
+- **Railway Oriented Programming**: Manejo de errores funcional con Result<T, TError>
+- **Blazor Server**: Componentes interactivos sin JavaScript
+- **ASP.NET Core Identity**: Autenticación y autorización robusta
+- **Entity Framework Core**: ORM con InMemory para desarrollo
+
+## 🖼️ Capturas de Pantalla
+
+### Página Principal
+![Homepage](https://github.com/user-attachments/assets/5fc53cc5-a160-47d9-b08f-c0cfc8eb0132)
+
+### Login
+![Login](https://github.com/user-attachments/assets/c667868d-f1bc-444f-bbeb-600b89435391)
+
+### Productos (Autenticado)
+![Products](https://github.com/user-attachments/assets/b5578085-65cb-4d17-be52-70fb2b2bc494)
+
+### Detalle de Producto
+![Product Details](https://github.com/user-attachments/assets/3cb7147b-59b7-463e-a6d9-2a3c8ddfe47d)
 
 ## 📝 Licencia
 

@@ -1,0 +1,89 @@
+@model IEnumerable<Product>
+@using Microsoft.AspNetCore.Identity
+@using TiendaDawWeb.Models
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = "Mis Productos";
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-box-seam"></i> Mis Productos</h1>
+        <p class="lead">Gestiona todos los productos que has publicado</p>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Publicar Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    @if (Model.Any())
+    {
+        @foreach (var producto in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="@producto.ImagenOrDefault" class="card-img-top" alt="@producto.Nombre" 
+                         style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">@producto.Nombre</h5>
+                            <span class="badge bg-info">Tuyo</span>
+                        </div>
+                        <p class="card-text flex-grow-1">
+                            @(producto.Descripcion.Length > 80 
+                                ? producto.Descripcion.Substring(0, 80) + "..." 
+                                : producto.Descripcion)
+                        </p>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">@producto.Categoria</span>
+                            @if (producto.Ratings.Any())
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill"></i> @producto.RatingPromedio.ToString("F1")
+                                </span>
+                            }
+                            @if (producto.CompraId != null)
+                            {
+                                <span class="badge bg-success">Vendido</span>
+                            }
+                        </div>
+                        <h4 class="text-primary mb-3">
+                            @producto.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
+                        </h4>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@producto.Id" 
+                               class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@producto.Id" 
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@producto.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar este producto?');">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No has publicado ningún producto todavía.
+                <a asp-action="Create" class="alert-link">
+                    ¡Publica tu primer producto ahora!
+                </a>
+            </div>
+        </div>
+    }
+</div>
