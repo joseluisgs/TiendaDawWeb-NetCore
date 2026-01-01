@@ -75,8 +75,8 @@ public class PublicController : Controller
             .Take(size)
             .ToList();
 
-        // ViewBag para paginación
-        ViewBag.CurrentPage = currentPage - 1; // Zero-based for calculations
+        // ViewBag para paginación (1-based indexing matching URL parameters)
+        ViewBag.CurrentPage = currentPage;
         ViewBag.Size = size;
         ViewBag.TotalElements = totalItems;
         ViewBag.TotalPages = totalPages;

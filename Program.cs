@@ -7,6 +7,7 @@ using TiendaDawWeb.Services.Implementations;
 using TiendaDawWeb.Services.Implementations.BackgroundServices;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
@@ -162,7 +163,7 @@ app.UseStaticFiles();
 // Configurar archivos estáticos para directorio uploads
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+    FileProvider = new PhysicalFileProvider(
         Path.Combine(app.Environment.WebRootPath, "uploads")),
     RequestPath = "/uploads"
 });
