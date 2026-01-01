@@ -38,10 +38,17 @@
                         <h4 class="text-primary mb-3">
                             @producto.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
                         </h4>
-                        <a asp-controller="Product" asp-action="Details" asp-route-id="@producto.Id" 
-                           class="btn btn-primary">
-                            <i class="bi bi-eye"></i> Ver Detalle
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@producto.Id" 
+                               class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-eye"></i> Ver Detalle
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-outline-danger" 
+                                    onclick="removeFavorite(@producto.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -59,3 +66,34 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        async function removeFavorite(productId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este producto de tus favoritos?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/favorites/' + productId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Recargar la página para mostrar los cambios
+                    window.location.reload();
+                } else {
+                    const data = await response.json();
+                    alert(data.message || 'Error al eliminar el favorito. Por favor, intenta de nuevo.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al eliminar el favorito. Por favor, intenta de nuevo.');
+            }
+        }
+    </script>
+}
+
