@@ -14,5 +14,5 @@ public interface IProductService
     Task<Result<IEnumerable<Product>, DomainError>> SearchAsync(string? nombre, string? categoria);
     Task<Result<Product, DomainError>> CreateAsync(Product product);
     Task<Result<Product, DomainError>> UpdateAsync(long id, Product product, long userId);
-    Task<Result<bool, DomainError>> DeleteAsync(long id, long userId);
+    Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false);
 }

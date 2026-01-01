@@ -216,7 +216,7 @@ public class ProductController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        var result = await _productService.DeleteAsync(id, user.Id);
+        var result = await _productService.DeleteAsync(id, user.Id, User.IsInRole("ADMIN"));
 
         if (result.IsFailure)
         {

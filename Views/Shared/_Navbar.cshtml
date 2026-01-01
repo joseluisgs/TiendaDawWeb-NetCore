@@ -93,17 +93,30 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-globe"></i>
+                        @{
+                            var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                            var languageLabel = currentCulture switch {
+                                "es" => "🇪🇸 Español",
+                                "en" => "🇬🇧 English",
+                                "fr" => "🇫🇷 Français",
+                                "pt" => "🇵🇹 Português",
+                                _ => "🌐 Idioma"
+                            };
+                        }
+                        @languageLabel
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="?lang=es">
-                                <img src="https://flagcdn.com/w20/es.png" width="20" alt="ES"> Español
-                            </a>
+                            <a class="dropdown-item" href="?lang=es">🇪🇸 Español</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="?lang=en">
-                                <img src="https://flagcdn.com/w20/gb.png" width="20" alt="EN"> English
-                            </a>
+                            <a class="dropdown-item" href="?lang=en">🇬🇧 English</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="?lang=fr">🇫🇷 Français</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="?lang=pt">🇵🇹 Português</a>
                         </li>
                     </ul>
                 </li>

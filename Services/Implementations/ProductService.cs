@@ -150,31 +150,36 @@ public class ProductService : IProductService
         }
     }
 
-    public async Task<Result<bool, DomainError>> DeleteAsync(long id, long userId)
+    public async Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false)
     {
         try
         {
-            var productResult = await GetByIdAsync(id);
-            
-            if (productResult.IsFailure)
-                return Result.Failure<bool, DomainError>(productResult.Error);
+            var producto = await _context.Products
+                .Include(p => p.Compra)
+                .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
 
-            var product = productResult.Value;
-
-            if (product.PropietarioId != userId)
-                return Result.Failure<bool, DomainError>(ProductError.NotOwner);
-
-            // CRÍTICO: Impedir eliminar productos vendidos
-            if (product.CompraId != null)
+            if (producto == null)
             {
-                _logger.LogWarning("Intento de eliminar producto vendido {ProductId} por usuario {UserId}", id, userId);
+                return Result.Failure<bool, DomainError>(ProductError.NotFound(id));
+            }
+
+            // 🔴 CRÍTICO: Verificar si el producto tiene una compra asociada
+            if (producto.CompraId.HasValue)
+            {
+                _logger.LogWarning("❌ Intento de eliminar producto vendido {ProductId}", id);
                 return Result.Failure<bool, DomainError>(ProductError.CannotDeleteSold);
             }
 
-            _context.Products.Remove(product);
+            // Verificar permisos
+            if (!isAdmin && producto.PropietarioId != userId)
+            {
+                return Result.Failure<bool, DomainError>(ProductError.NotOwner);
+            }
+
+            producto.SoftDelete($"User-{userId}");
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Producto eliminado: {ProductId}", id);
+            _logger.LogInformation("✅ Producto {ProductId} eliminado por usuario {UserId}", id, userId);
             return Result.Success<bool, DomainError>(true);
         }
         catch (Exception ex)
