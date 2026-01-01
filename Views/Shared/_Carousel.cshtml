@@ -1,59 +1,59 @@
-@* Carousel component - matches Spring Boot original *@
-<div id="carouselWalaDaw" class="carousel slide mb-4" data-bs-ride="carousel">
-    <!-- Indicators -->
-    <div class="carousel-indicators">
-        <button type="button" data-bs-target="#carouselWalaDaw" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#carouselWalaDaw" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        <button type="button" data-bs-target="#carouselWalaDaw" data-bs-slide-to="2" aria-label="Slide 3"></button>
+@* Carousel component - exact clone from Spring Boot original carrusel.peb.html *@
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="0" class="active"></button>
+                    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="2"></button>
+                </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="~/images/slider02.jpg" class="d-block w-100" alt="Slide 1">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h3>Tu tienda de compra-venta.</h3>
+                            <p>Vende lo que no necesites, compra lo que quieras.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="~/images/slider01.jpg" class="d-block w-100" alt="Slide 2">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h3>En tu casa en menos de 24 horas.</h3>
+                            <p>Símplemente compra y lo disfrutas al día siguiente.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="~/images/slider03.jpg" class="d-block w-100" alt="Slide 3">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h3>Entra y compra ya.</h3>
+                            <p>Estas a solo un clic</p>
+                            <div class="mt-3">
+                                <a class="btn btn-outline-light btn-sm me-2" asp-controller="Auth" asp-action="Login">Login</a>
+                                <a class="btn btn-outline-light btn-sm" asp-controller="Auth" asp-action="Register">Registro</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <h1 class="display-4">WalaDaw</h1>
+                <h3>Tu tienda de compra-venta de confianza</h3>
+            </div>
+        </div>
     </div>
-
-    <!-- Slides -->
-    <div class="carousel-inner">
-        <div class="carousel-item active">
-            <img src="~/images/slider01.jpg" class="d-block w-100" alt="Slide 1" 
-                 onerror="this.src='~/images/fondo.jpg'" 
-                 style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block">
-                <h2 class="fw-bold">Bienvenido a WalaDaw</h2>
-                <p class="lead">Tu marketplace de segunda mano de confianza</p>
-                <a href="@Url.Action("Index", "Public")" class="btn btn-primary btn-lg btn-min-block">
-                    <i class="bi bi-shop"></i> Explorar Productos
-                </a>
-            </div>
-        </div>
-        <div class="carousel-item">
-            <img src="~/images/slider02.jpg" class="d-block w-100" alt="Slide 2" 
-                 onerror="this.src='~/images/fondo.jpg'" 
-                 style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block">
-                <h2 class="fw-bold">Compra y Vende</h2>
-                <p class="lead">Los mejores productos tech de segunda mano</p>
-                <a href="@Url.Action("Create", "Product")" class="btn btn-success btn-lg btn-min-block">
-                    <i class="bi bi-plus-circle"></i> Vender Ahora
-                </a>
-            </div>
-        </div>
-        <div class="carousel-item">
-            <img src="~/images/slider03.jpg" class="d-block w-100" alt="Slide 3" 
-                 onerror="this.src='~/images/fondo.jpg'" 
-                 style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block">
-                <h2 class="fw-bold">Comunidad de Confianza</h2>
-                <p class="lead">Miles de usuarios satisfechos</p>
-                <a href="@Url.Action("Register", "Auth")" class="btn btn-warning btn-lg btn-min-block">
-                    <i class="bi bi-person-plus"></i> Únete Ahora
-                </a>
-            </div>
-        </div>
+    
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <h1 class="display-4">Destacados</h1>
+        <p class="lead">Productos destacados de la semana.</p>
     </div>
-
-    <!-- Controls -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselWalaDaw" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselWalaDaw" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
-    </button>
 </div>

@@ -20,9 +20,9 @@ public class PublicController : Controller
     /// <summary>
     /// Página principal con listado de productos
     /// </summary>
-    public async Task<IActionResult> Index(string? search, string? categoria)
+    public async Task<IActionResult> Index(string? search, string? categoria, decimal? minPrecio, decimal? maxPrecio)
     {
-        var result = string.IsNullOrWhiteSpace(search) && string.IsNullOrWhiteSpace(categoria)
+        var result = string.IsNullOrWhiteSpace(search) && string.IsNullOrWhiteSpace(categoria) && !minPrecio.HasValue && !maxPrecio.HasValue
             ? await _productService.GetAllAsync()
             : await _productService.SearchAsync(search, categoria);
 
@@ -32,8 +32,22 @@ public class PublicController : Controller
             return View(Enumerable.Empty<Models.Product>());
         }
 
+        // Apply price filtering if specified
+        var products = result.Value;
+        if (minPrecio.HasValue)
+        {
+            products = products.Where(p => p.Precio >= minPrecio.Value);
+        }
+        if (maxPrecio.HasValue)
+        {
+            products = products.Where(p => p.Precio <= maxPrecio.Value);
+        }
+
         ViewBag.Search = search;
         ViewBag.Categoria = categoria;
-        return View(result.Value);
+        ViewBag.MinPrecio = minPrecio;
+        ViewBag.MaxPrecio = maxPrecio;
+        
+        return View(products);
     }
 }
