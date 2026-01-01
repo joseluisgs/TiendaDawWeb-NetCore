@@ -90,17 +90,22 @@
                                     <div class="col-md-6 text-end">
                                         @if (!producto.Reservado)
                                         {
-                                            <a class="btn btn-success btn-sm" 
-                                               asp-controller="Carrito" 
-                                               asp-action="Add" 
-                                               asp-route-productId="@producto.Id"
-                                               onclick="event.stopPropagation();">
-                                                <i class="bi bi-cart-plus"></i> Comprar
-                                            </a>
+                                            <form asp-controller="Carrito" 
+                                                  asp-action="Add" 
+                                                  asp-route-productoId="@producto.Id" 
+                                                  method="post"
+                                                  style="display: inline-block;"
+                                                  onclick="event.stopPropagation();">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-cart-plus"></i> Comprar
+                                                </button>
+                                            </form>
                                         }
                                         else
                                         {
-                                            <div class="btn btn-secondary btn-sm">Reservado</div>
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-lock-fill"></i> Reservado
+                                            </span>
                                         }
                                     </div>
                                 }

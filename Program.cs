@@ -147,12 +147,19 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Configurar localización
+// Configurar localización con soporte para parámetro ?lang=
+var supportedCultures = new[] { new CultureInfo("es-ES"), new CultureInfo("en-US") };
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("es-ES"),
-    SupportedCultures = [new CultureInfo("es-ES"), new CultureInfo("en-US")],
-    SupportedUICultures = [new CultureInfo("es-ES"), new CultureInfo("en-US")]
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures,
+    RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new QueryStringRequestCultureProvider(), // Permite ?lang=en o ?culture=en
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    }
 });
 
 app.UseAuthentication();
