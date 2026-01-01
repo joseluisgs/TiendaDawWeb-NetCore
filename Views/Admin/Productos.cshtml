@@ -129,7 +129,12 @@
                                                 </a>
                                                 <br>
                                                 <small class="text-muted">
-                                                    @(producto.Descripcion?.Length > 50 ? producto.Descripcion.Substring(0, 50) + "..." : producto.Descripcion)
+                                                    @{
+                                                        var descripcion = producto.Descripcion ?? "";
+                                                        var maxLength = Math.Min(descripcion.Length, 50);
+                                                        var wasTruncated = descripcion.Length > 50;
+                                                    }
+                                                    @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
                                                 </small>
                                             </td>
                                             <td>

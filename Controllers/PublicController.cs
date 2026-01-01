@@ -75,14 +75,19 @@ public class PublicController : Controller
             .Take(size)
             .ToList();
 
-        // ViewData para mantener filtros activos
-        ViewData["q"] = q;
-        ViewData["categoriaActual"] = categoria;
-        ViewData["minPrecio"] = minPrecio;
-        ViewData["maxPrecio"] = maxPrecio;
-        ViewData["CurrentPage"] = currentPage;
-        ViewData["TotalPages"] = totalPages;
-        ViewData["PageSize"] = size;
+        // ViewBag para paginación (1-based indexing matching URL parameters)
+        ViewBag.CurrentPage = currentPage;
+        ViewBag.Size = size;
+        ViewBag.TotalElements = totalItems;
+        ViewBag.TotalPages = totalPages;
+        ViewBag.HasPrevious = currentPage > 1;
+        ViewBag.HasNext = currentPage < totalPages;
+        
+        // ViewBag para filtros
+        ViewBag.Search = q;
+        ViewBag.Categoria = categoria;
+        ViewBag.MinPrecio = minPrecio;
+        ViewBag.MaxPrecio = maxPrecio;
         
         return View(pagedProducts);
     }

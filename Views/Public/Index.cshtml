@@ -72,10 +72,11 @@
                             <h5 class="card-title">@producto.Nombre</h5>
                             @if (!string.IsNullOrEmpty(producto.Descripcion))
                             {
+                                var descripcion = producto.Descripcion ?? "";
+                                var maxLength = Math.Min(descripcion.Length, 80);
+                                var wasTruncated = descripcion.Length > 80;
                                 <p class="card-text text-muted small">
-                                    @(producto.Descripcion.Length > 80 
-                                        ? producto.Descripcion.Substring(0, 80) + "..." 
-                                        : producto.Descripcion)
+                                    @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
                                 </p>
                             }
                             <span class="badge bg-info">@producto.Categoria</span>
@@ -124,8 +125,8 @@
                     <div class="col-md-6">
                         <p class="text-muted mb-0">
                             @{
-                                var startItem = (ViewBag.CurrentPage * ViewBag.Size) + 1;
-                                var endItem = Math.Min((ViewBag.CurrentPage + 1) * ViewBag.Size, ViewBag.TotalElements);
+                                var startItem = ((ViewBag.CurrentPage - 1) * ViewBag.Size) + 1;
+                                var endItem = Math.Min((int)(ViewBag.CurrentPage * ViewBag.Size), (int)ViewBag.TotalElements);
                             }
                             Mostrando @startItem a @endItem de @ViewBag.TotalElements productos
                         </p>
@@ -150,12 +151,12 @@
                             }
 
                             @* Page numbers *@
-                            @for (int i = 0; i < ViewBag.TotalPages; i++)
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
                             {
                                 @if (i == ViewBag.CurrentPage)
                                 {
                                     <li class="page-item active">
-                                        <span class="page-link">@(i + 1)</span>
+                                        <span class="page-link">@i</span>
                                     </li>
                                 }
                                 else if (i >= (ViewBag.CurrentPage - 2) && i <= (ViewBag.CurrentPage + 2))
@@ -163,7 +164,7 @@
                                     <li class="page-item">
                                         <a class="page-link"
                                            href="?@(ViewBag.Search != null ? $"search={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
-                                            @(i + 1)
+                                            @i
                                         </a>
                                     </li>
                                 }

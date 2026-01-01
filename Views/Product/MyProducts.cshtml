@@ -34,9 +34,12 @@
                             <span class="badge bg-info">Tuyo</span>
                         </div>
                         <p class="card-text flex-grow-1">
-                            @(producto.Descripcion.Length > 80 
-                                ? producto.Descripcion.Substring(0, 80) + "..." 
-                                : producto.Descripcion)
+                            @{
+                                var descripcion = producto.Descripcion ?? "";
+                                var maxLength = Math.Min(descripcion.Length, 80);
+                                var wasTruncated = descripcion.Length > 80;
+                            }
+                            @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
                         </p>
                         <div class="mb-2">
                             <span class="badge bg-secondary">@producto.Categoria</span>
