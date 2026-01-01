@@ -91,8 +91,8 @@ public class PurchaseService : IPurchaseService
                     }
                 }
 
-                // 3. Calcular total
-                decimal total = carritoItems.Sum(ci => ci.Subtotal);
+                // 3. Calcular total - ahora suma el precio de cada item
+                decimal total = carritoItems.Sum(ci => ci.Precio);
 
                 // 4. Crear la compra
                 var purchase = new Purchase

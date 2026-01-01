@@ -105,7 +105,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .HasForeignKey(c => c.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.Property(c => c.Subtotal).HasPrecision(18, 2);
+            entity.Property(c => c.Precio).HasPrecision(18, 2);
             
             // Índice único por usuario y producto para evitar duplicados
             entity.HasIndex(c => new { c.UsuarioId, c.ProductoId }).IsUnique();

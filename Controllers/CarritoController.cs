@@ -63,12 +63,12 @@ public class CarritoController : Controller
     }
 
     /// <summary>
-    /// POST /Carrito/Add - Añadir producto al carrito
+    /// POST /Carrito/Add - Añadir producto al carrito (sin cantidad)
     /// </summary>
     [HttpPost]
     [Route("/Carrito/Add")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Add(long productoId, int cantidad = 1)
+    public async Task<IActionResult> Add(long productoId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -91,7 +91,7 @@ public class CarritoController : Controller
             return RedirectToAction("Details", "Product", new { id = productoId });
         }
 
-        var result = await _carritoService.AddToCarritoAsync(user.Id, productoId, cantidad);
+        var result = await _carritoService.AddToCarritoAsync(user.Id, productoId);
         
         if (result.IsFailure)
         {
@@ -99,18 +99,18 @@ public class CarritoController : Controller
         }
         else
         {
-            TempData["Success"] = $"Producto añadido al carrito";
+            TempData["Success"] = "Producto añadido al carrito";
         }
 
         return RedirectToAction("Details", "Product", new { id = productoId });
     }
 
     /// <summary>
-    /// POST /app/carrito/add - Añadir producto (ruta alternativa)
+    /// POST /app/carrito/add - Añadir producto (ruta alternativa, sin cantidad)
     /// </summary>
     [HttpPost("add")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddToCart(long productId, int cantidad = 1)
+    public async Task<IActionResult> AddToCart(long productId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -118,7 +118,7 @@ public class CarritoController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        var result = await _carritoService.AddToCarritoAsync(user.Id, productId, cantidad);
+        var result = await _carritoService.AddToCarritoAsync(user.Id, productId);
         
         if (result.IsFailure)
         {
@@ -126,28 +126,7 @@ public class CarritoController : Controller
         }
         else
         {
-            TempData["Success"] = $"Producto añadido al carrito (cantidad: {cantidad})";
-        }
-
-        return RedirectToAction(nameof(Index));
-    }
-
-    /// <summary>
-    /// POST /app/carrito/update - Actualizar cantidad
-    /// </summary>
-    [HttpPost("update")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateQuantity(long itemId, int cantidad)
-    {
-        var result = await _carritoService.UpdateCantidadAsync(itemId, cantidad);
-        
-        if (result.IsFailure)
-        {
-            TempData["Error"] = result.Error.Message;
-        }
-        else
-        {
-            TempData["Success"] = "Cantidad actualizada";
+            TempData["Success"] = "Producto añadido al carrito";
         }
 
         return RedirectToAction(nameof(Index));

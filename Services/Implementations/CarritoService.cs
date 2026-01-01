@@ -8,7 +8,8 @@ using TiendaDawWeb.Services.Interfaces;
 namespace TiendaDawWeb.Services.Implementations;
 
 /// <summary>
-/// Implementación del servicio de carrito con control de concurrencia optimista
+/// Implementación del servicio de carrito
+/// Sin cantidad - cada producto solo puede añadirse una vez (coincide con Spring Boot original)
 /// </summary>
 public class CarritoService : ICarritoService
 {
@@ -41,13 +42,8 @@ public class CarritoService : ICarritoService
         }
     }
 
-    public async Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId, int cantidad = 1)
+    public async Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId)
     {
-        if (cantidad <= 0)
-        {
-            return Result.Failure<CarritoItem, DomainError>(CarritoError.InvalidQuantity(cantidad));
-        }
-
         try
         {
             // Verificar que el producto existe y está disponible
@@ -64,53 +60,35 @@ public class CarritoService : ICarritoService
                 return Result.Failure<CarritoItem, DomainError>(CarritoError.ProductNotAvailable(productoId));
             }
 
-            // Verificar si ya existe en el carrito
+            // Verificar si ya existe en el carrito - si existe, retornar error
             var existingItem = await _context.CarritoItems
                 .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.ProductoId == productoId);
 
             if (existingItem != null)
             {
-                // Actualizar cantidad existente con control de concurrencia
-                existingItem.Cantidad += cantidad;
-                existingItem.Subtotal = existingItem.Cantidad * producto.Precio;
-                existingItem.UpdatedAt = DateTime.UtcNow;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                    _logger.LogInformation("Actualizado item {ItemId} en carrito del usuario {UsuarioId}", existingItem.Id, usuarioId);
-                    return Result.Success<CarritoItem, DomainError>(existingItem);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    _logger.LogWarning("Conflicto de concurrencia al actualizar item del carrito");
-                    return Result.Failure<CarritoItem, DomainError>(CarritoError.ConcurrencyConflict());
-                }
+                return Result.Failure<CarritoItem, DomainError>(
+                    CarritoError.ProductAlreadyInCart(productoId));
             }
-            else
+
+            // Crear nuevo item sin cantidad
+            var nuevoItem = new CarritoItem
             {
-                // Crear nuevo item
-                var nuevoItem = new CarritoItem
-                {
-                    UsuarioId = usuarioId,
-                    ProductoId = productoId,
-                    Cantidad = cantidad,
-                    Subtotal = cantidad * producto.Precio,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                UsuarioId = usuarioId,
+                ProductoId = productoId,
+                Precio = producto.Precio,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                _context.CarritoItems.Add(nuevoItem);
-                await _context.SaveChangesAsync();
+            _context.CarritoItems.Add(nuevoItem);
+            await _context.SaveChangesAsync();
 
-                // Recargar con navegación
-                await _context.Entry(nuevoItem)
-                    .Reference(c => c.Producto)
-                    .LoadAsync();
+            // Recargar con navegación
+            await _context.Entry(nuevoItem)
+                .Reference(c => c.Producto)
+                .LoadAsync();
 
-                _logger.LogInformation("Agregado producto {ProductoId} al carrito del usuario {UsuarioId}", productoId, usuarioId);
-                return Result.Success<CarritoItem, DomainError>(nuevoItem);
-            }
+            _logger.LogInformation("Agregado producto {ProductoId} al carrito del usuario {UsuarioId}", productoId, usuarioId);
+            return Result.Success<CarritoItem, DomainError>(nuevoItem);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -122,54 +100,6 @@ public class CarritoService : ICarritoService
             _logger.LogError(ex, "Error al agregar producto {ProductoId} al carrito del usuario {UsuarioId}", productoId, usuarioId);
             return Result.Failure<CarritoItem, DomainError>(
                 GenericError.DatabaseError("Error al agregar al carrito"));
-        }
-    }
-
-    public async Task<Result<CarritoItem, DomainError>> UpdateCantidadAsync(long itemId, int nuevaCantidad)
-    {
-        if (nuevaCantidad <= 0)
-        {
-            return Result.Failure<CarritoItem, DomainError>(CarritoError.InvalidQuantity(nuevaCantidad));
-        }
-
-        try
-        {
-            var item = await _context.CarritoItems
-                .Include(c => c.Producto)
-                .FirstOrDefaultAsync(c => c.Id == itemId);
-
-            if (item == null)
-            {
-                return Result.Failure<CarritoItem, DomainError>(CarritoError.ItemNotFound(itemId));
-            }
-
-            // Verificar disponibilidad del producto
-            if (item.Producto.Reservado || item.Producto.CompraId != null)
-            {
-                return Result.Failure<CarritoItem, DomainError>(CarritoError.ProductNotAvailable(item.ProductoId));
-            }
-
-            item.Cantidad = nuevaCantidad;
-            item.Subtotal = nuevaCantidad * item.Producto.Precio;
-            item.UpdatedAt = DateTime.UtcNow;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Actualizada cantidad del item {ItemId} a {Cantidad}", itemId, nuevaCantidad);
-                return Result.Success<CarritoItem, DomainError>(item);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                _logger.LogWarning("Conflicto de concurrencia al actualizar cantidad del item {ItemId}", itemId);
-                return Result.Failure<CarritoItem, DomainError>(CarritoError.ConcurrencyConflict());
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al actualizar cantidad del item {ItemId}", itemId);
-            return Result.Failure<CarritoItem, DomainError>(
-                GenericError.DatabaseError("Error al actualizar cantidad"));
         }
     }
 
@@ -230,8 +160,9 @@ public class CarritoService : ICarritoService
         try
         {
             var total = await _context.CarritoItems
+                .Include(c => c.Producto)
                 .Where(c => c.UsuarioId == usuarioId)
-                .SumAsync(c => c.Subtotal);
+                .SumAsync(c => c.Precio);
 
             return Result.Success<decimal, DomainError>(total);
         }
@@ -249,7 +180,7 @@ public class CarritoService : ICarritoService
         {
             var count = await _context.CarritoItems
                 .Where(c => c.UsuarioId == usuarioId)
-                .SumAsync(c => c.Cantidad);
+                .CountAsync();
 
             return Result.Success<int, DomainError>(count);
         }

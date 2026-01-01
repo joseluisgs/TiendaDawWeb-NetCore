@@ -41,9 +41,7 @@
                             <thead>
                                 <tr>
                                     <th>Producto</th>
-                                    <th>Precio</th>
-                                    <th>Cantidad</th>
-                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-end">Precio</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,12 +61,8 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>@item.Producto.Precio.ToString("C")</td>
-                                        <td>
-                                            <span class="badge bg-info">x @item.Cantidad</span>
-                                        </td>
                                         <td class="text-end">
-                                            <strong>@item.Subtotal.ToString("C")</strong>
+                                            <strong>@item.Precio.ToString("C")</strong>
                                         </td>
                                     </tr>
                                 }
