@@ -72,10 +72,12 @@
                             <h5 class="card-title">@producto.Nombre</h5>
                             @if (!string.IsNullOrEmpty(producto.Descripcion))
                             {
+                                @{
+                                    var descripcion = producto.Descripcion ?? "";
+                                    var maxLength = Math.Min(descripcion.Length, 80);
+                                }
                                 <p class="card-text text-muted small">
-                                    @(producto.Descripcion.Length > 80 
-                                        ? producto.Descripcion.Substring(0, 80) + "..." 
-                                        : producto.Descripcion)
+                                    @descripcion.Substring(0, maxLength)@(descripcion.Length > 80 ? "..." : "")
                                 </p>
                             }
                             <span class="badge bg-info">@producto.Categoria</span>
@@ -125,7 +127,7 @@
                         <p class="text-muted mb-0">
                             @{
                                 var startItem = (ViewBag.CurrentPage * ViewBag.Size) + 1;
-                                var endItem = Math.Min((ViewBag.CurrentPage + 1) * ViewBag.Size, ViewBag.TotalElements);
+                                var endItem = Math.Min((int)((ViewBag.CurrentPage + 1) * ViewBag.Size), (int)ViewBag.TotalElements);
                             }
                             Mostrando @startItem a @endItem de @ViewBag.TotalElements productos
                         </p>

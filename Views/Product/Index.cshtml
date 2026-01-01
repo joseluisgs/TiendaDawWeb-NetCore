@@ -35,9 +35,11 @@
                             }
                         </div>
                         <p class="card-text flex-grow-1">
-                            @(producto.Descripcion.Length > 100 
-                                ? producto.Descripcion.Substring(0, 100) + "..." 
-                                : producto.Descripcion)
+                            @{
+                                var descripcion = producto.Descripcion ?? "";
+                                var maxLength = Math.Min(descripcion.Length, 100);
+                            }
+                            @descripcion.Substring(0, maxLength)@(descripcion.Length > 100 ? "..." : "")
                         </p>
                         <div class="mb-2">
                             <span class="badge bg-secondary">@producto.Categoria</span>

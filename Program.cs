@@ -134,14 +134,15 @@ using (var scope = app.Services.CreateScope())
 // Limpiar directorio de uploads en desarrollo
 if (app.Environment.IsDevelopment())
 {
-    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload-dir");
+    var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
     if (Directory.Exists(uploadPath))
     {
-        Log.Information("🧹 PERFIL DEV: Limpiando directorio de uploads...");
+        Log.Information("🔧 PERFIL DEV: Limpiando directorio uploads");
         Directory.Delete(uploadPath, true);
-        Log.Information("✅ Directorio de uploads limpiado");
+        Log.Information("🗑️ Directorio uploads limpiado en modo DEV");
     }
     Directory.CreateDirectory(uploadPath);
+    Log.Information("✅ Directorio uploads inicializado correctamente");
 }
 
 // Middleware Pipeline
@@ -157,6 +158,14 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Configurar archivos estáticos para directorio uploads
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(app.Environment.WebRootPath, "uploads")),
+    RequestPath = "/uploads"
+});
 
 app.UseRouting();
 

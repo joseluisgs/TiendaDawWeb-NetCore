@@ -23,10 +23,12 @@ public class StorageService : IStorageService
     {
         _environment = environment;
         _logger = logger;
-        _uploadPath = configuration["Storage:UploadPath"] ?? "upload-dir";
+        _uploadPath = configuration["Storage:UploadPath"] ?? "uploads";
         _maxFileSize = configuration.GetValue<long>("Storage:MaxFileSize", 5242880); // 5MB default
         _allowedExtensions = configuration.GetSection("Storage:AllowedExtensions").Get<string[]>() 
             ?? new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        
+        _logger.LogInformation("📁 Directorio de uploads: {Path}", _uploadPath);
     }
 
     public async Task<Result<string, DomainError>> SaveFileAsync(IFormFile file, string folder)
