@@ -5,14 +5,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <RootNamespace>TiendaDawWeb</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Suppress known vulnerabilities that we'll monitor -->
+    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Exclude test directory from main project -->
+    <Compile Remove="TiendaDawWeb.Tests/**" />
+    <EmbeddedResource Remove="TiendaDawWeb.Tests/**" />
+    <None Remove="TiendaDawWeb.Tests/**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.*" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.42.5" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
     <PackageReference Include="itext7" Version="8.0.5" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="MailKit" Version="4.9.0" />
   </ItemGroup>
 </Project>

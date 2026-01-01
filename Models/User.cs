@@ -32,4 +32,5 @@ public class User : IdentityUser<long>
     public virtual ICollection<Purchase> Purchases { get; set; } = new List<Purchase>();
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+    public virtual ICollection<CarritoItem> CarritoItems { get; set; } = new List<CarritoItem>();
 }
