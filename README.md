@@ -35,12 +35,13 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [🚀 Tecnologías](#-tecnologías)
   - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
     - [Desarrollo Local](#desarrollo-local)
-    - [Docker (Producción)](#docker-producción)
+    - [Build y Tests](#build-y-tests)
   - [⚒️ Diagrama](#️-diagrama)
   - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
-  - [🐳 Docker](#-docker)
-    - [Volúmenes de Datos](#volúmenes-de-datos)
-    - [Comandos Docker Útiles](#comandos-docker-útiles)
+  - [🏗️ Arquitectura](#️-arquitectura)
+    - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
+    - [Blazor Server para Favoritos](#blazor-server-para-favoritos)
+    - [ASP.NET Core Identity](#aspnet-core-identity)
   - [👥 Usuarios Demo](#-usuarios-demo)
   - [🔒 Seguridad](#-seguridad)
   - [🌐 Características](#-características-1)
@@ -50,7 +51,9 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [🚀 Despliegue en Producción](#-despliegue-en-producción)
     - [Variables de Entorno](#variables-de-entorno)
   - [📚 Documentación](#-documentación)
-    - [Tutoriales Incluidos](#tutoriales-incluidos)
+    - [Repositorio Original](#repositorio-original)
+    - [Características Implementadas](#características-implementadas)
+    - [Tecnologías Clave](#tecnologías-clave)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
     - [Contacto](#contacto)
@@ -356,19 +359,6 @@ Este proyecto es una migración completa del proyecto Java/Spring Boot:
 - **ASP.NET Core Identity**: Autenticación y autorización robusta
 - **Entity Framework Core**: ORM con InMemory para desarrollo
 
-## 🖼️ Capturas de Pantalla
-
-### Página Principal
-![Homepage](https://github.com/user-attachments/assets/5fc53cc5-a160-47d9-b08f-c0cfc8eb0132)
-
-### Login
-![Login](https://github.com/user-attachments/assets/c667868d-f1bc-444f-bbeb-600b89435391)
-
-### Productos (Autenticado)
-![Products](https://github.com/user-attachments/assets/b5578085-65cb-4d17-be52-70fb2b2bc494)
-
-### Detalle de Producto
-![Product Details](https://github.com/user-attachments/assets/3cb7147b-59b7-463e-a6d9-2a3c8ddfe47d)
 
 ## 📝 Licencia
 
