@@ -1,0 +1,66 @@
+@using TiendaDawWeb.Services.Interfaces
+@inject IFavoriteService FavoriteService
+
+<button class="btn @ButtonClass btn-sm" @onclick="ToggleFavorite" disabled="@IsLoading">
+    <i class="bi @IconClass"></i>
+    @if (IsLoading)
+    {
+        <span class="spinner-border spinner-border-sm ms-1"></span>
+    }
+    else
+    {
+        <span class="ms-1">@ButtonText</span>
+    }
+</button>
+
+@code {
+    [Parameter]
+    public long ProductId { get; set; }
+
+    [Parameter]
+    public long UserId { get; set; }
+
+    private bool IsFavorite { get; set; }
+    private bool IsLoading { get; set; }
+
+    private string ButtonClass => IsFavorite ? "btn-warning" : "btn-outline-warning";
+    private string IconClass => IsFavorite ? "bi-heart-fill" : "bi-heart";
+    private string ButtonText => IsFavorite ? "Quitar" : "Favorito";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId > 0)
+        {
+            var result = await FavoriteService.IsFavoriteAsync(UserId, ProductId);
+            IsFavorite = result.IsSuccess && result.Value;
+        }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        if (UserId == 0) return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        if (IsFavorite)
+        {
+            var result = await FavoriteService.RemoveFavoriteAsync(UserId, ProductId);
+            if (result.IsSuccess)
+            {
+                IsFavorite = false;
+            }
+        }
+        else
+        {
+            var result = await FavoriteService.AddFavoriteAsync(UserId, ProductId);
+            if (result.IsSuccess)
+            {
+                IsFavorite = true;
+            }
+        }
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+}

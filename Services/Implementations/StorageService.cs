@@ -1,0 +1,105 @@
+using CSharpFunctionalExtensions;
+using TiendaDawWeb.Errors;
+using TiendaDawWeb.Services.Interfaces;
+
+namespace TiendaDawWeb.Services.Implementations;
+
+/// <summary>
+/// Servicio de gestión de almacenamiento de archivos
+/// </summary>
+public class StorageService : IStorageService
+{
+    private readonly IWebHostEnvironment _environment;
+    private readonly ILogger<StorageService> _logger;
+    private readonly string _uploadPath;
+    private readonly long _maxFileSize;
+    private readonly string[] _allowedExtensions;
+
+    public StorageService(
+        IWebHostEnvironment environment, 
+        IConfiguration configuration,
+        ILogger<StorageService> logger)
+    {
+        _environment = environment;
+        _logger = logger;
+        _uploadPath = configuration["Storage:UploadPath"] ?? "upload-dir";
+        _maxFileSize = configuration.GetValue<long>("Storage:MaxFileSize", 5242880); // 5MB default
+        _allowedExtensions = configuration.GetSection("Storage:AllowedExtensions").Get<string[]>() 
+            ?? new[] { ".jpg", ".jpeg", ".png", ".gif" };
+    }
+
+    public async Task<Result<string, DomainError>> SaveFileAsync(IFormFile file, string folder)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+                return Result.Failure<string, DomainError>(
+                    ProductError.InvalidData("El archivo está vacío"));
+
+            if (file.Length > _maxFileSize)
+                return Result.Failure<string, DomainError>(
+                    ProductError.InvalidData($"El archivo excede el tamaño máximo de {_maxFileSize / 1024 / 1024}MB"));
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!_allowedExtensions.Contains(extension))
+                return Result.Failure<string, DomainError>(
+                    ProductError.InvalidData($"Extensión de archivo no permitida. Permitidas: {string.Join(", ", _allowedExtensions)}"));
+
+            var uploadDir = Path.Combine(_environment.ContentRootPath, _uploadPath, folder);
+            Directory.CreateDirectory(uploadDir);
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadDir, fileName);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativePath = $"/{_uploadPath}/{folder}/{fileName}";
+            _logger.LogInformation("Archivo guardado: {FilePath}", relativePath);
+            
+            return Result.Success<string, DomainError>(relativePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error guardando archivo");
+            return Result.Failure<string, DomainError>(
+                ProductError.InvalidData($"Error al guardar archivo: {ex.Message}"));
+        }
+    }
+
+    public async Task<Result<bool, DomainError>> DeleteFileAsync(string filePath)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return Result.Success<bool, DomainError>(true);
+
+            var fullPath = Path.Combine(_environment.ContentRootPath, filePath.TrimStart('/'));
+            
+            if (File.Exists(fullPath))
+            {
+                await Task.Run(() => File.Delete(fullPath));
+                _logger.LogInformation("Archivo eliminado: {FilePath}", filePath);
+            }
+
+            return Result.Success<bool, DomainError>(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error eliminando archivo {FilePath}", filePath);
+            return Result.Failure<bool, DomainError>(
+                ProductError.InvalidData($"Error al eliminar archivo: {ex.Message}"));
+        }
+    }
+
+    public bool FileExists(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            return false;
+
+        var fullPath = Path.Combine(_environment.ContentRootPath, filePath.TrimStart('/'));
+        return File.Exists(fullPath);
+    }
+}

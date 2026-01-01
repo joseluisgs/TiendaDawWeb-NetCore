@@ -1,0 +1,86 @@
+@model IEnumerable<Product>
+@using Microsoft.AspNetCore.Identity
+@using TiendaDawWeb.Models
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = "Productos";
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-grid"></i> Productos Disponibles</h1>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Publicar Producto
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    @if (Model.Any())
+    {
+        @foreach (var producto in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="@producto.ImagenOrDefault" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">@producto.Nombre</h5>
+                            @if (currentUser != null && producto.PropietarioId == currentUser.Id)
+                            {
+                                <span class="badge bg-info">Tuyo</span>
+                            }
+                        </div>
+                        <p class="card-text flex-grow-1">
+                            @(producto.Descripcion.Length > 100 
+                                ? producto.Descripcion.Substring(0, 100) + "..." 
+                                : producto.Descripcion)
+                        </p>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">@producto.Categoria</span>
+                            @if (producto.Ratings.Any())
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill"></i> @producto.RatingPromedio.ToString("F1")
+                                </span>
+                            }
+                        </div>
+                        <p class="text-muted mb-2">
+                            <small>
+                                <i class="bi bi-person"></i> @producto.Propietario.Nombre @producto.Propietario.Apellidos
+                            </small>
+                        </p>
+                        <h4 class="text-primary mb-3">
+                            @producto.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
+                        </h4>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@producto.Id" 
+                               class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-eye"></i> Ver Detalle
+                            </a>
+                            @if (currentUser != null)
+                            {
+                                <component type="typeof(TiendaDawWeb.Components.FavoriteButton)" 
+                                           render-mode="ServerPrerendered" 
+                                           param-ProductId="@producto.Id"
+                                           param-UserId="@currentUser.Id" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No hay productos disponibles en este momento.
+                <a asp-action="Create" class="alert-link">¿Quieres publicar el primero?</a>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,123 @@
+@model IEnumerable<Product>
+@using Microsoft.AspNetCore.Identity
+@using TiendaDawWeb.Models
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+@{
+    ViewData["Title"] = "Inicio - WalaDaw";
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="jumbotron bg-light p-5 rounded-3">
+            <h1 class="display-4">
+                <i class="bi bi-shop text-primary"></i> Bienvenido a WalaDaw
+            </h1>
+            <p class="lead">Tu marketplace de confianza para comprar y vender productos de segunda mano</p>
+            <hr class="my-4">
+            <p>Descubre ofertas increíbles en smartphones, laptops, audio, gaming y más</p>
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <a class="btn btn-primary btn-lg" asp-controller="Auth" asp-action="Register">
+                    <i class="bi bi-person-plus"></i> Regístrate Ahora
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="bi bi-grid"></i> Productos Disponibles</h2>
+    </div>
+    <div class="col-md-4">
+        <form method="get" asp-action="Index" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Buscar productos..." value="@ViewBag.Search">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <a asp-action="Index" class="btn btn-outline-secondary @(string.IsNullOrEmpty(ViewBag.Categoria) ? "active" : "")">
+                Todas
+            </a>
+            @foreach (var categoria in Enum.GetValues<ProductCategory>())
+            {
+                <a asp-action="Index" asp-route-categoria="@categoria" 
+                   class="btn btn-outline-secondary @(ViewBag.Categoria == categoria.ToString() ? "active" : "")">
+                    @categoria
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    @if (Model.Any())
+    {
+        @foreach (var producto in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="@producto.ImagenOrDefault" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text flex-grow-1">
+                            @(producto.Descripcion.Length > 100 
+                                ? producto.Descripcion.Substring(0, 100) + "..." 
+                                : producto.Descripcion)
+                        </p>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">@producto.Categoria</span>
+                            @if (producto.Ratings.Any())
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill"></i> @producto.RatingPromedio.ToString("F1")
+                                </span>
+                            }
+                        </div>
+                        <h4 class="text-primary mb-3">
+                            @producto.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
+                        </h4>
+                        <div class="d-flex gap-2">
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <a asp-controller="Product" asp-action="Details" asp-route-id="@producto.Id" 
+                                   class="btn btn-primary flex-grow-1">
+                                    <i class="bi bi-eye"></i> Ver Detalle
+                                </a>
+                                @if (currentUser != null)
+                                {
+                                    <component type="typeof(TiendaDawWeb.Components.FavoriteButton)" 
+                                               render-mode="ServerPrerendered" 
+                                               param-ProductId="@producto.Id"
+                                               param-UserId="@currentUser.Id" />
+                                }
+                            }
+                            else
+                            {
+                                <a asp-controller="Auth" asp-action="Login" class="btn btn-primary flex-grow-1">
+                                    <i class="bi bi-box-arrow-in-right"></i> Inicia sesión para ver más
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No hay productos disponibles en este momento.
+            </div>
+        </div>
+    }
+</div>
