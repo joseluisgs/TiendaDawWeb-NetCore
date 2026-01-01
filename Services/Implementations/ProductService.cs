@@ -164,7 +164,7 @@ public class ProductService : IProductService
             }
 
             // 🔴 CRÍTICO: Verificar si el producto tiene una compra asociada
-            if (producto.CompraId.HasValue || producto.Compra != null)
+            if (producto.CompraId.HasValue)
             {
                 _logger.LogWarning("❌ Intento de eliminar producto vendido {ProductId}", id);
                 return Result.Failure<bool, DomainError>(ProductError.CannotDeleteSold);
