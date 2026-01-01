@@ -74,8 +74,9 @@
                             {
                                 var descripcion = producto.Descripcion ?? "";
                                 var maxLength = Math.Min(descripcion.Length, 80);
+                                var wasTruncated = descripcion.Length > 80;
                                 <p class="card-text text-muted small">
-                                    @descripcion.Substring(0, maxLength)@(descripcion.Length > 80 ? "..." : "")
+                                    @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
                                 </p>
                             }
                             <span class="badge bg-info">@producto.Categoria</span>

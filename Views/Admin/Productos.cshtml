@@ -132,8 +132,9 @@
                                                     @{
                                                         var descripcion = producto.Descripcion ?? "";
                                                         var maxLength = Math.Min(descripcion.Length, 50);
+                                                        var wasTruncated = descripcion.Length > 50;
                                                     }
-                                                    @descripcion.Substring(0, maxLength)@(descripcion.Length > 50 ? "..." : "")
+                                                    @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
                                                 </small>
                                             </td>
                                             <td>
