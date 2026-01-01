@@ -1,0 +1,145 @@
+@model IEnumerable<TiendaDawWeb.Models.CarritoItem>
+@{
+    ViewData["Title"] = "Resumen de Compra";
+    var user = ViewBag.User as TiendaDawWeb.Models.User;
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-clipboard-check"></i> Resumen de tu Compra
+    </h1>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Información del comprador -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Información del Comprador</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> @user?.Nombre @user?.Apellidos</p>
+                            <p><strong>Email:</strong> @user?.Email</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Usuario:</strong> @user?.UserName</p>
+                            <p><strong>Fecha:</strong> @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos a comprar -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bag-check"></i> Productos a Comprar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.Producto.ImagenOrDefault" 
+                                                     alt="@item.Producto.Nombre" 
+                                                     class="rounded me-2"
+                                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                                <div>
+                                                    <strong>@item.Producto.Nombre</strong>
+                                                    <br>
+                                                    <small class="text-muted">@item.Producto.Categoria</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Producto.Precio.ToString("C")</td>
+                                        <td>
+                                            <span class="badge bg-info">x @item.Cantidad</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong>@item.Subtotal.ToString("C")</strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver al Carrito
+                </a>
+                
+                <form asp-controller="Carrito" asp-action="FinalizarCompra" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle"></i> Confirmar y Pagar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Resumen del pedido -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 80px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Resumen del Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Productos (@Model.Count()):</span>
+                        <span>@ViewBag.Total.ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Envío:</span>
+                        <span class="text-success">GRATIS</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>IVA (incluido):</span>
+                        <span>@((ViewBag.Total * 0.21m).ToString("C"))</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total a Pagar:</strong>
+                        <strong class="text-success fs-3">@ViewBag.Total.ToString("C")</strong>
+                    </div>
+
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle"></i> Al confirmar, aceptas nuestros términos y condiciones.
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <i class="bi bi-shield-lock-fill text-success fs-2"></i>
+                        <p class="small text-muted mb-0">Pago 100% seguro</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métodos de pago -->
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <p class="small text-muted mb-2">Métodos de pago aceptados:</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <i class="bi bi-credit-card-2-front fs-3"></i>
+                        <i class="bi bi-paypal fs-3"></i>
+                        <i class="bi bi-bank fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
