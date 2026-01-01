@@ -16,7 +16,7 @@ public static class SeedData
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
         var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("SeedData");
+        var logger = loggerFactory.CreateLogger(typeof(SeedData));
 
         logger.LogInformation("🔧 PERFIL DEV: Inicializando marketplace con datos de prueba...");
         logger.LogInformation("📅 Fecha: {Date}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));

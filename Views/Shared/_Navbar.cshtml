@@ -5,6 +5,16 @@
 @inject UserManager<User> UserManager
 @inject ICarritoService CarritoService
 
+@{
+    var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var cartCount = 0;
+    if (currentUser != null)
+    {
+        var cartCountResult = await CarritoService.GetCarritoCountAsync(currentUser.Id);
+        cartCount = cartCountResult.IsSuccess ? cartCountResult.Value : 0;
+    }
+}
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand" asp-controller="Public" asp-action="Index">
@@ -46,30 +56,21 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" asp-controller="Carrito" asp-action="Index">
                             <i class="bi bi-cart"></i> Carrito
-                            @{
-                                var currentUser = await UserManager.GetUserAsync(User);
-                                if (currentUser != null)
-                                {
-                                    var cartCount = await CarritoService.GetCarritoCountAsync(currentUser.Id);
-                                    if (cartCount.IsSuccess && cartCount.Value > 0)
-                                    {
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                            @cartCount.Value
-                                        </span>
-                                    }
-                                }
+                            @if (cartCount > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @cartCount
+                                </span>
                             }
                         </a>
                     </li>
                 }
             </ul>
             <ul class="navbar-nav">
-                @if (SignInManager.IsSignedIn(User))
+                @if (SignInManager.IsSignedIn(User) && currentUser != null)
                 {
-                    var currentUser = await UserManager.GetUserAsync(User);
-                    
                     @* Admin menu *@
-                    @if (currentUser?.Rol == "ADMIN")
+                    @if (currentUser.Rol == "ADMIN")
                     {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
@@ -98,11 +99,11 @@
                     @* User profile menu *@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            @if (!string.IsNullOrEmpty(currentUser?.Avatar))
+                            @if (!string.IsNullOrEmpty(currentUser.Avatar))
                             {
                                 <img src="@currentUser.Avatar" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
                             }
-                            <span class="ms-1">@currentUser?.Nombre</span>
+                            <span class="ms-1">@currentUser.Nombre</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>

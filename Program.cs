@@ -108,8 +108,8 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var errorLogger = services.GetRequiredService<ILogger<Program>>();
-        errorLogger.LogError(ex, "Error al inicializar la base de datos");
+        var scopeLogger = services.GetRequiredService<ILogger<Program>>();
+        scopeLogger.LogError(ex, "Error al inicializar la base de datos");
     }
 }
 
