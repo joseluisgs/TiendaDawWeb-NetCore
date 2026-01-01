@@ -1,0 +1,272 @@
+@model TiendaDawWeb.Models.User
+@{
+    ViewData["Title"] = "Detalles de Usuario";
+    var roles = ViewBag.Roles as List<string> ?? new List<string>();
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">
+                        <i class="bi bi-person-badge"></i> Detalles de Usuario
+                    </h1>
+                </div>
+                <div>
+                    <a href="@Url.Action("Usuarios", "Admin")" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a Usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información del Usuario -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Información Personal</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (!string.IsNullOrEmpty(Model.Avatar))
+                    {
+                        <img src="@Model.Avatar" alt="Avatar" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px;">
+                            <i class="bi bi-person-fill text-white" style="font-size: 3rem;"></i>
+                        </div>
+                    }
+                    
+                    <h4 class="mb-1">@Model.Nombre @Model.Apellidos</h4>
+                    <p class="text-muted">@@@Model.UserName</p>
+                    
+                    <hr>
+                    
+                    <div class="text-start">
+                        <p class="mb-2">
+                            <i class="bi bi-envelope"></i> 
+                            <strong>Email:</strong><br>
+                            <small>@Model.Email</small>
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-calendar-plus"></i> 
+                            <strong>Fecha de Alta:</strong><br>
+                            <small>@Model.FechaAlta.ToString("dd/MM/yyyy HH:mm")</small>
+                        </p>
+                        @if (Model.DeletedAt.HasValue)
+                        {
+                            <p class="mb-2">
+                                <i class="bi bi-trash"></i> 
+                                <strong>Eliminado:</strong><br>
+                                <small class="text-danger">@Model.DeletedAt.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                            </p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestión de Roles -->
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-shield-check"></i> Roles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        @if (roles.Any())
+                        {
+                            foreach (var rol in roles)
+                            {
+                                <span class="badge bg-primary me-1 mb-1">@rol</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Sin roles asignados</span>
+                        }
+                    </div>
+
+                    <form method="post" action="@Url.Action("CambiarRol", "Admin", new { id = Model.Id })">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="nuevoRol" class="form-label">Cambiar Rol</label>
+                            <select name="nuevoRol" id="nuevoRol" class="form-select">
+                                <option value="USER" selected="@(roles.Contains("USER"))">USER</option>
+                                <option value="ADMIN" selected="@(roles.Contains("ADMIN"))">ADMIN</option>
+                                <option value="MODERATOR" selected="@(roles.Contains("MODERATOR"))">MODERATOR</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-arrow-repeat"></i> Cambiar Rol
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos y Compras -->
+        <div class="col-md-8">
+            <!-- Estadísticas -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-info">
+                        <div class="card-body text-center">
+                            <h2 class="text-info">@Model.Products.Count</h2>
+                            <p class="mb-0">Productos Publicados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <h2 class="text-success">@Model.Purchases.Count</h2>
+                            <p class="mb-0">Compras Realizadas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-primary">
+                        <div class="card-body text-center">
+                            <h2 class="text-primary">@Model.Favorites.Count</h2>
+                            <p class="mb-0">Favoritos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos del Usuario -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-box-seam"></i> Productos Publicados</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Products.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var producto in Model.Products.Where(p => !p.Deleted).OrderByDescending(p => p.CreatedAt).Take(10))
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(producto.Imagen))
+                                                {
+                                                    <img src="@producto.Imagen" alt="@producto.Nombre" style="width: 40px; height: 40px; object-fit: cover;">
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("Details", "Product", new { id = producto.Id })">
+                                                    @producto.Nombre
+                                                </a>
+                                            </td>
+                                            <td>@producto.Categoria</td>
+                                            <td>@producto.Precio.ToString("C")</td>
+                                            <td>
+                                                @if (producto.CompraId != null)
+                                                {
+                                                    <span class="badge bg-danger">Vendido</span>
+                                                }
+                                                else if (producto.Reservado)
+                                                {
+                                                    <span class="badge bg-warning">Reservado</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Disponible</span>
+                                                }
+                                            </td>
+                                            <td><small>@producto.CreatedAt.ToShortDateString()</small></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No ha publicado productos aún.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Compras del Usuario -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-cart-check"></i> Compras Realizadas</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Purchases.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Fecha</th>
+                                        <th>Productos</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var compra in Model.Purchases.OrderByDescending(c => c.FechaCompra).Take(10))
+                                    {
+                                        <tr>
+                                            <td><strong>#@compra.Id</strong></td>
+                                            <td><small>@compra.FechaCompra.ToString("dd/MM/yyyy HH:mm")</small></td>
+                                            <td>@compra.Products.Count items</td>
+                                            <td><strong>@compra.Total.ToString("C")</strong></td>
+                                            <td>
+                                                <a href="@Url.Action("Details", "Purchase", new { id = compra.Id })" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No ha realizado compras aún.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zona de Peligro -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Zona de Peligro</h5>
+                </div>
+                <div class="card-body">
+                    <p>La eliminación de usuario es una operación de <strong>soft delete</strong>. El usuario será marcado como eliminado pero sus datos permanecerán en el sistema.</p>
+                    <form method="post" action="@Url.Action("EliminarUsuario", "Admin", new { id = Model.Id })" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Eliminar Usuario
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

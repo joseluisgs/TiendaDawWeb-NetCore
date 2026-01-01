@@ -1,0 +1,255 @@
+@model IEnumerable<TiendaDawWeb.Models.Product>
+@{
+    ViewData["Title"] = "Gestión de Productos";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 20;
+    var totalProductos = ViewBag.TotalProductos as int? ?? 0;
+    var totalPages = (int)Math.Ceiling((double)totalProductos / pageSize);
+    var categoriaSeleccionada = ViewBag.CategoriaSeleccionada as string;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">
+                        <i class="bi bi-box-seam-fill"></i> Productos
+                    </h1>
+                    <p class="text-muted">Gestión completa de productos del marketplace</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Productos", "Admin")" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="categoria" class="form-label">Filtrar por Categoría</label>
+                            <select name="categoria" id="categoria" class="form-select">
+                                <option value="">Todas las categorías</option>
+                                <option value="SMARTPHONES" selected="@(categoriaSeleccionada == "SMARTPHONES")">Smartphones</option>
+                                <option value="LAPTOPS" selected="@(categoriaSeleccionada == "LAPTOPS")">Laptops</option>
+                                <option value="AUDIO" selected="@(categoriaSeleccionada == "AUDIO")">Audio</option>
+                                <option value="GAMING" selected="@(categoriaSeleccionada == "GAMING")">Gaming</option>
+                                <option value="OTROS" selected="@(categoriaSeleccionada == "OTROS")">Otros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Filtrar
+                            </button>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <a href="@Url.Action("Productos", "Admin")" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-x-circle"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Total de productos: <strong>@totalProductos</strong>
+                @if (!string.IsNullOrEmpty(categoriaSeleccionada))
+                {
+                    <span> en categoría <strong>@categoriaSeleccionada</strong></span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Productos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Lista de Productos</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> No hay productos que mostrar.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Propietario</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var producto in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(producto.Imagen))
+                                                {
+                                                    <img src="@producto.Imagen" alt="@producto.Nombre" 
+                                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                                                         style="width: 60px; height: 60px;">
+                                                        <i class="bi bi-image text-white"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("Details", "Product", new { id = producto.Id })" 
+                                                   class="text-decoration-none">
+                                                    <strong>@producto.Nombre</strong>
+                                                </a>
+                                                <br>
+                                                <small class="text-muted">
+                                                    @(producto.Descripcion?.Length > 50 ? producto.Descripcion.Substring(0, 50) + "..." : producto.Descripcion)
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@producto.Categoria</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">@producto.Precio.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                @if (producto.Propietario != null)
+                                                {
+                                                    <a href="@Url.Action("UsuarioDetails", "Admin", new { id = producto.PropietarioId })" 
+                                                       class="text-decoration-none">
+                                                        @producto.Propietario.UserName
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (producto.CompraId != null)
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-bag-check"></i> Vendido
+                                                    </span>
+                                                }
+                                                else if (producto.Reservado)
+                                                {
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-clock"></i> Reservado
+                                                    </span>
+                                                    @if (producto.ReservadoHasta.HasValue)
+                                                    {
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Hasta: @producto.ReservadoHasta.Value.ToString("HH:mm")
+                                                        </small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Disponible
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @producto.CreatedAt.ToShortDateString()
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="@Url.Action("Details", "Product", new { id = producto.Id })" 
+                                                       class="btn btn-outline-primary" 
+                                                       title="Ver detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-outline-danger" 
+                                                            onclick="confirmarEliminacion(@producto.Id, '@producto.Nombre')"
+                                                            title="Eliminar producto">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        @if (totalPages > 1)
+                        {
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("Productos", new { page = currentPage - 1, pageSize, categoria = categoriaSeleccionada })">
+                                            <i class="bi bi-chevron-left"></i> Anterior
+                                        </a>
+                                    </li>
+                                    
+                                    @for (int i = 1; i <= totalPages; i++)
+                                    {
+                                        <li class="page-item @(i == currentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Productos", new { page = i, pageSize, categoria = categoriaSeleccionada })">@i</a>
+                                        </li>
+                                    }
+                                    
+                                    <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("Productos", new { page = currentPage + 1, pageSize, categoria = categoriaSeleccionada })">
+                                            Siguiente <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<form id="deleteForm" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        function confirmarEliminacion(productId, productName) {
+            if (confirm(`¿Estás seguro de que deseas eliminar el producto "${productName}"?\n\nEsta acción realizará una eliminación lógica (soft delete).`)) {
+                const form = document.getElementById('deleteForm');
+                form.action = `/admin/productos/${productId}/eliminar`;
+                form.submit();
+            }
+        }
+    </script>
+}
