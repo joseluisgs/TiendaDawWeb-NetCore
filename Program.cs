@@ -161,7 +161,13 @@ app.UseStaticFiles();
 app.UseRouting();
 
 // Configurar localización con soporte para parámetro ?lang=
-var supportedCultures = new[] { new CultureInfo("es-ES"), new CultureInfo("en-US") };
+var supportedCultures = new[] 
+{ 
+    new CultureInfo("es-ES"), 
+    new CultureInfo("en-US"),
+    new CultureInfo("fr-FR"),
+    new CultureInfo("pt-PT")
+};
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("es-ES"),

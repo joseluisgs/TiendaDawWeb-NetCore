@@ -61,211 +61,211 @@
   
   <!-- Common UI Strings -->
   <data name="Welcome" xml:space="preserve">
-    <value>Welcome</value>
+    <value>Bem-vindo</value>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>Início</value>
   </data>
   <data name="Products" xml:space="preserve">
-    <value>Products</value>
+    <value>Produtos</value>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Pesquisar</value>
   </data>
   <data name="Category" xml:space="preserve">
-    <value>Category</value>
+    <value>Categoria</value>
   </data>
   <data name="AllCategories" xml:space="preserve">
-    <value>All categories</value>
+    <value>Todas as categorias</value>
   </data>
   <data name="MinPrice" xml:space="preserve">
-    <value>Minimum price</value>
+    <value>Preço mínimo</value>
   </data>
   <data name="MaxPrice" xml:space="preserve">
-    <value>Maximum price</value>
+    <value>Preço máximo</value>
   </data>
   <data name="Login" xml:space="preserve">
-    <value>Login</value>
+    <value>Entrar</value>
   </data>
   <data name="Logout" xml:space="preserve">
-    <value>Logout</value>
+    <value>Sair</value>
   </data>
   <data name="Register" xml:space="preserve">
-    <value>Register</value>
+    <value>Registar</value>
   </data>
   <data name="Cart" xml:space="preserve">
-    <value>Cart</value>
+    <value>Carrinho</value>
   </data>
   <data name="MyAccount" xml:space="preserve">
-    <value>My Account</value>
+    <value>Minha conta</value>
   </data>
   <data name="MyProducts" xml:space="preserve">
-    <value>My Products</value>
+    <value>Meus produtos</value>
   </data>
   <data name="MyPurchases" xml:space="preserve">
-    <value>My Purchases</value>
+    <value>Minhas compras</value>
   </data>
   <data name="AddToCart" xml:space="preserve">
-    <value>Add to Cart</value>
+    <value>Adicionar ao carrinho</value>
   </data>
   <data name="Buy" xml:space="preserve">
-    <value>Buy</value>
+    <value>Comprar</value>
   </data>
   <data name="Reserved" xml:space="preserve">
-    <value>Reserved</value>
+    <value>Reservado</value>
   </data>
   <data name="Available" xml:space="preserve">
-    <value>Available</value>
+    <value>Disponível</value>
   </data>
   <data name="Price" xml:space="preserve">
-    <value>Price</value>
+    <value>Preço</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>Descrição</value>
   </data>
   <data name="Seller" xml:space="preserve">
-    <value>Seller</value>
+    <value>Vendedor</value>
   </data>
   <data name="Details" xml:space="preserve">
-    <value>Details</value>
+    <value>Detalhes</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Editar</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Eliminar</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Guardar</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Cancelar</value>
   </data>
   <data name="Favorite" xml:space="preserve">
-    <value>Favorite</value>
+    <value>Favorito</value>
   </data>
   
   <!-- Product related -->
   <data name="ProductName" xml:space="preserve">
-    <value>Product name</value>
+    <value>Nome do produto</value>
   </data>
   <data name="ProductDescription" xml:space="preserve">
-    <value>Product description</value>
+    <value>Descrição do produto</value>
   </data>
   <data name="ProductReserved" xml:space="preserve">
-    <value>Product Reserved</value>
+    <value>Produto reservado</value>
   </data>
   <data name="NoProductsAvailable" xml:space="preserve">
-    <value>No products available at this time.</value>
+    <value>Nenhum produto disponível no momento.</value>
   </data>
   <data name="SearchProducts" xml:space="preserve">
-    <value>Search products...</value>
+    <value>Pesquisar produtos...</value>
   </data>
   
   <!-- Admin Panel -->
   <data name="AdminPanel" xml:space="preserve">
-    <value>Admin Panel</value>
+    <value>Painel de administração</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Painel</value>
   </data>
   <data name="Users" xml:space="preserve">
-    <value>Users</value>
+    <value>Utilizadores</value>
   </data>
   <data name="Sales" xml:space="preserve">
-    <value>Sales</value>
+    <value>Vendas</value>
   </data>
   <data name="Purchases" xml:space="preserve">
-    <value>Purchases</value>
+    <value>Compras</value>
   </data>
   <data name="Statistics" xml:space="preserve">
-    <value>Statistics</value>
+    <value>Estatísticas</value>
   </data>
   
   <!-- Messages -->
   <data name="ProductNotAvailable" xml:space="preserve">
-    <value>Product is not available or is reserved by another user</value>
+    <value>O produto não está disponível ou está reservado por outro utilizador</value>
   </data>
   <data name="ProductAddedToCart" xml:space="preserve">
-    <value>Product added to cart</value>
+    <value>Produto adicionado ao carrinho</value>
   </data>
   <data name="ErrorAddingToCart" xml:space="preserve">
-    <value>Error adding to cart</value>
+    <value>Erro ao adicionar ao carrinho</value>
   </data>
   <data name="PurchaseCompleted" xml:space="preserve">
-    <value>Purchase completed successfully</value>
+    <value>Compra realizada com sucesso</value>
   </data>
   <data name="ErrorProcessingPurchase" xml:space="preserve">
-    <value>Error processing purchase</value>
+    <value>Erro ao processar a compra</value>
   </data>
   
   <!-- Pagination -->
   <data name="Previous" xml:space="preserve">
-    <value>Previous</value>
+    <value>Anterior</value>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Próximo</value>
   </data>
   <data name="Showing" xml:space="preserve">
-    <value>Showing</value>
+    <value>Mostrando</value>
   </data>
   <data name="Of" xml:space="preserve">
-    <value>of</value>
+    <value>de</value>
   </data>
   <data name="Items" xml:space="preserve">
-    <value>items</value>
+    <value>itens</value>
   </data>
   
   <!-- Shipping Information -->
   <data name="Shipping.Title" xml:space="preserve">
-    <value>Shipping Information</value>
+    <value>Informações de envio</value>
   </data>
   <data name="Shipping.Completed" xml:space="preserve">
-    <value>Shipping Completed</value>
+    <value>Envio concluído</value>
   </data>
   <data name="Shipping.Message" xml:space="preserve">
-    <value>The products have been delivered to the buyer.</value>
+    <value>Os produtos foram entregues ao comprador.</value>
   </data>
   <data name="Shipping.Method" xml:space="preserve">
-    <value>Method</value>
+    <value>Método</value>
   </data>
   <data name="Shipping.StandardMethod" xml:space="preserve">
-    <value>Standard shipping (3-5 days)</value>
+    <value>Envio padrão (3-5 dias)</value>
   </data>
   
   <!-- Ratings -->
   <data name="Rating.Title" xml:space="preserve">
-    <value>Ratings</value>
+    <value>Avaliações</value>
   </data>
   <data name="Rating.Average" xml:space="preserve">
-    <value>Average rating</value>
+    <value>Classificação média</value>
   </data>
   <data name="Rating.AddYours" xml:space="preserve">
-    <value>Add your rating</value>
+    <value>Adicione a sua avaliação</value>
   </data>
   <data name="Rating.MustPurchase" xml:space="preserve">
-    <value>You must purchase this product to rate it</value>
+    <value>Você deve comprar este produto para avaliá-lo</value>
   </data>
   <data name="Rating.AlreadyRated" xml:space="preserve">
-    <value>You have already rated this product</value>
+    <value>Você já avaliou este produto</value>
   </data>
   
   <!-- Deletion Errors -->
   <data name="Error.CannotDeleteSoldProduct" xml:space="preserve">
-    <value>Cannot delete a product that has already been sold</value>
+    <value>Não é possível eliminar um produto que já foi vendido</value>
   </data>
   <data name="Error.CannotDeleteActiveUser" xml:space="preserve">
-    <value>Cannot delete a user with commercial activity</value>
+    <value>Não é possível eliminar um utilizador com atividade comercial</value>
   </data>
   
   <!-- Filters -->
   <data name="Filter.MinPrice" xml:space="preserve">
-    <value>Minimum price</value>
+    <value>Preço mínimo</value>
   </data>
   <data name="Filter.MaxPrice" xml:space="preserve">
-    <value>Maximum price</value>
+    <value>Preço máximo</value>
   </data>
   <data name="Filter.Apply" xml:space="preserve">
-    <value>Apply filters</value>
+    <value>Aplicar filtros</value>
   </data>
 </root>
