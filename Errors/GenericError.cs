@@ -12,4 +12,7 @@ public record GenericError : DomainError
 
     public static GenericError UnexpectedError(string message) =>
         new("UNEXPECTED_ERROR", message);
+
+    public static GenericError ConcurrencyError(string message) =>
+        new("CONCURRENCY_ERROR", message);
 }
