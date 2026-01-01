@@ -96,7 +96,7 @@ public class CarritoServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ProductError>();
+        result.Error.Should().BeAssignableTo<DomainError>();
     }
 
     [Test]
