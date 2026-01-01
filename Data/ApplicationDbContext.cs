@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using TiendaDawWeb.Models;
 
 namespace TiendaDawWeb.Data;
@@ -17,6 +18,15 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<CarritoItem> CarritoItems => Set<CarritoItem>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        
+        // Suppress InMemoryDatabase transaction warning
+        optionsBuilder.ConfigureWarnings(w => 
+            w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
