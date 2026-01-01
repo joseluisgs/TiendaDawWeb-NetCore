@@ -38,6 +38,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(f => new { f.UsuarioId, f.ProductoId }).IsUnique();
+            
+            // Apply matching query filter to avoid EF warning
+            entity.HasQueryFilter(f => !f.Producto.Deleted);
         });
 
         // Configuración de Product
@@ -49,6 +52,8 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.Property(p => p.Precio).HasPrecision(18, 2);
+            
+            // Apply global query filter for soft delete
             entity.HasQueryFilter(p => !p.Deleted);
         });
 
@@ -70,6 +75,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .WithMany(p => p.Ratings)
                 .HasForeignKey(r => r.ProductoId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            // Apply matching query filter to avoid EF warning
+            entity.HasQueryFilter(r => !r.Producto.Deleted);
         });
 
         // Configuración de CarritoItem
@@ -91,6 +99,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             
             // Índice único por usuario y producto para evitar duplicados
             entity.HasIndex(c => new { c.UsuarioId, c.ProductoId }).IsUnique();
+            
+            // Apply matching query filter to avoid EF warning
+            entity.HasQueryFilter(c => !c.Producto.Deleted);
         });
     }
 }

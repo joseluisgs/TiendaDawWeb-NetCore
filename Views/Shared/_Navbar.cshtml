@@ -1,12 +1,25 @@
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
+@using TiendaDawWeb.Services.Interfaces
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
+@inject ICarritoService CarritoService
+
+@{
+    var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var cartCount = 0;
+    if (currentUser != null)
+    {
+        var cartCountResult = await CarritoService.GetCarritoCountAsync(currentUser.Id);
+        cartCount = cartCountResult.IsSuccess ? cartCountResult.Value : 0;
+    }
+}
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand" asp-controller="Public" asp-action="Index">
-            <i class="bi bi-shop"></i> WalaDaw
+            <img src="~/images/logo.svg" alt="WalaDaw" style="height: 30px; width: auto; margin-right: 10px;">
+            WalaDaw
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -40,24 +53,67 @@
                             <i class="bi bi-box-seam"></i> Mis Productos
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" asp-controller="Carrito" asp-action="Index">
+                            <i class="bi bi-cart"></i> Carrito
+                            @if (cartCount > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @cartCount
+                                </span>
+                            }
+                        </a>
+                    </li>
                 }
             </ul>
             <ul class="navbar-nav">
-                @if (SignInManager.IsSignedIn(User))
+                @if (SignInManager.IsSignedIn(User) && currentUser != null)
                 {
-                    var currentUser = await UserManager.GetUserAsync(User);
+                    @* Admin menu *@
+                    @if (currentUser.Rol == "ADMIN")
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-shield-lock"></i> Admin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                        <i class="bi bi-speedometer2"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                        <i class="bi bi-people"></i> Usuarios
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Products">
+                                        <i class="bi bi-box-seam"></i> Productos
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    
+                    @* User profile menu *@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            @if (!string.IsNullOrEmpty(currentUser?.Avatar))
+                            @if (!string.IsNullOrEmpty(currentUser.Avatar))
                             {
                                 <img src="@currentUser.Avatar" alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
                             }
-                            <span class="ms-1">@currentUser?.Nombre</span>
+                            <span class="ms-1">@currentUser.Nombre</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
                                     <i class="bi bi-person-circle"></i> Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Purchase" asp-action="MyPurchases">
+                                    <i class="bi bi-bag-check"></i> Mis Compras
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>

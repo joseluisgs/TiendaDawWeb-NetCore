@@ -105,13 +105,11 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await SeedData.InitializeAsync(services);
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("Base de datos inicializada con datos de ejemplo");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error al inicializar la base de datos");
+        var scopeLogger = services.GetRequiredService<ILogger<Program>>();
+        scopeLogger.LogError(ex, "Error al inicializar la base de datos");
     }
 }
 
@@ -156,5 +154,13 @@ app.MapGet("/", () => Results.Redirect("/Public/Index"));
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+// SpringBoot-style startup banner
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var urls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5000";
+var port = urls.Split(';').FirstOrDefault()?.Split(':').LastOrDefault() ?? "5000";
+logger.LogInformation("🌐 Acceso: http://localhost:{Port}/Public", port);
+logger.LogInformation("🔑 Login admin: admin@waladaw.com / admin");
+logger.LogInformation("🔑 Login user: prueba@prueba.com / prueba");
 
 app.Run();
