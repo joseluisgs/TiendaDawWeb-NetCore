@@ -28,8 +28,16 @@ public static class SeedData
         {
             if (!await roleManager.RoleExistsAsync(roleName))
             {
-                await roleManager.CreateAsync(new IdentityRole<long>(roleName));
-                logger.LogInformation("✅ Rol {Role} creado", roleName);
+                var result = await roleManager.CreateAsync(new IdentityRole<long>(roleName));
+                if (result.Succeeded)
+                {
+                    logger.LogInformation("✅ Rol {Role} creado", roleName);
+                }
+                else
+                {
+                    logger.LogError("❌ Error al crear rol {Role}: {Errors}", 
+                        roleName, string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
             }
         }
 

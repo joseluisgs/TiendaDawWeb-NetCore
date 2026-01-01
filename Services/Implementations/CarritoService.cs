@@ -62,6 +62,8 @@ public class CarritoService : ICarritoService
             }
 
             // Si está reservado, verificar si la reserva expiró
+            // NOTE: En producción con SQL, considerar usar transacciones o locks para evitar race conditions
+            // El modelo CarritoItem ya tiene RowVersion para control de concurrencia optimista
             if (producto.Reservado)
             {
                 // Si no tiene fecha de reserva o la fecha es futura, está reservado
