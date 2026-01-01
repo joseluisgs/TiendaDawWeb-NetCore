@@ -83,11 +83,16 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddHostedService<CarritoCleanupService>();
 builder.Services.AddHostedService<ReservaCleanupService>();
 
+// Localization
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 // MVC + Razor Pages (removed Blazor Server)
 builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
-});
+})
+.AddViewLocalization() // Añadir localización para vistas
+.AddDataAnnotationsLocalization(); // Añadir localización para anotaciones
 builder.Services.AddRazorPages();
 
 // Add antiforgery for AJAX requests
