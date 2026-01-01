@@ -63,7 +63,50 @@ public class CarritoController : Controller
     }
 
     /// <summary>
-    /// POST /app/carrito/add - Añadir producto
+    /// POST /Carrito/Add - Añadir producto al carrito
+    /// </summary>
+    [HttpPost]
+    [Route("/Carrito/Add")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Add(long productoId, int cantidad = 1)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        // Verificar si el producto está reservado
+        var productResult = await _productService.GetByIdAsync(productoId);
+        if (productResult.IsFailure)
+        {
+            TempData["Error"] = "Producto no encontrado";
+            return RedirectToAction("Details", "Product", new { id = productoId });
+        }
+
+        var product = productResult.Value;
+        if (product.Reservado)
+        {
+            TempData["Error"] = "Este producto está reservado y no se puede añadir al carrito";
+            return RedirectToAction("Details", "Product", new { id = productoId });
+        }
+
+        var result = await _carritoService.AddToCarritoAsync(user.Id, productoId, cantidad);
+        
+        if (result.IsFailure)
+        {
+            TempData["Error"] = result.Error.Message;
+        }
+        else
+        {
+            TempData["Success"] = $"Producto añadido al carrito";
+        }
+
+        return RedirectToAction("Details", "Product", new { id = productoId });
+    }
+
+    /// <summary>
+    /// POST /app/carrito/add - Añadir producto (ruta alternativa)
     /// </summary>
     [HttpPost("add")]
     [ValidateAntiForgeryToken]

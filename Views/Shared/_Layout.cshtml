@@ -10,9 +10,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - WalaDaw</title>
     
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="~/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="~/favicon-64x64.png">
+    <link rel="icon" type="image/png" sizes="256x256" href="~/favicon-256x256.png">
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <style>
+        body {
+            background-image: url('/images/fondo.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        
+        main.container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        footer {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+        }
+    </style>
 </head>
 <body>
     <partial name="_Navbar" />

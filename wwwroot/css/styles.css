@@ -1,0 +1,84 @@
+/** Estos son mis estilos adicionales a parte de Boostrat 3.7
+Para cosas particulares y para estilos propios usados en https://bootsnipp.com/
+ */
+
+@charset "UTF-8";
+
+/* Remove the navbar's default rounded borders and increase the bottom margin */
+.navbar {
+    margin-bottom: 50px;
+    border-radius: 0;
+}
+
+/* Remove the jumbotron's default bottom margin */
+.jumbotron {
+    margin-bottom: 0;
+}
+
+
+@media (min-width: 1200px) {
+    .container {
+        width: 90%;
+        max-width: 90%;
+    }
+}
+
+
+.panel-heading {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.precio {
+    font-size: 18px;
+    font-weight: bold;
+    padding-top: 5px;
+}
+
+.panel-producto {
+    cursor: pointer;
+}
+
+/* Estilos para la factura */
+
+.invoice-title h2, .invoice-title h3 {
+    display: inline-block;
+}
+
+.invoice-body .table > tbody > tr > .no-line {
+    border-top: none;
+}
+
+.invoice-body .table > thead > tr > .no-line {
+    border-bottom: none;
+}
+
+.invoice-body .table > tbody > tr > .thick-line {
+    border-top: 2px solid;
+}
+
+/** Slider **/
+.main-text
+{
+    position: absolute;
+    top: 50px;
+    width: 96.66666666666666%;
+    color: #FFF;
+}
+.btn-min-block
+{
+    min-width: 170px;
+    line-height: 26px;
+}
+.btn-clear
+{
+    color: #FFF;
+    background-color: transparent;
+    border-color: #FFF;
+    margin-right: 15px;
+}
+.btn-clear:hover
+{
+    color: #000;
+    background-color: #FFF;
+}
