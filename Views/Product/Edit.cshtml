@@ -31,7 +31,7 @@
                         <div class="col-md-6 mb-3">
                             <label asp-for="Precio" class="form-label"></label>
                             <div class="input-group">
-                                <input asp-for="Precio" class="form-control" placeholder="999.99" />
+                                <input asp-for="Precio" class="form-control" placeholder="999.99" step="0.01" />
                                 <span class="input-group-text">€</span>
                             </div>
                             <span asp-validation-for="Precio" class="text-danger"></span>
