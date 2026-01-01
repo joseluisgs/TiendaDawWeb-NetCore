@@ -141,29 +141,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Limpiar directorio de uploads en desarrollo
-if (app.Environment.IsDevelopment())
+// Limpiar directorio de uploads al iniciar (tanto en DEV como PROD)
+var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
+if (Directory.Exists(uploadPath))
 {
-    var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
-    if (Directory.Exists(uploadPath))
-    {
-        Log.Information("🔧 PERFIL DEV: Limpiando directorio uploads");
-        Directory.Delete(uploadPath, true);
-        Log.Information("🗑️ Directorio uploads limpiado en modo DEV");
-    }
-    Directory.CreateDirectory(uploadPath);
-    Log.Information("✅ Directorio uploads inicializado correctamente");
+    Log.Information("🗑️ Limpiando directorio uploads...");
+    Directory.Delete(uploadPath, true);
+    Log.Information("✅ Directorio uploads limpiado");
 }
-else
-{
-    // En producción, crear el directorio si no existe (sin limpiar)
-    var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
-    if (!Directory.Exists(uploadPath))
-    {
-        Directory.CreateDirectory(uploadPath);
-        Log.Information("📁 Directorio de uploads creado: {Path}", uploadPath);
-    }
-}
+Directory.CreateDirectory(uploadPath);
+Log.Information("📁 Directorio uploads inicializado correctamente");
 
 // Middleware Pipeline
 if (!app.Environment.IsDevelopment())
