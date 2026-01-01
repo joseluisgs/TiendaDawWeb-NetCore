@@ -1,0 +1,142 @@
+@model TiendaDawWeb.Models.Purchase
+@{
+    ViewData["Title"] = "Compra Confirmada";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Mensaje de éxito -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="text-success">¡Compra Realizada con Éxito!</h1>
+                <p class="lead">Tu pedido ha sido procesado correctamente</p>
+            </div>
+
+            <!-- Información de la compra -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-receipt"></i> Detalles del Pedido #@Model.Id
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Fecha de Compra:</strong></p>
+                            <p>@Model.FechaCompra.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Pagado:</strong></p>
+                            <p class="text-success fs-4 fw-bold">@Model.Total.ToString("C")</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong>Comprador:</strong></p>
+                            <p>@Model.Comprador.Nombre @Model.Comprador.Apellidos</p>
+                            <p class="text-muted">@Model.Comprador.Email</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3"><i class="bi bi-box-seam"></i> Productos Adquiridos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th class="text-end">Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var producto in Model.Products)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@producto.ImagenOrDefault" 
+                                                     alt="@producto.Nombre" 
+                                                     class="rounded me-2"
+                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                                <span>@producto.Nombre</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@producto.Categoria</span>
+                                        </td>
+                                        <td class="text-end">@producto.Precio.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="alert alert-info">
+                <h5><i class="bi bi-envelope"></i> Confirmación enviada</h5>
+                <p class="mb-0">
+                    Hemos enviado un email de confirmación a <strong>@Model.Comprador.Email</strong> 
+                    con los detalles de tu compra.
+                </p>
+            </div>
+
+            <!-- Acciones -->
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <a href="@Url.Action("Details", "Purchase", new { id = Model.Id })" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="bi bi-file-text"></i> Ver Detalles
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="@Url.Action("DownloadPdf", "Purchase", new { id = Model.Id })" 
+                       class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-file-pdf"></i> Descargar PDF
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="@Url.Action("Index", "Product")" 
+                       class="btn btn-primary w-100">
+                        <i class="bi bi-shop"></i> Seguir Comprando
+                    </a>
+                </div>
+            </div>
+
+            <!-- Siguiente pasos -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6><i class="bi bi-list-check"></i> Próximos Pasos</h6>
+                    <ol class="mb-0">
+                        <li>Recibirás un email de confirmación con el resumen de tu compra</li>
+                        <li>Los vendedores procesarán tu pedido</li>
+                        <li>Recibirás notificaciones sobre el estado de envío</li>
+                        <li>Productos entregados en 3-5 días laborables</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Soporte -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    ¿Necesitas ayuda? 
+                    <a href="#">Contacta con soporte</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Confetti animation on page load (optional)
+        console.log('¡Compra exitosa! 🎉');
+    </script>
+}

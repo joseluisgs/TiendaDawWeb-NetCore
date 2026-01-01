@@ -1,0 +1,139 @@
+@model IEnumerable<TiendaDawWeb.Models.Purchase>
+@{
+    ViewData["Title"] = "Mis Compras";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-bag-check"></i> Mis Compras
+    </h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <h4><i class="bi bi-cart-x"></i> No has realizado compras aún</h4>
+            <p>Explora nuestro catálogo y realiza tu primera compra.</p>
+            <a href="@Url.Action("Index", "Product")" class="btn btn-primary">
+                <i class="bi bi-shop"></i> Ver Productos
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var purchase in Model)
+            {
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">
+                                    <i class="bi bi-receipt"></i> Pedido #@purchase.Id
+                                </h5>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> @purchase.FechaCompra.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            </div>
+                            <div>
+                                <span class="badge bg-success">Completado</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-3">
+                                        <i class="bi bi-box-seam"></i> Productos (@purchase.Products.Count)
+                                    </h6>
+                                    <div class="row">
+                                        @foreach (var product in purchase.Products.Take(3))
+                                        {
+                                            <div class="col-md-4 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@product.ImagenOrDefault" 
+                                                         alt="@product.Nombre" 
+                                                         class="rounded me-2"
+                                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <div>
+                                                        <small class="fw-bold d-block">@product.Nombre</small>
+                                                        <small class="text-muted">@product.Precio.ToString("C")</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (purchase.Products.Count > 3)
+                                        {
+                                            <div class="col-md-12">
+                                                <small class="text-muted">
+                                                    y @(purchase.Products.Count - 3) producto(s) más...
+                                                </small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <h6 class="text-muted mb-2">Total Pagado</h6>
+                                    <h3 class="text-success mb-3">@purchase.Total.ToString("C")</h3>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="@Url.Action("Details", new { id = purchase.Id })" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Ver Detalles
+                                        </a>
+                                        <a href="@Url.Action("DownloadPdf", new { id = purchase.Id })" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-file-pdf"></i> Descargar PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Paginación -->
+        @if (ViewBag.CurrentPage != null)
+        {
+            <nav aria-label="Navegación de compras">
+                <ul class="pagination justify-content-center">
+                    @if (ViewBag.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">
+                                Anterior
+                            </a>
+                        </li>
+                    }
+                    <li class="page-item active">
+                        <span class="page-link">@ViewBag.CurrentPage</span>
+                    </li>
+                    @if (Model.Count() >= 10)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">
+                                Siguiente
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
