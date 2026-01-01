@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Localization;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
+Console.OutputEncoding = System.Text.Encoding.UTF8;
+
 // Configure Serilog before building the application
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -149,8 +151,8 @@ app.UseRouting();
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("es-ES"),
-    SupportedCultures = new[] { new CultureInfo("es-ES"), new CultureInfo("en-US") },
-    SupportedUICultures = new[] { new CultureInfo("es-ES"), new CultureInfo("en-US") }
+    SupportedCultures = [new CultureInfo("es-ES"), new CultureInfo("en-US")],
+    SupportedUICultures = [new CultureInfo("es-ES"), new CultureInfo("en-US")]
 });
 
 app.UseAuthentication();
