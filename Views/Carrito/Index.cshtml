@@ -62,7 +62,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label class="small text-muted">Cantidad</label>
-                                    <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center">
+                                    <form asp-action="update" method="post" class="d-flex align-items-center">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="itemId" value="@item.Id" />
                                         <input type="number" 
@@ -77,7 +77,7 @@
                                 <div class="col-md-2 text-end">
                                     <label class="small text-muted">Subtotal</label>
                                     <p class="fw-bold text-primary">@item.Subtotal.ToString("C")</p>
-                                    <form asp-action="RemoveItem" method="post" class="d-inline">
+                                    <form asp-action="remove" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="itemId" value="@item.Id" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -94,7 +94,7 @@
                     <a href="@Url.Action("Index", "Product")" class="btn btn-outline-primary">
                         <i class="bi bi-arrow-left"></i> Seguir Comprando
                     </a>
-                    <form asp-action="Clear" method="post" class="d-inline">
+                    <form asp-action="clear" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-outline-danger" 
                                 onclick="return confirm('¿Estás seguro de vaciar el carrito?')">

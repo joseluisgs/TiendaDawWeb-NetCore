@@ -173,7 +173,7 @@ public class PurchaseService : IPurchaseService
         {
             _logger.LogError(ex, "Error al obtener compra {PurchaseId}", id);
             return Result.Failure<Purchase, DomainError>(
-                GenericError.DatabaseError($"Error al obtener la compra: {ex.Message}"));
+                GenericError.DatabaseError("Error al obtener la compra"));
         }
     }
 
@@ -196,7 +196,7 @@ public class PurchaseService : IPurchaseService
         {
             _logger.LogError(ex, "Error al obtener compras del usuario {UserId}", usuarioId);
             return Result.Failure<IEnumerable<Purchase>, DomainError>(
-                GenericError.DatabaseError($"Error al obtener las compras: {ex.Message}"));
+                GenericError.DatabaseError("Error al obtener las compras"));
         }
     }
 
@@ -218,7 +218,7 @@ public class PurchaseService : IPurchaseService
         {
             _logger.LogError(ex, "Error al obtener todas las compras");
             return Result.Failure<IEnumerable<Purchase>, DomainError>(
-                GenericError.DatabaseError($"Error al obtener las compras: {ex.Message}"));
+                GenericError.DatabaseError("Error al obtener las compras"));
         }
     }
 
@@ -242,7 +242,7 @@ public class PurchaseService : IPurchaseService
         {
             _logger.LogError(ex, "Error al obtener compras por rango de fechas");
             return Result.Failure<IEnumerable<Purchase>, DomainError>(
-                GenericError.DatabaseError($"Error al obtener las compras: {ex.Message}"));
+                GenericError.DatabaseError("Error al obtener las compras"));
         }
     }
 
