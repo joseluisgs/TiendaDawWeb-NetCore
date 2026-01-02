@@ -79,10 +79,24 @@ public class RatingApiController(
     [HttpGet("user/{productId}")]
     public async Task<IActionResult> GetUserRating(long productId) {
         var user = await userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        if (user == null)
+            return Unauthorized(new { success = false });
+        var result = await ratingService.GetByProductoIdAsync(productId);
+        if (result.IsFailure)
+            return Ok(new { success = true, rating = (object?)null });
 
-        // For now, return that user has no rating (would need to add this method to service)
-        return Ok(new { success = true, rating = (object?)null });
+        // 👇— AJUSTE CLAVE —👇
+        var rating = result.Value.FirstOrDefault(r => r.UsuarioId == user.Id);
+        if (rating == null)
+            return Ok(new { success = true, rating = (object?)null });
+        return Ok(new {
+            success = true,
+            rating = new {
+                puntuacion = rating.Puntuacion,
+                comentario = rating.Comentario,
+                fecha = rating.CreatedAt
+            }
+        });
     }
 }
 
