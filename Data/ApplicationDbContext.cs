@@ -37,6 +37,8 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
         // ========================================
         builder.Entity<User>(entity =>
         {
+            // entity.HasKey(e => e.Id); // No es necesario, Identity ya lo configura
+            
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Apellidos).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Rol).IsRequired().HasMaxLength(50);
