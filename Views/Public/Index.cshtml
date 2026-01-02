@@ -1,10 +1,10 @@
-@model IEnumerable<Product>
-@using Microsoft.AspNetCore.Identity
-@using TiendaDawWeb.Models
+@using System.Globalization
 @using Microsoft.Extensions.Localization
+@using TiendaDawWeb.Resources
+@model IEnumerable<Product>
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
-@inject IStringLocalizer<TiendaDawWeb.Resources.Messages> Localizer
+@inject IStringLocalizer<Messages> Localizer
 @inject IStringLocalizer<SharedResource> SharedLocalizer
 
 @*
@@ -23,7 +23,7 @@
 }
 
 @* Include carousel - exact clone from Spring Boot original *@
-<partial name="_Carousel" />
+<partial name="_Carousel"/>
 
 <div class="container mb-5">
     @* Filters card - matches Spring Boot original *@
@@ -32,14 +32,14 @@
             <form action="@Url.Action("Index", "Public")" class="row g-3" method="get">
                 <div class="col-md-4">
                     <label class="form-label">@SharedLocalizer["Search"]</label>
-                    <input class="form-control" name="q" placeholder="@SharedLocalizer["SearchProducts"]" type="text" value="@ViewBag.Search">
+                    <input class="form-control" name="q" placeholder="@SharedLocalizer["SearchProducts"]" type="text"
+                           value="@ViewBag.Search">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">@SharedLocalizer["Category"]</label>
                     <select class="form-select" name="categoria">
                         <option value="">@SharedLocalizer["AllCategories"]</option>
-                        @foreach (var categoria in Enum.GetValues<ProductCategory>())
-                        {
+                        @foreach (var categoria in Enum.GetValues<ProductCategory>()) {
                             var isSelected = ViewBag.Categoria == categoria.ToString();
                             var categoryKey = $"Category.{categoria}";
                             <option value="@categoria" selected="@isSelected">
@@ -50,11 +50,13 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">@SharedLocalizer["MinPrice"]</label>
-                    <input class="form-control" name="minPrecio" placeholder="0" type="number" step="0.01" value="@ViewBag.MinPrecio">
+                    <input class="form-control" name="minPrecio" placeholder="0" type="number" step="0.01"
+                           value="@ViewBag.MinPrecio">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">@SharedLocalizer["MaxPrice"]</label>
-                    <input class="form-control" name="maxPrecio" placeholder="9999" type="number" step="0.01" value="@ViewBag.MaxPrecio">
+                    <input class="form-control" name="maxPrecio" placeholder="9999" type="number" step="0.01"
+                           value="@ViewBag.MaxPrecio">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
                     <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search"></i></button>
@@ -64,28 +66,25 @@
     </div>
 
     @* Product list - matches Spring Boot original *@
-    @if (!Model.Any())
-    {
+    @if (!Model.Any()) {
         <div class="alert alert-info text-center">
             <i class="bi bi-info-circle"></i> @SharedLocalizer["NoProductsFound"]
         </div>
     }
-    else
-    {
+    else {
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            @foreach (var producto in Model)
-            {
+            @foreach (var producto in Model) {
                 <div class="col">
                     <div class="card h-100 shadow-sm producto-card">
-                        <a href="@Url.Action("Details", "Product", new { id = producto.Id })" class="text-decoration-none text-dark">
-                            <img src="@producto.ImagenOrDefault" 
-                                 class="card-img-top" 
-                                 alt="@producto.Nombre" 
+                        <a href="@Url.Action("Details", "Product", new { id = producto.Id })"
+                           class="text-decoration-none text-dark">
+                            <img src="@producto.ImagenOrDefault"
+                                 class="card-img-top"
+                                 alt="@producto.Nombre"
                                  style="height: 300px; object-fit: cover; cursor: pointer;">
                             <div class="card-body">
                                 <h5 class="card-title">@producto.Nombre</h5>
-                                @if (!string.IsNullOrEmpty(producto.Descripcion))
-                                {
+                                @if (!string.IsNullOrEmpty(producto.Descripcion)) {
                                     var descripcion = producto.Descripcion ?? "";
                                     var maxLength = Math.Min(descripcion.Length, 80);
                                     var wasTruncated = descripcion.Length > 80;
@@ -99,16 +98,14 @@
                         <div class="card-footer bg-white">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
-                                    <h4 class="text-primary mb-0">@producto.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))</h4>
+                                    <h4 class="text-primary mb-0">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</h4>
                                 </div>
-                                @if (SignInManager.IsSignedIn(User) && currentUser != null && currentUser.Email != producto.Propietario?.Email)
-                                {
+                                @if (SignInManager.IsSignedIn(User) && currentUser != null && currentUser.Email != producto.Propietario?.Email) {
                                     <div class="col-md-6 text-end">
-                                        @if (!producto.Reservado)
-                                        {
-                                            <form asp-controller="Carrito" 
-                                                  asp-action="Add" 
-                                                  asp-route-productoId="@producto.Id" 
+                                        @if (!producto.Reservado) {
+                                            <form asp-controller="Carrito"
+                                                  asp-action="Add"
+                                                  asp-route-productoId="@producto.Id"
                                                   method="post"
                                                   style="display: inline-block;">
                                                 <button type="submit" class="btn btn-success btn-sm">
@@ -116,8 +113,7 @@
                                                 </button>
                                             </form>
                                         }
-                                        else
-                                        {
+                                        else {
                                             <span class="badge bg-warning text-dark">
                                                 <i class="bi bi-lock-fill"></i> @SharedLocalizer["Reserved"]
                                             </span>
@@ -128,18 +124,17 @@
                         </div>
                     </div>
                 </div>
-                }
-            </div>
+            }
+        </div>
 
         @* Pagination Controls - matches Spring Boot original *@
-        @if (ViewBag.TotalPages > 1)
-        {
+        @if (ViewBag.TotalPages > 1) {
             <nav aria-label="Navegación de páginas" class="mt-4">
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <p class="text-muted mb-0">
                             @{
-                                var startItem = ((ViewBag.CurrentPage - 1) * ViewBag.Size) + 1;
+                                var startItem = (ViewBag.CurrentPage - 1) * ViewBag.Size + 1;
                                 var endItem = Math.Min((int)(ViewBag.CurrentPage * ViewBag.Size), (int)ViewBag.TotalElements);
                             }
                             Mostrando @startItem a @endItem de @ViewBag.TotalElements productos
@@ -148,33 +143,29 @@
                     <div class="col-md-6">
                         <ul class="pagination justify-content-end mb-0">
                             @* Previous page *@
-                            @if (ViewBag.HasPrevious)
-                            {
+                            @if (ViewBag.HasPrevious) {
                                 <li class="page-item">
-                                    <a class="page-link" 
+                                    <a class="page-link"
                                        href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
                                         <i class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]
                                     </a>
                                 </li>
                             }
-                            else
-                            {
+                            else {
                                 <li class="page-item disabled">
-                                    <span class="page-link"><i class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]</span>
+                                    <span class="page-link"><i
+                                            class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]</span>
                                 </li>
                             }
 
                             @* Page numbers *@
-                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                            {
-                                @if (i == ViewBag.CurrentPage)
-                                {
+                            @for (var i = 1; i <= ViewBag.TotalPages; i++) {
+                                @if (i == ViewBag.CurrentPage) {
                                     <li class="page-item active">
                                         <span class="page-link">@i</span>
                                     </li>
                                 }
-                                else if (i >= (ViewBag.CurrentPage - 2) && i <= (ViewBag.CurrentPage + 2))
-                                {
+                                else if (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2) {
                                     <li class="page-item">
                                         <a class="page-link"
                                            href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
@@ -185,8 +176,7 @@
                             }
 
                             @* Next page *@
-                            @if (ViewBag.HasNext)
-                            {
+                            @if (ViewBag.HasNext) {
                                 <li class="page-item">
                                     <a class="page-link"
                                        href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
@@ -194,10 +184,10 @@
                                     </a>
                                 </li>
                             }
-                            else
-                            {
+                            else {
                                 <li class="page-item disabled">
-                                    <span class="page-link">@SharedLocalizer["Pag.Next"] <i class="bi bi-chevron-right"></i></span>
+                                    <span class="page-link">@SharedLocalizer["Pag.Next"] <i
+                                            class="bi bi-chevron-right"></i></span>
                                 </li>
                             }
                         </ul>

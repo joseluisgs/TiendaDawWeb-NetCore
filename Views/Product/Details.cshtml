@@ -1,12 +1,24 @@
+@using Microsoft.Extensions.Localization
 @model Product
 @inject UserManager<User> UserManager
+@inject IStringLocalizer<SharedResource> SharedLocalizer
 
 @{
     ViewData["Title"] = Model.Nombre;
     var currentUser = await UserManager.GetUserAsync(User);
     var isOwner = currentUser != null && Model.PropietarioId == currentUser.Id;
-    var isAuthenticated = User?.Identity?.IsAuthenticated == true ? "true" : "false";
+    var isAuthenticated = User?.Identity?.IsAuthenticated == true;
     var productId = Model.Id;
+}
+
+<!-- CONTEXTO PARA SCRIPTS EXTERNOS -->
+
+@section Scripts
+{
+    <script>
+        window.isAuthenticated = @isAuthenticated.ToString().ToLower();
+        window.productId = @productId;
+    </script>
 }
 
 <div class="container mt-4">
@@ -18,7 +30,7 @@
         <div class="col-md-6">
             <h1 class="mb-3">@Model.Nombre</h1>
             <div class="mb-3">
-                <span class="badge bg-secondary">@Model.Categoria</span>
+                <span class="badge bg-secondary">@SharedLocalizer[$"Category.{Model.Categoria}"]</span>
             </div>
 
             <div id="averageRatingHeader" class="mb-4"></div>
@@ -76,7 +88,7 @@
                         </form>
                     }
 
-                    @if (isAuthenticated == "true") {
+                    @if (isAuthenticated) {
                         <button class="btn btn-outline-danger favorite-btn" data-product-id="@Model.Id"
                                 onclick="toggleFavorite(@Model.Id)">
                             <i class="bi bi-heart"></i> Favorito
@@ -90,336 +102,8 @@
     <div class="row mt-5">
         <div class="col-12">
             <h3 class="mb-4"><i class="bi bi-star-fill text-warning"></i> Valoraciones</h3>
-
             <div id="ratingSectionAJAX" class="mb-4"></div>
-
             <div id="ratingsListAJAX"></div>
         </div>
     </div>
 </div>
-
-
-@section Scripts
-{
-    <script>
-        const isAuthenticated = "@isAuthenticated";
-        // Aseguramos que productId sea un número o string válido generado por Razor
-        const productId = @productId;
-
-        // --- Utilidades ---
-
-        function renderStarsStatic(val, size = 1.5) {
-            val = Math.round(val * 2) / 2;
-            let html = "";
-            for (let i = 1; i <= 5; i++) {
-                if (i <= val)
-                    html += `<i class="bi bi-star-fill" style="color:#ffc107;font-size:${size}rem"></i>`;
-                else if (i - val === 0.5)
-                    html += `<i class="bi bi-star-half" style="color:#ffc107;font-size:${size}rem"></i>`;
-                else
-                    html += `<i class="bi bi-star" style="color:#ffc107;font-size:${size}rem"></i>`;
-            }
-            return html;
-        }
-
-        function renderMyRatingCard(container, rating) {
-            container.innerHTML = `
-        <div class="p-4 rounded border border-success bg-light mb-4 fade-in">
-            <h5 class="text-success"><i class="bi bi-check-circle-fill"></i> ¡Gracias por tu valoración!</h5>
-            <div class="d-flex align-items-center mb-2 mt-3">
-                <span>${renderStarsStatic(rating.puntuacion, 1.5)}</span>
-                <span class="ms-2 fw-bold">${rating.puntuacion} / 5</span>
-                <span class="text-muted ms-3 small">${new Date(rating.fecha || Date.now()).toLocaleDateString()}</span>
-            </div>
-            <p class="mb-0 text-muted">${rating.comentario || '<i>Sin comentario</i>'}</p>
-        </div>`;
-        }
-
-        // --- Carga de Datos ---
-
-        async function loadRatings() {
-            let ratingsListDiv = document.getElementById("ratingsListAJAX");
-            let headDiv = document.getElementById("averageRatingHeader");
-
-            try {
-                // Añadimos timestamp para evitar caché también aquí
-                let resp = await fetch(`/api/ratings/product/${productId}?_=${new Date().getTime()}`);
-                let data = await resp.json();
-
-                let ratings = (data.success && data.ratings) ? data.ratings : [];
-
-                if (ratings.length > 0) {
-                    let sum = ratings.reduce((a, b) => a + b.puntuacion, 0);
-                    let avg = sum / ratings.length;
-
-                    headDiv.innerHTML = `
-                <div class="mb-2 d-flex align-items-center">
-                    <span class="me-2">${renderStarsStatic(avg, 2)}</span>
-                    <span class="fw-bold fs-5">${avg.toFixed(1)}</span>
-                    <span class="text-muted ms-2">(${ratings.length} valoraciones)</span>
-                </div>`;
-                } else {
-                    headDiv.innerHTML = `<span class="text-muted"><i class="bi bi-star"></i> Sin valoraciones aún</span>`;
-                }
-
-                if (ratings.length === 0) {
-                    ratingsListDiv.innerHTML = `<div class="alert alert-light border"><i class="bi bi-info-circle"></i> No hay valoraciones todavía. Sé el primero en opinar.</div>`;
-                } else {
-                    let html = "";
-                    ratings.forEach(rating => {
-                        html += `
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                            <span>${renderStarsStatic(rating.puntuacion, 1.15)}</span>
-                            <strong class="ms-2">${rating.usuario.nombre}</strong>
-                            <span class="text-muted ms-2 small">${new Date(rating.fecha).toLocaleString()}</span>
-                        </div>
-                        ${rating.comentario && rating.comentario.trim()
-                            ? `<p class="mb-0 text-muted">${rating.comentario}</p>`
-                            : '<p class="mb-0 text-muted fst-italic">Sin comentario</p>'
-                        }
-                    </div>
-                </div>`;
-                    });
-                    ratingsListDiv.innerHTML = html;
-                }
-            } catch (error) {
-                console.error(error);
-                ratingsListDiv.innerHTML = `<div class="alert alert-danger">Error al cargar valoraciones.</div>`;
-            }
-        }
-
-        // AQUI ESTABA EL PROBLEMA DE LA RECARGA
-        async function loadRatingForm() {
-            const container = document.getElementById("ratingSectionAJAX");
-            container.innerHTML = "";
-
-            if (isAuthenticated !== "true") {
-                container.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle"></i> 
-                Debes <a href="/Identity/Account/Login" class="alert-link">iniciar sesión</a> para dejar una valoración.
-            </div>`;
-                return;
-            }
-
-            try {
-                // SOLUCION: Añadimos '?t=' + timestamp para obligar al navegador a no usar caché
-                // y headers explícitos.
-                let res = await fetch(`/api/ratings/user/${productId}?t=${new Date().getTime()}`, {
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    }
-                });
-                let data = await res.json();
-
-                // CASO A: Ya ha votado (viene de la BD)
-                if (data.success && data.rating) {
-                    renderMyRatingCard(container, data.rating);
-                    return;
-                }
-
-                // CASO B: No ha votado
-                renderRatingForm(container);
-
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = `<div class="alert alert-danger">Error verificando estado de valoración.</div>`;
-            }
-        }
-
-        function renderRatingForm(container) {
-            container.innerHTML = `
-        <div class="card border-primary mb-4" id="cardFormulario">
-            <div class="card-header bg-primary text-white">
-                <i class="bi bi-pencil-square"></i> Escribe tu valoración
-            </div>
-            <div class="card-body">
-                <form id="ratingForm">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Tu puntuación:</label>
-                        <div class="star-rating-input">
-                            <i class="bi bi-star star-item" data-value="1"></i>
-                            <i class="bi bi-star star-item" data-value="2"></i>
-                            <i class="bi bi-star star-item" data-value="3"></i>
-                            <i class="bi bi-star star-item" data-value="4"></i>
-                            <i class="bi bi-star star-item" data-value="5"></i>
-                            <input type="hidden" name="Puntuacion" id="inputPuntuacion" value="0">
-                        </div>
-                        <div id="starError" class="text-danger small mt-1" style="display:none;">
-                            Debes seleccionar una puntuación.
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Comentario (opcional):</label>
-                        <textarea class="form-control" name="Comentario" rows="3" maxlength="500" placeholder="¿Qué te ha parecido este producto?"></textarea>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary" id="btnSubmitRating">
-                            Enviar Valoración
-                        </button>
-                    </div>
-                    <div id="formStatus" class="mt-2"></div>
-                </form>
-            </div>
-        </div>`;
-            initStarLogic();
-            initFormSubmit();
-        }
-
-        function initStarLogic() {
-            const stars = document.querySelectorAll('.star-rating-input .star-item');
-            const input = document.getElementById('inputPuntuacion');
-            let selectedValue = 0;
-
-            const fillStars = (limit) => {
-                stars.forEach(star => {
-                    const val = parseInt(star.getAttribute('data-value'));
-                    if (val <= limit) {
-                        star.classList.remove('bi-star');
-                        star.classList.add('bi-star-fill', 'text-warning');
-                    } else {
-                        star.classList.remove('bi-star-fill', 'text-warning');
-                        star.classList.add('bi-star');
-                    }
-                });
-            };
-
-            stars.forEach(star => {
-                star.addEventListener('mouseenter', () => fillStars(parseInt(star.getAttribute('data-value'))));
-                star.addEventListener('click', () => {
-                    selectedValue = parseInt(star.getAttribute('data-value'));
-                    input.value = selectedValue;
-                    star.style.transform = "scale(1.2)";
-                    setTimeout(() => star.style.transform = "scale(1)", 200);
-                });
-            });
-
-            document.querySelector('.star-rating-input').addEventListener('mouseleave', () => fillStars(selectedValue));
-        }
-
-        function initFormSubmit() {
-            const form = document.getElementById("ratingForm");
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-
-                const statusDiv = document.getElementById("formStatus");
-                const btnSubmit = document.getElementById("btnSubmitRating");
-                const errorDiv = document.getElementById("starError");
-
-                const puntuacionVal = document.getElementById("inputPuntuacion").value;
-                const comentarioVal = form.querySelector('textarea[name="Comentario"]').value;
-
-                if (puntuacionVal == "0") {
-                    errorDiv.style.display = "block";
-                    return;
-                }
-                errorDiv.style.display = "none";
-
-                btnSubmit.disabled = true;
-                btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Enviando...`;
-
-                try {
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-
-                    const response = await fetch('/api/ratings', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': token
-                        },
-                        body: JSON.stringify({
-                            productId: productId,
-                            puntuacion: parseInt(puntuacionVal),
-                            comentario: comentarioVal
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        // Actualización Optimista
-                        const container = document.getElementById("ratingSectionAJAX");
-                        container.innerHTML = '';
-
-                        const newRatingObj = {
-                            puntuacion: puntuacionVal,
-                            comentario: comentarioVal,
-                            fecha: new Date().toISOString()
-                        };
-                        renderMyRatingCard(container, newRatingObj);
-                        loadRatings();
-                    } else {
-                        statusDiv.innerHTML = `<div class="alert alert-danger mt-2">${result.message || 'Error al guardar'}</div>`;
-                        btnSubmit.disabled = false;
-                        btnSubmit.innerHTML = `Enviar Valoración`;
-                    }
-                } catch (error) {
-                    statusDiv.innerHTML = `<div class="alert alert-danger mt-2">Error de conexión</div>`;
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `Enviar Valoración`;
-                }
-            });
-        }
-
-        async function toggleFavorite(pId) {
-            try {
-                const response = await fetch(`/api/favorites/toggle/${pId}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'}
-                });
-                const result = await response.json();
-                if (result.success) {
-                    const btn = document.querySelector(`.favorite-btn[data-product-id="${pId}"]`);
-                    if (btn) {
-                        const icon = btn.querySelector('i');
-                        if (result.isFavorite) {
-                            icon.classList.replace('bi-heart', 'bi-heart-fill');
-                            btn.classList.replace('btn-outline-danger', 'btn-danger');
-                        } else {
-                            icon.classList.replace('bi-heart-fill', 'bi-heart');
-                            btn.classList.replace('btn-danger', 'btn-outline-danger');
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadRatings();
-            loadRatingForm();
-        });
-    </script>
-    <!-- Favoritos JS -->
-    <script src="~/js/favorites.js" asp-append-version="true"></script>
-
-
-    <style>
-        .star-rating-input {
-            font-size: 2rem;
-            cursor: pointer;
-            color: #ddd;
-        }
-
-        .star-item {
-            transition: color 0.2s, transform 0.1s;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-    </style>
-}
