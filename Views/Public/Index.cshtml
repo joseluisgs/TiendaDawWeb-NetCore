@@ -20,13 +20,13 @@
         <div class="card-body">
             <form action="@Url.Action("Index", "Public")" class="row g-3" method="get">
                 <div class="col-md-4">
-                    <label class="form-label">@Localizer["Search"]</label>
-                    <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="text" value="@ViewBag.Search">
+                    <label class="form-label">@SharedLocalizer["Search"]</label>
+                    <input class="form-control" name="q" placeholder="@SharedLocalizer["SearchProducts"]" type="text" value="@ViewBag.Search">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">@Localizer["Category"]</label>
+                    <label class="form-label">@SharedLocalizer["Category"]</label>
                     <select class="form-select" name="categoria">
-                        <option value="">@Localizer["AllCategories"]</option>
+                        <option value="">@SharedLocalizer["AllCategories"]</option>
                         @foreach (var categoria in Enum.GetValues<ProductCategory>())
                         {
                             var isSelected = ViewBag.Categoria == categoria.ToString();
@@ -38,11 +38,11 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">@Localizer["MinPrice"]</label>
+                    <label class="form-label">@SharedLocalizer["MinPrice"]</label>
                     <input class="form-control" name="minPrecio" placeholder="0" type="number" step="0.01" value="@ViewBag.MinPrecio">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">@Localizer["MaxPrice"]</label>
+                    <label class="form-label">@SharedLocalizer["MaxPrice"]</label>
                     <input class="form-control" name="maxPrecio" placeholder="9999" type="number" step="0.01" value="@ViewBag.MaxPrecio">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">

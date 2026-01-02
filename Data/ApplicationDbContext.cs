@@ -32,94 +32,154 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
     {
         base.OnModelCreating(builder);
 
-        // Configuración de Favorite (Many-to-Many)
-        builder.Entity<Favorite>(entity =>
+        // ========================================
+        // USER CONFIGURATION (Identity already configures HasKey)
+        // ========================================
+        builder.Entity<User>(entity =>
         {
-            entity.HasKey(f => f.Id);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Apellidos).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Rol).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Avatar).HasMaxLength(500);
             
-            entity.HasOne(f => f.Usuario)
-                .WithMany(u => u.Favorites)
-                .HasForeignKey(f => f.UsuarioId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(f => f.Producto)
-                .WithMany(p => p.Favorites)
-                .HasForeignKey(f => f.ProductoId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasIndex(f => new { f.UsuarioId, f.ProductoId }).IsUnique();
-            
-            // Apply matching query filter to avoid EF warning
-            entity.HasQueryFilter(f => !f.Producto.Deleted);
-        });
-
-        // Configuración de Product
-        builder.Entity<Product>(entity =>
-        {
-            entity.HasOne(p => p.Propietario)
-                .WithMany(u => u.Products)
+            entity.HasMany(e => e.Products)
+                .WithOne(p => p.Propietario)
                 .HasForeignKey(p => p.PropietarioId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasMany(e => e.Purchases)
+                .WithOne(p => p.Comprador)
+                .HasForeignKey(p => p.CompradorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
-            entity.HasOne(p => p.Compra)
+        // ========================================
+        // PRODUCT CONFIGURATION
+        // ========================================
+        builder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Descripcion).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Precio).IsRequired().HasPrecision(18, 2);
+            entity.Property(e => e.Categoria).IsRequired();
+            entity.Property(e => e.Imagen).HasMaxLength(500);
+            entity.Property(e => e.Deleted).HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            
+            entity.HasOne(e => e.Propietario)
+                .WithMany(u => u.Products)
+                .HasForeignKey(e => e.PropietarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.Compra)
                 .WithMany(c => c.Products)
-                .HasForeignKey(p => p.CompraId)
+                .HasForeignKey(e => e.CompraId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
-
-            entity.Property(p => p.Precio).HasPrecision(18, 2);
             
             // Apply global query filter for soft delete
             entity.HasQueryFilter(p => !p.Deleted);
         });
 
-        // Configuración de Purchase
+        // ========================================
+        // PURCHASE CONFIGURATION
+        // ========================================
         builder.Entity<Purchase>(entity =>
         {
-            entity.HasOne(p => p.Comprador)
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.FechaCompra).IsRequired();
+            entity.Property(e => e.Total).IsRequired().HasPrecision(18, 2);
+            
+            entity.HasOne(e => e.Comprador)
                 .WithMany(u => u.Purchases)
-                .HasForeignKey(p => p.CompradorId)
+                .HasForeignKey(e => e.CompradorId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            entity.Property(p => p.Total).HasPrecision(18, 2);
+                
+            entity.HasMany(e => e.Products)
+                .WithOne(p => p.Compra)
+                .HasForeignKey(p => p.CompraId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Configuración de Rating
+        // ========================================
+        // RATING CONFIGURATION
+        // ========================================
         builder.Entity<Rating>(entity =>
         {
-            entity.HasOne(r => r.Usuario)
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Puntuacion).IsRequired();
+            entity.Property(e => e.Comentario).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).IsRequired();
+            
+            entity.HasOne(e => e.Usuario)
                 .WithMany(u => u.Ratings)
-                .HasForeignKey(r => r.UsuarioId)
+                .HasForeignKey(e => e.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(r => r.Producto)
+                
+            entity.HasOne(e => e.Producto)
                 .WithMany(p => p.Ratings)
-                .HasForeignKey(r => r.ProductoId)
+                .HasForeignKey(e => e.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            // Índice único: un usuario solo puede valorar un producto una vez
+            entity.HasIndex(e => new { e.UsuarioId, e.ProductoId }).IsUnique();
             
             // Apply matching query filter to avoid EF warning
             entity.HasQueryFilter(r => !r.Producto.Deleted);
         });
 
-        // Configuración de CarritoItem
-        builder.Entity<CarritoItem>(entity =>
+        // ========================================
+        // FAVORITE CONFIGURATION
+        // ========================================
+        builder.Entity<Favorite>(entity =>
         {
-            entity.HasKey(c => c.Id);
-
-            entity.HasOne(c => c.Usuario)
-                .WithMany(u => u.CarritoItems)
-                .HasForeignKey(c => c.UsuarioId)
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.CreatedAt).IsRequired();
+            
+            entity.HasOne(e => e.Usuario)
+                .WithMany(u => u.Favorites)
+                .HasForeignKey(e => e.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(c => c.Producto)
-                .WithMany()
-                .HasForeignKey(c => c.ProductoId)
+            entity.HasOne(e => e.Producto)
+                .WithMany(p => p.Favorites)
+                .HasForeignKey(e => e.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.Property(c => c.Precio).HasPrecision(18, 2);
+            // Índice único: un usuario no puede marcar el mismo producto como favorito dos veces
+            entity.HasIndex(e => new { e.UsuarioId, e.ProductoId }).IsUnique();
             
+            // Apply matching query filter to avoid EF warning
+            entity.HasQueryFilter(f => !f.Producto.Deleted);
+        });
+
+        // ========================================
+        // CARRITO ITEM CONFIGURATION
+        // ========================================
+        builder.Entity<CarritoItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Precio).IsRequired().HasPrecision(18, 2);
+            entity.Property(e => e.CreatedAt).IsRequired();
+
+            entity.HasOne(e => e.Usuario)
+                .WithMany(u => u.CarritoItems)
+                .HasForeignKey(e => e.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Producto)
+                .WithMany()
+                .HasForeignKey(e => e.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Índice único por usuario y producto para evitar duplicados
-            entity.HasIndex(c => new { c.UsuarioId, c.ProductoId }).IsUnique();
+            entity.HasIndex(e => new { e.UsuarioId, e.ProductoId }).IsUnique();
             
             // Apply matching query filter to avoid EF warning
             entity.HasQueryFilter(c => !c.Producto.Deleted);

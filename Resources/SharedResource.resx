@@ -141,4 +141,27 @@
   <data name="SearchProducts" xml:space="preserve">
     <value>Buscar productos...</value>
   </data>
+  
+  <!-- Filter Form -->
+  <data name="Search" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>Todas las categorías</value>
+  </data>
+  <data name="MinPrice" xml:space="preserve">
+    <value>Precio mínimo</value>
+  </data>
+  <data name="MaxPrice" xml:space="preserve">
+    <value>Precio máximo</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
 </root>

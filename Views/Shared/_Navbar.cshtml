@@ -95,28 +95,28 @@
                         <i class="bi bi-globe"></i>
                         @{
                             var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                            var languageLabel = currentCulture switch {
-                                "es" => "🇪🇸 Español",
-                                "en" => "🇬🇧 English",
-                                "fr" => "🇫🇷 Français",
-                                "pt" => "🇵🇹 Português",
-                                _ => "🌐 Idioma"
+                            var langName = currentCulture switch {
+                                "es" => "ES",
+                                "en" => "EN",
+                                "fr" => "FR",
+                                "pt" => "PT",
+                                _ => "ES"
                             };
                         }
-                        @languageLabel
+                        @langName
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="?lang=es">🇪🇸 Español</a>
+                            <a class="dropdown-item @(currentCulture == "es" ? "active" : "")" href="?lang=es">Español</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="?lang=en">🇬🇧 English</a>
+                            <a class="dropdown-item @(currentCulture == "en" ? "active" : "")" href="?lang=en">English</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="?lang=fr">🇫🇷 Français</a>
+                            <a class="dropdown-item @(currentCulture == "fr" ? "active" : "")" href="?lang=fr">Français</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="?lang=pt">🇵🇹 Português</a>
+                            <a class="dropdown-item @(currentCulture == "pt" ? "active" : "")" href="?lang=pt">Português</a>
                         </li>
                     </ul>
                 </li>
