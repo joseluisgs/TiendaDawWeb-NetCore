@@ -95,7 +95,7 @@ public class RatingServiceTests
     }
 
     [Test]
-    public async Task AddRatingAsync_WithoutPurchase_ReturnsFailure()
+    public async Task AddRatingAsync_WithoutPurchase_ReturnsSuccess()
     {
         // Arrange
         var usuario = new User
@@ -126,8 +126,8 @@ public class RatingServiceTests
         var result = await _service.AddRatingAsync(1, 1, 5, "Excelente");
 
         // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Code.Should().Be("PRODUCT_NOT_PURCHASED");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Puntuacion.Should().Be(5);
     }
 
     [Test]

@@ -2,7 +2,7 @@ services:
   waladaw:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: TiendaDawWeb.Web/Dockerfile
     container_name: waladaw-app
     ports:
       - "8080:8080"
@@ -22,7 +22,7 @@ services:
       - Reservas__DurationMinutes=15
       - Reservas__CleanupIntervalMinutes=5
     volumes:
-      - waladaw-uploads:/app/upload-dir
+      - waladaw-uploads:/app/wwwroot/uploads
     restart: unless-stopped
     networks:
       - waladaw-network

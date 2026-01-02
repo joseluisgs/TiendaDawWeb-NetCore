@@ -141,16 +141,37 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Limpiar directorio de uploads al iniciar (tanto en DEV como PROD)
-var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
-if (Directory.Exists(uploadPath))
+// Configurar path base para uploads de forma segura
+var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+var uploadPath = Path.Combine(webRootPath, "uploads");
+
+// Asegurar que wwwroot existe
+if (!Directory.Exists(webRootPath))
 {
-    Log.Information("🗑️ Limpiando directorio uploads...");
-    Directory.Delete(uploadPath, true);
-    Log.Information("✅ Directorio uploads limpiado");
+    Directory.CreateDirectory(webRootPath);
 }
-Directory.CreateDirectory(uploadPath);
-Log.Information("📁 Directorio uploads inicializado correctamente");
+
+// Limpiar directorio de uploads al iniciar (tanto en DEV como PROD)
+try 
+{
+    if (Directory.Exists(uploadPath))
+    {
+        Log.Information("🗑️ Limpiando directorio uploads en: {Path}", uploadPath);
+        Directory.Delete(uploadPath, true);
+        Log.Information("✅ Directorio uploads limpiado");
+    }
+}
+catch (Exception ex)
+{
+    Log.Warning(ex, "⚠️ No se pudo limpiar completamente el directorio uploads, se intentará usar el existente.");
+}
+
+// Recrear directorio
+if (!Directory.Exists(uploadPath))
+{
+    Directory.CreateDirectory(uploadPath);
+}
+Log.Information("📁 Directorio uploads listo en: {Path}", uploadPath);
 
 // Middleware Pipeline
 if (!app.Environment.IsDevelopment())
@@ -166,11 +187,10 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Configurar archivos estáticos para directorio uploads
+// Configurar archivos estáticos para directorio uploads explícitamente
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(app.Environment.WebRootPath, "uploads")),
+    FileProvider = new PhysicalFileProvider(uploadPath),
     RequestPath = "/uploads"
 });
 

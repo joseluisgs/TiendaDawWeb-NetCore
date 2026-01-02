@@ -3,11 +3,13 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy csproj files and restore dependencies
-COPY ["TiendaDawWeb.csproj", "./"]
-RUN dotnet restore "TiendaDawWeb.csproj"
+# Build context must be solution root
+COPY ["TiendaDawWeb.Web/TiendaDawWeb.csproj", "TiendaDawWeb.Web/"]
+RUN dotnet restore "TiendaDawWeb.Web/TiendaDawWeb.csproj"
 
 # Copy everything else and build
 COPY . .
+WORKDIR "/src/TiendaDawWeb.Web"
 RUN dotnet build "TiendaDawWeb.csproj" -c Release -o /app/build
 
 # Publish the application
@@ -23,8 +25,8 @@ EXPOSE 8081
 # Copy published files
 COPY --from=publish /app/publish .
 
-# Create directory for uploads
-RUN mkdir -p upload-dir && chmod 777 upload-dir
+# Create directory for uploads ensuring permissions
+RUN mkdir -p wwwroot/uploads && chmod 777 wwwroot/uploads
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
