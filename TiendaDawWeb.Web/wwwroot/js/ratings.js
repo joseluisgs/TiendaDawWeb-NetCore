@@ -2,6 +2,11 @@
 
 // Variables globales
 document.addEventListener('DOMContentLoaded', function () {
+    // Si no estamos en una página con valoraciones (no existe el contenedor), no hacemos nada
+    if (!document.getElementById("ratingSectionAJAX")) {
+        return;
+    }
+
     // Reemplaza por el valor razor generado
     const isAuthenticated = window.isAuthenticated !== undefined ? window.isAuthenticated : (document.body.dataset.isauthenticated === "true");
     const isOwner = window.isOwner !== undefined ? window.isOwner : false;
@@ -29,6 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // ----------- MEDIA Y LISTA DE VALORACIONES -----------
 
     async function loadRatings() {
+        if (!document.getElementById("ratingSectionAJAX") || !productId) return;
+
         let ratingsListDiv = document.getElementById("ratingsListAJAX");
         let headDiv = document.getElementById("averageRatingHeader");
         try {
@@ -82,6 +89,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function loadRatingForm() {
         const container = document.getElementById("ratingSectionAJAX");
+        if (!container || !productId) return;
+
         container.innerHTML = "";
 
         if (!isAuthenticated || isAuthenticated === "false") {

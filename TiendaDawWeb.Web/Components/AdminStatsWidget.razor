@@ -1,0 +1,113 @@
+@namespace TiendaDawWeb.Components
+@using TiendaDawWeb.Services.Interfaces
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using System.Timers
+@implements IDisposable
+@inject IProductService ProductService
+@inject UserManager<User> UserManager
+@inject IPurchaseService PurchaseService
+@inject ILogger<AdminStatsWidget> Logger
+
+<div class="card border-primary shadow-sm mt-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-cpu"></i> Estadísticas en Vivo (Blazor Component)</h5>
+        <div>
+            <span class="badge bg-light text-primary me-2">Auto-refresh: 15s</span>
+            <button class="btn btn-sm btn-light" @onclick="ManualRefresh" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <i class="bi bi-arrow-clockwise"></i>
+                }
+                Refrescar
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h3 class="text-primary">@usersCount</h3>
+                <small class="text-muted">Usuarios Registrados</small>
+            </div>
+            <div class="col-md-4 border-start border-end">
+                <h3 class="text-success">@productsCount</h3>
+                <small class="text-muted">Productos Activos</small>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-warning">@ordersCount</h3>
+                <small class="text-muted">Ventas Totales</small>
+            </div>
+        </div>
+        <div class="text-end mt-3">
+            <small class="text-muted fst-italic">Última actualización: @lastUpdate.ToString("HH:mm:ss")</small>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int usersCount;
+    private int productsCount;
+    private int ordersCount;
+    private DateTime lastUpdate;
+    private bool isLoading = false;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Blazor: AdminStatsWidget inicializado");
+        await LoadData();
+        
+        // Configurar actualización automática cada 15 segundos
+        _timer = new Timer(15000);
+        _timer.Elapsed += async (sender, e) => await InvokeAsync(AutoRefresh);
+        _timer.AutoReset = true;
+        _timer.Enabled = true;
+    }
+
+    private async Task ManualRefresh()
+    {
+        Logger.LogInformation("🫱 Blazor: Refresco MANUAL solicitado por el usuario");
+        isLoading = true;
+        await Task.Delay(500); // UI Feedback
+        await LoadData();
+        isLoading = false;
+    }
+
+    private async Task AutoRefresh()
+    {
+        Logger.LogInformation("⏱️ Blazor: Refresco AUTOMÁTICO por Timer");
+        await LoadData();
+        StateHasChanged(); // Forzar renderizado en refresco automático
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            usersCount = await UserManager.Users.CountAsync();
+            
+            var productsResult = await ProductService.GetAllAsync();
+            productsCount = productsResult.IsSuccess ? productsResult.Value.Count() : 0;
+
+            var ordersResult = await PurchaseService.GetAllAsync();
+            ordersCount = ordersResult.IsSuccess ? ordersResult.Value.Count() : 0;
+
+            lastUpdate = DateTime.Now;
+            Logger.LogDebug("Blazor: Datos cargados correctamente a las {Time}", lastUpdate);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Blazor: Error al cargar datos en el widget");
+        }
+    }
+
+    public void Dispose()
+    {
+        Logger.LogInformation("Blazor: AdminStatsWidget eliminado (Dispose)");
+        _timer?.Dispose();
+    }
+}

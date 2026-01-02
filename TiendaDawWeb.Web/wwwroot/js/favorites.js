@@ -6,8 +6,9 @@
  */
 async function toggleFavorite(productId) {
     try {
-        const button = document.querySelector(`[data-product-id="${productId}"]`);
-        if (!button) {
+        // Intentar buscar específicamente botones de favoritos
+        const buttons = document.querySelectorAll(`.favorite-btn[data-product-id="${productId}"]`);
+        if (buttons.length === 0) {
             console.error('Favorite button not found');
             return;
         }
@@ -30,21 +31,30 @@ async function toggleFavorite(productId) {
         });
 
         const data = await response.json();
+        console.log('Toggle response:', data); // Debug log
 
         if (data.success) {
-            // Update button appearance
-            const icon = button.querySelector('i');
-            if (data.isFavorite) {
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill');
-                button.classList.remove('btn-outline-danger');
-                button.classList.add('btn-danger');
-            } else {
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
-                button.classList.remove('btn-danger');
-                button.classList.add('btn-outline-danger');
-            }
+            // Actualizar TODOS los botones que coincidan con ese producto (por si está en carrusel y detalle a la vez)
+            buttons.forEach(button => {
+                const icon = button.querySelector('i');
+                if (data.isFavorite) {
+                    // Estado: Es Favorito (Relleno)
+                    if (icon) {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                    }
+                    button.classList.remove('btn-outline-danger');
+                    button.classList.add('btn-danger');
+                } else {
+                    // Estado: No es Favorito (Vacío)
+                    if (icon) {
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                    }
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-outline-danger');
+                }
+            });
 
             // Show toast notification
             showToast(data.message, 'success');

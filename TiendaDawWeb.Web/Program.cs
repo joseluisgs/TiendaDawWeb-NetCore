@@ -23,7 +23,21 @@ Log.Logger = new LoggerConfiguration()
         theme: AnsiConsoleTheme.Code)
     .CreateLogger();
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = Directory.GetCurrentDirectory(),
+    WebRootPath = "wwwroot"
+});
+
+// Si detectamos que estamos en la raíz de la solución, ajustamos las rutas
+if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")) && 
+    Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "TiendaDawWeb.Web", "wwwroot")))
+{
+    var projectPath = Path.Combine(Directory.GetCurrentDirectory(), "TiendaDawWeb.Web");
+    builder.Environment.ContentRootPath = projectPath;
+    builder.Environment.WebRootPath = Path.Combine(projectPath, "wwwroot");
+}
 
 // Use Serilog for logging
 builder.Host.UseSerilog();
@@ -95,6 +109,7 @@ builder.Services.AddControllersWithViews(options =>
 .AddViewLocalization() // Añadir localización para vistas
 .AddDataAnnotationsLocalization(); // Añadir localización para anotaciones
 builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; }); // Soporte para Blazor Server con errores detallados
 
 // Add antiforgery for AJAX requests
 builder.Services.AddAntiforgery(options =>
@@ -232,6 +247,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+app.MapBlazorHub(); // Endpoint para Blazor Server
 // Removed MapBlazorHub - no longer using Blazor Server
 
 // Health check endpoint
