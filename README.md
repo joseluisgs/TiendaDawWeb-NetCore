@@ -6,7 +6,7 @@
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
 [![C#](https://img.shields.io/badge/C%23-14-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10-blue)](https://docs.microsoft.com/en-us/ef/core/)
-[![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
+[![Razor](https://img.shields.io/badge/Razor-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/razor)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC.**
@@ -27,37 +27,31 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
 ## 📑 Tabla de Contenidos
 
 - [WalaDaw 🛒](#waladaw-)
-    - [🎯 Descripción](#-descripción)
-    - [📑 Tabla de Contenidos](#-tabla-de-contenidos)
-    - [✨ Características](#-características)
-        - [Funcionalidades Principales](#funcionalidades-principales)
-        - [Productos 2024-2025](#productos-2024-2025)
-    - [🚀 Tecnologías](#-tecnologías)
-    - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
-        - [Desarrollo Local](#desarrollo-local)
-        - [Build y Tests](#build-y-tests)
-    - [⚒️ Diagrama](#️-diagrama)
-    - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
-    - [🏗️ Arquitectura](#️-arquitectura)
-        - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
-        - [Blazor Server para Favoritos](#blazor-server-para-favoritos)
-        - [ASP.NET Core Identity](#aspnet-core-identity)
-    - [👥 Usuarios Demo](#-usuarios-demo)
-    - [🔒 Seguridad](#-seguridad)
-    - [🌐 Características](#-características-1)
-        - [Para Usuarios](#para-usuarios)
-        - [Para Administradores](#para-administradores)
-    - [📊 Monitorización](#-monitorización)
-    - [🚀 Despliegue en Producción](#-despliegue-en-producción)
-        - [Variables de Entorno](#variables-de-entorno)
-    - [📚 Documentación](#-documentación)
-        - [Repositorio Original](#repositorio-original)
-        - [Características Implementadas](#características-implementadas)
-        - [Tecnologías Clave](#tecnologías-clave)
-    - [📝 Licencia](#-licencia)
-    - [👨‍💻 Autor](#-autor)
-        - [Contacto](#contacto)
-    - [Licencia de uso](#licencia-de-uso)
+  - [🎯 Descripción](#-descripción)
+  - [📑 Tabla de Contenidos](#-tabla-de-contenidos)
+  - [✨ Características](#-características)
+    - [Funcionalidades Principales](#funcionalidades-principales)
+    - [Productos 2024-2025](#productos-2024-2025)
+  - [🚀 Tecnologías](#-tecnologías)
+  - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
+    - [Desarrollo Local](#desarrollo-local)
+    - [Build y Tests](#build-y-tests)
+  - [⚒️ Diagrama](#️-diagrama)
+  - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
+  - [🏗️ Arquitectura](#️-arquitectura)
+    - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
+    - [ASP.NET Core Identity](#aspnet-core-identity)
+  - [👥 Usuarios Demo](#-usuarios-demo)
+  - [🔒 Seguridad](#-seguridad)
+  - [🌐 Características](#-características-1)
+    - [Para Usuarios](#para-usuarios)
+    - [Para Administradores](#para-administradores)
+  - [� Documentación](#-documentación)
+  - [📝 Licencia](#-licencia)
+  - [👨‍💻 Autor](#-autor)
+    - [Contacto](#contacto)
+  - [Licencia de uso](#licencia-de-uso)
+
 
 ## ✨ Características
 
@@ -72,7 +66,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
 - 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático con ImageSharp
 - 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
 - 📄 **Generación de PDFs**: Facturas automáticas con iText7 y diseño profesional
-- ❤️ **Sistema de Favoritos**: Componentes Blazor Server en tiempo real
+- ❤️ **Sistema de Favoritos**: Gestión en tiempo real
 - ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivas
 - 🛒 **Carrito de Compras**: Control de concurrencia con transacciones SERIALIZABLE
 - 🛡️ **Seguridad CSRF**: Protección completa contra ataques Cross-Site Request Forgery
@@ -370,13 +364,7 @@ public async Task<Result<Product, DomainError>> GetByIdAsync(long id)
 }
 ```
 
-### Blazor Server para Favoritos
 
-Componente interactivo en tiempo real sin necesidad de JavaScript:
-
-- Actualización instantánea del estado
-- Comunicación bidireccional con SignalR
-- Integración perfecta con MVC
 
 ### ASP.NET Core Identity
 
@@ -441,26 +429,7 @@ Sistema completo de autenticación y autorización:
     - Ventas por mes (últimos 12 meses)
 - ✅ Filtros por fecha y categoría
 
-## 📊 Monitorización
 
-```bash
-# Health check
-
-
-# Métricas (si Actuator está habilitado)
-
-```
-
-## 🚀 Despliegue en Producción
-
-### Variables de Entorno
-
-```bash
-# Docker Compose
-
-# Base de datos (opcional para PostgreSQL/MySQL)
-
-```
 
 ## 📚 Documentación
 
