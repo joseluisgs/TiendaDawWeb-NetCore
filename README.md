@@ -11,8 +11,8 @@
 
 **Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC.**
 
-Una aplicación web de comercio electrónico de segunda mano migrada completamente desde Java/Spring Boot a .NET 10, 
-con características avanzadas de seguridad, Railway Oriented Programming y gestión de usuarios con ASP.NET Core Identity.
+Una aplicación web de comercio electrónico de segunda mano con características avanzadas de seguridad, Railway Oriented
+Programming y gestión de usuarios con ASP.NET Core Identity.
 
 ## 🎯 Descripción
 
@@ -27,46 +27,47 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
 ## 📑 Tabla de Contenidos
 
 - [WalaDaw 🛒](#waladaw-)
-  - [🎯 Descripción](#-descripción)
-  - [📑 Tabla de Contenidos](#-tabla-de-contenidos)
-  - [✨ Características](#-características)
-    - [Funcionalidades Principales](#funcionalidades-principales)
-    - [Productos 2024-2025](#productos-2024-2025)
-  - [🚀 Tecnologías](#-tecnologías)
-  - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
-    - [Desarrollo Local](#desarrollo-local)
-    - [Build y Tests](#build-y-tests)
-  - [⚒️ Diagrama](#️-diagrama)
-  - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
-  - [🏗️ Arquitectura](#️-arquitectura)
-    - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
-    - [Blazor Server para Favoritos](#blazor-server-para-favoritos)
-    - [ASP.NET Core Identity](#aspnet-core-identity)
-  - [👥 Usuarios Demo](#-usuarios-demo)
-  - [🔒 Seguridad](#-seguridad)
-  - [🌐 Características](#-características-1)
-    - [Para Usuarios](#para-usuarios)
-    - [Para Administradores](#para-administradores)
-  - [📊 Monitorización](#-monitorización)
-  - [🚀 Despliegue en Producción](#-despliegue-en-producción)
-    - [Variables de Entorno](#variables-de-entorno)
-  - [📚 Documentación](#-documentación)
-    - [Repositorio Original](#repositorio-original)
-    - [Características Implementadas](#características-implementadas)
-    - [Tecnologías Clave](#tecnologías-clave)
-  - [📝 Licencia](#-licencia)
-  - [👨‍💻 Autor](#-autor)
-    - [Contacto](#contacto)
-  - [Licencia de uso](#licencia-de-uso)
+    - [🎯 Descripción](#-descripción)
+    - [📑 Tabla de Contenidos](#-tabla-de-contenidos)
+    - [✨ Características](#-características)
+        - [Funcionalidades Principales](#funcionalidades-principales)
+        - [Productos 2024-2025](#productos-2024-2025)
+    - [🚀 Tecnologías](#-tecnologías)
+    - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
+        - [Desarrollo Local](#desarrollo-local)
+        - [Build y Tests](#build-y-tests)
+    - [⚒️ Diagrama](#️-diagrama)
+    - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
+    - [🏗️ Arquitectura](#️-arquitectura)
+        - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
+        - [Blazor Server para Favoritos](#blazor-server-para-favoritos)
+        - [ASP.NET Core Identity](#aspnet-core-identity)
+    - [👥 Usuarios Demo](#-usuarios-demo)
+    - [🔒 Seguridad](#-seguridad)
+    - [🌐 Características](#-características-1)
+        - [Para Usuarios](#para-usuarios)
+        - [Para Administradores](#para-administradores)
+    - [📊 Monitorización](#-monitorización)
+    - [🚀 Despliegue en Producción](#-despliegue-en-producción)
+        - [Variables de Entorno](#variables-de-entorno)
+    - [📚 Documentación](#-documentación)
+        - [Repositorio Original](#repositorio-original)
+        - [Características Implementadas](#características-implementadas)
+        - [Tecnologías Clave](#tecnologías-clave)
+    - [📝 Licencia](#-licencia)
+    - [👨‍💻 Autor](#-autor)
+        - [Contacto](#contacto)
+    - [Licencia de uso](#licencia-de-uso)
 
 ## ✨ Características
 
 ### Funcionalidades Principales
 
 - 🛍️ **Marketplace de Segunda Mano**: Compra y vende productos usados
-- 🔐 **Sistema de Roles**: ADMIN, USER, MODERATOR con permisos diferenciados  
+- 🔐 **Sistema de Roles**: ADMIN, USER, MODERATOR con permisos diferenciados
 - 📧 **Notificaciones por Email**: Confirmación automática asíncrona de compras con templates HTML
-- 📊 **Panel de Administración Completo**: Dashboard con estadísticas en tiempo real, gestión de usuarios, productos y compras
+- 📊 **Panel de Administración Completo**: Dashboard con estadísticas en tiempo real, gestión de usuarios, productos y
+  compras
 - 🔍 **Búsqueda Avanzada**: Filtros por nombre, categoría y precio
 - 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático con ImageSharp
 - 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
@@ -94,16 +95,10 @@ La aplicación incluye productos actuales y relevantes:
 - **Razor Views** - Motor de vistas del lado servidor
 - **Entity Framework Core InMemory** - ORM con base de datos en memoria
 - **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
-- **Blazor Server** - Componentes interactivos en tiempo real
-  - FavoriteButton - Añadir/quitar favoritos sin recarga
-  - FavoritesList - Grid de productos favoritos
-  - RatingStars - Estrellas interactivas para valoraciones
-  - ProductRatingDisplay - Display completo de reviews
-  - CartSummary - Badge del carrito en tiempo real
-- **SignalR** - Comunicación bidireccional en tiempo real
 - **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
 - **Bootstrap 5.3** - Framework CSS responsive
 - **Bootstrap Icons** - Iconografía moderna
+- **Localization (I18n/L10n)** - Soporte multilenguaje
 
 ## 🏃‍♂️ Inicio Rápido
 
@@ -141,131 +136,221 @@ dotnet clean
 
 ```mermaid
 classDiagram
-    direction TB
+  direction TB
 
-    class User {
-        +long id
-        +String nombre
-        +String apellidos
-        +String email
-        +String rol
-        +Boolean deleted
-    }
+%% ENUMS
+  class ProductCategory {
+    <<enumeration>>
+    SMARTPHONES
+    LAPTOPS
+    AUDIO
+    GAMING
+    ACCESSORIES
+  }
 
-    class Product {
-        +long id
-        +String nombre
-        +float precio
-        +boolean reservado
-        +Boolean deleted
-    }
+  class UserRole {
+    <<enumeration>>
+    USER
+    ADMIN
+    MODERATOR
+  }
 
-    class Purchase {
-        +long id
-        +Double total
-    }
+%% CLASES PRINCIPALES
 
-    class CarritoItem {
-        +long id
-        +int cantidad
-    }
+  class User {
+    +long Id
+    +string Nombre
+    +string Apellidos
+    +string Email
+    +string Rol
+    +string? Avatar
+    +DateTime FechaAlta
+    +bool Deleted
+    +DateTime? DeletedAt
+    +string? DeletedBy
+  }
 
-    class Favorite {
-        +long id
-    }
+  class Product {
+    +long Id
+    +string Nombre
+    +string Descripcion
+    +decimal Precio
+    +string? Imagen
+    +ProductCategory Categoria
+    +bool Reservado
+    +bool Deleted
+    +DateTime? DeletedAt
+    +string? DeletedBy
+    +DateTime CreatedAt
+    +double RatingPromedio
+    +string ImagenOrDefault
+  }
 
-    class Rating {
-        +long id
-        +int puntuacion
-    }
+  class Purchase {
+    +long Id
+    +DateTime FechaCompra
+    +decimal Total
+  }
 
-    class Role {
-        <<enumeration>>
-        USER
-        ADMIN
-    }
+  class CarritoItem {
+    +long Id
+    +DateTime CreatedAt
+    +decimal Precio
+    +byte[]? RowVersion
+  }
 
-    class ProductCategory {
-        <<enumeration>>
-        SMARTPHONES
-        LAPTOPS
-        AUDIO
-        GAMING
-        ACCESSORIES
-    }
+  class Favorite {
+    +long Id
+    +DateTime CreatedAt
+  }
 
-    User "*" -- "1" Role : tiene
-    User "1" -- "*" Product : propietario
-    User "1" -- "*" Purchase : realiza
-    User "1" -- "*" CarritoItem : gestiona
-    User "1" -- "*" Favorite : marca
-    User "1" -- "*" Rating : escribe
+  class Rating {
+    +long Id
+    +int Puntuacion
+    +string? Comentario
+    +DateTime CreatedAt
+  }
 
-    Product "*" -- "1" ProductCategory : categoria
-    Product "*" -- "0..1" Purchase : compra
-    Product "1" -- "*" CarritoItem : item
-    Product "1" -- "*" Favorite : fav
-    Product "1" -- "*" Rating : val
+%% RELACIONES
 
-    Purchase "1" -- "*" Product : contiene
+  User "1" -- "*" Product : Propietario
+  User "1" -- "*" Purchase : Purchases
+  User "1" -- "*" CarritoItem : CarritoItems
+  User "1" -- "*" Favorite : Favorites
+  User "1" -- "*" Rating : Ratings
+  User "1" -- "1" UserRole : Rol
+
+  Product "*" -- "1" ProductCategory : Categoria
+  Product "1" -- "0..1" Purchase : Compra
+  Product "1" -- "*" CarritoItem : CarritoItems
+  Product "1" -- "*" Favorite : Favoritos
+  Product "1" -- "*" Rating : Valoraciones
+
+  Purchase "1" -- "*" Product : Products
+
+  Favorite "*" -- "1" User : Usuario
+  Favorite "*" -- "1" Product : Producto
+
+  Rating "*" -- "1" User : Usuario
+  Rating "*" -- "1" Product : Producto
+
+  CarritoItem "*" -- "1" User : Usuario
+  CarritoItem "*" -- "1" Product : Producto
 ```
 
 ## 📂 Estructura del Proyecto
 
 ```
 TiendaDawWeb-NetCore/
-├── Program.cs                      # Punto de entrada y configuración
-├── TiendaDawWeb.csproj            # Archivo de proyecto .NET
-├── appsettings.json               # Configuración de la aplicación
+├── Program.cs
+│   # Punto de entrada. Configura servicios y la app web (host, middlewares, rutas, etc).
+├── TiendaDawWeb.csproj
+│   # Archivo de proyecto y dependencias NuGet.
+├── appsettings.json
+│   # Configuración de cadena de conexión, opciones de la app, etc.
+│
 ├── Data/
-│   ├── ApplicationDbContext.cs    # Contexto de Entity Framework
-│   └── SeedData.cs                # Datos de ejemplo
-├── Models/                         # Entidades de dominio
-│   ├── User.cs                    # Usuario con Identity
-│   ├── Product.cs                 # Producto
-│   ├── Favorite.cs                # Favoritos (Many-to-Many)
-│   ├── Purchase.cs                # Compras
-│   └── Rating.cs                  # Valoraciones
-├── Services/                       # Capa de servicios con ROP
+│   ├── ApplicationDbContext.cs      # DbContext de Entity Framework, define DbSets/relaciones.
+│   └── SeedData.cs                  # Opcional: inicialización de datos de ejemplo/pruebas.
+│
+├── Models/
+│   ├── Enums/
+│   │   ├── ProductCategory.cs       # Enum de categorías de producto.
+│   │   └── UserRole.cs              # Enum de roles de usuario, si lo usas así.
+│   ├── User.cs                      # Entidad usuario con Identity (tiene Products, Purchases, etc.)
+│   ├── Product.cs                   # Entidad principal producto.
+│   ├── Purchase.cs                  # Compra (1 usuario, muchos productos)
+│   ├── Favorite.cs                  # Relación Favorite (usuario <-> producto)
+│   ├── Rating.cs                    # Valoración sobre producto.
+│   └── CarritoItem.cs               # Número de producto en carrito (sin cantidad).
+│
+├── Services/                        # Lógica de negocio centralizada.
 │   ├── Interfaces/
+│   │   ├── IProductService.cs
+│   │   ├── IFavoriteService.cs
+│   │   ├── IRatingService.cs
+│   │   └── ...                      # Interfaces para inversión de dependencias.
 │   └── Implementations/
-├── Controllers/                    # Controladores MVC
-│   ├── PublicController.cs       # Página pública y búsqueda
-│   ├── AuthController.cs         # Autenticación (login/register)
-│   ├── ProductController.cs      # CRUD de productos
-│   ├── FavoriteController.cs     # Gestión de favoritos
-│   ├── CarritoController.cs      # Carrito de compras
-│   ├── PurchaseController.cs     # Compras y facturas
-│   ├── RatingController.cs       # Valoraciones
-│   ├── AdminController.cs        # Panel de administración
-│   └── ProfileController.cs      # Gestión de perfil
-├── ViewModels/                     # ViewModels para formularios
-├── Views/                          # Vistas Razor
+│       ├── ProductService.cs
+│       ├── FavoriteService.cs
+│       ├── RatingService.cs
+│       └── ...                      # Implementación real de la lógica.
+│
+├── Controllers/
+│   ├── HomeController.cs            # Inicio y páginas generales.
+│   ├── AuthController.cs            # Registro/inicio de sesión/cierre sesión.
+│   ├── ProductController.cs         # Listado, detalle, crear, editar, eliminar producto.
+│   ├── FavoriteController.cs        # Añadir/quitar/listar favoritos.
+│   ├── CarritoController.cs         # Añadir/quitar/cargar el carrito.
+│   ├── PurchaseController.cs        # Comprar, ver historial y detalle de compras.
+│   ├── RatingController.cs          # Añadir/ver valoraciones vía AJAX/API.
+│   ├── AdminController.cs           # Panel de admin.
+│   └── ProfileController.cs         # Detalle, edición y seguridad de perfil usuario.
+│
+├── ViewModels/
+│   ├── ProductViewModel.cs          # Datos compuestos para vistas de producto.
+│   ├── UserViewModel.cs             # Datos compuestos para vistas de usuario.
+│   ├── PurchaseViewModel.cs         # Para vistas de compras.
+│   ├── RatingViewModel.cs           # Valoraciones (si no usas entidades directas).
+│   ├── CarritoItemViewModel.cs      # Visualización del carrito.
+│   ├── LoginViewModel.cs            # Login.
+│   ├── RegisterViewModel.cs         # Registro.
+│   └── ...                          # Otros, según necesidades de formularios/vistas.
+│
+├── Views/
 │   ├── Shared/
-│   ├── Public/
+│   │   ├── _Layout.cshtml           # Layout principal de la web.
+│   │   ├── _LoginPartial.cshtml     # Login/logout parcial menú.
+│   │   ├── _ValidationScriptsPartial.cshtml
+│   │   └── Error.cshtml             # Página general de error.
+│   ├── Home/
+│   │   ├── Index.cshtml             # Home (landing).
+│   │   └── About.cshtml             # Acerca de, ayuda, etc.
 │   ├── Auth/
+│   │   ├── Login.cshtml
+│   │   ├── Register.cshtml
+│   │   ├── ForgotPassword.cshtml
+│   │   └── ResetPassword.cshtml
 │   ├── Product/
+│   │   ├── Index.cshtml             # Listado de productos.
+│   │   ├── Details.cshtml           # Ficha de producto.
+│   │   ├── Create.cshtml
+│   │   ├── Edit.cshtml
+│   │   └── Delete.cshtml
 │   ├── Favorite/
+│   │   └── Index.cshtml             # Listado de favoritos.
 │   ├── Carrito/
+│   │   ├── Index.cshtml             # Carrito de usuario.
+│   │   ├── Checkout.cshtml          # Confirmar compra.
 │   ├── Purchase/
+│   │   ├── Index.cshtml             # Historial de compras.
+│   │   ├── Details.cshtml           # Detalle de compra.
 │   ├── Profile/
-│   └── Admin/                    # Panel de administración
-│       ├── Index.cshtml          # Dashboard
-│       ├── Usuarios.cshtml       # Gestión de usuarios
-│       ├── Productos.cshtml      # Gestión de productos
-│       ├── Compras.cshtml        # Historial de compras
-│       └── Estadisticas.cshtml   # Estadísticas avanzadas
-├── Components/                     # Componentes Blazor Server
-│   ├── FavoriteButton.razor      # Botón de favorito interactivo
-│   ├── FavoritesList.razor       # Lista de favoritos
-│   ├── RatingStars.razor         # Estrellas de valoración
-│   ├── ProductRatingDisplay.razor # Display de valoraciones
-│   └── CartSummary.razor         # Resumen del carrito
-├── Errors/                         # Errores de dominio (ROP)
-└── wwwroot/                        # Archivos estáticos
+│   │   ├── Index.cshtml             # Mi perfil.
+│   │   ├── Edit.cshtml              # Editar datos.
+│   │   ├── ChangePassword.cshtml    # Cambiar contraseña.
+│   └── Admin/
+│       ├── Index.cshtml             # Dashboard.
+│       ├── Usuarios.cshtml          # Administración de usuarios.
+│       ├── Productos.cshtml         # Administración de productos.
+│       ├── Compras.cshtml           # Administración de compras.
+│       ├── Estadisticas.cshtml      # Estadísticas, gráficas, etc.
+│       └── Logs.cshtml              # Logs del sistema (opcional).
+│
+├── Errors/
+│   └── ErrorViewModel.cs            # ViewModel de errores.
+│
+└── wwwroot/
     ├── css/
+    │   ├── site.css
+    │   └── styles.css
     ├── js/
+    │   ├── ratings.js               # Valoraciones AJAX.
+    │   ├── favorites.js             # Lógica de favoritos AJAX.
+    │   ├── carrito.js               # Carrito AJAX.
+    │   └── ...                      # Otros scripts propios.
     └── images/
+        └── default-product.jpg      # Imagen por defecto, otros media.
 ```
 
 ## 🏗️ Arquitectura
@@ -304,11 +389,11 @@ Sistema completo de autenticación y autorización:
 
 ## 👥 Usuarios Demo
 
-| Usuario    | Email                  | Password | Rol       |
-|------------|------------------------|----------|-----------|
-| Admin      | admin@waladaw.com      | admin    | ADMIN     |
-| Prueba     | prueba@prueba.com      | user123  | USER      |
-| Moderador  | moderador@waladaw.com  | user123  | MODERATOR |
+| Usuario   | Email                 | Password | Rol       |
+|-----------|-----------------------|----------|-----------|
+| Admin     | admin@waladaw.com     | admin    | ADMIN     |
+| Prueba    | prueba@prueba.com     | user123  | USER      |
+| Moderador | moderador@waladaw.com | user123  | MODERATOR |
 
 ## 🔒 Seguridad
 
@@ -334,11 +419,13 @@ Sistema completo de autenticación y autorización:
 - ✅ Publicar productos con imágenes
 - ✅ Editar y eliminar productos propios
 - ✅ Sistema de valoraciones con estrellas
-- ✅ Gestión de favoritos en tiempo real (Blazor Server)
+- ✅ Gestión de favoritos en tiempo real
 - ✅ Carrito de compras con control de concurrencia
 - ✅ Proceso de checkout completo
 - ✅ Historial de compras
 - ✅ Descarga de facturas en PDF
+- ✅ Búsqueda avanzada con filtros
+- ✅ Localización con I18n y L10n
 
 ### Para Administradores
 
@@ -348,10 +435,10 @@ Sistema completo de autenticación y autorización:
 - ✅ Gestión de productos (ver, filtrar, eliminar)
 - ✅ Historial de todas las compras
 - ✅ Estadísticas avanzadas:
-  - Categorías más vendidas
-  - Top 10 compradores
-  - Top 10 vendedores
-  - Ventas por mes (últimos 12 meses)
+    - Categorías más vendidas
+    - Top 10 compradores
+    - Top 10 vendedores
+    - Ventas por mes (últimos 12 meses)
 - ✅ Filtros por fecha y categoría
 
 ## 📊 Monitorización
@@ -377,46 +464,8 @@ Sistema completo de autenticación y autorización:
 
 ## 📚 Documentación
 
-### Repositorio Original
-
-Este proyecto es una migración completa del proyecto Java/Spring Boot:
-- **Origen**: [TiendaDawWeb-SpringBoot](https://github.com/joseluisgs/TiendaDawWeb-SpringBoot)
-- **Destino**: TiendaDawWeb-NetCore (.NET 10)
-
-### Características Implementadas
-
-✅ **100% de funcionalidad migrada desde Spring Boot**
-- Sistema completo de autenticación y autorización con ASP.NET Core Identity
-- CRUD de productos con imágenes y categorías
-- Sistema de favoritos en tiempo real con Blazor Server (5 componentes)
-- Carrito de compras con control de concurrencia (Optimistic Concurrency Control)
-- Sistema de valoraciones con estrellas interactivas
-- Panel de administración completo con estadísticas avanzadas
-- Gestión de usuarios con roles (ADMIN, USER, MODERATOR)
-- Historial de compras y generación de facturas PDF
-- Gestión de perfil de usuario con avatar
-- Railway Oriented Programming para manejo de errores
-- Diseño responsive con Bootstrap 5.3
-- Soft delete para usuarios y productos
-- Background services para limpieza de datos
-
-### Componentes Blazor Server
-
-El proyecto incluye 5 componentes Blazor Server para interactividad en tiempo real:
-
-1. **FavoriteButton**: Botón interactivo para añadir/quitar favoritos sin recarga
-2. **FavoritesList**: Grid de productos favoritos del usuario
-3. **RatingStars**: Componente de estrellas para valoraciones (modo lectura e interactivo)
-4. **ProductRatingDisplay**: Display completo de valoraciones con estadísticas
-5. **CartSummary**: Badge del carrito que se actualiza en tiempo real
-
-### Tecnologías Clave
-
-- **Railway Oriented Programming**: Manejo de errores funcional con Result<T, TError>
-- **Blazor Server**: Componentes interactivos sin JavaScript
-- **ASP.NET Core Identity**: Autenticación y autorización robusta
-- **Entity Framework Core**: ORM con InMemory para desarrollo
-
+- Repositorio de apuntes de
+  curso: [Desarrollo Web en Entornos Servidor - 05 Desarrollo de páginas web dinámicas .NET](https://github.com/joseluisgs/DesarrolloWebEntornosServidor-05-2025-2026)
 
 ## 📝 Licencia
 
