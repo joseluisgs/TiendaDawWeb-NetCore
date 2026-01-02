@@ -26,11 +26,13 @@ public class RatingService(
 
             if (producto == null) return Result.Failure<Rating, DomainError>(RatingError.ProductNotFound(productoId));
 
-            // 3. Verificar que el usuario ha comprado el producto
-            var canRateResult = await CanUserRateProductAsync(usuarioId, productoId);
-            if (canRateResult.IsFailure) return Result.Failure<Rating, DomainError>(canRateResult.Error);
+            // 3. Verificar que el usuario ha comprado el producto --> No es necesario, porque ya no lo verá el producto
+            // Para el futuro, lo mejor es que sea si solo lo ha comprado
+            // y hacer un seguimiento de si ya ha valorado o no
+            // var canRateResult = await CanUserRateProductAsync(usuarioId, productoId);
+            // if (canRateResult.IsFailure) return Result.Failure<Rating, DomainError>(canRateResult.Error);
 
-            if (!canRateResult.Value) return Result.Failure<Rating, DomainError>(RatingError.ProductNotPurchased);
+            // if (!canRateResult.Value) return Result.Failure<Rating, DomainError>(RatingError.ProductNotPurchased);
 
             // 4. Verificar que no haya valorado ya el producto
             var existingRating = await context.Ratings

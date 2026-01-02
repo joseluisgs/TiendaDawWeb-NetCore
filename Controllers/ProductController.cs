@@ -36,6 +36,7 @@ public class ProductController(
     /// <summary>
     ///     Detalle de un producto
     /// </summary>
+    [AllowAnonymous]
     public async Task<IActionResult> Details(long id) {
         var result = await productService.GetByIdAsync(id);
 
