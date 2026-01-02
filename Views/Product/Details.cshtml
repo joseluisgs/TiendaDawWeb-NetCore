@@ -1,6 +1,7 @@
 @model Product
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
+@using System.Globalization
 @inject UserManager<User> UserManager
 @{
     ViewData["Title"] = Model.Nombre;
@@ -26,7 +27,7 @@
         </div>
         
         <h2 class="text-primary mb-4">
-            @Model.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
+            @Model.Precio.ToString("C2", new CultureInfo("es-ES"))
         </h2>
         
         <div class="card mb-4">

@@ -5,7 +5,7 @@
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 @inject ICarritoService CarritoService
-@inject IStringLocalizer<TiendaDawWeb.Resources.Messages> Localizer
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
     var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
@@ -29,19 +29,19 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Public" asp-action="Index">
-                        <i class="bi bi-house-door"></i> @Localizer["Home"]
+                        <i class="bi bi-house-door"></i> @Localizer["Nav.Home"]
                     </a>
                 </li>
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Product" asp-action="MyProducts">
-                            <i class="bi bi-bag"></i> @Localizer["MyProducts"]
+                            <i class="bi bi-bag"></i> @Localizer["Nav.MyProducts"]
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Purchase" asp-action="MyPurchases">
-                            <i class="bi bi-receipt"></i> @Localizer["MyPurchases"]
+                            <i class="bi bi-receipt"></i> @Localizer["Nav.MyPurchases"]
                         </a>
                     </li>
                     <li class="nav-item">
@@ -125,7 +125,7 @@
                 {
                     <li class="nav-item">
                         <a class="nav-link position-relative" asp-controller="Carrito" asp-action="Index">
-                            <i class="bi bi-cart3"></i> @Localizer["Cart"]
+                            <i class="bi bi-cart3"></i> @Localizer["Nav.Cart"]
                             @if (cartCount > 0)
                             {
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -150,7 +150,7 @@
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit()">
-                                    <i class="bi bi-box-arrow-right"></i> @Localizer["Logout"]
+                                    <i class="bi bi-box-arrow-right"></i> @Localizer["Nav.Logout"]
                                 </a>
                             </li>
                         </ul>
@@ -160,7 +160,7 @@
                 {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Auth" asp-action="Login">
-                            <i class="bi bi-person"></i> @Localizer["Login"]
+                            <i class="bi bi-person"></i> @Localizer["Nav.Login"]
                         </a>
                     </li>
                 }

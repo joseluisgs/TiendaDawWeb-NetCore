@@ -28,7 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 // Configurar cultura española por defecto
-var defaultCulture = new CultureInfo("es");
+var defaultCulture = new CultureInfo("es-ES");
 CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
 CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
@@ -179,14 +179,14 @@ app.UseRouting();
 // Configurar localización con soporte para parámetro ?lang=
 var supportedCultures = new[] 
 { 
-    new CultureInfo("es"),    // 🔴 Español primero (default)
-    new CultureInfo("en"),
-    new CultureInfo("fr"),
-    new CultureInfo("pt")
+    new CultureInfo("es-ES"),    // 🔴 Español primero (default)
+    new CultureInfo("en-US"),
+    new CultureInfo("fr-FR"),
+    new CultureInfo("pt-PT")
 };
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture("es"), // 🔴 Español por defecto
+    DefaultRequestCulture = new RequestCulture("es-ES"), // 🔴 Español por defecto
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures,
     ApplyCurrentCultureToResponseHeaders = true,
