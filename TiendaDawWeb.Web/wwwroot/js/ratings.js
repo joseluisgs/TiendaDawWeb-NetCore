@@ -4,6 +4,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Reemplaza por el valor razor generado
     const isAuthenticated = window.isAuthenticated !== undefined ? window.isAuthenticated : (document.body.dataset.isauthenticated === "true");
+    const isOwner = window.isOwner !== undefined ? window.isOwner : false;
     const productId = window.productId !== undefined ? window.productId : (document.body.dataset.productid || null);
 
     loadRatings();
@@ -87,6 +88,14 @@ document.addEventListener('DOMContentLoaded', function () {
             container.innerHTML = `
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle"></i> Debes <a href="/Identity/Account/Login" class="alert-link">iniciar sesión</a> para dejar una valoración.
+                </div>`;
+            return;
+        }
+
+        if (isOwner) {
+            container.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No puedes valorar tu propio producto.
                 </div>`;
             return;
         }
