@@ -1,7 +1,10 @@
 @model Product
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
+@using System.Globalization
+@using Microsoft.Extensions.Localization
 @inject UserManager<User> UserManager
+@inject IStringLocalizer<SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Model.Nombre;
     var currentUser = await UserManager.GetUserAsync(User);
@@ -16,7 +19,7 @@
         <h1 class="mb-3">@Model.Nombre</h1>
         
         <div class="mb-3">
-            <span class="badge bg-secondary">@Model.Categoria</span>
+            <span class="badge bg-secondary">@SharedLocalizer[$"Category.{Model.Categoria}"]</span>
             @if (Model.Ratings.Any())
             {
                 <span class="badge bg-warning text-dark">
@@ -26,7 +29,7 @@
         </div>
         
         <h2 class="text-primary mb-4">
-            @Model.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
+            @Model.Precio.ToString("C2", new CultureInfo("es-ES"))
         </h2>
         
         <div class="card mb-4">

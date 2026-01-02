@@ -1,4 +1,5 @@
 @model IEnumerable<TiendaDawWeb.Models.CarritoItem>
+@using System.Globalization
 @{
     ViewData["Title"] = "Carrito de Compras";
 }
@@ -42,7 +43,7 @@
                                 </div>
                                 <div class="col-md-2 text-center">
                                     <label class="small text-muted">Precio</label>
-                                    <p class="fw-bold text-primary">@item.Precio.ToString("C")</p>
+                                    <p class="fw-bold text-primary">@item.Precio.ToString("C2", new CultureInfo("es-ES"))</p>
                                 </div>
                                 <div class="col-md-2 text-end">
                                     <form asp-action="remove" method="post" class="d-inline">
@@ -80,7 +81,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal:</span>
-                            <span>@ViewBag.Total.ToString("C")</span>
+                            <span>@ViewBag.Total.ToString("C2", new CultureInfo("es-ES"))</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Envío:</span>
@@ -89,7 +90,7 @@
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total:</strong>
-                            <strong class="text-primary fs-4">@ViewBag.Total.ToString("C")</strong>
+                            <strong class="text-primary fs-4">@ViewBag.Total.ToString("C2", new CultureInfo("es-ES"))</strong>
                         </div>
 
                         <a href="@Url.Action("Resumen")" class="btn btn-primary w-100 mb-2">

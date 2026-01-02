@@ -33,12 +33,13 @@
                             <div class="input-group">
                                 <input asp-for="Precio" 
                                        class="form-control" 
-                                       type="text" 
-                                       inputmode="decimal"
-                                       pattern="[0-9]+([.,][0-9]{1,2})?"
-                                       placeholder="@(System.Globalization.CultureInfo.CurrentCulture.Name == "es-ES" ? "19,99" : "19.99")" />
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0.01"
+                                       placeholder="19.99" />
                                 <span class="input-group-text">€</span>
                             </div>
+                            <small class="text-muted">Use punto (.) como separador decimal. Ejemplo: 19.99</small>
                             <span asp-validation-for="Precio" class="text-danger"></span>
                         </div>
                         
