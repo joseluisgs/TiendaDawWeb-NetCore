@@ -11,8 +11,9 @@ using CSharpFunctionalExtensions;
 namespace TiendaDawWeb.Tests.Components;
 
 /// <summary>
-/// Ejemplo de test unitario para un componente Blazor usando bUnit.
-/// Este test muestra cómo mockear servicios y verificar el renderizado de la UI.
+/// OBJETIVO: Verificar el renderizado dinámico del resumen de estrellas en la cabecera.
+/// LO QUE BUSCA: Validar que el componente Blazor RatingSummary transforma correctamente 
+/// una lista de valoraciones en una representación visual de estrellas y promedios.
 /// </summary>
 public class RatingSummaryTests : BunitTestContext
 {
@@ -23,20 +24,26 @@ public class RatingSummaryTests : BunitTestContext
     [SetUp]
     public void Setup()
     {
+        // Inicialización de dependencias mockeadas
         _ratingServiceMock = new Mock<IRatingService>();
         _loggerMock = new Mock<ILogger<RatingSummary>>();
         _stateContainer = new RatingStateContainer();
 
-        // Registrar servicios necesarios en el contenedor de bUnit
+        // Inyección de servicios en el contexto de bUnit
         Services.AddSingleton(_ratingServiceMock.Object);
         Services.AddSingleton(_loggerMock.Object);
         Services.AddSingleton(_stateContainer);
     }
 
+    /// <summary>
+    /// PRUEBA: Renderizado de media con estrellas.
+    /// OBJETIVO: Verificar que si un producto tiene valoraciones (ej. 5 y 4), 
+    /// el componente muestra "4.5" y el número correcto de iconos de estrellas.
+    /// </summary>
     [Test]
     public void Should_Render_Average_Stars_Correctly()
     {
-        // Arrange
+        // Arrange (Preparación)
         var productId = 1L;
         var ratings = new List<Rating>
         {
@@ -47,24 +54,28 @@ public class RatingSummaryTests : BunitTestContext
         _ratingServiceMock.Setup(s => s.GetByProductoIdAsync(productId))
             .ReturnsAsync(Result.Success<IEnumerable<Rating>, TiendaDawWeb.Errors.DomainError>(ratings));
 
-        // Act - Renderizar el componente
+        // Act (Acción: Renderizado del componente)
         var cut = RenderComponent<RatingSummary>(parameters => parameters
             .Add(p => p.ProductId, productId));
 
-        // Assert
-        // Verificamos que se muestra la media (4.5 o 4,5 según cultura)
+        // Assert (Verificación)
         var text = cut.Markup;
-        Assert.That(text, Does.Match("4[.,]5"));
+        Assert.That(text, Does.Match("4[.,]5")); // Comprueba que aparece la media (formato internacional)
         Assert.That(text, Does.Contain("(2 valoraciones)"));
         
-        // Verificamos que hay estrellas llenas (FontAwesome classes)
+        // Verificamos la lógica visual: 4 estrellas llenas + 1 media estrella = 4.5
         var filledStars = cut.FindAll("i.bi-star-fill");
-        Assert.That(filledStars.Count, Is.EqualTo(4)); // 4 estrellas llenas para un 4.5
+        Assert.That(filledStars.Count, Is.EqualTo(4));
         
         var halfStar = cut.FindAll("i.bi-star-half");
-        Assert.That(halfStar.Count, Is.EqualTo(1)); // 1 estrella media para el .5
+        Assert.That(halfStar.Count, Is.EqualTo(1));
     }
 
+    /// <summary>
+    /// PRUEBA: Comportamiento sin valoraciones.
+    /// OBJETIVO: Asegurar que si el servicio devuelve una lista vacía, 
+    /// el componente muestra un mensaje informativo amigable en lugar de errores o 0.
+    /// </summary>
     [Test]
     public void Should_Show_No_Ratings_Message_When_Empty()
     {
