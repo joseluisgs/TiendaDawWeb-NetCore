@@ -182,6 +182,7 @@ var supportedCultures = new[]
     new CultureInfo("es-ES"),    // 🔴 Español primero (default)
     new CultureInfo("en-US"),
     new CultureInfo("fr-FR"),
+    new CultureInfo("de-DE"),
     new CultureInfo("pt-PT")
 };
 app.UseRequestLocalization(new RequestLocalizationOptions
@@ -197,6 +198,8 @@ app.UseRequestLocalization(new RequestLocalizationOptions
         new AcceptLanguageHeaderRequestCultureProvider()
     }
 });
+
+Log.Information("🌍 Soporte de localización configurado, idioma por defecto: 🇪🇸 es-ES");
 
 app.UseAuthentication();
 app.UseAuthorization();

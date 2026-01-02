@@ -164,4 +164,26 @@
   <data name="Clear" xml:space="preserve">
     <value>Limpiar</value>
   </data>
+  
+  <!-- Paginacion -->
+  <data name="Pag.Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Pag.Next" xml:space="preserve">
+    <value>Siguiente</value>
+  </data>
+
+  <!-- Otros -->
+  <data name="NoProductsFound" xml:space="preserve">
+    <value>No hay productos en este momento</value>
+    <comment>NoProductsFound</comment>
+  </data>
+  <data name="AddToCart" xml:space="preserve">
+    <value>Comprar</value>
+    <comment>AddToCart</comment>
+  </data>
+  <data name="Reserved" xml:space="preserve">
+    <value>Reservado</value>
+    <comment>Reserved</comment>
+  </data>
 </root>

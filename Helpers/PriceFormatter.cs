@@ -13,7 +13,8 @@ public static class PriceFormatter
     /// </summary>
     public static string FormatPrice(decimal price)
     {
-        var culture = new CultureInfo("es-ES");
+        // Tomamos la cultura por defector que hay en el sistema
+        var culture = CultureInfo.CurrentCulture;
         return price.ToString("C2", culture); // C2 = Currency con 2 decimales
     }
     

@@ -6,6 +6,17 @@
 @inject SignInManager<User> SignInManager
 @inject IStringLocalizer<TiendaDawWeb.Resources.Messages> Localizer
 @inject IStringLocalizer<SharedResource> SharedLocalizer
+
+@*
+// Codigo para depurar la cultura
+@{
+    var debugCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    var debugUICulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+}
+<div style="position:fixed;top:0;right:0;background:yellow;z-index:99999;">
+    Culture: @debugCulture | UICulture: @debugUICulture
+</div>*@
+
 @{
     ViewData["Title"] = "Inicio - WalaDaw";
     var currentUser = await UserManager.GetUserAsync(User);
@@ -56,7 +67,7 @@
     @if (!Model.Any())
     {
         <div class="alert alert-info text-center">
-            <i class="bi bi-info-circle"></i> No hay productos disponibles en este momento.
+            <i class="bi bi-info-circle"></i> @SharedLocalizer["NoProductsFound"]
         </div>
     }
     else
@@ -101,14 +112,14 @@
                                                   method="post"
                                                   style="display: inline-block;">
                                                 <button type="submit" class="btn btn-success btn-sm">
-                                                    <i class="bi bi-cart-plus"></i> Comprar
+                                                    <i class="bi bi-cart-plus"></i> @SharedLocalizer["AddToCart"]
                                                 </button>
                                             </form>
                                         }
                                         else
                                         {
                                             <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-lock-fill"></i> Reservado
+                                                <i class="bi bi-lock-fill"></i> @SharedLocalizer["Reserved"]
                                             </span>
                                         }
                                     </div>
@@ -142,14 +153,14 @@
                                 <li class="page-item">
                                     <a class="page-link" 
                                        href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
-                                        <i class="bi bi-chevron-left"></i> Anterior
+                                        <i class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]
                                     </a>
                                 </li>
                             }
                             else
                             {
                                 <li class="page-item disabled">
-                                    <span class="page-link"><i class="bi bi-chevron-left"></i> Anterior</span>
+                                    <span class="page-link"><i class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]</span>
                                 </li>
                             }
 
@@ -179,14 +190,14 @@
                                 <li class="page-item">
                                     <a class="page-link"
                                        href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
-                                        Siguiente <i class="bi bi-chevron-right"></i>
+                                        @SharedLocalizer["Pag.Next"] <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>
                             }
                             else
                             {
                                 <li class="page-item disabled">
-                                    <span class="page-link">Siguiente <i class="bi bi-chevron-right"></i></span>
+                                    <span class="page-link">@SharedLocalizer["Pag.Next"] <i class="bi bi-chevron-right"></i></span>
                                 </li>
                             }
                         </ul>

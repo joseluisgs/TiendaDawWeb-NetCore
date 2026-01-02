@@ -99,6 +99,7 @@
                                 "es" => "ES",
                                 "en" => "EN",
                                 "fr" => "FR",
+                                "de" => "DE",
                                 "pt" => "PT",
                                 _ => "ES"
                             };
@@ -114,6 +115,9 @@
                         </li>
                         <li>
                             <a class="dropdown-item @(currentCulture == "fr" ? "active" : "")" href="?lang=fr">Français</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item @(currentCulture == "de" ? "active" : "")" href="?lang=de">Deutsch</a>
                         </li>
                         <li>
                             <a class="dropdown-item @(currentCulture == "pt" ? "active" : "")" href="?lang=pt">Português</a>

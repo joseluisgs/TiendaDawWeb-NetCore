@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+
+    <!-- Navigation -->
+    <data name="Nav.Home" xml:space="preserve"><value>Startseite</value></data>
+    <data name="Nav.MyProducts" xml:space="preserve"><value>Meine Produkte</value></data>
+    <data name="Nav.MyPurchases" xml:space="preserve"><value>Meine Einkäufe</value></data>
+    <data name="Nav.Favorites" xml:space="preserve"><value>Favoriten</value></data>
+    <data name="Nav.Profile" xml:space="preserve"><value>Profil</value></data>
+    <data name="Nav.Admin" xml:space="preserve"><value>Verwaltung</value></data>
+    <data name="Nav.Cart" xml:space="preserve"><value>Warenkorb</value></data>
+    <data name="Nav.Login" xml:space="preserve"><value>Anmelden</value></data>
+    <data name="Nav.Logout" xml:space="preserve"><value>Abmelden</value></data>
+
+    <!-- Categories -->
+    <data name="Category.SMARTPHONES" xml:space="preserve"><value>Smartphones</value></data>
+    <data name="Category.LAPTOPS" xml:space="preserve"><value>Laptops</value></data>
+    <data name="Category.ACCESSORIES" xml:space="preserve"><value>Zubehör</value></data>
+    <data name="Category.GAMING" xml:space="preserve"><value>Gaming</value></data>
+    <data name="Category.AUDIO" xml:space="preserve"><value>Audio</value></data>
+
+    <!-- Admin Panel -->
+    <data name="Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+    <data name="Users" xml:space="preserve"><value>Benutzer</value></data>
+    <data name="Products" xml:space="preserve"><value>Produkte</value></data>
+    <data name="Sales" xml:space="preserve"><value>Verkäufe</value></data>
+
+    <!-- Common -->
+    <data name="Home" xml:space="preserve"><value>Startseite</value></data>
+    <data name="MyProducts" xml:space="preserve"><value>Meine Produkte</value></data>
+    <data name="MyPurchases" xml:space="preserve"><value>Meine Einkäufe</value></data>
+    <data name="Cart" xml:space="preserve"><value>Warenkorb</value></data>
+    <data name="Login" xml:space="preserve"><value>Anmelden</value></data>
+    <data name="Logout" xml:space="preserve"><value>Abmelden</value></data>
+    <data name="SearchProducts" xml:space="preserve"><value>Produkte suchen...</value></data>
+
+    <!-- Filter Form -->
+    <data name="Search" xml:space="preserve"><value>Suchen</value></data>
+    <data name="Category" xml:space="preserve"><value>Kategorie</value></data>
+    <data name="AllCategories" xml:space="preserve"><value>Alle Kategorien</value></data>
+    <data name="MinPrice" xml:space="preserve"><value>Mindestpreis</value></data>
+    <data name="MaxPrice" xml:space="preserve"><value>Höchstpreis</value></data>
+    <data name="Filter" xml:space="preserve"><value>Filtern</value></data>
+    <data name="Clear" xml:space="preserve"><value>Löschen</value></data>
+
+    <!-- Pagination -->
+    <data name="Pag.Previous" xml:space="preserve"><value>Zurück</value></data>
+    <data name="Pag.Next" xml:space="preserve"><value>Weiter</value></data>
+    
+    <!-- Otros -->
+    <data name="NoProductsFound" xml:space="preserve"><value>Derzeit sind keine Produkte verfügbar</value></data>
+    <data name="AddToCart" xml:space="preserve"><value>Kaufen</value></data>
+    <data name="Reserved" xml:space="preserve"><value>Reserviert</value></data>
+</root>

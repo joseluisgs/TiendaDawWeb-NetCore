@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Services.Interfaces;
 
@@ -26,8 +27,40 @@ public class PublicController : Controller
         float? minPrecio, 
         float? maxPrecio,
         int page = 1,
-        int size = 12)
+        int size = 12,
+        string? lang = null)
     {
+        // Manejar cambio de idioma si se proporciona
+        if (!string.IsNullOrEmpty(lang))
+        {
+            var culture = lang.ToLowerInvariant() switch
+            {
+                "en" => "en-US",
+                "es" => "es-ES",
+                "fr" => "fr-FR",
+                "de" => "de-DE",
+                "pt" => "pt-PT",
+                _ => "es-ES"
+            };
+            
+            // Añadir la cookie de cultura al response
+            //De esta forma se guarda la preferencia del usuario
+            // Se aplicará en futuras peticiones
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions 
+                { 
+                    Expires = DateTimeOffset.UtcNow.AddYears(1),
+                    IsEssential = true,
+                    Path = "/"
+                }
+            );
+
+            // Redirigir sin el parámetro lang para limpiar la URL
+            return RedirectToAction("Index", new { q, categoria, minPrecio, maxPrecio, page, size });
+        }
+
         var result = await _productService.GetAllAsync();
 
         if (result.IsFailure)

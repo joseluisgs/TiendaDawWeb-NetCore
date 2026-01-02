@@ -58,87 +58,55 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  
+
   <!-- Navigation -->
-  <data name="Nav.Home" xml:space="preserve">
-    <value>Home</value>
-  </data>
-  <data name="Nav.MyProducts" xml:space="preserve">
-    <value>My Products</value>
-  </data>
-  <data name="Nav.MyPurchases" xml:space="preserve">
-    <value>My Purchases</value>
-  </data>
-  <data name="Nav.Favorites" xml:space="preserve">
-    <value>Favorites</value>
-  </data>
-  <data name="Nav.Profile" xml:space="preserve">
-    <value>Profile</value>
-  </data>
-  <data name="Nav.Admin" xml:space="preserve">
-    <value>Administration</value>
-  </data>
-  <data name="Nav.Cart" xml:space="preserve">
-    <value>Cart</value>
-  </data>
-  <data name="Nav.Login" xml:space="preserve">
-    <value>Login</value>
-  </data>
-  <data name="Nav.Logout" xml:space="preserve">
-    <value>Logout</value>
-  </data>
-  
+  <data name="Nav.Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav.MyProducts" xml:space="preserve"><value>My Products</value></data>
+  <data name="Nav.MyPurchases" xml:space="preserve"><value>My Purchases</value></data>
+  <data name="Nav.Favorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Nav.Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Nav.Admin" xml:space="preserve"><value>Administration</value></data>
+  <data name="Nav.Cart" xml:space="preserve"><value>Cart</value></data>
+  <data name="Nav.Login" xml:space="preserve"><value>Login</value></data>
+  <data name="Nav.Logout" xml:space="preserve"><value>Logout</value></data>
+
   <!-- Categories -->
-  <data name="Category.SMARTPHONES" xml:space="preserve">
-    <value>Smartphones</value>
-  </data>
-  <data name="Category.LAPTOPS" xml:space="preserve">
-    <value>Laptops</value>
-  </data>
-  <data name="Category.ACCESSORIES" xml:space="preserve">
-    <value>Accessories</value>
-  </data>
-  <data name="Category.GAMING" xml:space="preserve">
-    <value>Gaming</value>
-  </data>
-  <data name="Category.AUDIO" xml:space="preserve">
-    <value>Audio</value>
-  </data>
-  
+  <data name="Category.SMARTPHONES" xml:space="preserve"><value>Smartphones</value></data>
+  <data name="Category.LAPTOPS" xml:space="preserve"><value>Laptops</value></data>
+  <data name="Category.ACCESSORIES" xml:space="preserve"><value>Accessories</value></data>
+  <data name="Category.GAMING" xml:space="preserve"><value>Gaming</value></data>
+  <data name="Category.AUDIO" xml:space="preserve"><value>Audio</value></data>
+
   <!-- Admin Panel -->
-  <data name="Dashboard" xml:space="preserve">
-    <value>Dashboard</value>
-  </data>
-  <data name="Users" xml:space="preserve">
-    <value>Users</value>
-  </data>
-  <data name="Products" xml:space="preserve">
-    <value>Products</value>
-  </data>
-  <data name="Sales" xml:space="preserve">
-    <value>Sales</value>
-  </data>
-  
+  <data name="Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Products" xml:space="preserve"><value>Products</value></data>
+  <data name="Sales" xml:space="preserve"><value>Sales</value></data>
+
   <!-- Common -->
-  <data name="Home" xml:space="preserve">
-    <value>Home</value>
-  </data>
-  <data name="MyProducts" xml:space="preserve">
-    <value>My Products</value>
-  </data>
-  <data name="MyPurchases" xml:space="preserve">
-    <value>My Purchases</value>
-  </data>
-  <data name="Cart" xml:space="preserve">
-    <value>Cart</value>
-  </data>
-  <data name="Login" xml:space="preserve">
-    <value>Login</value>
-  </data>
-  <data name="Logout" xml:space="preserve">
-    <value>Logout</value>
-  </data>
-  <data name="SearchProducts" xml:space="preserve">
-    <value>Search products...</value>
-  </data>
+  <data name="Home" xml:space="preserve"><value>Home</value></data>
+  <data name="MyProducts" xml:space="preserve"><value>My Products</value></data>
+  <data name="MyPurchases" xml:space="preserve"><value>My Purchases</value></data>
+  <data name="Cart" xml:space="preserve"><value>Cart</value></data>
+  <data name="Login" xml:space="preserve"><value>Login</value></data>
+  <data name="Logout" xml:space="preserve"><value>Logout</value></data>
+  <data name="SearchProducts" xml:space="preserve"><value>Search products...</value></data>
+
+  <!-- Filter Form -->
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>All Categories</value></data>
+  <data name="MinPrice" xml:space="preserve"><value>Min. Price</value></data>
+  <data name="MaxPrice" xml:space="preserve"><value>Max. Price</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+
+  <!-- Pagination -->
+  <data name="Pag.Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Pag.Next" xml:space="preserve"><value>Next</value></data>
+  
+  <!-- Otros -->
+  <data name="NoProductsFound" xml:space="preserve"><value>No products available at this time</value></data>
+  <data name="AddToCart" xml:space="preserve"><value>Buy</value></data>
+  <data name="Reserved" xml:space="preserve"><value>Reserved</value></data>
 </root>
