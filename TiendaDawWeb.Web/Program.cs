@@ -30,6 +30,8 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     WebRootPath = "wwwroot"
 });
 
+builder.WebHost.UseStaticWebAssets();
+
 // Si detectamos que estamos en la raíz de la solución, ajustamos las rutas
 if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")) && 
     Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "TiendaDawWeb.Web", "wwwroot")))
