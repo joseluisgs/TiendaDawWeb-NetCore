@@ -13,36 +13,37 @@
                     </h3>
                 </div>
                 <div class="card-body">
+                    <!-- Avatar actual - shown before forms -->
+                    <div class="row mb-4">
+                        <div class="col-md-12 text-center">
+                            @if (!string.IsNullOrEmpty(Model.Avatar))
+                            {
+                                <img src="@Model.Avatar" alt="Avatar actual" 
+                                     class="rounded-circle mb-3" 
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                                <div>
+                                    <form asp-action="DeleteAvatar" method="post" class="d-inline" id="deleteAvatarForm">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('¿Eliminar avatar?')">
+                                            <i class="bi bi-trash"></i> Eliminar Avatar
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                                     style="width: 150px; height: 150px;">
+                                    <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Main edit form -->
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
-                        
-                        <!-- Avatar actual -->
-                        <div class="row mb-4">
-                            <div class="col-md-12 text-center">
-                                @if (!string.IsNullOrEmpty(Model.Avatar))
-                                {
-                                    <img src="@Model.Avatar" alt="Avatar actual" 
-                                         class="rounded-circle mb-3" 
-                                         style="width: 150px; height: 150px; object-fit: cover;">
-                                    <div>
-                                        <form asp-action="DeleteAvatar" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                    onclick="return confirm('¿Eliminar avatar?')">
-                                                <i class="bi bi-trash"></i> Eliminar Avatar
-                                            </button>
-                                        </form>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
-                                         style="width: 150px; height: 150px;">
-                                        <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
-                                    </div>
-                                }
-                            </div>
-                        </div>
 
                         <!-- Nombre -->
                         <div class="mb-3">
