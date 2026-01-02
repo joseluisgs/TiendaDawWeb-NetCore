@@ -108,19 +108,19 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item @(currentCulture == "es" ? "active" : "")" href="?lang=es">Español</a>
+                            <a class="dropdown-item @(currentCulture == "es" ? "active" : "")" href="@(Context.Request.Path)?lang=es">Español</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "en" ? "active" : "")" href="?lang=en">English</a>
+                            <a class="dropdown-item @(currentCulture == "en" ? "active" : "")" href="@(Context.Request.Path)?lang=en">English</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "fr" ? "active" : "")" href="?lang=fr">Français</a>
+                            <a class="dropdown-item @(currentCulture == "fr" ? "active" : "")" href="@(Context.Request.Path)?lang=fr">Français</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "de" ? "active" : "")" href="?lang=de">Deutsch</a>
+                            <a class="dropdown-item @(currentCulture == "de" ? "active" : "")" href="@(Context.Request.Path)?lang=de">Deutsch</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "pt" ? "active" : "")" href="?lang=pt">Português</a>
+                            <a class="dropdown-item @(currentCulture == "pt" ? "active" : "")" href="@(Context.Request.Path)?lang=pt">Português</a>
                         </li>
                     </ul>
                 </li>
