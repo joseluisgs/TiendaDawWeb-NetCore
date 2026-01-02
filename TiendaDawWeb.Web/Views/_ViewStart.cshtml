@@ -1,3 +1,10 @@
+@* 
+    OBJETIVO: Definir código que se ejecuta antes de renderizar cualquier vista individual.
+    UBICACIÓN: Views/
+    RAZÓN: Su uso principal es establecer el Layout por defecto (generalmente _Layout.cshtml). 
+    Al ponerlo aquí, no necesitamos escribir 'Layout = "_Layout";' al principio de cada una 
+    de las decenas de vistas del proyecto, manteniendo el código DRY (Don't Repeat Yourself).
+*@
 @{
     Layout = "_Layout";
 }

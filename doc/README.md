@@ -30,5 +30,11 @@ Maestría en la Fetch API para una web dinámica, protección anti-CSRF para lla
 ### [Volumen 08: Operaciones y Producción - Docker, Ficheros y Despliegue](08-Ops-Docker-Files.md)
 Optimización de imágenes Docker con Multi-stage builds, gestión de volúmenes persistentes, procesamiento avanzado de imágenes y generación de PDFs profesional.
 
+### [Volumen 09: Evolución de la Interfaz - Razor vs AJAX vs Blazor Server](09-BlazorVsRazorVsAjax.md)
+Análisis arquitectónico de la transición desde SSR tradicional y AJAX hacia la reactividad moderna de Blazor Server. Incluye el patrón State Container y comparativa de rendimiento.
+
+### [Volumen 10: Comunicación entre Componentes Blazor - State Container](10-Blazor-Component-Communication.md)
+Guía profunda sobre cómo comunicar componentes desacoplados mediante servicios Scoped y eventos C#. Explica la importancia de `IDisposable` y la gestión de estado reactivo.
+
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

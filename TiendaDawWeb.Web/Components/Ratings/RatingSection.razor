@@ -1,0 +1,283 @@
+@* 
+    OBJETIVO: Gestionar el formulario de votación y el listado detallado de valoraciones.
+    UBICACIÓN: /Components/Ratings/
+    RAZÓN: Centraliza la lógica de escritura (POST) y lectura (GET) de valoraciones en un solo componente reactivo.
+    Se comunica con otros componentes mediante el StateContainer notificando nuevos votos.
+*@
+@namespace TiendaDawWeb.Components.Ratings
+@using TiendaDawWeb.Services.Interfaces
+@using TiendaDawWeb.Models
+@using TiendaDawWeb.Services.Implementations
+@using Microsoft.AspNetCore.Identity
+@inject IRatingService RatingService
+@inject UserManager<User> UserManager
+@inject RatingStateContainer StateContainer
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<RatingSection> Logger
+
+<div class="mb-4">
+    @if (_loading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (!_isAuthenticated)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Debes <a href="/Auth/Login" class="alert-link">iniciar sesión</a> para dejar una valoración.
+        </div>
+    }
+    else if (_isOwner)
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No puedes valorar tu propio producto.
+        </div>
+    }
+    else if (_userRating != null)
+    {
+        <div class="p-4 rounded border border-success bg-light mb-4 fade-in">
+            <h5 class="text-success"><i class="bi bi-check-circle-fill"></i> ¡Gracias por tu valoración!</h5>
+            <div class="d-flex align-items-center mb-2 mt-3">
+                <span>@RenderStars(_userRating.Puntuacion, 1.5)</span>
+                <span class="ms-2 fw-bold">@_userRating.Puntuacion / 5</span>
+                <span class="text-muted ms-3 small">@_userRating.CreatedAt.ToLocalTime().ToShortDateString()</span>
+            </div>
+            <p class="mb-0 text-muted">@((MarkupString)(string.IsNullOrWhiteSpace(_userRating.Comentario) ? "<i>Sin comentario</i>" : _userRating.Comentario))</p>
+        </div>
+    }
+    else
+    {
+        <div class="card border-primary mb-4" id="cardFormulario">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-pencil-square"></i> Escribe tu valoración
+            </div>
+            <div class="card-body">
+                <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tu puntuación:</label>
+                        <div class="star-rating-input">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                var starValue = i;
+                                <i class="bi @(GetStarClass(starValue)) star-item" 
+                                   style="cursor:pointer; font-size:1.5rem; transition: transform 0.2s;"
+                                   @onclick="() => SelectStar(starValue)"
+                                   @onmouseenter="() => HoverStar(starValue)"
+                                   @onmouseleave="() => HoverStar(0)"></i>
+                            }
+                        </div>
+                        @if (_showStarError)
+                        {
+                            <div class="text-danger small mt-1">
+                                Debes seleccionar una puntuación.
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Comentario (opcional):</label>
+                        <textarea class="form-control" @bind="_comentario" rows="3" maxlength="500" placeholder="¿Qué te ha parecido este producto?"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" disabled="@(_submitting)">
+                            @if (_submitting)
+                            {
+                                <span class="spinner-border spinner-border-sm"></span> <span>Enviando...</span>
+                            }
+                            else
+                            {
+                                <span>Enviar Valoración</span>
+                            }
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-danger mt-2">@_errorMessage</div>
+                    }
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+<div id="ratingsList">
+    @if (_ratings == null)
+    {
+        <p>Cargando opiniones...</p>
+    }
+    else if (!_ratings.Any())
+    {
+        <div class="alert alert-light border"><i class="bi bi-info-circle"></i> No hay valoraciones todavía. Sé el primero en opinar.</div>
+    }
+    else
+    {
+        @foreach (var rating in _ratings)
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span>@RenderStars(rating.Puntuacion, 1.15)</span>
+                        <strong class="ms-2">@(rating.Usuario?.Nombre ?? "Usuario")</strong>
+                        <span class="text-muted ms-2 small">@rating.CreatedAt.ToLocalTime().ToString("g")</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(rating.Comentario))
+                    {
+                        <p class="mb-0 text-muted">@rating.Comentario</p>
+                    }
+                    else
+                    {
+                        <p class="mb-0 text-muted fst-italic">Sin comentario</p>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public long ProductId { get; set; }
+    [Parameter] public long? CurrentUserId { get; set; }
+    [Parameter] public bool IsOwner { get; set; }
+
+    private List<Rating>? _ratings;
+    private Rating? _userRating;
+    private bool _isAuthenticated;
+    private bool _isOwner;
+    private bool _loading = true;
+    private bool _submitting = false;
+    private int _selectedPuntuacion = 0;
+    private int _hoverPuntuacion = 0;
+    private string _comentario = "";
+    private string _errorMessage = "";
+    private bool _showStarError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("RatingSection inicializado para Producto {ProductId}", ProductId);
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        _isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        
+        if (_isAuthenticated)
+        {
+            Logger.LogDebug("Usuario autenticado detectado en RatingSection: {UserId}", CurrentUserId);
+            var identityUser = await UserManager.GetUserAsync(user);
+            if (identityUser != null)
+            {
+                _isOwner = IsOwner; 
+            }
+        }
+
+        await LoadDataAsync();
+        _loading = false;
+    }
+
+    private async Task LoadDataAsync()
+    {
+        Logger.LogDebug("RatingSection cargando valoraciones para Producto {ProductId}", ProductId);
+        var ratingsResult = await RatingService.GetByProductoIdAsync(ProductId);
+        if (ratingsResult.IsSuccess)
+        {
+            _ratings = ratingsResult.Value.ToList();
+            Logger.LogDebug("RatingSection: {Count} valoraciones cargadas", _ratings.Count);
+            if (_isAuthenticated && CurrentUserId.HasValue)
+            {
+                _userRating = _ratings.FirstOrDefault(r => r.UsuarioId == CurrentUserId.Value);
+                if (_userRating != null)
+                {
+                    Logger.LogDebug("RatingSection: El usuario ya ha valorado este producto");
+                }
+            }
+        }
+        else
+        {
+            Logger.LogError("RatingSection: Error al cargar valoraciones: {Error}", ratingsResult.Error.Message);
+        }
+    }
+
+    private void SelectStar(int val)
+    {
+        Logger.LogTrace("RatingSection: Estrella {Value} seleccionada", val);
+        _selectedPuntuacion = val;
+        _showStarError = false;
+    }
+
+    private void HoverStar(int val)
+    {
+        _hoverPuntuacion = val;
+    }
+
+    private string GetStarClass(int starValue)
+    {
+        int effectiveValue = _hoverPuntuacion > 0 ? _hoverPuntuacion : _selectedPuntuacion;
+        return starValue <= effectiveValue ? "bi-star-fill text-warning" : "bi-star text-secondary";
+    }
+
+    private async Task HandleSubmit()
+    {
+        Logger.LogInformation("RatingSection: Intento de envío de valoración para Producto {ProductId}", ProductId);
+        if (_selectedPuntuacion == 0)
+        {
+            Logger.LogWarning("RatingSection: Intento de envío sin puntuación");
+            _showStarError = true;
+            return;
+        }
+
+        if (!CurrentUserId.HasValue) 
+        {
+            Logger.LogWarning("RatingSection: Intento de envío sin usuario autenticado");
+            return;
+        }
+
+        _submitting = true;
+        _errorMessage = "";
+
+        Logger.LogInformation("RatingSection: Guardando valoración de {Stars} estrellas por Usuario {UserId}", _selectedPuntuacion, CurrentUserId);
+        var result = await RatingService.AddRatingAsync(CurrentUserId.Value, ProductId, _selectedPuntuacion, _comentario);
+
+        if (result.IsSuccess)
+        {
+            Logger.LogInformation("✅ RatingSection: Valoración guardada con éxito");
+            await LoadDataAsync();
+            StateContainer.NotifyRatingChanged();
+        }
+        else
+        {
+            Logger.LogWarning("❌ RatingSection: Error al guardar valoración: {Error}", result.Error.Message);
+            _errorMessage = result.Error.Message;
+        }
+
+        _submitting = false;
+    }
+
+    private RenderFragment RenderStars(double val, double size) => builder =>
+    {
+        val = Math.Round(val * 2) / 2;
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i <= val)
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "bi bi-star-fill text-warning");
+                builder.AddAttribute(2, "style", $"font-size:{size}rem");
+                builder.CloseElement();
+            }
+            else if (i - val == 0.5)
+            {
+                builder.OpenElement(3, "i");
+                builder.AddAttribute(4, "class", "bi bi-star-half text-warning");
+                builder.AddAttribute(5, "style", $"font-size:{size}rem");
+                builder.CloseElement();
+            }
+            else
+            {
+                builder.OpenElement(6, "i");
+                builder.AddAttribute(7, "class", "bi bi-star text-secondary");
+                builder.AddAttribute(8, "style", $"font-size:{size}rem");
+                builder.CloseElement();
+            }
+        }
+    };
+}

@@ -5,8 +5,10 @@
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
 [![C#](https://img.shields.io/badge/C%23-14-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10-blue)](https://docs.microsoft.com/en-us/ef/core/)
+[![EF Core](https://img.shields.io/badge/EF%20Core-10-blue)](https://docs.microsoft.com/en-us/ef/core/)
 [![Razor](https://img.shields.io/badge/Razor-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/razor)
+[![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
+[![SignalR](https://img.shields.io/badge/SignalR-orange)](https://dotnet.microsoft.com/en-us/apps/aspnet/signalr)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC.**
@@ -41,12 +43,16 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [🏗️ Arquitectura](#️-arquitectura)
     - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
     - [ASP.NET Core Identity](#aspnet-core-identity)
+  - [💡 Estrategias de Interfaz: El Triple Camino](#-estrategias-de-interfaz-el-triple-camino)
+    - [1. SSR Tradicional (Razor Pages/Views)](#1-ssr-tradicional-razor-pagesviews)
+    - [2. SPA dinámica con AJAX (Legacy Support)](#2-spa-dinámica-con-ajax-legacy-support)
+    - [3. Componentes Reactivos (Blazor Server)](#3-componentes-reactivos-blazor-server)
   - [👥 Usuarios Demo](#-usuarios-demo)
   - [🔒 Seguridad](#-seguridad)
   - [🌐 Características](#-características-1)
     - [Para Usuarios](#para-usuarios)
     - [Para Administradores](#para-administradores)
-  - [� Documentación](#-documentación)
+  - [📚 Documentación](#-documentación)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
     - [Contacto](#contacto)
@@ -66,8 +72,8 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
 - 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático con ImageSharp
 - 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
 - 📄 **Generación de PDFs**: Facturas automáticas con iText7 y diseño profesional
-- ❤️ **Sistema de Favoritos**: Gestión en tiempo real
-- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivas
+- ❤️ **Sistema de Favoritos**: Gestión asícrona con AJAX
+- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivo
 - 🛒 **Carrito de Compras**: Control de concurrencia con transacciones SERIALIZABLE
 - 🛡️ **Seguridad CSRF**: Protección completa contra ataques Cross-Site Request Forgery
 - 👤 **Gestión de Perfil**: Edición de perfil con avatar y cambio de contraseña
@@ -87,6 +93,8 @@ La aplicación incluye productos actuales y relevantes:
 - **.NET 10 con C# 14** - Plataforma principal
 - **ASP.NET Core MVC** - Framework web con patrón MVC
 - **Razor Views** - Motor de vistas del lado servidor
+- **Blazor Server** - Componentes interactivos en tiempo real con C#
+- **SignalR** - Comunicación bidireccional para reactividad Blazor
 - **Entity Framework Core InMemory** - ORM con base de datos en memoria
 - **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
 - **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
@@ -245,30 +253,24 @@ TiendaDawWeb-NetCore/
 │
 ├── Data/
 │   ├── ApplicationDbContext.cs      # DbContext de Entity Framework, define DbSets/relaciones.
-│   └── SeedData.cs                  # Opcional: inicialización de datos de ejemplo/pruebas.
+│   └── SeedData.cs                  # Inicialización profesional de datos de ejemplo.
 │
-├── Models/
-│   ├── Enums/
-│   │   ├── ProductCategory.cs       # Enum de categorías de producto.
-│   │   └── UserRole.cs              # Enum de roles de usuario, si lo usas así.
-│   ├── User.cs                      # Entidad usuario con Identity (tiene Products, Purchases, etc.)
-│   ├── Product.cs                   # Entidad principal producto.
-│   ├── Purchase.cs                  # Compra (1 usuario, muchos productos)
-│   ├── Favorite.cs                  # Relación Favorite (usuario <-> producto)
-│   ├── Rating.cs                    # Valoración sobre producto.
-│   └── CarritoItem.cs               # Número de producto en carrito (sin cantidad).
+├── Components/                      # Componentes Blazor Server (Reactividad)
+│   ├── AdminStatsWidget.razor       # Dashboard de administración en tiempo real.
+│   └── Ratings/                     # Dominio de valoraciones interactivo.
+│       ├── RatingSection.razor      # Formulario y listado de votos.
+│       └── RatingSummary.razor      # Resumen de media en cabecera.
 │
 ├── Services/                        # Lógica de negocio centralizada.
-│   ├── Interfaces/
+│   ├── Interfaces/                  # Contratos para Inversión de Dependencias.
 │   │   ├── IProductService.cs
-│   │   ├── IFavoriteService.cs
 │   │   ├── IRatingService.cs
-│   │   └── ...                      # Interfaces para inversión de dependencias.
-│   └── Implementations/
+│   │   └── ...
+│   └── Implementations/             # Implementaciones de lógica y estado.
 │       ├── ProductService.cs
-│       ├── FavoriteService.cs
 │       ├── RatingService.cs
-│       └── ...                      # Implementación real de la lógica.
+│       ├── RatingStateContainer.cs  # Mediador para comunicación entre componentes.
+│       └── ...
 │
 ├── Controllers/
 │   ├── HomeController.cs            # Inicio y páginas generales.
@@ -334,20 +336,72 @@ TiendaDawWeb-NetCore/
 ├── Errors/
 │   └── ErrorViewModel.cs            # ViewModel de errores.
 │
-└── wwwroot/
-    ├── css/
-    │   ├── site.css
-    │   └── styles.css
-    ├── js/
-    │   ├── ratings.js               # Valoraciones AJAX.
-    │   ├── favorites.js             # Lógica de favoritos AJAX.
-    │   ├── carrito.js               # Carrito AJAX.
-    │   └── ...                      # Otros scripts propios.
-    └── images/
-        └── default-product.jpg      # Imagen por defecto, otros media.
+├── _Imports.razor                   # Usings globales para componentes Blazor.
+├── Program.cs                       # Configuración de Pipeline, DI y Middlewares.
+├── TiendaDawWeb.csproj              # Definición de proyecto y paquetes NuGet.
+│
+├── wwwroot/                         # Recursos estáticos servidos por el servidor.
+│   ├── css/                         # Hojas de estilo (site.css, styles.css).
+│   ├── js/                          # Lógica AJAX Legacy (ratings.js, favorites.js).
+│   └── images/                      # Assets estáticos y logos.
+└── Views/
+    ├── _ViewImports.cshtml          # Usings y TagHelpers globales para Razor MVC.
+    ├── _ViewStart.cshtml            # Configuración de Layout por defecto para vistas.
+    ├── Shared/                      # Vistas compartidas (Layout, Navbar, etc).
 ```
 
 ## 🏗️ Arquitectura
+
+El proyecto sigue una arquitectura en capas con un enfoque híbrido de presentación, permitiendo una transición suave entre el renderizado tradicional y la reactividad moderna.
+
+```mermaid
+graph TD
+    subgraph Cliente["Navegador (Cliente)"]
+        UI_MVC["Razor Views (HTML/CSS)"]
+        UI_BLZ["Blazor Components (C#)"]
+        JS_AJAX["JS/AJAX (Legacy)"]
+    end
+
+    subgraph CapaPresentacion["Capa de Presentación (ASP.NET Core 10)"]
+        CTRL["MVC Controllers"]
+        HUB["Blazor Hub (SignalR)"]
+        VM["ViewModels"]
+    end
+
+    subgraph CapaNegocio["Capa de Negocio (Servicios)"]
+        SRV["Business Services (Interfaces/Impl)"]
+        ROP["Railway Oriented Programming (Result)"]
+        SC["State Container (Component Sync)"]
+    end
+
+    subgraph CapaDatos["Capa de Datos (Persistencia)"]
+        EF["Entity Framework Core"]
+        ID["ASP.NET Core Identity"]
+        DB[("In-Memory Database")]
+    end
+
+    %% Flujos de interacción
+    UI_MVC --- CTRL
+    JS_AJAX -.-> CTRL
+    UI_BLZ <==> HUB
+    
+    CTRL --> SRV
+    HUB --> SRV
+    HUB <--> SC
+    
+    SRV --> ROP
+    SRV --> EF
+    SRV --> ID
+    
+    EF --> DB
+    ID --> DB
+
+    %% Estilos
+    style CapaNegocio fill:#f9f,stroke:#333,stroke-width:2px
+    style UI_BLZ fill:#512bd4,color:#fff
+    style HUB fill:#512bd4,color:#fff
+    style ROP fill:#fff4dd,stroke:#d4a017
+```
 
 ### Railway Oriented Programming (ROP)
 
@@ -374,6 +428,27 @@ Sistema completo de autenticación y autorización:
 - Password hashing seguro
 - Cookie authentication
 - Claims-based authorization
+
+## 💡 Estrategias de Interfaz: El Triple Camino
+
+WalaDaw es un laboratorio docente donde conviven tres enfoques para la construcción de interfaces, permitiendo al alumno comparar su implementación y beneficios:
+
+### 1. SSR Tradicional (Razor Pages/Views)
+Utilizado en el 90% de la web (Login, Registro, Listados estáticos).
+- **Fortaleza:** Simplicidad, SEO nativo y seguridad robusta.
+- **Debilidad:** Requiere recarga completa de página para cualquier cambio de estado.
+
+### 2. SPA dinámica con AJAX (Legacy Support)
+Implementado en el sistema original de Favoritos (ver `wwwroot/js/`).
+- **Fortaleza:** UX fluida sin recargas.
+- **Debilidad:** Fragmentación de código (C# en backend, JS en frontend), gestión manual de tokens CSRF y dificultad para sincronizar componentes.
+
+### 3. Componentes Reactivos (Blazor Server) 🚀
+Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema de Valoraciones.
+- **Fortaleza:** **Single Language Stack (C# everywhere)**. Permite usar servicios inyectados directamente en la UI, comunicación en tiempo real mediante SignalR y un modelo de estado compartido (`StateContainer`) que sincroniza múltiples componentes instantáneamente.
+- **Comunicación:** Implementa el patrón **State Container**, permitiendo que componentes desacoplados se sincronicen mediante eventos C# sin necesidad de JavaScript.
+- **Caso de éxito:** El `AdminStatsWidget` actualiza datos en vivo sin que el administrador tenga que refrescar manualmente la vista.
+
 
 ## 👥 Usuarios Demo
 
@@ -433,8 +508,11 @@ Sistema completo de autenticación y autorización:
 
 ## 📚 Documentación
 
-- Repositorio de apuntes de
-  curso: [Desarrollo Web en Entornos Servidor - 05 Desarrollo de páginas web dinámicas .NET](https://github.com/joseluisgs/DesarrolloWebEntornosServidor-05-2025-2026)
+Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra **[Guía de Supervivencia para el alumnado de DAW)](doc/README.md)**
+
+
+
+- Repositorio de apuntes de curso: [Desarrollo Web en Entornos Servidor](https://github.com/joseluisgs/DesarrolloWebEntornosServidor-05-2025-2026)
 
 ## 📝 Licencia
 

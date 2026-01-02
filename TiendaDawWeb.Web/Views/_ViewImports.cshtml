@@ -1,3 +1,10 @@
+@* 
+    OBJETIVO: Configurar directivas compartidas por todas las vistas de Razor (.cshtml).
+    UBICACIÓN: Views/
+    RAZÓN: Aquí se registran los TagHelpers (como los de Bootstrap o Identity) y los namespaces 
+    de los modelos y ViewModels. Al estar en la raíz de /Views, garantiza que cualquier vista 
+    de cualquier controlador tenga acceso a estas herramientas sin configuración extra.
+*@
 @using TiendaDawWeb
 @using TiendaDawWeb.Models
 @using TiendaDawWeb.ViewModels

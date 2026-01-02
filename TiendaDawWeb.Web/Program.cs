@@ -13,9 +13,10 @@ using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using TiendaDawWeb.Binders;
 
+// Configura la codificación de la consola a UTF8 para evitar problemas con tildes y eñes en los logs
 Console.OutputEncoding = Encoding.UTF8;
 
-// Configure Serilog before building the application
+// Configuración de Serilog: Reemplaza el logger por defecto de .NET por uno más potente y visual
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console(
@@ -30,9 +31,14 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     WebRootPath = "wwwroot"
 });
 
+// OBJETIVO: Cargar los recursos estáticos (JS/CSS) de librerías de componentes (como Blazor).
+// RAZÓN: Sin esto, los archivos virtuales de Blazor (_framework/blazor.server.js) no se encontrarían 
+// durante el desarrollo si se sirven desde paquetes NuGet o proyectos referenciados.
 builder.WebHost.UseStaticWebAssets();
 
-// Si detectamos que estamos en la raíz de la solución, ajustamos las rutas
+// AJUSTE DINÁMICO DE RUTAS:
+// Si ejecutamos desde la raíz de la solución, el 'ContentRoot' por defecto podría ser erróneo.
+// Este bloque asegura que el servidor encuentre siempre la carpeta 'wwwroot' de la Web.
 if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")) && 
     Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "TiendaDawWeb.Web", "wwwroot")))
 {
@@ -95,37 +101,44 @@ builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<RatingStateContainer>();
 
 // Background Services
 builder.Services.AddHostedService<CarritoCleanupService>();
 builder.Services.AddHostedService<ReservaCleanupService>();
 
-// Localization
+// Registro de servicios de localización para soportar .resx
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-// MVC + Razor Pages (removed Blazor Server)
+// CONFIGURACIÓN MVC Y BLAZOR:
 builder.Services.AddControllersWithViews(options =>
 {
+    // Registra nuestro binder personalizado para tratar comas decimales correctamente en toda la app
     options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
 })
-.AddViewLocalization() // Añadir localización para vistas
-.AddDataAnnotationsLocalization(); // Añadir localización para anotaciones
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; }); // Soporte para Blazor Server con errores detallados
+.AddViewLocalization() // Habilita la traducción en las vistas (.cshtml)
+.AddDataAnnotationsLocalization(); // Habilita la traducción en los mensajes de validación de los Modelos
 
-// Add antiforgery for AJAX requests
+builder.Services.AddRazorPages();
+
+// Registra los servicios necesarios para Blazor Server
+// DetailedErrors = true es fundamental en desarrollo para ver por qué falla un componente
+builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; }); 
+
+// CONFIGURACIÓN DE SEGURIDAD AJAX:
+// Obliga a que las peticiones POST de JS/Blazor incluyan este nombre de cabecera con el token CSRF
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "RequestVerificationToken";
 });
 
-// Session para carrito de compras
-builder.Services.AddDistributedMemoryCache();
+// GESTIÓN DE ESTADO Y CACHÉ:
+builder.Services.AddDistributedMemoryCache(); // Almacén en memoria para la sesión
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.Cookie.HttpOnly = true; // Impide que JavaScript acceda a la cookie de sesión (Seguridad)
+    options.Cookie.IsEssential = true; // La sesión se cargará aunque el usuario no haya aceptado cookies de rastreo
 });
 
 // CORS (si es necesario para desarrollo)
@@ -144,7 +157,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed Data (inicializar datos de ejemplo)
+// SEED DATA: Inicialización de la base de datos con datos de prueba
+// Usamos un Scope para asegurar que el DbContext se libere correctamente tras la carga
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -159,17 +173,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configurar path base para uploads de forma segura
+// GESTIÓN DEL SISTEMA DE ARCHIVOS (UPLOADS):
 var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 var uploadPath = Path.Combine(webRootPath, "uploads");
 
-// Asegurar que wwwroot existe
+// Asegura que la carpeta física exista para evitar errores de IO
 if (!Directory.Exists(webRootPath))
 {
     Directory.CreateDirectory(webRootPath);
 }
 
-// Limpiar directorio de uploads al iniciar (tanto en DEV como PROD)
+// Lógica de limpieza: Borramos los uploads antiguos al reiniciar el servidor
+// Esto mantiene la base de datos InMemory sincronizada con los archivos físicos
 try 
 {
     if (Directory.Exists(uploadPath))
@@ -184,54 +199,65 @@ catch (Exception ex)
     Log.Warning(ex, "⚠️ No se pudo limpiar completamente el directorio uploads, se intentará usar el existente.");
 }
 
-// Recrear directorio
+// Recrea el directorio vacío si no existe
 if (!Directory.Exists(uploadPath))
 {
     Directory.CreateDirectory(uploadPath);
 }
 Log.Information("📁 Directorio uploads listo en: {Path}", uploadPath);
 
-// Middleware Pipeline
+// Middleware Pipeline - El orden aquí es CRÍTICO.
 if (!app.Environment.IsDevelopment())
 {
+    // Maneja excepciones globales redirigiendo a una página de error amigable en producción
     app.UseExceptionHandler("/Error");
+    // HSTS: Indica al navegador que solo acceda vía HTTPS (Seguridad)
     app.UseHsts();
 }
 else
 {
+    // Muestra una página detallada con el error y el stack trace para desarrolladores
     app.UseDeveloperExceptionPage();
 }
 
+// Redirige automáticamente peticiones HTTP a HTTPS
 app.UseHttpsRedirection();
+
+// Permite servir archivos desde wwwroot (css, js, imágenes)
 app.UseStaticFiles();
 
-// Configurar archivos estáticos para directorio uploads explícitamente
+// Configura archivos estáticos para el directorio virtual de uploads
+// Esto permite que /uploads/foto.jpg sea accesible aunque esté fuera de wwwroot
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploadPath),
     RequestPath = "/uploads"
 });
 
+// Analiza la URL y decide qué ruta corresponde a la petición (antes de ejecutarla)
 app.UseRouting();
 
-// Configurar localización con soporte para parámetro ?lang=
+// Configurar las culturas soportadas por la aplicación
 var supportedCultures = new[] 
 { 
-    new CultureInfo("es-ES"),    // 🔴 Español primero (default)
+    new CultureInfo("es-ES"),
     new CultureInfo("en-US"),
     new CultureInfo("fr-FR"),
     new CultureInfo("de-DE"),
     new CultureInfo("pt-PT")
 };
+
+// Middleware de Localización: Detecta el idioma del usuario (Cookie, QueryString o Header)
+// y lo aplica al hilo actual para traducir la UI
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture("es-ES"), // 🔴 Español por defecto
+    DefaultRequestCulture = new RequestCulture("es-ES"),
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures,
     ApplyCurrentCultureToResponseHeaders = true,
     RequestCultureProviders = new List<IRequestCultureProvider>
     {
-        new QueryStringRequestCultureProvider(), // Permite ?lang=en o ?culture=en
+        new QueryStringRequestCultureProvider(), 
         new CookieRequestCultureProvider(),
         new AcceptLanguageHeaderRequestCultureProvider()
     }
@@ -239,20 +265,25 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 
 Log.Information("🌍 Soporte de localización configurado, idioma por defecto: 🇪🇸 es-ES");
 
+// Identifica quién es el usuario (lee la cookie de autenticación)
 app.UseAuthentication();
+// Determina si el usuario identificado tiene permiso para acceder al recurso solicitado
 app.UseAuthorization();
+// Habilita el uso de variables de sesión (necesario para el carrito de compras)
 app.UseSession();
 
-// Enrutamiento de controladores
+// Enrutamiento de controladores MVC (Controller/Action/Id)
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Habilita el enrutamiento para Razor Pages si existieran
 app.MapRazorPages();
-app.MapBlazorHub(); // Endpoint para Blazor Server
-// Removed MapBlazorHub - no longer using Blazor Server
 
-// Health check endpoint
+// Punto de conexión para Blazor Server. Crea el túnel SignalR para la interactividad real-time
+app.MapBlazorHub(); 
+
+// Endpoint de salud del sistema: útil para monitorización y Docker
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 // Startup banner - matching Spring Boot style

@@ -1,3 +1,9 @@
+@* 
+    OBJETIVO: Definir directivas @using globales para todos los componentes Blazor (.razor).
+    UBICACIÓN: Raíz del proyecto Web.
+    RAZÓN: Evita tener que importar los namespaces básicos (HttpClient, JSInterop, Models, etc.) 
+    en cada componente individual. Al estar en la raíz, aplica a todos los componentes del proyecto.
+*@
 @using System.Net.Http
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
