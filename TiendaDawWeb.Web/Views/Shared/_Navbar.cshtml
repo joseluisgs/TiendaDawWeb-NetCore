@@ -94,7 +94,7 @@
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-globe"></i>
                         @{
-                            var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                            var currentCulture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
                             var langName = currentCulture switch {
                                 "es" => "ES",
                                 "en" => "EN",

@@ -6,13 +6,14 @@ using TiendaDawWeb.Services.Interfaces;
 using TiendaDawWeb.Services.Implementations;
 using TiendaDawWeb.Services.Implementations.BackgroundServices;
 using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using TiendaDawWeb.Binders;
 
-Console.OutputEncoding = System.Text.Encoding.UTF8;
+Console.OutputEncoding = Encoding.UTF8;
 
 // Configure Serilog before building the application
 Log.Logger = new LoggerConfiguration()

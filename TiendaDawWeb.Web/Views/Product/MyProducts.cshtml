@@ -54,9 +54,7 @@
                                 <span class="badge bg-success">Vendido</span>
                             }
                         </div>
-                        <h4 class="text-primary mb-3">
-                            @producto.Precio.ToString("C", new System.Globalization.CultureInfo("es-ES"))
-                        </h4>
+                            <p class="card-text fw-bold text-primary">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</p>
                         <div class="d-flex gap-2">
                             <a asp-action="Details" asp-route-id="@producto.Id" 
                                class="btn btn-primary btn-sm flex-grow-1">
