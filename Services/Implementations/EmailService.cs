@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using MimeKit;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
@@ -8,23 +9,13 @@ using TiendaDawWeb.Services.Interfaces;
 namespace TiendaDawWeb.Services.Implementations;
 
 /// <summary>
-/// Implementación del servicio de emails usando MailKit
+///     Implementación del servicio de emails usando MailKit
 /// </summary>
-public class EmailService : IEmailService
-{
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<EmailService> _logger;
-
-    public EmailService(
-        IConfiguration configuration,
-        ILogger<EmailService> logger)
-    {
-        _configuration = configuration;
-        _logger = logger;
-    }
-
-    public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName)
-    {
+public class EmailService(
+    IConfiguration configuration,
+    ILogger<EmailService> logger
+) : IEmailService {
+    public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName) {
         var subject = "¡Bienvenido a WalaDaw! 🛒";
         var body = $@"
             <html>
@@ -67,11 +58,10 @@ public class EmailService : IEmailService
     }
 
     public async Task<Result<bool, DomainError>> SendPurchaseConfirmationEmailAsync(
-        string toEmail, Purchase purchase, byte[]? pdfAttachment = null)
-    {
+        string toEmail, Purchase purchase, byte[]? pdfAttachment = null) {
         var subject = $"Confirmación de compra #{purchase.Id} - WalaDaw";
-        
-        var productsList = string.Join("", purchase.Products.Select(p => 
+
+        var productsList = string.Join("", purchase.Products.Select(p =>
             $"<li>{p.Nombre} - {p.Precio:C}</li>"));
 
         var body = $@"
@@ -125,22 +115,19 @@ public class EmailService : IEmailService
     }
 
     public async Task<Result<bool, DomainError>> SendEmailAsync(
-        string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null)
-    {
-        try
-        {
+        string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null) {
+        try {
             // Obtener configuración SMTP
-            var smtpHost = _configuration["Email:SmtpHost"];
-            var smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
-            var smtpUser = _configuration["Email:SmtpUser"];
-            var smtpPass = _configuration["Email:SmtpPass"];
-            var fromEmail = _configuration["Email:FromEmail"] ?? smtpUser;
-            var fromName = _configuration["Email:FromName"] ?? "WalaDaw";
+            var smtpHost = configuration["Email:SmtpHost"];
+            var smtpPort = int.Parse(configuration["Email:SmtpPort"] ?? "587");
+            var smtpUser = configuration["Email:SmtpUser"];
+            var smtpPass = configuration["Email:SmtpPass"];
+            var fromEmail = configuration["Email:FromEmail"] ?? smtpUser;
+            var fromName = configuration["Email:FromName"] ?? "WalaDaw";
 
             // Si no hay configuración SMTP, solo loguear (útil para desarrollo)
-            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser))
-            {
-                _logger.LogWarning("Configuración SMTP no disponible. Email no enviado a {Email}: {Subject}", 
+            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser)) {
+                logger.LogWarning("Configuración SMTP no disponible. Email no enviado a {Email}: {Subject}",
                     toEmail, subject);
                 return Result.Success<bool, DomainError>(true);
             }
@@ -152,38 +139,31 @@ public class EmailService : IEmailService
             message.Subject = subject;
 
             // Crear el body builder
-            var builder = new BodyBuilder
-            {
+            var builder = new BodyBuilder {
                 HtmlBody = body
             };
 
             // Adjuntar archivo si existe
             if (attachment != null && !string.IsNullOrEmpty(attachmentName))
-            {
                 builder.Attachments.Add(attachmentName, attachment);
-            }
 
             message.Body = builder.ToMessageBody();
 
             // Enviar el email
             using var client = new SmtpClient();
-            await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
-            
-            if (!string.IsNullOrEmpty(smtpPass))
-            {
-                await client.AuthenticateAsync(smtpUser, smtpPass);
-            }
-            
+            await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+
+            if (!string.IsNullOrEmpty(smtpPass)) await client.AuthenticateAsync(smtpUser, smtpPass);
+
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("Email enviado exitosamente a {Email}: {Subject}", toEmail, subject);
-            
+            logger.LogInformation("Email enviado exitosamente a {Email}: {Subject}", toEmail, subject);
+
             return Result.Success<bool, DomainError>(true);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al enviar email a {Email}", toEmail);
+        catch (Exception ex) {
+            logger.LogError(ex, "Error al enviar email a {Email}", toEmail);
             return Result.Failure<bool, DomainError>(
                 GenericError.UnexpectedError($"Error al enviar email: {ex.Message}"));
         }

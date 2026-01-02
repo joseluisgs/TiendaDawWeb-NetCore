@@ -5,36 +5,32 @@ using TiendaDawWeb.Services.Interfaces;
 namespace TiendaDawWeb.Services.Implementations;
 
 /// <summary>
-/// Servicio de gestión de almacenamiento de archivos
-/// Guarda archivos en wwwroot para acceso web directo
+///     Servicio de gestión de almacenamiento de archivos
+///     Guarda archivos en wwwroot para acceso web directo
 /// </summary>
-public class StorageService : IStorageService
-{
+public class StorageService : IStorageService {
+    private readonly string[] _allowedExtensions;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<StorageService> _logger;
-    private readonly string _uploadPath;
     private readonly long _maxFileSize;
-    private readonly string[] _allowedExtensions;
+    private readonly string _uploadPath;
 
     public StorageService(
-        IWebHostEnvironment environment, 
+        IWebHostEnvironment environment,
         IConfiguration configuration,
-        ILogger<StorageService> logger)
-    {
+        ILogger<StorageService> logger) {
         _environment = environment;
         _logger = logger;
         _uploadPath = configuration["Storage:UploadPath"] ?? "uploads";
         _maxFileSize = configuration.GetValue<long>("Storage:MaxFileSize", 5242880); // 5MB default
-        _allowedExtensions = configuration.GetSection("Storage:AllowedExtensions").Get<string[]>() 
-            ?? new[] { ".jpg", ".jpeg", ".png", ".gif" };
-        
+        _allowedExtensions = configuration.GetSection("Storage:AllowedExtensions").Get<string[]>()
+                             ?? [".jpg", ".jpeg", ".png", ".gif"];
+
         _logger.LogInformation("📁 Directorio de uploads: {Path}", _uploadPath);
     }
 
-    public async Task<Result<string, DomainError>> SaveFileAsync(IFormFile file, string folder)
-    {
-        try
-        {
+    public async Task<Result<string, DomainError>> SaveFileAsync(IFormFile file, string folder) {
+        try {
             if (file == null || file.Length == 0)
                 return Result.Failure<string, DomainError>(
                     ProductError.InvalidData("El archivo está vacío"));
@@ -46,7 +42,8 @@ public class StorageService : IStorageService
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!_allowedExtensions.Contains(extension))
                 return Result.Failure<string, DomainError>(
-                    ProductError.InvalidData($"Extensión de archivo no permitida. Permitidas: {string.Join(", ", _allowedExtensions)}"));
+                    ProductError.InvalidData(
+                        $"Extensión de archivo no permitida. Permitidas: {string.Join(", ", _allowedExtensions)}"));
 
             // Usar wwwroot para que los archivos sean accesibles desde la web
             var uploadDir = Path.Combine(_environment.WebRootPath, _uploadPath, folder);
@@ -55,53 +52,46 @@ public class StorageService : IStorageService
             var fileName = $"{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(uploadDir, fileName);
 
-            await using (var stream = new FileStream(filePath, FileMode.Create))
-            {
+            await using (var stream = new FileStream(filePath, FileMode.Create)) {
                 await file.CopyToAsync(stream);
             }
 
             // Retornar ruta relativa desde wwwroot con / al inicio
             var relativePath = $"/{_uploadPath}/{folder}/{fileName}";
             _logger.LogInformation("Archivo guardado: {FilePath}", relativePath);
-            
+
             return Result.Success<string, DomainError>(relativePath);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.LogError(ex, "Error guardando archivo");
             return Result.Failure<string, DomainError>(
                 ProductError.InvalidData($"Error al guardar archivo: {ex.Message}"));
         }
     }
 
-    public async Task<Result<bool, DomainError>> DeleteFileAsync(string filePath)
-    {
-        try
-        {
+    public async Task<Result<bool, DomainError>> DeleteFileAsync(string filePath) {
+        try {
             if (string.IsNullOrEmpty(filePath))
                 return Result.Success<bool, DomainError>(true);
 
             // Usar wwwroot
             var fullPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
-            
-            if (File.Exists(fullPath))
-            {
+
+            if (File.Exists(fullPath)) {
                 await Task.Run(() => File.Delete(fullPath));
                 _logger.LogInformation("Archivo eliminado: {FilePath}", filePath);
             }
 
             return Result.Success<bool, DomainError>(true);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.LogError(ex, "Error eliminando archivo {FilePath}", filePath);
             return Result.Failure<bool, DomainError>(
                 ProductError.InvalidData($"Error al eliminar archivo: {ex.Message}"));
         }
     }
 
-    public bool FileExists(string filePath)
-    {
+    public bool FileExists(string filePath) {
         if (string.IsNullOrEmpty(filePath))
             return false;
 

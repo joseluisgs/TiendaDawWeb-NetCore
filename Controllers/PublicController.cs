@@ -1,40 +1,32 @@
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Models;
+using TiendaDawWeb.Models.Enums;
 using TiendaDawWeb.Services.Interfaces;
 
 namespace TiendaDawWeb.Controllers;
 
 /// <summary>
-/// Controlador para páginas públicas (sin autenticación requerida)
+///     Controlador para páginas públicas (sin autenticación requerida)
 /// </summary>
-public class PublicController : Controller
-{
-    private readonly IProductService _productService;
-    private readonly ILogger<PublicController> _logger;
-
-    public PublicController(IProductService productService, ILogger<PublicController> logger)
-    {
-        _productService = productService;
-        _logger = logger;
-    }
-
+public class PublicController(
+    IProductService productService,
+    ILogger<PublicController> logger
+) : Controller {
     /// <summary>
-    /// Página principal con listado de productos
+    ///     Página principal con listado de productos
     /// </summary>
     public async Task<IActionResult> Index(
-        string? q, 
-        string? categoria, 
-        float? minPrecio, 
+        string? q,
+        string? categoria,
+        float? minPrecio,
         float? maxPrecio,
         int page = 1,
         int size = 12,
-        string? lang = null)
-    {
+        string? lang = null) {
         // Manejar cambio de idioma si se proporciona
-        if (!string.IsNullOrEmpty(lang))
-        {
-            var culture = lang.ToLowerInvariant() switch
-            {
+        if (!string.IsNullOrEmpty(lang)) {
+            var culture = lang.ToLowerInvariant() switch {
                 "en" => "en-US",
                 "es" => "es-ES",
                 "fr" => "fr-FR",
@@ -42,15 +34,14 @@ public class PublicController : Controller
                 "pt" => "pt-PT",
                 _ => "es-ES"
             };
-            
+
             // Añadir la cookie de cultura al response
             //De esta forma se guarda la preferencia del usuario
             // Se aplicará en futuras peticiones
             Response.Cookies.Append(
                 CookieRequestCultureProvider.DefaultCookieName,
                 CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                new CookieOptions 
-                { 
+                new CookieOptions {
                     Expires = DateTimeOffset.UtcNow.AddYears(1),
                     IsEssential = true,
                     Path = "/"
@@ -61,38 +52,26 @@ public class PublicController : Controller
             return RedirectToAction("Index", new { q, categoria, minPrecio, maxPrecio, page, size });
         }
 
-        var result = await _productService.GetAllAsync();
+        var result = await productService.GetAllAsync();
 
-        if (result.IsFailure)
-        {
-            _logger.LogWarning("Error obteniendo productos: {Error}", result.Error.Message);
-            return View(Enumerable.Empty<Models.Product>());
+        if (result.IsFailure) {
+            logger.LogWarning("Error obteniendo productos: {Error}", result.Error.Message);
+            return View(Enumerable.Empty<Product>());
         }
 
         // Apply filters
         var products = result.Value.AsEnumerable();
-        
+
         // Filtro de búsqueda por nombre
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            products = products.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
-        }
+        if (!string.IsNullOrWhiteSpace(q)) products = products.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
 
         // Filtro por categoría
-        if (!string.IsNullOrWhiteSpace(categoria) && Enum.TryParse<Models.Enums.ProductCategory>(categoria, out var cat))
-        {
+        if (!string.IsNullOrWhiteSpace(categoria) && Enum.TryParse<ProductCategory>(categoria, out var cat))
             products = products.Where(p => p.Categoria == cat);
-        }
 
         // Filtro por rango de precio
-        if (minPrecio.HasValue)
-        {
-            products = products.Where(p => (float)p.Precio >= minPrecio.Value);
-        }
-        if (maxPrecio.HasValue)
-        {
-            products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
-        }
+        if (minPrecio.HasValue) products = products.Where(p => (float)p.Precio >= minPrecio.Value);
+        if (maxPrecio.HasValue) products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
 
         // Ordenar por ID descendente (más recientes primero)
         products = products.OrderByDescending(p => p.Id);
@@ -101,7 +80,7 @@ public class PublicController : Controller
         var totalItems = products.Count();
         var totalPages = (int)Math.Ceiling(totalItems / (double)size);
         var currentPage = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
-        
+
         // Get page of products
         var pagedProducts = products
             .Skip((currentPage - 1) * size)
@@ -115,13 +94,13 @@ public class PublicController : Controller
         ViewBag.TotalPages = totalPages;
         ViewBag.HasPrevious = currentPage > 1;
         ViewBag.HasNext = currentPage < totalPages;
-        
+
         // ViewBag para filtros
         ViewBag.Search = q;
         ViewBag.Categoria = categoria;
         ViewBag.MinPrecio = minPrecio;
         ViewBag.MaxPrecio = maxPrecio;
-        
+
         return View(pagedProducts);
     }
 }

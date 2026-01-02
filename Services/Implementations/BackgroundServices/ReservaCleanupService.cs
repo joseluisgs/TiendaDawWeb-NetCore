@@ -4,32 +4,25 @@ using TiendaDawWeb.Data;
 namespace TiendaDawWeb.Services.Implementations.BackgroundServices;
 
 /// <summary>
-/// Servicio de limpieza automática de reservas de productos expiradas
-/// Se ejecuta periódicamente para liberar productos cuya reserva temporal ha expirado
+///     Servicio de limpieza automática de reservas de productos expiradas
+///     Se ejecuta periódicamente para liberar productos cuya reserva temporal ha expirado
 /// </summary>
-public class ReservaCleanupService : IHostedService, IDisposable
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<ReservaCleanupService> _logger;
-    private readonly IConfiguration _configuration;
+public class ReservaCleanupService(
+    IServiceProvider serviceProvider,
+    ILogger<ReservaCleanupService> logger,
+    IConfiguration configuration
+) : IHostedService, IDisposable {
     private Timer? _timer;
 
-    public ReservaCleanupService(
-        IServiceProvider serviceProvider,
-        ILogger<ReservaCleanupService> logger,
-        IConfiguration configuration)
-    {
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-        _configuration = configuration;
+    public void Dispose() {
+        _timer?.Dispose();
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Servicio de limpieza de reservas iniciado");
+    public Task StartAsync(CancellationToken cancellationToken) {
+        logger.LogInformation("Servicio de limpieza de reservas iniciado");
 
         // Obtener configuración de intervalo (por defecto 5 minutos)
-        var intervalMinutes = _configuration.GetValue("Reservas:CleanupIntervalMinutes", 5);
+        var intervalMinutes = configuration.GetValue("Reservas:CleanupIntervalMinutes", 5);
         var interval = TimeSpan.FromMinutes(intervalMinutes);
 
         _timer = new Timer(DoWork, null, TimeSpan.Zero, interval);
@@ -37,13 +30,17 @@ public class ReservaCleanupService : IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state)
-    {
-        _logger.LogDebug("Ejecutando limpieza de reservas expiradas...");
+    public Task StopAsync(CancellationToken cancellationToken) {
+        logger.LogInformation("Servicio de limpieza de reservas detenido");
+        _timer?.Change(Timeout.Infinite, 0);
+        return Task.CompletedTask;
+    }
 
-        try
-        {
-            using var scope = _serviceProvider.CreateScope();
+    private async void DoWork(object? state) {
+        logger.LogDebug("Ejecutando limpieza de reservas expiradas...");
+
+        try {
+            using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             // Encontrar productos con reservas expiradas
@@ -52,40 +49,24 @@ public class ReservaCleanupService : IHostedService, IDisposable
                 .Where(p => p.Reservado && p.ReservadoHasta.HasValue && p.ReservadoHasta.Value < now)
                 .ToListAsync();
 
-            if (expiredReservations.Any())
-            {
-                foreach (var product in expiredReservations)
-                {
+            if (expiredReservations.Any()) {
+                foreach (var product in expiredReservations) {
                     product.Reservado = false;
                     product.ReservadoHasta = null;
                 }
 
                 await context.SaveChangesAsync();
 
-                _logger.LogInformation(
-                    "Limpieza de reservas completada: {Count} productos liberados", 
+                logger.LogInformation(
+                    "Limpieza de reservas completada: {Count} productos liberados",
                     expiredReservations.Count);
             }
-            else
-            {
-                _logger.LogDebug("No se encontraron reservas expiradas");
+            else {
+                logger.LogDebug("No se encontraron reservas expiradas");
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error durante la limpieza de reservas");
+        catch (Exception ex) {
+            logger.LogError(ex, "Error durante la limpieza de reservas");
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Servicio de limpieza de reservas detenido");
-        _timer?.Change(Timeout.Infinite, 0);
-        return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
     }
 }

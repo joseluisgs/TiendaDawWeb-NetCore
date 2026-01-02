@@ -4,32 +4,25 @@ using TiendaDawWeb.Data;
 namespace TiendaDawWeb.Services.Implementations.BackgroundServices;
 
 /// <summary>
-/// Servicio de limpieza automática de carritos abandonados
-/// Se ejecuta periódicamente para eliminar items antiguos del carrito
+///     Servicio de limpieza automática de carritos abandonados
+///     Se ejecuta periódicamente para eliminar items antiguos del carrito
 /// </summary>
-public class CarritoCleanupService : IHostedService, IDisposable
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<CarritoCleanupService> _logger;
-    private readonly IConfiguration _configuration;
+public class CarritoCleanupService(
+    IServiceProvider serviceProvider,
+    ILogger<CarritoCleanupService> logger,
+    IConfiguration configuration
+) : IHostedService, IDisposable {
     private Timer? _timer;
 
-    public CarritoCleanupService(
-        IServiceProvider serviceProvider,
-        ILogger<CarritoCleanupService> logger,
-        IConfiguration configuration)
-    {
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-        _configuration = configuration;
+    public void Dispose() {
+        _timer?.Dispose();
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Servicio de limpieza de carritos iniciado");
+    public Task StartAsync(CancellationToken cancellationToken) {
+        logger.LogInformation("Servicio de limpieza de carritos iniciado");
 
         // Obtener configuración de intervalo (por defecto 60 minutos)
-        var intervalMinutes = _configuration.GetValue("Carrito:CleanupIntervalMinutes", 60);
+        var intervalMinutes = configuration.GetValue("Carrito:CleanupIntervalMinutes", 60);
         var interval = TimeSpan.FromMinutes(intervalMinutes);
 
         _timer = new Timer(DoWork, null, TimeSpan.Zero, interval);
@@ -37,17 +30,21 @@ public class CarritoCleanupService : IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state)
-    {
-        _logger.LogInformation("Ejecutando limpieza de carritos abandonados...");
+    public Task StopAsync(CancellationToken cancellationToken) {
+        logger.LogInformation("Servicio de limpieza de carritos detenido");
+        _timer?.Change(Timeout.Infinite, 0);
+        return Task.CompletedTask;
+    }
 
-        try
-        {
-            using var scope = _serviceProvider.CreateScope();
+    private async void DoWork(object? state) {
+        logger.LogInformation("Ejecutando limpieza de carritos abandonados...");
+
+        try {
+            using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             // Obtener tiempo de expiración (por defecto 24 horas)
-            var expirationMinutes = _configuration.GetValue("Carrito:ExpirationMinutes", 1440);
+            var expirationMinutes = configuration.GetValue("Carrito:ExpirationMinutes", 1440);
             var expirationTime = DateTime.UtcNow.AddMinutes(-expirationMinutes);
 
             // Eliminar items del carrito más antiguos que el tiempo de expiración
@@ -55,35 +52,20 @@ public class CarritoCleanupService : IHostedService, IDisposable
                 .Where(ci => ci.CreatedAt < expirationTime)
                 .ToListAsync();
 
-            if (expiredItems.Any())
-            {
+            if (expiredItems.Any()) {
                 context.CarritoItems.RemoveRange(expiredItems);
                 await context.SaveChangesAsync();
 
-                _logger.LogInformation(
-                    "Limpieza de carritos completada: {Count} items eliminados", 
+                logger.LogInformation(
+                    "Limpieza de carritos completada: {Count} items eliminados",
                     expiredItems.Count);
             }
-            else
-            {
-                _logger.LogInformation("No se encontraron carritos para limpiar");
+            else {
+                logger.LogInformation("No se encontraron carritos para limpiar");
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error durante la limpieza de carritos");
+        catch (Exception ex) {
+            logger.LogError(ex, "Error durante la limpieza de carritos");
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Servicio de limpieza de carritos detenido");
-        _timer?.Change(Timeout.Infinite, 0);
-        return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
     }
 }

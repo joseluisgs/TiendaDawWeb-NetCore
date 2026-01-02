@@ -4,10 +4,9 @@ using TiendaDawWeb.Models.Enums;
 namespace TiendaDawWeb.Models;
 
 /// <summary>
-/// Entidad de producto del marketplace
+///     Entidad de producto del marketplace
 /// </summary>
-public class Product
-{
+public class Product {
     public long Id { get; set; }
 
     [Required(ErrorMessage = "El nombre del producto es obligatorio")]
@@ -24,14 +23,13 @@ public class Product
 
     public string? Imagen { get; set; }
 
-    [Required]
-    public ProductCategory Categoria { get; set; }
+    [Required] public ProductCategory Categoria { get; set; }
 
     public bool Reservado { get; set; } = false;
     public DateTime? ReservadoHasta { get; set; }
     public long? ReservadoPor { get; set; }
 
-    public bool Deleted { get; set; } = false;
+    public bool Deleted { get; set; }
     public DateTime? DeletedAt { get; set; }
     public string? DeletedBy { get; set; }
 
@@ -50,10 +48,9 @@ public class Product
     // Propiedades calculadas
     public string ImagenOrDefault => Imagen ?? "/images/default-product.jpg";
     public double RatingPromedio => Ratings.Any() ? Ratings.Average(r => r.Puntuacion) : 0;
-    
+
     // Métodos
-    public void SoftDelete(string deletedBy)
-    {
+    public void SoftDelete(string deletedBy) {
         Deleted = true;
         DeletedAt = DateTime.UtcNow;
         DeletedBy = deletedBy;

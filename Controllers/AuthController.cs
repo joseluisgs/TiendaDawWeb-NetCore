@@ -6,60 +6,45 @@ using TiendaDawWeb.ViewModels;
 namespace TiendaDawWeb.Controllers;
 
 /// <summary>
-/// Controlador de autenticación (login, registro, logout)
+///     Controlador de autenticación (login, registro, logout)
 /// </summary>
-public class AuthController : Controller
-{
-    private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
-    private readonly ILogger<AuthController> _logger;
-
-    public AuthController(
-        UserManager<User> userManager,
-        SignInManager<User> signInManager,
-        ILogger<AuthController> logger)
-    {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _logger = logger;
-    }
-
+public class AuthController(
+    UserManager<User> userManager,
+    SignInManager<User> signInManager,
+    ILogger<AuthController> logger
+) : Controller {
     /// <summary>
-    /// Mostrar formulario de login
+    ///     Mostrar formulario de login
     /// </summary>
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
-    {
+    public IActionResult Login(string? returnUrl = null) {
         ViewData["ReturnUrl"] = returnUrl;
         return View();
     }
 
     /// <summary>
-    /// Procesar login
+    ///     Procesar login
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginViewModel model)
-    {
+    public async Task<IActionResult> Login(LoginViewModel model) {
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user == null)
-        {
+        var user = await userManager.FindByEmailAsync(model.Email);
+        if (user == null) {
             ModelState.AddModelError(string.Empty, "Email o contraseña incorrectos");
             return View(model);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(
+        var result = await signInManager.PasswordSignInAsync(
             user.UserName!,
             model.Password,
             model.RememberMe,
-            lockoutOnFailure: false);
+            false);
 
-        if (result.Succeeded)
-        {
-            _logger.LogInformation("Usuario {Email} inició sesión", model.Email);
+        if (result.Succeeded) {
+            logger.LogInformation("Usuario {Email} inició sesión", model.Email);
             return RedirectToLocal(model.ReturnUrl);
         }
 
@@ -68,33 +53,29 @@ public class AuthController : Controller
     }
 
     /// <summary>
-    /// Mostrar formulario de registro
+    ///     Mostrar formulario de registro
     /// </summary>
     [HttpGet]
-    public IActionResult Register()
-    {
+    public IActionResult Register() {
         return View();
     }
 
     /// <summary>
-    /// Procesar registro
+    ///     Procesar registro
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(RegisterViewModel model)
-    {
+    public async Task<IActionResult> Register(RegisterViewModel model) {
         if (!ModelState.IsValid)
             return View(model);
 
-        var existingUser = await _userManager.FindByEmailAsync(model.Email);
-        if (existingUser != null)
-        {
+        var existingUser = await userManager.FindByEmailAsync(model.Email);
+        if (existingUser != null) {
             ModelState.AddModelError(string.Empty, "Ya existe un usuario con este email");
             return View(model);
         }
 
-        var user = new User
-        {
+        var user = new User {
             UserName = model.Email,
             Email = model.Email,
             Nombre = model.Nombre,
@@ -106,48 +87,41 @@ public class AuthController : Controller
             EmailConfirmed = true
         };
 
-        var result = await _userManager.CreateAsync(user, model.Password);
+        var result = await userManager.CreateAsync(user, model.Password);
 
-        if (result.Succeeded)
-        {
-            _logger.LogInformation("Nuevo usuario registrado: {Email}", model.Email);
-            await _signInManager.SignInAsync(user, isPersistent: false);
+        if (result.Succeeded) {
+            logger.LogInformation("Nuevo usuario registrado: {Email}", model.Email);
+            await signInManager.SignInAsync(user, false);
             return RedirectToAction(nameof(PublicController.Index), "Public");
         }
 
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError(string.Empty, error.Description);
-        }
+        foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
 
         return View(model);
     }
 
     /// <summary>
-    /// Cerrar sesión
+    ///     Cerrar sesión
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()
-    {
-        await _signInManager.SignOutAsync();
-        _logger.LogInformation("Usuario cerró sesión");
+    public async Task<IActionResult> Logout() {
+        await signInManager.SignOutAsync();
+        logger.LogInformation("Usuario cerró sesión");
         return RedirectToAction(nameof(PublicController.Index), "Public");
     }
 
     /// <summary>
-    /// Página de acceso denegado
+    ///     Página de acceso denegado
     /// </summary>
-    public IActionResult AccessDenied()
-    {
+    public IActionResult AccessDenied() {
         return View();
     }
 
-    private IActionResult RedirectToLocal(string? returnUrl)
-    {
+    private IActionResult RedirectToLocal(string? returnUrl) {
         if (Url.IsLocalUrl(returnUrl))
             return Redirect(returnUrl);
-        
+
         return RedirectToAction(nameof(PublicController.Index), "Public");
     }
 }
