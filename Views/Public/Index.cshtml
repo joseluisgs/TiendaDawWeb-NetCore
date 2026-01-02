@@ -5,6 +5,7 @@
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
 @inject IStringLocalizer<TiendaDawWeb.Resources.Messages> Localizer
+@inject IStringLocalizer<SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = "Inicio - WalaDaw";
     var currentUser = await UserManager.GetUserAsync(User);
@@ -29,8 +30,9 @@
                         @foreach (var categoria in Enum.GetValues<ProductCategory>())
                         {
                             var isSelected = ViewBag.Categoria == categoria.ToString();
+                            var categoryKey = $"Category.{categoria}";
                             <option value="@categoria" selected="@isSelected">
-                                @categoria
+                                @SharedLocalizer[categoryKey]
                             </option>
                         }
                     </select>
@@ -80,7 +82,7 @@
                                         @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
                                     </p>
                                 }
-                                <span class="badge bg-info">@producto.Categoria</span>
+                                <span class="badge bg-info">@SharedLocalizer[$"Category.{producto.Categoria}"]</span>
                             </div>
                         </a>
                         <div class="card-footer bg-white">
