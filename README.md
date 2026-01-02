@@ -114,12 +114,19 @@ cd TiendaDawWeb-NetCore
 # Restaurar dependencias
 dotnet restore
 
-# Ejecutar aplicación
-dotnet run
+# Ejecutar aplicación (Normal)
+dotnet run --project TiendaDawWeb.Web
 
-# Acceder a la aplicación
-http://localhost:5000
+# Ejecutar con Hot Reload (Recomendado para desarrollo)
+dotnet watch --project TiendaDawWeb.Web
 ```
+
+### 🚀 Desarrollo Ágil (Hot Reload)
+
+Este proyecto está optimizado para **Hot Reload**. Si usas `dotnet watch`, podrás ver los cambios en la UI al instante sin perder los datos de la base de datos SQLite en memoria.
+
+- **JetBrains Rider:** Activa "Apply hot reload changes on save" en los ajustes.
+- **Visual Studio:** Usa el icono de la llama naranja o inicia con `Ctrl + F5`.
 
 ### Build y Tests
 
