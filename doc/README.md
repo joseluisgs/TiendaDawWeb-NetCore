@@ -36,5 +36,8 @@ Análisis arquitectónico de la transición desde SSR tradicional y AJAX hacia l
 ### [Volumen 10: Comunicación entre Componentes Blazor - State Container](10-Blazor-Component-Communication.md)
 Guía profunda sobre cómo comunicar componentes desacoplados mediante servicios Scoped y eventos C#. Explica la importancia de `IDisposable` y la gestión de estado reactivo.
 
+### [Volumen 11: Persistencia Volátil - SQLite In-Memory vs InMemoryDatabase](11-SQLite-InMemory-Persistence.md)
+Comparativa técnica entre proveedores de persistencia efímera. Explica el patrón Keep-Alive para mantener una base de datos SQL real en la RAM durante el desarrollo.
+
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

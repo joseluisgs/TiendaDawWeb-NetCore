@@ -10,17 +10,39 @@ using System.Text;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
+using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using TiendaDawWeb.Binders;
+using Microsoft.Data.Sqlite;
 
 // Configura la codificación de la consola a UTF8 para evitar problemas con tildes y eñes en los logs
 Console.OutputEncoding = Encoding.UTF8;
 
 // Configuración de Serilog: Reemplaza el logger por defecto de .NET por uno más potente y visual
 Log.Logger = new LoggerConfiguration()
+    // Define el nivel mínimo de log global. 'Information' es ideal para ver qué pasa sin saturar.
     .MinimumLevel.Information()
+    
+    // 💡 FILTRO ANTI-RUIDO:
+    // 'Override' permite cambiar el nivel de log para namespaces específicos.
+    
+    // Silenciamos los logs internos de Microsoft (ASP.NET Core) a 'Warning'. 
+    // Solo veremos si algo falla, no cada petición HTTP interna.
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    
+    // Excepto los mensajes sobre el ciclo de vida de la app (ej. "Application started").
+    // Queremos ver que la app ha arrancado correctamente.
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    
+    // Silenciamos las consultas SQL generadas por Entity Framework.
+    // Evita que la consola se llene de comandos SELECT/INSERT cada vez que la app accede a datos.
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+    
+    // Configura la salida hacia la consola
     .WriteTo.Console(
+        // Define el formato visual: [Fecha Hora NIVEL] Mensaje + Excepción si la hubiera
         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+        // Aplica un tema de colores elegante para que los logs sean fáciles de leer de un vistazo
         theme: AnsiConsoleTheme.Code)
     .CreateLogger();
 
@@ -55,9 +77,19 @@ var defaultCulture = new CultureInfo("es-ES");
 CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
 CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
-// Entity Framework Core con InMemory
+// CONFIGURACIÓN DE PERSISTENCIA (SQLite In-Memory Persistente):
+// 1. Creamos una conexión manual que mantendremos abierta durante todo el ciclo de vida de la app.
+//    DataSource=:memory: indica que la DB vive solo en la RAM.
+var keepAliveConnection = new SqliteConnection("DataSource=:memory:");
+keepAliveConnection.Open();
+
+// 2. Registramos el DbContext usando esa conexión persistente.
+//    Aunque el DbContext es Scoped, todos compartirán la misma conexión Singleton (la misma RAM).
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("WalaDawDb"));
+    options.UseSqlite(keepAliveConnection));
+
+// 3. Opcional: Registramos la conexión para que se cierre limpiamente al apagar el servidor.
+builder.Services.AddSingleton(keepAliveConnection);
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<User, IdentityRole<long>>(options =>
@@ -164,6 +196,15 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        // 🚨 PASO CRÍTICO (SQLite In-Memory):
+        // A diferencia del proveedor 'InMemory', SQLite es un motor real que requiere 
+        // que las tablas existan físicamente en la memoria antes de insertar datos.
+        // EnsureCreatedAsync() analiza nuestros Modelos y crea el esquema (tablas y relaciones) 
+        // automáticamente en cada arranque del servidor.
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.EnsureCreatedAsync();
+        
+        // Una vez las tablas existen, procedemos a llenarlas con datos de prueba
         await SeedData.InitializeAsync(services);
     }
     catch (Exception ex)

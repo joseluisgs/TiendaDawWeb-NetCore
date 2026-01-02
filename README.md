@@ -46,7 +46,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [💡 Estrategias de Interfaz: El Triple Camino](#-estrategias-de-interfaz-el-triple-camino)
     - [1. SSR Tradicional (Razor Pages/Views)](#1-ssr-tradicional-razor-pagesviews)
     - [2. SPA dinámica con AJAX (Legacy Support)](#2-spa-dinámica-con-ajax-legacy-support)
-    - [3. Componentes Reactivos (Blazor Server)](#3-componentes-reactivos-blazor-server)
+    - [3. Componentes Reactivos (Blazor Server) 🚀](#3-componentes-reactivos-blazor-server-)
   - [👥 Usuarios Demo](#-usuarios-demo)
   - [🔒 Seguridad](#-seguridad)
   - [🌐 Características](#-características-1)
@@ -95,7 +95,7 @@ La aplicación incluye productos actuales y relevantes:
 - **Razor Views** - Motor de vistas del lado servidor
 - **Blazor Server** - Componentes interactivos en tiempo real con C#
 - **SignalR** - Comunicación bidireccional para reactividad Blazor
-- **Entity Framework Core InMemory** - ORM con base de datos en memoria
+- **EF Core con SQLite In-Memory** - Motor SQL real en RAM con soporte de transacciones
 - **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
 - **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
 - **Bootstrap 5.3** - Framework CSS responsive
@@ -377,7 +377,7 @@ graph TD
     subgraph CapaDatos["Capa de Datos (Persistencia)"]
         EF["Entity Framework Core"]
         ID["ASP.NET Core Identity"]
-        DB[("In-Memory Database")]
+        DB[("SQLite (In-Memory SQL)")]
     end
 
     %% Flujos de interacción
@@ -508,7 +508,14 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
 
 ## 📚 Documentación
 
-Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra **[Guía de Supervivencia para el alumnado de DAW)](doc/README.md)**
+Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra **[Guía de Supervivencia para el alumnado de DAW (Enciclopedia .NET 10)](doc/README.md)**, que incluye:
+
+- [Volumen 01: Arquitectura, Middlewares y DI](doc/01-Architecture-Pipeline-DI.md)
+- [Volumen 02: Controladores y Lógica de Negocio (Pattern Result)](doc/02-Controllers-Models-Results.md)
+- [Volumen 04: Blazor Server - Interactividad en Tiempo Real](doc/04-Blazor-Hybrid-SignalR.md)
+- [Volumen 09: Evolución de la Interfaz - Razor vs AJAX vs Blazor Server](doc/09-BlazorVsRazorVsAjax.md)
+- [Volumen 10: Comunicación entre Componentes Blazor - State Container](doc/10-Blazor-Component-Communication.md)
+- [Volumen 11: Persistencia Volátil - Motor SQL en RAM](doc/11-SQLite-InMemory-Persistence.md)
 
 
 
