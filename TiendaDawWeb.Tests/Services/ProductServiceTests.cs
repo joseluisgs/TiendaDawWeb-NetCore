@@ -267,4 +267,84 @@ public class ProductServiceTests
         _memoryCache.TryGetValue($"product_details_{productId}", out cachedItem).Should().BeFalse();
         _memoryCache.TryGetValue("all_products", out cachedItem).Should().BeFalse();
     }
+
+    [Test]
+    public async Task SearchAsync_ShouldFilterByNombre()
+    {
+        // Act
+        var result = await _productService.SearchAsync("Test 1", null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().Nombre.Should().Contain("Test 1");
+    }
+
+    [Test]
+    public async Task SearchAsync_ShouldFilterByCategoria()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, ProductCategory.LAPTOPS.ToString());
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().Categoria.Should().Be(ProductCategory.LAPTOPS);
+    }
+
+    [Test]
+    public async Task CreateAsync_ShouldFail_WhenPriceIsInvalid()
+    {
+        // Arrange
+        var product = new Product { Nombre = "Invalid", Precio = 0, Categoria = ProductCategory.AUDIO };
+
+        // Act
+        var result = await _productService.CreateAsync(product);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ProductError.InvalidPrice);
+    }
+
+    [Test]
+    public async Task UpdateAsync_ShouldFail_WhenNotOwner()
+    {
+        // Arrange
+        var productId = 1L;
+        var updatedProduct = new Product { Nombre = "Hack" };
+
+        // Act
+        var result = await _productService.UpdateAsync(productId, updatedProduct, userId: 999);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ProductError.NotOwner);
+    }
+
+    [Test]
+    public async Task DeleteAsync_ShouldFail_WhenProductIsSold()
+    {
+        // Arrange
+        var productId = 1L;
+        var product = await _context.Products.FindAsync(productId);
+        product!.CompraId = 55L; // Mark as sold
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _productService.DeleteAsync(productId, 1);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ProductError.CannotDeleteSold);
+    }
+
+    [Test]
+    public async Task DeleteAsync_ShouldSucceed_WhenIsAdminAndNotOwner()
+    {
+        // Act
+        var result = await _productService.DeleteAsync(1, 999, isAdmin: true);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
 }

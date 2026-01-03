@@ -227,4 +227,80 @@ public class PurchaseServiceTests
         Assert.That(result.IsFailure, Is.True);
         Assert.That(result.Error.Message, Does.Contain("no está disponible"));
     }
+
+    [Test]
+    public async Task GetByIdAsync_ShouldReturnPurchase_WhenExists()
+    {
+        // Arrange
+        var user = new User { Id = 1L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        var purchase = new Purchase { Id = 100L, CompradorId = 1L, Total = 50m };
+        Context.Purchases.Add(purchase);
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await PurchaseService.GetByIdAsync(100L);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Id, Is.EqualTo(100L));
+    }
+
+    [Test]
+    public async Task GetByUserAsync_ShouldReturnPurchases()
+    {
+        // Arrange
+        var user = new User { Id = 10L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        Context.Purchases.Add(new Purchase { Id = 200L, CompradorId = 10L, Total = 10m });
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await PurchaseService.GetByUserAsync(10L);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Count(), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task GetByDateRangeAsync_ShouldFilterPurchases()
+    {
+        // Arrange
+        var user = new User { Id = 1L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        var now = DateTime.UtcNow;
+        Context.Purchases.Add(new Purchase { Id = 300L, CompradorId = 1L, Total = 10m, FechaCompra = now.AddDays(-5) });
+        Context.Purchases.Add(new Purchase { Id = 301L, CompradorId = 1L, Total = 20m, FechaCompra = now });
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await PurchaseService.GetByDateRangeAsync(now.AddDays(-1), now.AddDays(1));
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Count(), Is.EqualTo(1));
+        Assert.That(result.Value.First().Id, Is.EqualTo(301L));
+    }
+
+    [Test]
+    public async Task GeneratePdfAsync_ShouldCallPdfService()
+    {
+        // Arrange
+        var user = new User { Id = 1L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        var purchase = new Purchase { Id = 400L, CompradorId = 1L, Total = 50m };
+        Context.Purchases.Add(purchase);
+        await Context.SaveChangesAsync();
+
+        _pdfServiceMock!.Setup(s => s.GenerateInvoicePdfAsync(It.IsAny<Purchase>()))
+            .ReturnsAsync(Result.Success<byte[], DomainError>(new byte[] { 1, 2, 3 }));
+
+        // Act
+        var result = await PurchaseService.GeneratePdfAsync(400L);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        _pdfServiceMock.Verify(s => s.GenerateInvoicePdfAsync(It.IsAny<Purchase>()), Times.Once);
+    }
 }
