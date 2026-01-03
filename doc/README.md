@@ -1,64 +1,101 @@
-# 📚 WalaDaw Master Edition: Guía de Supervivencia .NET 10 (Enciclopedia Definitiva)
+# 📚 WalaDaw Master Edition: Ruta del Maestro .NET 10
 
-Bienvenido a la **Enciclopedia de Aprendizaje Definitiva para .NET 10**. Este material es una inmersión profunda en el desarrollo web moderno, diseñada para transformar a alumnos de 2DAW en expertos de ASP.NET Core. No es solo una descripción; es un manual práctico con el "cómo", el "por qué" y el "qué hacer cuando falla".
-
-## 📖 Volúmenes del Saber Maestro
-
-Cada volumen es un capítulo exhaustivo que detalla la tecnología, su configuración, uso, patrones de diseño y, crucialmente, las soluciones a los problemas reales que enfrentamos en el proyecto.
-
-### [Volumen 01: La Forja de .NET - Arquitectura, Middlewares y DI](01-Architecture-Pipeline-DI.md)
-Descubre el viaje de una petición HTTP, el orden vital de los Middlewares, la Inyección de Dependencias a bajo nivel con sus tiempos de vida y los constructores primarios de C# 14. Incluye troubleshooting sobre el Content Root.
-
-### [Volumen 02: El Cerebro de la App - Controladores y Lógica de Negocio](02-Controllers-Models-Results.md)
-Aprende a orquestar el flujo de datos, el Model Binding, la validación de entrada y la implementación de la programación funcional con el Patrón Result para una gestión de errores elegante.
-
-### [Volumen 03: Razor Masterclass - Sintaxis y UI Inteligente](03-Razor-Syntax-UI.md)
-Domina el motor de renderizado de Razor, los Tag Helpers para HTML con superpoderes, la estrategia de triple validación y la gestión de notificaciones temporales con `TempData`.
-
-### [Volumen 04: Blazor Server - Interactividad en Tiempo Real](04-Blazor-Hybrid-SignalR.md)
-El caso de estudio definitivo: integra componentes C# en el navegador, soluciona el error 404 de archivos virtuales (`blazor.server.js`), y entiende el ciclo de vida de los circuitos SignalR.
-
-### [Volumen 05: El Almacén del Saber - EF Core y Persistencia Avanzada](05-EFCore-Persistence-Seed.md)
-Sumérgete en el DbContext, las bases de datos en memoria para laboratorio, el patrón Seed Data profesional y la gestión de relaciones complejas. Incluye la solución al dilema del `DbContext` en Background Services.
-
-### [Volumen 06: La Torre de Babel Conquistada - I18n y Localización Estratégica](06-I18n-Localization-Decimal.md)
-Configura una web multiidioma real, resuelve el dilema de los separadores decimales internacionales y sobrevive a los conflictos de rutas con la etiqueta `base href`.
-
-### [Volumen 07: JavaScript & AJAX - La Danza Asíncrona con Seguridad](07-JS-AJAX-Security.md)
-Maestría en la Fetch API para una web dinámica, protección anti-CSRF para llamadas AJAX, blindaje de scripts contra errores y feedback visual con Toasts.
-
-### [Volumen 08: Operaciones y Producción - Docker, Ficheros y Despliegue](08-Ops-Docker-Files.md)
-Optimización de imágenes Docker con Multi-stage builds, gestión de volúmenes persistentes, procesamiento avanzado de imágenes y generación de PDFs profesional.
-
-### [Volumen 09: Evolución de la Interfaz - Razor vs AJAX vs Blazor Server](09-BlazorVsRazorVsAjax.md)
-Análisis arquitectónico de la transición desde SSR tradicional y AJAX hacia la reactividad moderna de Blazor Server. Incluye el patrón State Container y comparativa de rendimiento.
-
-### [Volumen 10: Comunicación entre Componentes Blazor - State Container](10-Blazor-Component-Communication.md)
-Guía profunda sobre cómo comunicar componentes desacoplados mediante servicios Scoped y eventos C#. Explica la importancia de `IDisposable` y la gestión de estado reactivo.
-
-### [Volumen 11: Persistencia Volátil - SQLite In-Memory vs InMemoryDatabase](11-SQLite-InMemory-Persistence.md)
-Comparativa técnica entre proveedores de persistencia efímera. Explica el patrón Keep-Alive para mantener una base de datos SQL real en la RAM durante el desarrollo.
-
-### [Volumen 12: Guía de Productividad - Hot Reload y Trucos](12-Development-Tips.md)
-Domina `dotnet watch`, JetBrains Rider y Visual Studio para ver cambios al instante sin perder los datos de la memoria RAM.
-
-### [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Playwright](13-E2E-Testing-Playwright.md)
-Uso de un usuario robot en C# para validar flujos reales, seguridad e interactividad de Blazor. Explica la migración desde Cypress hacia una infraestructura de tests nativa e integrada en .NET.
-
-### [Volumen 14: Optimización de Rendimiento - Output Cache](14-OutputCache-Performance.md)
-Estrategias de escalabilidad mediante el almacenamiento de respuestas en el servidor. Uso de .NET 10 Output Cache para optimizar el escaparate público y gestión de variaciones de filtros.
-
-### [Volumen 15: Gestión Global de Errores - Middleware de Seguridad](15-Global-Exception-Handling.md)
-Construcción de una red de seguridad global para capturar excepciones. Diferenciación inteligente entre respuestas JSON para APIs y redirecciones HTML para la web.
-
-### [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](16-Entity-Auditing-EFCore.md)
-Automatización del rastreo de creación y modificación de registros. Sobrescritura de SaveChangesAsync para inyectar metadatos de tiempo de forma transversal.
-
-### [Volumen 17: Patrón de Mapeo de Objetos - Clean Controllers](17-Object-Mapping-Pattern.md)
-Centralización de la lógica de conversión entre Modelos y ViewModels. Uso de métodos de extensión para aplicar el principio DRY y simplificar la lógica de los controladores.
-
-### [Volumen 18: Notificaciones en Tiempo Real - SignalR Pro](18-SignalR-RealTime-Notifications.md)
-Implementación de comunicación bidireccional mediante WebSockets. Configuración de un Hub global y clientes JavaScript para mostrar avisos (Toasts) instantáneos a los usuarios.
+Bienvenido a la **Enciclopedia de DESARROLLO PROFESIONAL**. Este material ha sido reorganizado para ofrecerte una curva de aprendizaje lógica, transformando problemas reales en maestría técnica.
 
 ---
-*Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*
+
+## 🛠️ Fase 1: Cimientos y Productividad
+Para empezar con buen pie, entendiendo el flujo del framework y cómo ser un desarrollador rápido.
+
+### [01. La Forja de .NET - Arquitectura, Pipeline y DI](01-Architecture-Pipeline-DI.md)
+El viaje de una petición HTTP, Middlewares, Inyección de Dependencias y constructores primarios de C# 14.
+
+### [02. Guía de Productividad - Hot Reload y Trucos](02-Development-Tips.md)
+Domina `dotnet watch` y herramientas para ver cambios al instante sin perder datos en RAM.
+
+---
+
+## 💾 Fase 2: El Almacén del Saber (Datos)
+Cómo gestionar la persistencia de forma profesional y segura.
+
+### [03. EF Core y Persistencia Avanzada](03-EFCore-Persistence-Seed.md)
+DbContext, Seed Data y gestión de relaciones. La solución al dilema del DbContext en Background Services.
+
+### [04. Persistencia Volátil - SQLite In-Memory](04-SQLite-InMemory-Persistence.md)
+El patrón Keep-Alive para mantener una base de datos SQL real en la RAM durante el desarrollo.
+
+### [05. Auditoría Automática de Entidades - EF Core Magic](05-Entity-Auditing-EFCore.md)
+Automatización del rastreo de creación y modificación de registros mediante SaveChangesAsync.
+
+---
+
+## 🧠 Fase 3: El Cerebro de la App (Lógica)
+Donde los datos se transforman en acciones de negocio.
+
+### [06. Patrón de Mapeo de Objetos - Clean Controllers](06-Object-Mapping-Pattern.md)
+Centralización de conversiones entre Modelos y ViewModels para aplicar el principio DRY.
+
+### [07. El Corazón de la App - Controladores y Resultados](07-Controllers-Models-Results.md)
+Model Binding, validación y programación funcional con el Patrón Result.
+
+### [08. Gestión Global de Errores - Middleware de Seguridad](08-Global-Exception-Handling.md)
+Red de seguridad global y personalización de páginas 404/500 para una experiencia profesional.
+
+---
+
+## 🎨 Fase 4: La Interfaz de Usuario (UI Tradicional)
+Renderizado en servidor y comunicación asíncrona básica.
+
+### [09. Razor Masterclass - Sintaxis y UI Inteligente](09-Razor-Syntax-UI.md)
+Motor de renderizado, Tag Helpers y gestión de notificaciones con `TempData`.
+
+### [10. La Torre de Babel - I18n y Localización](10-I18n-Localization-Decimal.md)
+Web multiidioma real, separadores decimales y conflictos de rutas.
+
+### [11. JavaScript & AJAX - La Danza Asíncrona](11-JS-AJAX-Security.md)
+Fetch API, protección anti-CSRF y feedback visual con Toasts centralizados.
+
+---
+
+## ⚡ Fase 5: Interactividad Moderna (Blazor & Real-Time)
+Llevando la web al siguiente nivel de reactividad.
+
+### [12. Evolución de la Interfaz - Razor vs AJAX vs Blazor](12-BlazorVsRazorVsAjax.md)
+Análisis arquitectónico de la transición hacia la reactividad moderna.
+
+### [13. Blazor Server - Interactividad en Tiempo Real](13-Blazor-Server-Basics.md)
+Integración de componentes C# en el navegador y ciclo de vida de circuitos SignalR.
+
+### [14. Comunicación entre Componentes - State Container](14-Blazor-Component-Communication.md)
+Gestión de estado reactivo mediante servicios Scoped y eventos C# (Observer Pattern).
+
+### [15. Notificaciones en Tiempo Real - SignalR Pro](15-SignalR-RealTime-Notifications.md)
+Implementación de comunicación bidireccional global para avisos instantáneos.
+
+---
+
+## 🚀 Fase 6: Optimización y Calidad Industrial
+Asegurando que la aplicación es rápida y está libre de errores.
+
+### [16. Cimientos de Calidad - Tests Unitarios y de Componentes](16-Unit-Testing-NUnit-bUnit.md)
+Pruebas de bajo nivel con NUnit, Moq y bUnit para asegurar los engranajes del sistema.
+
+### [17. Métricas de Calidad - Cobertura de Código](17-Code-Coverage.md)
+Auditoría técnica con Coverlet y ReportGenerator para identificar zonas sin protección.
+
+### [18. Pruebas de Extremo a Extremo (E2E) - Playwright](18-E2E-Testing-Playwright.md)
+El robot de C# que valida flujos reales, seguridad e interactividad de Blazor.
+
+### [19. Optimización de Rendimiento - Output Cache](19-OutputCache-Performance.md)
+Estrategias de escalabilidad mediante almacenamiento de respuestas en el servidor (.NET 10).
+
+---
+
+## 🚢 Fase 7: Operaciones
+El camino hacia el despliegue real.
+
+### [20. Operaciones y Producción - Docker y Ficheros](20-Ops-Docker-Files.md)
+Optimización de imágenes Docker, gestión de volúmenes y generación de PDFs.
+
+---
+*Este material ha sido redactado con rigor experto para transformar alumnos en ingenieros de software .NET.*
