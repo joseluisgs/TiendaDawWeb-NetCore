@@ -30,7 +30,7 @@ public class ProfileTests : PageTest
             await Page.ClickAsync(".card-body form button[type='submit']");
 
             // Espera explícita de navegación tras el submit
-            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // await Page.WaitForLoadStateAsync(LoadState.NetworkIdle); // OPTIMIZADO: No es necesario esperar explícitamente
 
             await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
         }

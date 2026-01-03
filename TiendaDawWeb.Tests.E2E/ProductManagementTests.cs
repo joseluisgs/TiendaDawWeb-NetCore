@@ -43,7 +43,7 @@ public class ProductManagementTests : PageTest
             await Page.ClickAsync(".card-body form button[type='submit']");
 
             // Espera explícita de navegación tras el submit
-            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // await Page.WaitForLoadStateAsync(LoadState.NetworkIdle); // OPTIMIZADO: No es necesario esperar explícitamente
 
             // Espera que la barra de navegación muestre el nombre del usuario logueado.
             await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
