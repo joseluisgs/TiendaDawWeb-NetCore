@@ -39,14 +39,19 @@
                 <span class="badge bg-light text-dark border">
                     <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @((Model.UpdatedAt ?? Model.CreatedAt).ToLocalTime().ToString("g"))
                 </span>
+                @if (isAuthenticated && Model.CompraId.HasValue) {
+                    <span class="badge bg-danger">
+                        <i class="bi bi-check-circle"></i> VENDIDO
+                    </span>
+                }
             </div>
 
             <div id="averageRatingHeader" class="mb-4">
                 @* Código original con AJAX comentado para propósitos didácticos *@
                 @* <script>loadRatings();</script> *@
-                
-                <component type="typeof(RatingSummary)" render-mode="ServerPrerendered" 
-                           param-ProductId="@Model.Id" />
+
+                <component type="typeof(RatingSummary)" render-mode="ServerPrerendered"
+                           param-ProductId="@Model.Id"/>
             </div>
 
             <h2 class="text-primary mb-4">@Model.Precio.ToString("C2")</h2>
@@ -87,29 +92,32 @@
                         </button>
                     </form>
                 }
+                else if (Model.CompraId.HasValue) {
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-check-circle"></i> Producto Vendido
+                    </button>
+                }
+                else if (Model.Reservado) {
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-lock"></i> Producto Reservado
+                    </button>
+                }
                 else {
-                    @if (Model.Reservado) {
-                        <button class="btn btn-secondary" disabled>
-                            <i class="bi bi-lock"></i> Producto Reservado
+                    <form asp-action="AddToCart" asp-controller="Carrito" asp-route-productId="@Model.Id"
+                          method="post" class="flex-grow-1">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-cart-plus"></i> Añadir al Carrito
                         </button>
-                    }
-                    else {
-                        <form asp-action="AddToCart" asp-controller="Carrito" asp-route-productId="@Model.Id"
-                              method="post" class="flex-grow-1">
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-cart-plus"></i> Añadir al Carrito
-                            </button>
-                        </form>
-                    }
+                    </form>
+                }
 
-                    @if (isAuthenticated) {
-                        var isFavorite = ViewBag.IsFavorite ?? false;
-                        <button class="btn @(isFavorite ? "btn-danger" : "btn-outline-danger") favorite-btn" 
-                                data-product-id="@Model.Id"
-                                onclick="toggleFavorite(@Model.Id)">
-                            <i class="bi @(isFavorite ? "bi-heart-fill" : "bi-heart")"></i> Favorito
-                        </button>
-                    }
+                @if (isAuthenticated && !isOwner) {
+                    var isFavorite = ViewBag.IsFavorite ?? false;
+                    <button class="btn @(isFavorite ? "btn-danger" : "btn-outline-danger") favorite-btn"
+                            data-product-id="@Model.Id"
+                            onclick="toggleFavorite(@Model.Id)">
+                        <i class="bi @(isFavorite ? "bi-heart-fill" : "bi-heart")"></i> Favorito
+                    </button>
                 }
             </div>
         </div>
@@ -124,10 +132,10 @@
             <div id="ratingsListAJAX"></div> 
             *@
 
-            <component type="typeof(RatingSection)" render-mode="ServerPrerendered" 
-                       param-ProductId="@Model.Id" 
+            <component type="typeof(RatingSection)" render-mode="ServerPrerendered"
+                       param-ProductId="@Model.Id"
                        param-CurrentUserId="@currentUser?.Id"
-                       param-IsOwner="@isOwner" />
+                       param-IsOwner="@isOwner"/>
         </div>
     </div>
 </div>

@@ -1,6 +1,7 @@
 using System.Data;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
@@ -15,8 +16,10 @@ public class PurchaseService(
     ApplicationDbContext context,
     ICarritoService carritoService,
     IPdfService pdfService,
+    IMemoryCache cache,
     ILogger<PurchaseService> logger
 ) : IPurchaseService {
+    private const string ProductsCacheKey = "all_products";
     /// <summary>
     ///     Crea una compra a partir del carrito con control de concurrencia SERIALIZABLE
     /// </summary>
@@ -90,19 +93,24 @@ public class PurchaseService(
 
                 await context.SaveChangesAsync();
 
-                // 6. Vaciar el carrito
+                // 6. INVALIDAR CACHÉ: Productos vendidos ya no deben aparecer en listados
+                cache.Remove(ProductsCacheKey);
+                foreach (var producto in productos)
+                    cache.Remove($"product_details_{producto.Id}");
+
+                // 7. Vaciar el carrito
                 var clearResult = await carritoService.ClearCarritoAsync(usuarioId);
                 if (clearResult.IsFailure)
                     logger.LogWarning("Error al vaciar carrito después de compra: {Error}",
                         clearResult.Error.Message);
 
-                // 7. Commit de la transacción
+                // 8. Commit de la transacción
                 await transaction.CommitAsync();
 
                 logger.LogInformation("Compra {PurchaseId} creada exitosamente para usuario {UserId}",
                     purchase.Id, usuarioId);
 
-                // 8. Cargar la compra con sus relaciones
+                // 9. Cargar la compra con sus relaciones
                 var purchaseWithDetails = await context.Purchases
                     .Include(p => p.Comprador)
                     .Include(p => p.Products)

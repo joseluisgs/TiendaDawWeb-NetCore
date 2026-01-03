@@ -22,12 +22,24 @@ public class ProfileTests : PageTest
     [SetUp]
     public async Task Setup()
     {
-        await Page.GotoAsync($"{BaseUrl}/Auth/Login");
-        await Page.FillAsync("#Email", "prueba@prueba.com");
-        await Page.FillAsync("#Password", "prueba");
-        await Page.ClickAsync(".card-body form button[type='submit']");
-        
-        await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+        try
+        {
+            await Page.GotoAsync($"{BaseUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+            await Page.FillAsync("#Email", "prueba@prueba.com");
+            await Page.FillAsync("#Password", "prueba");
+            await Page.ClickAsync(".card-body form button[type='submit']");
+
+            // Espera explícita de navegación tras el submit
+            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR en Setup de ProfileTests: {ex.Message}");
+            await Page.ScreenshotAsync(new() { Path = "profile-setup-failure.png" });
+            throw;
+        }
     }
 
     /// <summary>
@@ -36,13 +48,23 @@ public class ProfileTests : PageTest
     [Test]
     public async Task ProfileDisplay_ShouldShowCorrectUserData()
     {
-        // 1. Acción: Ir a la ruta personalizada
-        await Page.GotoAsync($"{BaseUrl}/app/perfil");
+        try
+        {
+            // 1. Acción: Ir a la ruta personalizada
+            await Page.GotoAsync($"{BaseUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
 
-        // 2. Verificación: El contenido contiene los datos del SeedData
-        var mainContent = Page.Locator("main");
-        await Expect(mainContent).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
-        await Expect(mainContent).ToContainTextAsync("prueba@prueba.com");
+            // 2. Verificación: El contenido contiene los datos del SeedData
+            var mainContent = Page.Locator("main");
+            await Expect(mainContent).ToBeVisibleAsync(new() { Timeout = 10000 });
+            await Expect(mainContent).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 5000 });
+            await Expect(mainContent).ToContainTextAsync("prueba@prueba.com", new() { Timeout = 5000 });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR en ProfileDisplay: {ex.Message}");
+            await Page.ScreenshotAsync(new() { Path = "profile-display-failure.png" });
+            throw;
+        }
     }
 
     /// <summary>
@@ -51,15 +73,32 @@ public class ProfileTests : PageTest
     [Test]
     public async Task ProfileEditNavigation_ShouldShowFormWithValues()
     {
-        // 1. Acción: Ir al perfil y click en Editar
-        await Page.GotoAsync($"{BaseUrl}/app/perfil");
-        await Page.Locator("a:has-text('Editar')").ClickAsync();
+        try
+        {
+            // 1. Acción: Ir al perfil y click en Editar
+            await Page.GotoAsync($"{BaseUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
 
-        // 2. Verificación: URL correcta y formulario precargado
-        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/app/perfil/editar.*"));
-        
-        var nombreInput = Page.Locator("#nombre");
-        var actualValue = await nombreInput.InputValueAsync();
-        Assert.That(actualValue.ToLower(), Does.Contain("prueba"));
+            // Esperar a que el enlace de editar esté visible
+            var editLink = Page.Locator("a:has-text('Editar')");
+            await Expect(editLink).ToBeVisibleAsync(new() { Timeout = 10000 });
+            await editLink.ClickAsync();
+
+            // Esperar que el formulario de edición sea visible (más fiable que NetworkIdle)
+            await Expect(Page.Locator("#nombre")).ToBeVisibleAsync(new() { Timeout = 10000 });
+
+            // 2. Verificación: URL correcta y formulario precargado
+            await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/app/perfil/editar.*"), new() { Timeout = 10000 });
+
+            var nombreInput = Page.Locator("#nombre");
+            await Expect(nombreInput).ToBeVisibleAsync(new() { Timeout = 5000 });
+            var actualValue = await nombreInput.InputValueAsync();
+            Assert.That(actualValue.ToLower(), Does.Contain("prueba"));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR en ProfileEditNavigation: {ex.Message}");
+            await Page.ScreenshotAsync(new() { Path = "profile-edit-failure.png" });
+            throw;
+        }
     }
 }

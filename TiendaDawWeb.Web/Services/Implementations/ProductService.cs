@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
@@ -9,22 +10,33 @@ using TiendaDawWeb.Services.Interfaces;
 namespace TiendaDawWeb.Services.Implementations;
 
 /// <summary>
-///     Servicio de gestión de productos con Railway Oriented Programming
+///     Servicio de gestión de productos con Railway Oriented Programming y Caché de Aplicación.
 /// </summary>
 public class ProductService(
     ApplicationDbContext context,
+    IMemoryCache cache,
     ILogger<ProductService> logger
 ) : IProductService {
+    private const string ProductsCacheKey = "all_products";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
+
     public async Task<Result<Product, DomainError>> GetByIdAsync(long id) {
         try {
-            var product = await context.Products
-                .Include(p => p.Propietario)
-                .Include(p => p.Ratings)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var productResult = await cache.GetOrCreateAsync(ProductDetailsCacheKey(id), async entry => {
+                entry.AbsoluteExpirationRelativeToNow = CacheDuration;
+                logger.LogDebug("Cache Miss: Obteniendo producto {ProductId} de la DB", id);
 
-            return product != null
-                ? Result.Success<Product, DomainError>(product)
-                : Result.Failure<Product, DomainError>(ProductError.NotFound(id));
+                var product = await context.Products
+                    .Include(p => p.Propietario)
+                    .Include(p => p.Ratings)
+                    .FirstOrDefaultAsync(p => p.Id == id);
+
+                return product != null
+                    ? Result.Success<Product, DomainError>(product)
+                    : Result.Failure<Product, DomainError>(ProductError.NotFound(id));
+            });
+            // productResult ya es un Result<Product, DomainError>, no puede ser null.
+            return productResult;
         }
         catch (Exception ex) {
             logger.LogError(ex, "Error obteniendo producto {ProductId}", id);
@@ -35,14 +47,19 @@ public class ProductService(
 
     public async Task<Result<IEnumerable<Product>, DomainError>> GetAllAsync() {
         try {
-            var products = await context.Products
-                .Include(p => p.Propietario)
-                .Include(p => p.Ratings)
-                .Where(p => !p.Deleted && p.CompraId == null) // Ocultar productos ya comprados
-                .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
+            var products = await cache.GetOrCreateAsync(ProductsCacheKey, async entry => {
+                entry.AbsoluteExpirationRelativeToNow = CacheDuration;
+                logger.LogDebug("Cache Miss: Obteniendo todos los productos de la DB");
 
-            return Result.Success<IEnumerable<Product>, DomainError>(products);
+                return await context.Products
+                    .Include(p => p.Propietario)
+                    .Include(p => p.Ratings)
+                    .Where(p => !p.Deleted && p.CompraId == null)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToListAsync();
+            });
+
+            return Result.Success<IEnumerable<Product>, DomainError>(products ?? Enumerable.Empty<Product>());
         }
         catch (Exception ex) {
             logger.LogError(ex, "Error obteniendo todos los productos");
@@ -52,11 +69,13 @@ public class ProductService(
     }
 
     public async Task<Result<IEnumerable<Product>, DomainError>> SearchAsync(string? nombre, string? categoria) {
+        // La búsqueda es demasiado dinámica para cachearla fácilmente sin complicar la invalidación.
+        // Se deja contra DB o se podría cachear con claves compuestas.
         try {
             var query = context.Products
                 .Include(p => p.Propietario)
                 .Include(p => p.Ratings)
-                .Where(p => !p.Deleted && p.CompraId == null); // Ocultar productos ya comprados
+                .Where(p => !p.Deleted && p.CompraId == null);
 
             if (!string.IsNullOrWhiteSpace(nombre))
                 query = query.Where(p => p.Nombre.Contains(nombre) || p.Descripcion.Contains(nombre));
@@ -82,6 +101,9 @@ public class ProductService(
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
+            // INVALIDACIÓN: Un nuevo producto afecta a la lista general
+            cache.Remove(ProductsCacheKey);
+
             logger.LogInformation("Producto creado: {ProductId} - {ProductName}", product.Id, product.Nombre);
             return Result.Success<Product, DomainError>(product);
         }
@@ -94,12 +116,15 @@ public class ProductService(
 
     public async Task<Result<Product, DomainError>> UpdateAsync(long id, Product updatedProduct, long userId) {
         try {
-            var productResult = await GetByIdAsync(id);
+            // 🚨 CRÍTICO: Leemos directamente de DB para que la entidad esté trackeada por este DbContext
+            // NO usar GetByIdAsync porque devuelve entidades de caché trackeadas por otro contexto
+            var product = await context.Products
+                .Include(p => p.Propietario)
+                .Include(p => p.Ratings)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (productResult.IsFailure)
-                return productResult;
-
-            var product = productResult.Value;
+            if (product == null)
+                return Result.Failure<Product, DomainError>(ProductError.NotFound(id));
 
             if (product.PropietarioId != userId)
                 return Result.Failure<Product, DomainError>(ProductError.NotOwner);
@@ -111,6 +136,10 @@ public class ProductService(
 
             if (!string.IsNullOrEmpty(updatedProduct.Imagen))
                 product.Imagen = updatedProduct.Imagen;
+
+            // INVALIDACIÓN: Limpiar caché antes de guardar
+            cache.Remove(ProductsCacheKey);
+            cache.Remove(ProductDetailsCacheKey(id));
 
             await context.SaveChangesAsync();
 
@@ -132,18 +161,20 @@ public class ProductService(
 
             if (producto == null) return Result.Failure<bool, DomainError>(ProductError.NotFound(id));
 
-            // 🔴 CRÍTICO: Verificar si el producto tiene una compra asociada
             if (producto.CompraId.HasValue) {
                 logger.LogWarning("❌ Intento de eliminar producto vendido {ProductId}", id);
                 return Result.Failure<bool, DomainError>(ProductError.CannotDeleteSold);
             }
 
-            // Verificar permisos
             if (!isAdmin && producto.PropietarioId != userId)
                 return Result.Failure<bool, DomainError>(ProductError.NotOwner);
 
             producto.SoftDelete($"User-{userId}");
             await context.SaveChangesAsync();
+
+            // INVALIDACIÓN: Borrado físico/lógico afecta a todo
+            cache.Remove(ProductsCacheKey);
+            cache.Remove(ProductDetailsCacheKey(id));
 
             logger.LogInformation("✅ Producto {ProductId} eliminado por usuario {UserId}", id, userId);
             return Result.Success<bool, DomainError>(true);
@@ -153,5 +184,9 @@ public class ProductService(
             return Result.Failure<bool, DomainError>(
                 ProductError.InvalidData($"Error al eliminar producto: {ex.Message}"));
         }
+    }
+
+    private static string ProductDetailsCacheKey(long id) {
+        return $"product_details_{id}";
     }
 }

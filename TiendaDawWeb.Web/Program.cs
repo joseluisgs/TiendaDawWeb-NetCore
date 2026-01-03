@@ -164,6 +164,9 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.De
 // Permite cachear la salida HTML en el servidor para reducir carga de CPU y DB.
 builder.Services.AddOutputCache();
 
+// 🧠 CACHÉ DE APLICACIÓN: Registro de IMemoryCache para optimizar servicios
+builder.Services.AddMemoryCache();
+
 // 🔔 INTERACTIVIDAD: Registro de SignalR
 // Habilita la comunicación bidireccional en tiempo real, para las notificaciones push
 // No tiene nada que ver con Blazor, que usa SignalR internamente.,

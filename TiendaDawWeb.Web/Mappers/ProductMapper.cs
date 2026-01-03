@@ -33,11 +33,10 @@ public static class ProductMapper
     /// <param name="model">El viewmodel de origen.</param>
     /// <param name="propietarioId">ID del usuario que realiza la acción.</param>
     /// <param name="imagenUrl">URL de la imagen ya procesada por el storage.</param>
-    public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl)
+    public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl, bool includeId = false)
     {
-        return new Product
+        var product = new Product
         {
-            Id = model.Id,
             Nombre = model.Nombre,
             Descripcion = model.Descripcion,
             Precio = model.Precio,
@@ -45,6 +44,11 @@ public static class ProductMapper
             PropietarioId = propietarioId,
             Imagen = imagenUrl ?? model.ImagenUrl
         };
+        
+        if (includeId)
+            product.Id = model.Id;
+        
+        return product;
     }
     
     /// <summary>

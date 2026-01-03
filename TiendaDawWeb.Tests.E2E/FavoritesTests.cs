@@ -43,14 +43,16 @@ public class FavoritesTests : PageTest
         await Page.FillAsync("#Password", "Password123!");
         await Page.FillAsync("#ConfirmPassword", "Password123!");
         await Page.Locator(".card-body form button[type='submit']").ClickAsync();
-        
+
         await Expect(Page.Locator(".navbar")).ToContainTextAsync("FavUser");
 
-        // 2. Acción: Ir al listado público y entrar al primer producto
+        // 2. Acción: Ir al listado público y entrar al segundo producto (evita el primero que podría ser del usuario)
         await Page.GotoAsync($"{BaseUrl}/Public");
-        var firstProduct = Page.Locator(".producto-card").First;
-        await Expect(firstProduct).ToBeVisibleAsync();
-        await firstProduct.Locator("a").First.ClickAsync();
+        var products = Page.Locator(".producto-card");
+        await Expect(products.First).ToBeVisibleAsync();
+
+        // Click en el segundo producto para asegurar que NO es del usuario nuevo
+        await products.Nth(1).Locator("a").First.ClickAsync();
 
         // 3. Acción: Click en botón de favoritos (AJAX)
         var favoriteBtn = Page.Locator(".favorite-btn");

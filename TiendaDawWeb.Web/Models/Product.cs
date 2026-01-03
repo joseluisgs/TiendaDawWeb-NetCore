@@ -44,10 +44,10 @@ public class Product : AuditableEntity {
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 
     // Propiedades calculadas
-    public string ImagenOrDefault => string.IsNullOrEmpty(Imagen) 
-        ? "/images/default-product.svg" 
-        : Imagen.StartsWith("http") 
-            ? Imagen 
+    public string ImagenOrDefault => string.IsNullOrEmpty(Imagen)
+        ? "/images/default-product.svg"
+        : Imagen.StartsWith("http") || Imagen.StartsWith("/")
+            ? Imagen
             : $"/uploads/{Imagen}";
 
     public double RatingPromedio => Ratings.Any() ? Ratings.Average(r => r.Puntuacion) : 0;

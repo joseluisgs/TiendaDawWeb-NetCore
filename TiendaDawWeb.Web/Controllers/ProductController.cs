@@ -101,7 +101,7 @@ public class ProductController(
             if (saveResult.IsSuccess) imagenUrl = saveResult.Value;
         }
 
-        // 🧹 REFACTOR: Usamos el Mapper para construir la entidad
+        // 🧹 REFACTOR: Usamos el Mapper para construir la entidad (sin ID para crear)
         var product = model.ToEntity(user.Id, imagenUrl);
 
         var result = await productService.CreateAsync(product);
@@ -163,8 +163,8 @@ public class ProductController(
             if (saveResult.IsSuccess) imagenUrl = saveResult.Value;
         }
 
-        // 🧹 REFACTOR: Usamos el Mapper para construir la entidad actualizada
-        var product = model.ToEntity(user.Id, imagenUrl);
+        // 🧹 REFACTOR: Usamos el Mapper para construir la entidad actualizada (con ID)
+        var product = model.ToEntity(user.Id, imagenUrl, includeId: true);
 
         var result = await productService.UpdateAsync(id, product, user.Id);
 
