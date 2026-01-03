@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.ViewModels;
+using TiendaDawWeb.Web.Mappers;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -75,17 +76,8 @@ public class AuthController(
             return View(model);
         }
 
-        var user = new User {
-            UserName = model.Email,
-            Email = model.Email,
-            Nombre = model.Nombre,
-            Apellidos = model.Apellidos,
-            Avatar = string.IsNullOrWhiteSpace(model.Avatar)
-                ? $"https://robohash.org/{model.Email}?size=200x200&bgset=bg2"
-                : model.Avatar,
-            Rol = "USER",
-            EmailConfirmed = true
-        };
+        // 🧹 REFACTOR: Usamos el Mapper
+        var user = model.ToEntity();
 
         var result = await userManager.CreateAsync(user, model.Password);
 

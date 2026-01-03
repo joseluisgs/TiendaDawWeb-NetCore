@@ -14,6 +14,7 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using TiendaDawWeb.Binders;
 using TiendaDawWeb.Web.Middlewares;
+using TiendaDawWeb.Web.Hubs;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -163,6 +164,12 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.De
 // Permite cachear la salida HTML en el servidor para reducir carga de CPU y DB.
 builder.Services.AddOutputCache();
 
+// 🔔 INTERACTIVIDAD: Registro de SignalR
+// Habilita la comunicación bidireccional en tiempo real, para las notificaciones push
+// No tiene nada que ver con Blazor, que usa SignalR internamente.,
+// esto es solo para nuestro Hub personalizado.
+builder.Services.AddSignalR();
+
 // CONFIGURACIÓN DE SEGURIDAD AJAX:
 // Obliga a que las peticiones POST de JS/Blazor incluyan este nombre de cabecera con el token CSRF
 builder.Services.AddAntiforgery(options =>
@@ -288,7 +295,7 @@ app.UseRouting();
 
 // 🚀 MEJORA DE RENDIMIENTO: Middleware de OutputCache.
 // Debe ir después de Routing pero antes de Authentication si queremos servir caché a anónimos.
-app.UseOutputCache();
+// app.UseOutputCache();
 
 // Configurar las culturas soportadas por la aplicación
 var supportedCultures = new[] 
@@ -335,6 +342,11 @@ app.MapRazorPages();
 
 // Punto de conexión para Blazor Server. Crea el túnel SignalR para la interactividad real-time
 app.MapBlazorHub(); 
+
+// Punto de conexión para nuestro Hub de Notificaciones personalizado
+app.MapHub<NotificationHub>("/notificationHub");
+
+// Endpoint de salud del sistema: útil para monitorización y Docker
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));

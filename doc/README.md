@@ -57,5 +57,8 @@ Automatización del rastreo de creación y modificación de registros. Sobrescri
 ### [Volumen 17: Patrón de Mapeo de Objetos - Clean Controllers](17-Object-Mapping-Pattern.md)
 Centralización de la lógica de conversión entre Modelos y ViewModels. Uso de métodos de extensión para aplicar el principio DRY y simplificar la lógica de los controladores.
 
+### [Volumen 18: Notificaciones en Tiempo Real - SignalR Pro](18-SignalR-RealTime-Notifications.md)
+Implementación de comunicación bidireccional mediante WebSockets. Configuración de un Hub global y clientes JavaScript para mostrar avisos (Toasts) instantáneos a los usuarios.
+
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

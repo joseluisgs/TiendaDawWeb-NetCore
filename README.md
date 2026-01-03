@@ -469,6 +469,7 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 - [Volumen 15: Gestión Global de Errores - Middleware Pro](doc/15-Global-Exception-Handling.md)
 - [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](doc/16-Entity-Auditing-EFCore.md)
 - [Volumen 17: Patrón de Mapeo de Objetos - Clean Controllers](doc/17-Object-Mapping-Pattern.md)
+- [Volumen 18: Notificaciones en Tiempo Real - SignalR Pro](doc/18-SignalR-RealTime-Notifications.md)
 
 
 

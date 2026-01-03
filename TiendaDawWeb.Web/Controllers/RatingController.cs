@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Services.Interfaces;
 using TiendaDawWeb.ViewModels;
+using TiendaDawWeb.Web.Mappers;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -32,6 +33,9 @@ public class RatingController(
 
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Auth");
+
+        // 🧹 REFACTOR: Usamos el Mapper
+        var rating = model.ToEntity(user.Id);
 
         var result = await ratingService.AddRatingAsync(
             user.Id,
