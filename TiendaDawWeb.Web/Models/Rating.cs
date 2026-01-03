@@ -5,7 +5,7 @@ namespace TiendaDawWeb.Models;
 /// <summary>
 /// Valoración de un producto por un usuario
 /// </summary>
-public class Rating
+public class Rating : AuditableEntity
 {
     public long Id { get; set; }
 
@@ -14,8 +14,6 @@ public class Rating
 
     [StringLength(500)]
     public string? Comentario { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public long UsuarioId { get; set; }
     public virtual User Usuario { get; set; } = null!;

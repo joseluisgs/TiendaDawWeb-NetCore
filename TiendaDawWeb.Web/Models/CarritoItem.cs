@@ -6,10 +6,8 @@ namespace TiendaDawWeb.Models;
 ///     Item del carrito de compras - Sin cantidad, cada producto solo puede añadirse una vez
 ///     Coincide con implementación original de Spring Boot
 /// </summary>
-public class CarritoItem {
+public class CarritoItem : AuditableEntity {
     public long Id { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     ///     Token de concurrencia para evitar condiciones de carrera

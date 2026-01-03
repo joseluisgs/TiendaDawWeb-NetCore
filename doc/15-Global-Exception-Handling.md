@@ -1,4 +1,4 @@
-# 16 - Gestión Global de Errores: El Middleware de Seguridad
+# 15 - Gestión Global de Errores: El Middleware de Seguridad
 
 En este volumen aprendemos a construir una "red de seguridad" que captura cualquier fallo inesperado en nuestra aplicación, evitando que el usuario vea pantallas técnicas y asegurando que nosotros (los desarrolladores) tengamos un rastro claro del error.
 

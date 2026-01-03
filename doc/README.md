@@ -48,11 +48,11 @@ Uso de un usuario robot para validar flujos reales, seguridad e interactividad d
 ### [Volumen 14: Optimización de Rendimiento - Output Cache](14-OutputCache-Performance.md)
 Estrategias de escalabilidad mediante el almacenamiento de respuestas en el servidor. Uso de .NET 10 Output Cache para optimizar el escaparate público y gestión de variaciones de filtros.
 
-### [Volumen 15: Documentación de API - OpenAPI y Swagger](15-OpenAPI-Swagger.md)
-Generación automática de documentación interactiva para los endpoints de la API. Permite probar llamadas AJAX/REST directamente desde el navegador sin herramientas externas.
-
-### [Volumen 16: Gestión Global de Errores - Middleware de Seguridad](16-Global-Exception-Handling.md)
+### [Volumen 15: Gestión Global de Errores - Middleware de Seguridad](15-Global-Exception-Handling.md)
 Construcción de una red de seguridad global para capturar excepciones. Diferenciación inteligente entre respuestas JSON para APIs y redirecciones HTML para la web.
+
+### [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](16-Entity-Auditing-EFCore.md)
+Automatización del rastreo de creación y modificación de registros. Sobrescritura de SaveChangesAsync para inyectar metadatos de tiempo de forma transversal.
 
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

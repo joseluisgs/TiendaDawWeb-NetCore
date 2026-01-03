@@ -3,7 +3,7 @@ namespace TiendaDawWeb.Models;
 /// <summary>
 /// Entidad de compra realizada por un usuario
 /// </summary>
-public class Purchase
+public class Purchase : AuditableEntity
 {
     public long Id { get; set; }
     public DateTime FechaCompra { get; set; } = DateTime.UtcNow;

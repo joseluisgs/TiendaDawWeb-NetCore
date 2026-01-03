@@ -6,7 +6,7 @@ namespace TiendaDawWeb.Models;
 /// <summary>
 ///     Entidad de producto del marketplace
 /// </summary>
-public class Product {
+public class Product : AuditableEntity {
     public long Id { get; set; }
 
     [Required(ErrorMessage = "El nombre del producto es obligatorio")]
@@ -32,8 +32,6 @@ public class Product {
     public bool Deleted { get; set; }
     public DateTime? DeletedAt { get; set; }
     public string? DeletedBy { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Relaciones
     public long PropietarioId { get; set; }

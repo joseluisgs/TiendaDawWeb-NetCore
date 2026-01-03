@@ -87,7 +87,7 @@ public class AdminController(
             .Include(u => u.Products.Where(p => !p.Deleted))
             .Include(u => u.Purchases)
             .Where(u => !u.Deleted)
-            .OrderByDescending(u => u.FechaAlta)
+            .OrderByDescending(u => u.CreatedAt)
             .Skip(skip)
             .Take(pageSize)
             .ToListAsync();

@@ -466,8 +466,9 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 - [Volumen 12: Guía de Productividad - Hot Reload y Trucos](doc/12-Development-Tips.md)
 - [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Cypress](doc/13-E2E-Testing-Cypress.md)
 - [Volumen 14: Optimización de Rendimiento - Output Cache](doc/14-OutputCache-Performance.md)
-- [Volumen 15: Documentación de API - OpenAPI y Swagger](doc/15-OpenAPI-Swagger.md)
-- [Volumen 16: Gestión Global de Errores - Middleware Pro](doc/16-Global-Exception-Handling.md)
+- [Volumen 15: Gestión Global de Errores - Middleware Pro](doc/15-Global-Exception-Handling.md)
+- [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](doc/16-Entity-Auditing-EFCore.md)
+- [Volumen 17: Auditoría Automática de Entidades - EF Core Magic](doc/17-Entity-Auditing-EFCore.md)
 
 
 

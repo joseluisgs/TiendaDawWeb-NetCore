@@ -8,6 +8,16 @@ namespace TiendaDawWeb.Models;
 /// </summary>
 public class User : IdentityUser<long>
 {
+    // OBJETIVO: Integrar propiedades de auditoría sin romper la herencia de Identity.
+    // Usamos composición o simplemente añadimos las propiedades. 
+    // Como C# no soporta herencia múltiple, añadiremos las propiedades de AuditableEntity manualmente
+    // o haremos que implemente una interfaz. Por simplicidad didáctica, las añadiremos aquí.
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
+
     [Required(ErrorMessage = "El nombre es obligatorio")]
     [StringLength(100)]
     public string Nombre { get; set; } = string.Empty;
@@ -17,8 +27,6 @@ public class User : IdentityUser<long>
     public string Apellidos { get; set; } = string.Empty;
 
     public string? Avatar { get; set; }
-
-    public DateTime FechaAlta { get; set; } = DateTime.UtcNow;
 
     [Required]
     public string Rol { get; set; } = "USER"; // ADMIN, USER, MODERATOR

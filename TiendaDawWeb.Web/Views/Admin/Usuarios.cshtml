@@ -87,11 +87,10 @@
                                             </td>
                                             <td>@usuario.Email</td>
                                             <td>@usuario.Nombre @usuario.Apellidos</td>
-                                            <td>
-                                                <small class="text-muted">
-                                                    @usuario.FechaAlta.ToShortDateString()
-                                                </small>
-                                            </td>
+                    <td>
+                        <span class="badge bg-light text-dark">@usuario.CreatedAt.ToString("d")</span>
+                    </td>
+
                                             <td>
                                                 <span class="badge bg-info">
                                                     @usuario.Products.Count

@@ -19,6 +19,50 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
     public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<CarritoItem> CarritoItems => Set<CarritoItem>();
 
+    /// <summary>
+    /// Sobrescribe el guardado de cambios para interceptar las entidades y rellenar 
+    /// automáticamente los campos de auditoría (CreatedAt, UpdatedAt).
+    /// </summary>
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = ChangeTracker
+            .Entries()
+            .Where(e => (e.Entity is AuditableEntity || e.Entity is User) && 
+                        (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+        foreach (var entityEntry in entries)
+        {
+            var now = DateTime.UtcNow;
+
+            if (entityEntry.State == EntityState.Added)
+            {
+                // Si es una entidad nueva, establecemos la fecha de creación
+                if (entityEntry.Entity is AuditableEntity auditable)
+                {
+                    auditable.CreatedAt = now;
+                }
+                else if (entityEntry.Entity is User user)
+                {
+                    user.CreatedAt = now;
+                }
+            }
+            else
+            {
+                // Si es una modificación, establecemos la fecha de actualización
+                if (entityEntry.Entity is AuditableEntity auditable)
+                {
+                    auditable.UpdatedAt = now;
+                }
+                else if (entityEntry.Entity is User user)
+                {
+                    user.UpdatedAt = now;
+                }
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);

@@ -163,19 +163,6 @@ builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.De
 // Permite cachear la salida HTML en el servidor para reducir carga de CPU y DB.
 builder.Services.AddOutputCache();
 
-// 📖 DOCUMENTACIÓN DE API: Registro de Swagger/OpenAPI
-// Genera documentación interactiva para los controladores de API
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "WalaDaw API",
-        Version = "v1",
-        Description = "Documentación interactiva de la API de WalaDaw para el alumnado de DAW."
-    });
-});
-
 // CONFIGURACIÓN DE SEGURIDAD AJAX:
 // Obliga a que las peticiones POST de JS/Blazor incluyan este nombre de cabecera con el token CSRF
 builder.Services.AddAntiforgery(options =>
@@ -280,16 +267,6 @@ else
 {
     // Muestra una página detallada con el error y el stack trace para desarrolladores
     app.UseDeveloperExceptionPage();
-    
-    // 📖 ACTIVAR SWAGGER EN DESARROLLO
-    // Permite acceder a /swagger para probar la API de forma interactiva
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WalaDaw API v1");
-        // Establece Swagger como la página de inicio si se desea (opcional)
-        // options.RoutePrefix = string.Empty; 
-    });
 }
 
 // Redirige automáticamente peticiones HTTP a HTTPS
@@ -359,7 +336,7 @@ app.MapRazorPages();
 // Punto de conexión para Blazor Server. Crea el túnel SignalR para la interactividad real-time
 app.MapBlazorHub(); 
 
-// Endpoint de salud del sistema: útil para monitorización y Docker
+// Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 // Startup banner - matching Spring Boot style

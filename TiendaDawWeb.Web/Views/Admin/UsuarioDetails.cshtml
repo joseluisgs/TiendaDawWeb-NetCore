@@ -52,11 +52,11 @@
                             <strong>Email:</strong><br>
                             <small>@Model.Email</small>
                         </p>
-                        <p class="mb-2">
-                            <i class="bi bi-calendar-plus"></i> 
-                            <strong>Fecha de Alta:</strong><br>
-                            <small>@Model.FechaAlta.ToString("dd/MM/yyyy HH:mm")</small>
-                        </p>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Fecha de Alta</label>
+                            <p class="fw-bold">@Model.CreatedAt.ToString("D")</p>
+                        </div>
+
                         @if (Model.DeletedAt.HasValue)
                         {
                             <p class="mb-2">
