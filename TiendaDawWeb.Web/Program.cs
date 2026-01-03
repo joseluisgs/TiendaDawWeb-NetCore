@@ -262,19 +262,22 @@ Log.Information("📁 Directorio uploads listo en: {Path}", uploadPath);
 
 // Middleware Pipeline - El orden aquí es CRÍTICO.
 
-// 🚨 RED DE SEGURIDAD GLOBAL: Nuestro middleware captura cualquier error no controlado
-app.UseGlobalExceptionHandler();
-
+// 🚨 RED DE SEGURIDAD GLOBAL: Captura excepciones no controladas
 if (!app.Environment.IsDevelopment())
 {
-    // HSTS: Indica al navegador que solo acceda vía HTTPS (Seguridad)
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 else
 {
-    // Muestra una página detallada con el error y el stack trace para desarrolladores
-    app.UseDeveloperExceptionPage();
+    // En desarrollo, podemos usar el handler personalizado o la página detallada
+    app.UseExceptionHandler("/Error"); 
+    // app.UseDeveloperExceptionPage(); // Comentamos para probar nuestra página de error
 }
+
+// 🌐 CAPTURA DE CÓDIGOS DE ESTADO (404, 403, etc.)
+// Redirige a ErrorController pasando el código
+app.UseStatusCodePagesWithReExecute("/Error/{0}"); 
 
 // Redirige automáticamente peticiones HTTP a HTTPS
 app.UseHttpsRedirection();

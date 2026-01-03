@@ -58,7 +58,7 @@ public class ProductController(
 
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Public");
         }
 
         // Verificar si es favorito para el usuario actual
@@ -130,7 +130,7 @@ public class ProductController(
 
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Public");
         }
 
         var product = result.Value;
