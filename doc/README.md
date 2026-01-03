@@ -42,8 +42,8 @@ Comparativa técnica entre proveedores de persistencia efímera. Explica el patr
 ### [Volumen 12: Guía de Productividad - Hot Reload y Trucos](12-Development-Tips.md)
 Domina `dotnet watch`, JetBrains Rider y Visual Studio para ver cambios al instante sin perder los datos de la memoria RAM.
 
-### [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Cypress](13-E2E-Testing-Cypress.md)
-Uso de un usuario robot para validar flujos reales, seguridad e interactividad de Blazor. Explica el aislamiento de infraestructura E2E en una carpeta independiente.
+### [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Playwright](13-E2E-Testing-Playwright.md)
+Uso de un usuario robot en C# para validar flujos reales, seguridad e interactividad de Blazor. Explica la migración desde Cypress hacia una infraestructura de tests nativa e integrada en .NET.
 
 ### [Volumen 14: Optimización de Rendimiento - Output Cache](14-OutputCache-Performance.md)
 Estrategias de escalabilidad mediante el almacenamiento de respuestas en el servidor. Uso de .NET 10 Output Cache para optimizar el escaparate público y gestión de variaciones de filtros.
