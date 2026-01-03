@@ -55,3 +55,6 @@ TiendaDawWeb.Web/wwwroot/uploads/*
 *.nupkg
 *.snupkg
 .nuget/
+
+## Coverage Results
+CoverageReport/
