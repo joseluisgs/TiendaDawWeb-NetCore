@@ -45,5 +45,14 @@ Domina `dotnet watch`, JetBrains Rider y Visual Studio para ver cambios al insta
 ### [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Cypress](13-E2E-Testing-Cypress.md)
 Uso de un usuario robot para validar flujos reales, seguridad e interactividad de Blazor. Explica el aislamiento de infraestructura E2E en una carpeta independiente.
 
+### [Volumen 14: Optimización de Rendimiento - Output Cache](14-OutputCache-Performance.md)
+Estrategias de escalabilidad mediante el almacenamiento de respuestas en el servidor. Uso de .NET 10 Output Cache para optimizar el escaparate público y gestión de variaciones de filtros.
+
+### [Volumen 15: Documentación de API - OpenAPI y Swagger](15-OpenAPI-Swagger.md)
+Generación automática de documentación interactiva para los endpoints de la API. Permite probar llamadas AJAX/REST directamente desde el navegador sin herramientas externas.
+
+### [Volumen 16: Gestión Global de Errores - Middleware de Seguridad](16-Global-Exception-Handling.md)
+Construcción de una red de seguridad global para capturar excepciones. Diferenciación inteligente entre respuestas JSON para APIs y redirecciones HTML para la web.
+
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

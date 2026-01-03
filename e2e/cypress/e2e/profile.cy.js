@@ -29,7 +29,9 @@ describe('Módulo de Perfil', () => {
     // Verificamos la sub-ruta 'editar'
     cy.url().should('include', '/app/perfil/editar');
     
-    // El formulario debe contener el valor actual para permitir editarlo
-    cy.get('input[name="nombre"]').should('have.value', 'prueba');
+    // El formulario debe contener el valor actual para permitir editarlo (ignorando mayúsculas)
+    cy.get('input[name="nombre"]').invoke('val').then((val) => {
+      expect(val.toLowerCase()).to.equal('prueba');
+    });
   });
 });

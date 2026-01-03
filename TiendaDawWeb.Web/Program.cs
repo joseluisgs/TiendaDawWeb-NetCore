@@ -13,7 +13,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using TiendaDawWeb.Binders;
+using TiendaDawWeb.Web.Middlewares;
 using Microsoft.Data.Sqlite;
+using Microsoft.AspNetCore.OutputCaching;
 
 // Configura la codificación de la consola a UTF8 para evitar problemas con tildes y eñes en los logs
 Console.OutputEncoding = Encoding.UTF8;
@@ -157,6 +159,23 @@ builder.Services.AddRazorPages();
 // DetailedErrors = true es fundamental en desarrollo para ver por qué falla un componente
 builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; }); 
 
+// 🚀 MEJORA DE RENDIMIENTO: Registro de OutputCache (.NET 10)
+// Permite cachear la salida HTML en el servidor para reducir carga de CPU y DB.
+builder.Services.AddOutputCache();
+
+// 📖 DOCUMENTACIÓN DE API: Registro de Swagger/OpenAPI
+// Genera documentación interactiva para los controladores de API
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "WalaDaw API",
+        Version = "v1",
+        Description = "Documentación interactiva de la API de WalaDaw para el alumnado de DAW."
+    });
+});
+
 // CONFIGURACIÓN DE SEGURIDAD AJAX:
 // Obliga a que las peticiones POST de JS/Blazor incluyan este nombre de cabecera con el token CSRF
 builder.Services.AddAntiforgery(options =>
@@ -248,10 +267,12 @@ if (!Directory.Exists(uploadPath))
 Log.Information("📁 Directorio uploads listo en: {Path}", uploadPath);
 
 // Middleware Pipeline - El orden aquí es CRÍTICO.
+
+// 🚨 RED DE SEGURIDAD GLOBAL: Nuestro middleware captura cualquier error no controlado
+app.UseGlobalExceptionHandler();
+
 if (!app.Environment.IsDevelopment())
 {
-    // Maneja excepciones globales redirigiendo a una página de error amigable en producción
-    app.UseExceptionHandler("/Error");
     // HSTS: Indica al navegador que solo acceda vía HTTPS (Seguridad)
     app.UseHsts();
 }
@@ -259,6 +280,16 @@ else
 {
     // Muestra una página detallada con el error y el stack trace para desarrolladores
     app.UseDeveloperExceptionPage();
+    
+    // 📖 ACTIVAR SWAGGER EN DESARROLLO
+    // Permite acceder a /swagger para probar la API de forma interactiva
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WalaDaw API v1");
+        // Establece Swagger como la página de inicio si se desea (opcional)
+        // options.RoutePrefix = string.Empty; 
+    });
 }
 
 // Redirige automáticamente peticiones HTTP a HTTPS
@@ -277,6 +308,10 @@ app.UseStaticFiles(new StaticFileOptions
 
 // Analiza la URL y decide qué ruta corresponde a la petición (antes de ejecutarla)
 app.UseRouting();
+
+// 🚀 MEJORA DE RENDIMIENTO: Middleware de OutputCache.
+// Debe ir después de Routing pero antes de Authentication si queremos servir caché a anónimos.
+app.UseOutputCache();
 
 // Configurar las culturas soportadas por la aplicación
 var supportedCultures = new[] 

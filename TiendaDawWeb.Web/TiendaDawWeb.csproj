@@ -27,5 +27,6 @@
     <PackageReference Include="QuestPDF" Version="2024.12.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="MailKit" Version="4.9.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 </Project>

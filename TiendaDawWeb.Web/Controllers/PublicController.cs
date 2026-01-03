@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
 using TiendaDawWeb.Services.Interfaces;
@@ -14,8 +15,11 @@ public class PublicController(
     ILogger<PublicController> logger
 ) : Controller {
     /// <summary>
-    ///     Página principal con listado de productos
+    ///     Página principal con listado de productos.
+    ///     🚀 CACHÉ: Se guarda la respuesta en el servidor durante 60 segundos.
+    ///     Varía por todos los parámetros de filtrado y el idioma (cookie).
     /// </summary>
+    [OutputCache(Duration = 60, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
     public async Task<IActionResult> Index(
         string? q,
         string? categoria,

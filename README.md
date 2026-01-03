@@ -454,10 +454,20 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 
 - [Volumen 01: Arquitectura, Middlewares y DI](doc/01-Architecture-Pipeline-DI.md)
 - [Volumen 02: Controladores y Lógica de Negocio (Pattern Result)](doc/02-Controllers-Models-Results.md)
+- [Volumen 03: Razor Masterclass - Sintaxis y UI Inteligente](doc/03-Razor-Syntax-UI.md)
 - [Volumen 04: Blazor Server - Interactividad en Tiempo Real](doc/04-Blazor-Hybrid-SignalR.md)
-- [Volumen 09: Evolución de la Interfaz - Razor vs AJAX vs Blazor Server](doc/09-BlazorVsRazorVsAjax.md)
+- [Volumen 05: EF Core y Persistencia Avanzada](doc/05-EFCore-Persistence-Seed.md)
+- [Volumen 06: Localización Estratégica (I18n)](doc/06-I18n-Localization-Decimal.md)
+- [Volumen 07: JavaScript & AJAX - Danza Asíncrona](doc/07-JS-AJAX-Security.md)
+- [Volumen 08: Operaciones y Producción (Docker)](doc/08-Ops-Docker-Files.md)
+- [Volumen 09: Evolución de la Interfaz - Razor vs AJAX vs Blazor](doc/09-BlazorVsRazorVsAjax.md)
 - [Volumen 10: Comunicación entre Componentes Blazor - State Container](doc/10-Blazor-Component-Communication.md)
 - [Volumen 11: Persistencia Volátil - Motor SQL en RAM](doc/11-SQLite-InMemory-Persistence.md)
+- [Volumen 12: Guía de Productividad - Hot Reload y Trucos](doc/12-Development-Tips.md)
+- [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Cypress](doc/13-E2E-Testing-Cypress.md)
+- [Volumen 14: Optimización de Rendimiento - Output Cache](doc/14-OutputCache-Performance.md)
+- [Volumen 15: Documentación de API - OpenAPI y Swagger](doc/15-OpenAPI-Swagger.md)
+- [Volumen 16: Gestión Global de Errores - Middleware Pro](doc/16-Global-Exception-Handling.md)
 
 
 
