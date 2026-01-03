@@ -145,14 +145,18 @@ WalaDaw implementa una pirámide de pruebas profesional para garantizar la máxi
 ### Build y Tests
 
 ```bash
-# Compilar proyecto
-dotnet build
+# 🛠️ Compilación y Ejecución .NET
+dotnet build                                  # Compilar solución
+dotnet run --project TiendaDawWeb.Web         # Ejecutar aplicación
+dotnet watch --project TiendaDawWeb.Web       # Modo desarrollo (Hot Reload)
 
-# Ejecutar en modo watch (desarrollo)
-dotnet watch run
+# 🧪 Pruebas Unitarias y de Componentes (.NET)
+dotnet test                                   # Ejecutar todos los tests de C#
 
-# Limpiar build
-dotnet clean
+# 🤖 Pruebas de Extremo a Extremo (Cypress)
+cd e2e && npm install                         # Instalar dependencias (solo 1ª vez)
+npx cypress open                              # Abrir interfaz visual de Cypress
+npx cypress run                               # Ejecutar tests en consola (CI/CD)
 ```
 
 ## ⚒️ Diagrama
@@ -265,110 +269,27 @@ classDiagram
 
 ```
 TiendaDawWeb-NetCore/
-├── Program.cs
-│   # Punto de entrada. Configura servicios y la app web (host, middlewares, rutas, etc).
-├── TiendaDawWeb.csproj
-│   # Archivo de proyecto y dependencias NuGet.
-├── appsettings.json
-│   # Configuración de cadena de conexión, opciones de la app, etc.
+├── TiendaDawWeb.sln                 # Solución global de .NET
 │
-├── Data/
-│   ├── ApplicationDbContext.cs      # DbContext de Entity Framework, define DbSets/relaciones.
-│   └── SeedData.cs                  # Inicialización profesional de datos de ejemplo.
+├── TiendaDawWeb.Web/                # Proyecto Principal (ASP.NET Core 10)
+│   ├── Program.cs                   # Configuración de Pipeline, DI y SQLite In-Memory.
+│   ├── _Imports.razor               # Usings globales para Blazor.
+│   ├── Components/                  # Componentes Blazor Server (Reactividad)
+│   │   └── Ratings/                 # Dominio de valoraciones interactivo.
+│   ├── Data/                        # Persistencia y SeedData profesional.
+│   ├── Services/                    # Lógica de negocio y State Container.
+│   ├── Controllers/                 # Controladores MVC y API Rest.
+│   ├── Views/                       # Vistas Razor y configuración global (_ViewStart).
+│   └── wwwroot/                     # Recursos estáticos (CSS, JS Legacy, Images).
 │
-├── Components/                      # Componentes Blazor Server (Reactividad)
-│   ├── AdminStatsWidget.razor       # Dashboard de administración en tiempo real.
-│   └── Ratings/                     # Dominio de valoraciones interactivo.
-│       ├── RatingSection.razor      # Formulario y listado de votos.
-│       └── RatingSummary.razor      # Resumen de media en cabecera.
+├── TiendaDawWeb.Tests/              # Pruebas Unitarias y de Componentes
+│   ├── Services/                    # Tests de lógica con SQLite In-Memory.
+│   └── Components/                  # Tests de UI Blazor con bUnit v2.x.
 │
-├── Services/                        # Lógica de negocio centralizada.
-│   ├── Interfaces/                  # Contratos para Inversión de Dependencias.
-│   │   ├── IProductService.cs
-│   │   ├── IRatingService.cs
-│   │   └── ...
-│   └── Implementations/             # Implementaciones de lógica y estado.
-│       ├── ProductService.cs
-│       ├── RatingService.cs
-│       ├── RatingStateContainer.cs  # Mediador para comunicación entre componentes.
-│       └── ...
-│
-├── Controllers/
-│   ├── HomeController.cs            # Inicio y páginas generales.
-│   ├── AuthController.cs            # Registro/inicio de sesión/cierre sesión.
-│   ├── ProductController.cs         # Listado, detalle, crear, editar, eliminar producto.
-│   ├── FavoriteController.cs        # Añadir/quitar/listar favoritos.
-│   ├── CarritoController.cs         # Añadir/quitar/cargar el carrito.
-│   ├── PurchaseController.cs        # Comprar, ver historial y detalle de compras.
-│   ├── RatingController.cs          # Añadir/ver valoraciones vía AJAX/API.
-│   ├── AdminController.cs           # Panel de admin.
-│   └── ProfileController.cs         # Detalle, edición y seguridad de perfil usuario.
-│
-├── ViewModels/
-│   ├── ProductViewModel.cs          # Datos compuestos para vistas de producto.
-│   ├── UserViewModel.cs             # Datos compuestos para vistas de usuario.
-│   ├── PurchaseViewModel.cs         # Para vistas de compras.
-│   ├── RatingViewModel.cs           # Valoraciones (si no usas entidades directas).
-│   ├── CarritoItemViewModel.cs      # Visualización del carrito.
-│   ├── LoginViewModel.cs            # Login.
-│   ├── RegisterViewModel.cs         # Registro.
-│   └── ...                          # Otros, según necesidades de formularios/vistas.
-│
-├── Views/
-│   ├── Shared/
-│   │   ├── _Layout.cshtml           # Layout principal de la web.
-│   │   ├── _LoginPartial.cshtml     # Login/logout parcial menú.
-│   │   ├── _ValidationScriptsPartial.cshtml
-│   │   └── Error.cshtml             # Página general de error.
-│   ├── Home/
-│   │   ├── Index.cshtml             # Home (landing).
-│   │   └── About.cshtml             # Acerca de, ayuda, etc.
-│   ├── Auth/
-│   │   ├── Login.cshtml
-│   │   ├── Register.cshtml
-│   │   ├── ForgotPassword.cshtml
-│   │   └── ResetPassword.cshtml
-│   ├── Product/
-│   │   ├── Index.cshtml             # Listado de productos.
-│   │   ├── Details.cshtml           # Ficha de producto.
-│   │   ├── Create.cshtml
-│   │   ├── Edit.cshtml
-│   │   └── Delete.cshtml
-│   ├── Favorite/
-│   │   └── Index.cshtml             # Listado de favoritos.
-│   ├── Carrito/
-│   │   ├── Index.cshtml             # Carrito de usuario.
-│   │   ├── Checkout.cshtml          # Confirmar compra.
-│   ├── Purchase/
-│   │   ├── Index.cshtml             # Historial de compras.
-│   │   ├── Details.cshtml           # Detalle de compra.
-│   ├── Profile/
-│   │   ├── Index.cshtml             # Mi perfil.
-│   │   ├── Edit.cshtml              # Editar datos.
-│   │   ├── ChangePassword.cshtml    # Cambiar contraseña.
-│   └── Admin/
-│       ├── Index.cshtml             # Dashboard.
-│       ├── Usuarios.cshtml          # Administración de usuarios.
-│       ├── Productos.cshtml         # Administración de productos.
-│       ├── Compras.cshtml           # Administración de compras.
-│       ├── Estadisticas.cshtml      # Estadísticas, gráficas, etc.
-│       └── Logs.cshtml              # Logs del sistema (opcional).
-│
-├── Errors/
-│   └── ErrorViewModel.cs            # ViewModel de errores.
-│
-├── _Imports.razor                   # Usings globales para componentes Blazor.
-├── Program.cs                       # Configuración de Pipeline, DI y Middlewares.
-├── TiendaDawWeb.csproj              # Definición de proyecto y paquetes NuGet.
-│
-├── wwwroot/                         # Recursos estáticos servidos por el servidor.
-│   ├── css/                         # Hojas de estilo (site.css, styles.css).
-│   ├── js/                          # Lógica AJAX Legacy (ratings.js, favorites.js).
-│   └── images/                      # Assets estáticos y logos.
-└── Views/
-    ├── _ViewImports.cshtml          # Usings y TagHelpers globales para Razor MVC.
-    ├── _ViewStart.cshtml            # Configuración de Layout por defecto para vistas.
-    ├── Shared/                      # Vistas compartidas (Layout, Navbar, etc).
+└── e2e/                             # Pruebas de Extremo a Extremo (Cypress)
+    ├── cypress/e2e/                 # Especificaciones de pruebas (Auth, Flow, AJAX).
+    ├── cypress/fixtures/            # Archivos de prueba para subidas (Imágenes).
+    └── cypress.config.js            # Configuración del robot Cypress.
 ```
 
 ## 🏗️ Arquitectura
