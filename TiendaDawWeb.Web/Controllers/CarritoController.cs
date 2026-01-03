@@ -98,8 +98,9 @@ public class CarritoController(
     ///     POST /app/carrito/remove - Eliminar item
     /// </summary>
     [HttpPost("remove")]
+    [Route("/Carrito/remove")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RemoveItem(long itemId) {
+    public async Task<IActionResult> Remove(long itemId) {
         var result = await carritoService.RemoveFromCarritoAsync(itemId);
 
         if (result.IsFailure)

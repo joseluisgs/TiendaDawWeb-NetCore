@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Data;
@@ -21,6 +22,7 @@ public class CarritoServiceTests
     private ApplicationDbContext _context = null!;
     private CarritoService _carritoService = null!;
     private Mock<ILogger<CarritoService>> _loggerMock = null!;
+    private Mock<IMemoryCache> _cacheMock = null!;
 
     [SetUp]
     public void Setup()
@@ -31,7 +33,8 @@ public class CarritoServiceTests
 
         _context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<CarritoService>>();
-        _carritoService = new CarritoService(_context, _loggerMock.Object);
+        _cacheMock = new Mock<IMemoryCache>();
+        _carritoService = new CarritoService(_context, _cacheMock.Object, _loggerMock.Object);
     }
 
     [TearDown]

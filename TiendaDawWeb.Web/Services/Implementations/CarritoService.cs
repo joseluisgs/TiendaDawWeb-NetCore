@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
@@ -13,8 +14,12 @@ namespace TiendaDawWeb.Services.Implementations;
 /// </summary>
 public class CarritoService(
     ApplicationDbContext context,
+    IMemoryCache cache,
     ILogger<CarritoService> logger
 ) : ICarritoService {
+    private const string ProductsCacheKey = "all_products";
+    private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
+
     public async Task<Result<IEnumerable<CarritoItem>, DomainError>> GetCarritoByUsuarioIdAsync(long usuarioId) {
         try {
             var items = await context.CarritoItems
@@ -92,6 +97,10 @@ public class CarritoService(
             context.CarritoItems.Add(nuevoItem);
             await context.SaveChangesAsync();
 
+            // INVALIDACIÓN DE CACHÉ
+            cache.Remove(ProductsCacheKey);
+            cache.Remove(ProductDetailsCacheKey(productoId));
+
             // Recargar con navegación
             await context.Entry(nuevoItem)
                 .Reference(c => c.Producto)
@@ -133,6 +142,12 @@ public class CarritoService(
             context.CarritoItems.Remove(item);
             await context.SaveChangesAsync();
 
+            // INVALIDACIÓN DE CACHÉ
+            cache.Remove(ProductsCacheKey);
+            if (item.Producto != null) {
+                cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
+            }
+
             logger.LogInformation("Eliminado item {ItemId} del carrito", itemId);
             return Result.Success<bool, DomainError>(true);
         }
@@ -162,6 +177,14 @@ public class CarritoService(
 
             context.CarritoItems.RemoveRange(items);
             await context.SaveChangesAsync();
+
+            // INVALIDACIÓN DE CACHÉ
+            cache.Remove(ProductsCacheKey);
+            foreach (var item in items) {
+                if (item.Producto != null) {
+                    cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
+                }
+            }
 
             logger.LogInformation("Vaciado carrito del usuario {UsuarioId} y liberadas {Count} reservas", usuarioId,
                 items.Count);
