@@ -1,7 +1,9 @@
 @model IEnumerable<Product>
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
+@using Microsoft.Extensions.Localization
 @inject UserManager<User> UserManager
+@inject IStringLocalizer<SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = "Productos";
     var currentUser = await UserManager.GetUserAsync(User);
@@ -52,8 +54,11 @@
                             }
                         </div>
                         <p class="text-muted mb-2">
-                            <small>
-                                <i class="bi bi-person"></i> @producto.Propietario.Nombre @producto.Propietario.Apellidos
+                            <small class="d-block">
+                                <i class="bi bi-person"></i> @(producto.Propietario?.Nombre ?? "Usuario") @(producto.Propietario?.Apellidos ?? "")
+                            </small>
+                            <small class="d-block">
+                                <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @((producto.UpdatedAt ?? producto.CreatedAt).ToLocalTime().ToString("g"))
                             </small>
                         </p>
                                 <h4 class="text-primary mb-0">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</h4>
@@ -64,10 +69,12 @@
                             </a>
                             @if (currentUser != null)
                             {
-                                <button class="btn btn-outline-danger favorite-btn" 
+                                var favoriteIds = ViewBag.FavoriteIds as List<long> ?? new List<long>();
+                                var isFavorite = favoriteIds.Contains(producto.Id);
+                                <button class="btn @(isFavorite ? "btn-danger" : "btn-outline-danger") favorite-btn" 
                                         data-product-id="@producto.Id"
                                         onclick="toggleFavorite(@producto.Id)">
-                                    <i class="bi bi-heart"></i>
+                                    <i class="bi @(isFavorite ? "bi-heart-fill" : "bi-heart")"></i>
                                 </button>
                             }
                         </div>

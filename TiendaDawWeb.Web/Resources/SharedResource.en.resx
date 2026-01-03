@@ -109,4 +109,10 @@
   <data name="NoProductsFound" xml:space="preserve"><value>No products available at this time</value></data>
   <data name="AddToCart" xml:space="preserve"><value>Buy</value></data>
   <data name="Reserved" xml:space="preserve"><value>Reserved</value></data>
+  <data name="Created" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Updated</value>
+  </data>
 </root>

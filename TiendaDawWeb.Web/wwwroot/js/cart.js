@@ -126,44 +126,6 @@ async function updateCartBadge() {
     }
 }
 
-/**
- * Show toast notification
- * @param {string} message - The message to display
- * @param {string} type - Type of notification ('success', 'error', 'info')
- */
-function showToast(message, type = 'info') {
-    const toastContainer = document.querySelector('.toast-container');
-    
-    if (toastContainer) {
-        const toastEl = document.createElement('div');
-        toastEl.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} border-0`;
-        toastEl.setAttribute('role', 'alert');
-        toastEl.setAttribute('aria-live', 'assertive');
-        toastEl.setAttribute('aria-atomic', 'true');
-        
-        toastEl.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-        
-        toastContainer.appendChild(toastEl);
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-        
-        // Remove toast after it's hidden
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            toastEl.remove();
-        });
-    } else {
-        // Fallback to alert
-        alert(message);
-    }
-}
-
 // Initialize cart functionality on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Cart functionality initialized');

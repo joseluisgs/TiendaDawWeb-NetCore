@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Identity;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
 using TiendaDawWeb.Services.Interfaces;
@@ -77,8 +78,8 @@ public class PublicController(
         if (minPrecio.HasValue) products = products.Where(p => (float)p.Precio >= minPrecio.Value);
         if (maxPrecio.HasValue) products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
 
-        // Ordenar por ID descendente (más recientes primero)
-        products = products.OrderByDescending(p => p.Id);
+        // Ordenar por fecha de última modificación (o creación si no hay modificación) descendente
+        products = products.OrderByDescending(p => p.UpdatedAt ?? p.CreatedAt);
 
         // Calculate pagination
         var totalItems = products.Count();

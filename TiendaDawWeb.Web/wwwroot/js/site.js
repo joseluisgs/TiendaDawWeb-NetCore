@@ -64,30 +64,76 @@ function formatPrice(price) {
     }).format(price);
 }
 
-// Función para mostrar notificación toast
-function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
+/**
+ * Muestra una notificación Toast de Bootstrap
+ * @param {string} message - El mensaje a mostrar
+ * @param {string} type - 'success', 'error', 'info', 'warning'
+ * @param {string} url - URL opcional para el botón de acción
+ */
+function showToast(message, type = 'info', url = null) {
+    let toastContainer = document.querySelector('.toast-container');
+    
+    // Si no existe, lo creamos
     if (!toastContainer) {
-        const container = document.createElement('div');
-        container.id = 'toast-container';
-        container.className = 'toast-container position-fixed top-0 end-0 p-3';
-        document.body.appendChild(container);
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '11050';
+        document.body.appendChild(toastContainer);
     }
 
+    // Crear el elemento base del toast
     const toastEl = document.createElement('div');
-    toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+    const bgClass = type === 'error' ? 'danger' : (type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'info'));
+    const textClass = type === 'warning' ? 'text-dark' : 'text-white';
+    
+    toastEl.className = `toast align-items-center ${textClass} bg-${bgClass} border-0 shadow-lg`;
     toastEl.setAttribute('role', 'alert');
-    toastEl.innerHTML = `
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+
+    // Estructura interna
+    let toastHtml = `
         <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <div class="toast-body">
+                <div class="fw-bold">${message}</div>
+    `;
+
+    if (url) {
+        toastHtml += `
+            <div class="mt-2">
+                <button type="button" class="btn btn-sm btn-light fw-bold text-dark shadow-sm btn-toast-action" data-url="${url}">
+                    <i class="bi bi-eye"></i> VER PRODUCTO
+                </button>
+            </div>
+        `;
+    }
+
+    toastHtml += `
+            </div>
+            <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     `;
 
-    document.getElementById('toast-container').appendChild(toastEl);
-    const toast = new bootstrap.Toast(toastEl);
+    toastEl.innerHTML = toastHtml;
+    toastContainer.appendChild(toastEl);
+
+    // Manejar clic en el botón de acción si existe
+    const actionBtn = toastEl.querySelector('.btn-toast-action');
+    if (actionBtn) {
+        actionBtn.addEventListener('click', (e) => {
+            const targetUrl = e.target.closest('button').dataset.url;
+            if (targetUrl) window.location.href = targetUrl;
+        });
+    }
+
+    // Inicializar y mostrar con Bootstrap
+    const toast = new bootstrap.Toast(toastEl, { 
+        autohide: true, 
+        delay: 5000 
+    });
     toast.show();
 
+    // Limpiar el DOM al ocultarse
     toastEl.addEventListener('hidden.bs.toast', () => {
         toastEl.remove();
     });

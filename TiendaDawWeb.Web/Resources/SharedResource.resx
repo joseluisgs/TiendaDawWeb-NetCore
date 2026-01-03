@@ -186,4 +186,10 @@
     <value>Reservado</value>
     <comment>Reserved</comment>
   </data>
+  <data name="Created" xml:space="preserve">
+    <value>Publicado</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Actualizado</value>
+  </data>
 </root>

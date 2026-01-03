@@ -1,7 +1,9 @@
 @model IEnumerable<Product>
 @using Microsoft.AspNetCore.Identity
 @using TiendaDawWeb.Models
+@using Microsoft.Extensions.Localization
 @inject UserManager<User> UserManager
+@inject IStringLocalizer<SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = "Mis Productos";
     var currentUser = await UserManager.GetUserAsync(User);
@@ -53,6 +55,14 @@
                             {
                                 <span class="badge bg-success">Vendido</span>
                             }
+                            <div class="mt-2 text-muted small">
+                                <div class="mb-1">
+                                    <i class="bi bi-person"></i> @(producto.Propietario?.Nombre ?? "Usuario") @(producto.Propietario?.Apellidos ?? "")
+                                </div>
+                                <div>
+                                    <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @((producto.UpdatedAt ?? producto.CreatedAt).ToLocalTime().ToString("g"))
+                                </div>
+                            </div>
                         </div>
                             <p class="card-text fw-bold text-primary">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</p>
                         <div class="d-flex gap-2">

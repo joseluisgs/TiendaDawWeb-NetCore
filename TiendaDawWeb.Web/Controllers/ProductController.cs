@@ -17,6 +17,7 @@ namespace TiendaDawWeb.Controllers;
 public class ProductController(
     IProductService productService,
     IStorageService storageService,
+    IFavoriteService favoriteService,
     UserManager<User> userManager,
     IHubContext<NotificationHub> hubContext,
     ILogger<ProductController> logger
@@ -34,6 +35,17 @@ public class ProductController(
             return View(Enumerable.Empty<Product>());
         }
 
+        // Obtener IDs de favoritos si el usuario está autenticado
+        if (User.Identity?.IsAuthenticated == true) {
+            var user = await userManager.GetUserAsync(User);
+            if (user != null) {
+                var favoritesResult = await favoriteService.GetUserFavoritesAsync(user.Id);
+                if (favoritesResult.IsSuccess) {
+                    ViewBag.FavoriteIds = favoritesResult.Value.Select(p => p.Id).ToList();
+                }
+            }
+        }
+
         return View(result.Value);
     }
 
@@ -47,6 +59,17 @@ public class ProductController(
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
             return RedirectToAction(nameof(Index));
+        }
+
+        // Verificar si es favorito para el usuario actual
+        if (User.Identity?.IsAuthenticated == true) {
+            var user = await userManager.GetUserAsync(User);
+            if (user != null) {
+                var favoriteResult = await favoriteService.IsFavoriteAsync(user.Id, id);
+                ViewBag.IsFavorite = favoriteResult.IsSuccess && favoriteResult.Value;
+            }
+        } else {
+            ViewBag.IsFavorite = false;
         }
 
         return View(result.Value);

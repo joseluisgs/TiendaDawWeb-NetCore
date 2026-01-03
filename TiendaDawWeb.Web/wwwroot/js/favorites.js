@@ -1,77 +1,83 @@
 /**
- * Muestra una notificación Toast de Bootstrap
- * @param {string} message - El mensaje a mostrar
- * @param {string} type - 'success', 'error', 'info'
- * @param {string} url - URL opcional para el botón de acción
+ * Alterna el estado de favorito de un producto
+ * @param {number} productId - ID del producto
  */
-function showToast(message, type = 'info', url = null) {
-    const toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) return;
-
-    // Crear el elemento base
-    const toastEl = document.createElement('div');
-    toastEl.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} border-0 shadow-lg`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.setAttribute('aria-live', 'assertive');
-    toastEl.setAttribute('aria-atomic', 'true');
-    toastEl.style.cursor = 'default';
-
-    // Contenido interno con Flexbox
-    const dFlex = document.createElement('div');
-    dFlex.className = 'd-flex';
-
-    const toastBody = document.createElement('div');
-    toastBody.className = 'toast-body';
+async function toggleFavorite(productId) {
+    console.log("🧡 Toggling favorite for product:", productId);
     
-    // Mensaje
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'fw-bold';
-    messageDiv.innerText = message;
-    toastBody.appendChild(messageDiv);
+    try {
+        // 1. Obtener el token Anti-Forgery (vital para POST en ASP.NET Core)
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput?.value;
+        
+        if (!token) {
+            console.error("❌ Anti-Forgery token not found!");
+        }
 
-    // Botón de acción (si hay URL)
-    if (url) {
-        const actionDiv = document.createElement('div');
-        actionDiv.className = 'mt-2';
-        
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-sm btn-light fw-bold text-dark shadow-sm';
-        btn.innerHTML = '<i class="bi bi-eye"></i> VER PRODUCTO';
-        btn.type = 'button';
-        
-        // 🚨 NAVEGACIÓN DIRECTA: Usamos el evento de clic de JS puro
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation(); // Evitar que el Toast intercepte el clic
-            console.log("🚀 Redirigiendo a:", url);
-            window.location.href = url;
+        // 2. Realizar la petición al API
+        const response = await fetch('/api/favorites/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token || ''
+            },
+            body: JSON.stringify({ productId: productId })
         });
-        
-        actionDiv.appendChild(btn);
-        toastBody.appendChild(actionDiv);
+
+        if (response.status === 401) {
+            showToast('Debes iniciar sesión para añadir favoritos', 'info');
+            // Opcional: Redirigir al login después de un breve delay
+            // setTimeout(() => window.location.href = '/Auth/Login', 2000);
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            // 3. Actualizar TODOS los botones de este producto en la página
+            const buttons = document.querySelectorAll(`.favorite-btn[data-product-id="${productId}"]`);
+            
+            buttons.forEach(button => {
+                const icon = button.querySelector('i');
+                const textNode = Array.from(button.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0);
+
+                if (data.isFavorite) {
+                    // Estado Favorito (Lleno)
+                    button.classList.remove('btn-outline-danger');
+                    button.classList.add('btn-danger');
+                    if (icon) {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                    }
+                } else {
+                    // Estado Normal (Vacío)
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-outline-danger');
+                    if (icon) {
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                    }
+                }
+            });
+
+            showToast(data.message, data.isFavorite ? 'success' : 'info');
+        } else {
+            showToast(data.message || 'Error al actualizar favoritos', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error toggling favorite:', error);
+        showToast('Error de conexión con el servidor', 'error');
     }
-
-    dFlex.appendChild(toastBody);
-
-    // Botón de cerrar
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'btn-close btn-close-white me-2 m-auto';
-    closeBtn.setAttribute('data-bs-dismiss', 'toast');
-    dFlex.appendChild(closeBtn);
-
-    toastEl.appendChild(dFlex);
-    toastContainer.appendChild(toastEl);
-
-    // Inicializar y mostrar con Bootstrap
-    const toast = new bootstrap.Toast(toastEl, { 
-        autohide: true, 
-        delay: 5000 
-    });
-    toast.show();
-
-    // Limpiar el DOM al ocultarse
-    toastEl.addEventListener('hidden.bs.toast', () => {
-        toastEl.remove();
-    });
 }
+
+// Inicializar estado de favoritos al cargar la página (opcional pero recomendado)
+document.addEventListener('DOMContentLoaded', async () => {
+    const favoriteButtons = document.querySelectorAll('.favorite-btn');
+    if (favoriteButtons.length === 0) return;
+
+    console.log("🔍 Checking initial favorite states...");
+    
+    // Podríamos verificar el estado de cada uno, pero es más eficiente 
+    // que el servidor renderice las clases correctas inicialmente.
+    // Esta función se encarga de las transiciones AJAX.
+});
