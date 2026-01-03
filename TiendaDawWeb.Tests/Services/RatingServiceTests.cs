@@ -10,6 +10,11 @@ using Microsoft.Data.Sqlite;
 
 namespace TiendaDawWeb.Tests.Services;
 
+/// <summary>
+/// OBJETIVO: Validar las reglas de negocio para la gestión de valoraciones (Ratings).
+/// LO QUE BUSCA: Asegurar que los usuarios pueden valorar productos, calcular promedios
+/// y que se respetan los permisos de edición y borrado.
+/// </summary>
 [TestFixture]
 public class RatingServiceTests
 {
@@ -33,8 +38,6 @@ public class RatingServiceTests
 
         _loggerMock = new Mock<ILogger<RatingService>>();
         _service = new RatingService(_context, _loggerMock.Object);
-        
-        // Setup initial data if needed, but we do it in tests for clarity
     }
 
     [TearDown]
@@ -44,6 +47,10 @@ public class RatingServiceTests
         _connection.Close();
     }
 
+    /// <summary>
+    /// PRUEBA: Creación de valoración válida.
+    /// OBJETIVO: Confirmar que un usuario puede valorar satisfactoriamente un producto.
+    /// </summary>
     [Test]
     public async Task AddRatingAsync_WithValidData_ReturnsSuccess()
     {
@@ -64,6 +71,10 @@ public class RatingServiceTests
         result.Value.Puntuacion.Should().Be(5);
     }
 
+    /// <summary>
+    /// PRUEBA: Validación de rango de puntuación.
+    /// OBJETIVO: Asegurar que el sistema rechaza puntuaciones fuera del rango 1-5 (ej. 6).
+    /// </summary>
     [Test]
     public async Task AddRatingAsync_WithInvalidRating_ReturnsFailure()
     {
@@ -75,6 +86,10 @@ public class RatingServiceTests
         result.Error.Code.Should().Be("INVALID_RATING");
     }
 
+    /// <summary>
+    /// PRUEBA: Cálculo de promedio.
+    /// OBJETIVO: Validar que el promedio matemático de varias notas es correcto.
+    /// </summary>
     [Test]
     public async Task GetAverageRatingAsync_WithMultipleRatings_ReturnsCorrectAverage()
     {
@@ -103,6 +118,10 @@ public class RatingServiceTests
         result.Value.Should().Be(4.0);
     }
 
+    /// <summary>
+    /// PRUEBA: Eliminación por propietario.
+    /// OBJETIVO: Confirmar que un usuario puede borrar su propia valoración.
+    /// </summary>
     [Test]
     public async Task DeleteRatingAsync_AsOwner_ReturnsSuccess()
     {
@@ -122,6 +141,10 @@ public class RatingServiceTests
         result.IsSuccess.Should().BeTrue();
     }
 
+    /// <summary>
+    /// PRUEBA: Listado de valoraciones por producto.
+    /// OBJETIVO: Validar que se recuperan todas las notas asociadas a un producto.
+    /// </summary>
     [Test]
     public async Task GetByProductoIdAsync_ShouldReturnRatings()
     {
@@ -144,6 +167,10 @@ public class RatingServiceTests
         result.Value.Should().HaveCount(1);
     }
 
+    /// <summary>
+    /// PRUEBA: Actualización de valoración.
+    /// OBJETIVO: Confirmar que el autor puede modificar su puntuación y comentario.
+    /// </summary>
     [Test]
     public async Task UpdateRatingAsync_ShouldSucceed_WhenOwner()
     {
@@ -166,6 +193,10 @@ public class RatingServiceTests
         result.Value.Puntuacion.Should().Be(5);
     }
 
+    /// <summary>
+    /// PRUEBA: Permisos de valoración por compra.
+    /// OBJETIVO: Verificar que solo usuarios que compraron el producto pueden valorarlo (según lógica CanUserRate).
+    /// </summary>
     [Test]
     public async Task CanUserRateProductAsync_ShouldReturnTrue_WhenPurchased()
     {

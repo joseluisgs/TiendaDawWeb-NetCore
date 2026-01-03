@@ -10,6 +10,11 @@ using MimeKit;
 
 namespace TiendaDawWeb.Tests.Services;
 
+/// <summary>
+/// OBJETIVO: Validar el servicio de envío de correos electrónicos.
+/// LO QUE BUSCA: Confirmar que los correos se generan correctamente y que el servicio
+/// maneja la falta de configuración SMTP sin fallar críticamente.
+/// </summary>
 [TestFixture]
 public class EmailServiceTests
 {
@@ -25,6 +30,10 @@ public class EmailServiceTests
         _emailService = new EmailService(_configMock.Object, _loggerMock.Object);
     }
 
+    /// <summary>
+    /// PRUEBA: Envío de email sin configuración SMTP.
+    /// OBJETIVO: Verificar que el servicio registra un aviso y devuelve éxito para no bloquear el flujo.
+    /// </summary>
     [Test]
     public async Task SendEmailAsync_ShouldReturnSuccess_WhenSmtpNotConfigured()
     {
@@ -48,6 +57,10 @@ public class EmailServiceTests
             Times.Once);
     }
 
+    /// <summary>
+    /// PRUEBA: Generación de email de bienvenida.
+    /// OBJETIVO: Validar que el flujo de bienvenida se completa satisfactoriamente.
+    /// </summary>
     [Test]
     public async Task SendWelcomeEmailAsync_ShouldCallSendEmail()
     {
@@ -61,6 +74,10 @@ public class EmailServiceTests
         result.IsSuccess.Should().BeTrue();
     }
 
+    /// <summary>
+    /// PRUEBA: Generación de email de confirmación de compra.
+    /// OBJETIVO: Asegurar que el email con detalles de la compra se procesa correctamente.
+    /// </summary>
     [Test]
     public async Task SendPurchaseConfirmationEmailAsync_ShouldCallSendEmail()
     {

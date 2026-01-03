@@ -8,6 +8,11 @@ using TiendaDawWeb.Models.Enums;
 
 namespace TiendaDawWeb.Tests.Services;
 
+/// <summary>
+/// OBJETIVO: Validar la generación de documentos PDF (facturas).
+/// LO QUE BUSCA: Confirmar que el servicio genera un flujo de bytes válido
+/// y maneja correctamente casos de datos incompletos.
+/// </summary>
 [TestFixture]
 public class PdfServiceTests
 {
@@ -21,6 +26,10 @@ public class PdfServiceTests
         _pdfService = new PdfService(_loggerMock.Object);
     }
 
+    /// <summary>
+    /// PRUEBA: Generación de factura válida.
+    /// OBJETIVO: Verificar que se genera un PDF con contenido cuando los datos de compra son correctos.
+    /// </summary>
     [Test]
     public async Task GenerateInvoicePdfAsync_ShouldGeneratePdf_WhenPurchaseIsValid()
     {
@@ -47,6 +56,10 @@ public class PdfServiceTests
         result.Value.Length.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// PRUEBA: Generación de factura sin datos de comprador.
+    /// OBJETIVO: Validar la robustez del servicio ante datos nulos opcionales.
+    /// </summary>
     [Test]
     public async Task GenerateInvoicePdfAsync_ShouldHandleMissingBuyerInfo()
     {

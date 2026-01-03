@@ -228,6 +228,10 @@ public class PurchaseServiceTests
         Assert.That(result.Error.Message, Does.Contain("no está disponible"));
     }
 
+    /// <summary>
+    /// PRUEBA: Obtención de compra por ID.
+    /// OBJETIVO: Confirmar que el servicio recupera los detalles de una compra existente.
+    /// </summary>
     [Test]
     public async Task GetByIdAsync_ShouldReturnPurchase_WhenExists()
     {
@@ -246,6 +250,10 @@ public class PurchaseServiceTests
         Assert.That(result.Value.Id, Is.EqualTo(100L));
     }
 
+    /// <summary>
+    /// PRUEBA: Listado de compras por usuario.
+    /// OBJETIVO: Verificar que se recuperan todas las compras asociadas a un cliente.
+    /// </summary>
     [Test]
     public async Task GetByUserAsync_ShouldReturnPurchases()
     {
@@ -263,6 +271,10 @@ public class PurchaseServiceTests
         Assert.That(result.Value.Count(), Is.EqualTo(1));
     }
 
+    /// <summary>
+    /// PRUEBA: Filtro por rango de fechas.
+    /// OBJETIVO: Validar que el servicio filtra correctamente las compras según su fecha.
+    /// </summary>
     [Test]
     public async Task GetByDateRangeAsync_ShouldFilterPurchases()
     {
@@ -283,6 +295,10 @@ public class PurchaseServiceTests
         Assert.That(result.Value.First().Id, Is.EqualTo(301L));
     }
 
+    /// <summary>
+    /// PRUEBA: Integración con PdfService.
+    /// OBJETIVO: Asegurar que se llama al servicio de PDF con los datos de compra correctos.
+    /// </summary>
     [Test]
     public async Task GeneratePdfAsync_ShouldCallPdfService()
     {

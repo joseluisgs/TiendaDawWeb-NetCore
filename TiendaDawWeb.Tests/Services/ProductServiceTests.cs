@@ -268,6 +268,10 @@ public class ProductServiceTests
         _memoryCache.TryGetValue("all_products", out cachedItem).Should().BeFalse();
     }
 
+    /// <summary>
+    /// PRUEBA: Búsqueda por nombre.
+    /// OBJETIVO: Confirmar que el buscador devuelve productos que coinciden con el término.
+    /// </summary>
     [Test]
     public async Task SearchAsync_ShouldFilterByNombre()
     {
@@ -280,6 +284,10 @@ public class ProductServiceTests
         result.Value.First().Nombre.Should().Contain("Test 1");
     }
 
+    /// <summary>
+    /// PRUEBA: Búsqueda por categoría.
+    /// OBJETIVO: Verificar que el filtro por categoría funciona correctamente.
+    /// </summary>
     [Test]
     public async Task SearchAsync_ShouldFilterByCategoria()
     {
@@ -292,6 +300,10 @@ public class ProductServiceTests
         result.Value.First().Categoria.Should().Be(ProductCategory.LAPTOPS);
     }
 
+    /// <summary>
+    /// PRUEBA: Validación de precio en creación.
+    /// OBJETIVO: Asegurar que no se pueden crear productos con precio cero o negativo.
+    /// </summary>
     [Test]
     public async Task CreateAsync_ShouldFail_WhenPriceIsInvalid()
     {
@@ -306,6 +318,10 @@ public class ProductServiceTests
         result.Error.Should().Be(ProductError.InvalidPrice);
     }
 
+    /// <summary>
+    /// PRUEBA: Control de acceso en actualización.
+    /// OBJETIVO: Verificar que un usuario no puede editar productos de otros.
+    /// </summary>
     [Test]
     public async Task UpdateAsync_ShouldFail_WhenNotOwner()
     {
@@ -321,6 +337,10 @@ public class ProductServiceTests
         result.Error.Should().Be(ProductError.NotOwner);
     }
 
+    /// <summary>
+    /// PRUEBA: Protección de productos vendidos.
+    /// OBJETIVO: Confirmar que un producto vendido no puede ser eliminado.
+    /// </summary>
     [Test]
     public async Task DeleteAsync_ShouldFail_WhenProductIsSold()
     {
@@ -338,6 +358,10 @@ public class ProductServiceTests
         result.Error.Should().Be(ProductError.CannotDeleteSold);
     }
 
+    /// <summary>
+    /// PRUEBA: Borrado por administrador.
+    /// OBJETIVO: Validar que un administrador puede borrar cualquier producto.
+    /// </summary>
     [Test]
     public async Task DeleteAsync_ShouldSucceed_WhenIsAdminAndNotOwner()
     {

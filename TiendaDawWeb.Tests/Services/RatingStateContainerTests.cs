@@ -9,6 +9,11 @@ using TiendaDawWeb.Services.Interfaces;
 
 namespace TiendaDawWeb.Tests.Services;
 
+/// <summary>
+/// OBJETIVO: Validar la gestión de estado y bus de eventos de valoraciones.
+/// LO QUE BUSCA: Confirmar que los datos se cachean correctamente en memoria
+/// y que los componentes reciben notificaciones de cambio.
+/// </summary>
 [TestFixture]
 public class RatingStateContainerTests
 {
@@ -22,6 +27,10 @@ public class RatingStateContainerTests
         _container = new RatingStateContainer(_ratingServiceMock.Object);
     }
 
+    /// <summary>
+    /// PRUEBA: Carga inicial de valoraciones.
+    /// OBJETIVO: Verificar que los datos se cargan desde el servicio cuando el producto cambia.
+    /// </summary>
     [Test]
     public async Task EnsureLoadedAsync_ShouldLoadRatings_WhenProductIdChanges()
     {
@@ -45,6 +54,10 @@ public class RatingStateContainerTests
         _ratingServiceMock.Verify(s => s.GetByProductoIdAsync(productId), Times.Once);
     }
 
+    /// <summary>
+    /// PRUEBA: Optimización de carga (Caché).
+    /// OBJETIVO: Confirmar que no se vuelve a llamar al servicio si los datos ya están en memoria.
+    /// </summary>
     [Test]
     public async Task EnsureLoadedAsync_ShouldNotLoadRatings_WhenProductIdIsSameAndRatingsAreLoaded()
     {
@@ -69,6 +82,10 @@ public class RatingStateContainerTests
         _ratingServiceMock.Verify(s => s.GetByProductoIdAsync(It.IsAny<long>()), Times.Never);
     }
 
+    /// <summary>
+    /// PRUEBA: Recarga forzada y notificación.
+    /// OBJETIVO: Validar que RefreshAsync actualiza datos y dispara el evento OnChange.
+    /// </summary>
     [Test]
     public async Task RefreshAsync_ShouldReloadRatings_AndNotifyChange()
     {
@@ -94,12 +111,14 @@ public class RatingStateContainerTests
         _ratingServiceMock.Verify(s => s.GetByProductoIdAsync(productId), Times.Once);
     }
 
+    /// <summary>
+    /// PRUEBA: Cálculo de promedio en el contenedor.
+    /// OBJETIVO: Asegurar que el promedio expuesto coincide con los datos cargados.
+    /// </summary>
     [Test]
     public void Average_ShouldReturnCorrectAverage_WhenRatingsExist()
     {
         // Arrange
-        // Manually loading state via reflection or by calling public methods if setter was public (it's private set).
-        // Since we can't set property directly, we use RefreshAsync to populate it.
         var productId = 1L;
         var ratings = new List<Rating>
         {
@@ -117,6 +136,10 @@ public class RatingStateContainerTests
         _container.Average.Should().Be(4);
     }
 
+    /// <summary>
+    /// PRUEBA: Promedio por defecto.
+    /// OBJETIVO: Verificar que el promedio es 0 cuando no hay datos.
+    /// </summary>
     [Test]
     public void Average_ShouldReturnZero_WhenRatingsAreNullOrEmpty()
     {
@@ -124,6 +147,10 @@ public class RatingStateContainerTests
         _container.Average.Should().Be(0);
     }
 
+    /// <summary>
+    /// PRUEBA: Conteo de valoraciones.
+    /// OBJETIVO: Confirmar que el contador refleja el número de elementos en memoria.
+    /// </summary>
     [Test]
     public void Count_ShouldReturnCorrectCount_WhenRatingsExist()
     {
@@ -145,6 +172,10 @@ public class RatingStateContainerTests
         _container.Count.Should().Be(2);
     }
 
+    /// <summary>
+    /// PRUEBA: Conteo inicial.
+    /// OBJETIVO: Verificar que el contador es 0 inicialmente.
+    /// </summary>
     [Test]
     public void Count_ShouldReturnZero_WhenRatingsAreNull()
     {
