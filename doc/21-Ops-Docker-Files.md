@@ -1,4 +1,4 @@
-# 08. Operaciones y Producción: Docker, Ficheros y Despliegue (La Hora de la Verdad)
+# 21 - Operaciones y Producción: Docker, Ficheros y Despliegue
 
 Tu aplicación funciona en local. Ahora, ¿cómo la preparas para el mundo real, donde miles de usuarios la usarán, con un rendimiento óptimo y una seguridad férrea?
 

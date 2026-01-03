@@ -77,24 +77,27 @@ Implementación de comunicación bidireccional global para avisos instantáneos.
 ## 🚀 Fase 6: Optimización y Calidad Industrial
 Asegurando que la aplicación es rápida y está libre de errores.
 
-### [16. Cimientos de Calidad - Tests Unitarios y de Componentes](16-Unit-Testing-NUnit-bUnit.md)
-Pruebas de bajo nivel con NUnit, Moq y bUnit para asegurar los engranajes del sistema.
+ ### [16. Cimientos de Calidad - Tests Unitarios y de Componentes](16-Unit-Testing-NUnit-bUnit.md)
+ Pruebas de bajo nivel con NUnit, Moq y bUnit para asegurar los engranajes del sistema.
 
-### [17. Métricas de Calidad - Cobertura de Código](17-Code-Coverage.md)
-Auditoría técnica con Coverlet y ReportGenerator para identificar zonas sin protección.
+ ### [17. Métricas de Calidad - Cobertura de Código](17-Code-Coverage.md)
+ Auditoría técnica con Coverlet y ReportGenerator para identificar zonas sin protección.
 
-### [18. Pruebas de Extremo a Extremo (E2E) - Playwright](18-E2E-Testing-Playwright.md)
-El robot de C# que valida flujos reales, seguridad e interactividad de Blazor.
+ ### [18. Pruebas de Extremo a Extremo (E2E) - Playwright](18-E2E-Testing-Playwright.md)
+ El robot de C# que valida flujos reales, seguridad e interactividad de Blazor.
 
-### [19. Optimización de Rendimiento - Output Cache](19-OutputCache-Performance.md)
-Estrategias de escalabilidad mediante almacenamiento de respuestas en el servidor (.NET 10).
+ ### [19. Optimización de Rendimiento - Caché en Memoria](19-Optimizacion-InMemoryCache.md)
+ Escalado de lecturas de base de datos mediante almacenamiento de objetos en RAM (.NET 10).
 
----
+ ### [20. Optimización de Rendimiento - Output Cache](20-OutputCache-Performance.md)
+ Estrategias de escalabilidad mediante almacenamiento de respuestas en el servidor (.NET 10).
 
-## 🚢 Fase 7: Operaciones
-El camino hacia el despliegue real.
+ ---
 
-### [20. Operaciones y Producción - Docker y Ficheros](20-Ops-Docker-Files.md)
+ ## 🚢 Fase 7: Operaciones
+ El camino hacia el despliegue real.
+
+ ### [21. Operaciones y Producción - Docker y Ficheros](20-Ops-Docker-Files.md)
 Optimización de imágenes Docker, gestión de volúmenes y generación de PDFs.
 
 ---
