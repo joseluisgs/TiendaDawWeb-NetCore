@@ -23,13 +23,10 @@ public class DecimalModelBinder : IModelBinder
             return Task.CompletedTask;
         }
 
-        // 🔴 SOLO ACEPTAR PUNTO - Rechazar comas
+        // 🟢 SOPORTAR AMBOS: Normalizar coma a punto para ser robustos en entornos localizados
         if (value.Contains(','))
         {
-            bindingContext.ModelState.TryAddModelError(
-                bindingContext.ModelName,
-                "El precio debe usar punto (.) como separador decimal. Ejemplo: 19.99");
-            return Task.CompletedTask;
+            value = value.Replace(',', '.');
         }
 
         if (decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, 
