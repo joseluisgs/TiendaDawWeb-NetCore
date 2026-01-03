@@ -42,5 +42,8 @@ Comparativa técnica entre proveedores de persistencia efímera. Explica el patr
 ### [Volumen 12: Guía de Productividad - Hot Reload y Trucos](12-Development-Tips.md)
 Domina `dotnet watch`, JetBrains Rider y Visual Studio para ver cambios al instante sin perder los datos de la memoria RAM.
 
+### [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Cypress](13-E2E-Testing-Cypress.md)
+Uso de un usuario robot para validar flujos reales, seguridad e interactividad de Blazor. Explica el aislamiento de infraestructura E2E en una carpeta independiente.
+
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

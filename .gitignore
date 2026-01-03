@@ -1,6 +1,6 @@
 ## Build results
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -8,73 +8,50 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
 [Ll]og/
 [Ll]ogs/
-
-# Visual Studio cache/options
-.vs/
-.vscode/
-*.suo
 *.user
 *.userosscache
 *.sln.docstates
 
-# Upload directory (user files)
-upload-dir/
-!upload-dir/.gitkeep
+## Node.js (Cypress y e2e)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+cypress/videos/
+cypress/screenshots/
 
-# NuGet packages
+## Visual Studio & Rider
+.vs/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+*.userosscache
+.vscode/
+*.rsuser
+*.sln.iml
+
+## OS Junk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## User Uploads (manteniendo la carpeta pero no su contenido)
+TiendaDawWeb.Web/wwwroot/uploads/*
+!TiendaDawWeb.Web/wwwroot/uploads/.gitkeep
+
+## SQLite (si se generara algún archivo local)
+*.db
+*.db-shm
+*.db-wal
+
+## NuGet
 *.nupkg
 *.snupkg
 .nuget/
-
-# User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Build results
-[Dd]ebugPublic/
-[Rr]eleasePublic/
-
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin
-$RECYCLE.BIN/
-
-# Mac
-.DS_Store
-
-# JetBrains Rider
-.idea/
-*.sln.iml
-
-# Visual Studio Code
-.vscode/
-
-# Rider
-.idea/
-
-# User-specific files
-*.rsuser
-
-# Mono auto generated files
-mono_crash.*
-
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk

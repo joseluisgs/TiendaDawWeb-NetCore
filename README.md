@@ -128,6 +128,20 @@ Este proyecto está optimizado para **Hot Reload**. Si usas `dotnet watch`, podr
 - **JetBrains Rider:** Activa "Apply hot reload changes on save" en los ajustes.
 - **Visual Studio:** Usa el icono de la llama naranja o inicia con `Ctrl + F5`.
 
+## 🧪 Estrategia de Testing Total
+
+WalaDaw implementa una pirámide de pruebas profesional para garantizar la máxima calidad:
+
+-   **Nivel 1: Pruebas Unitarias y de Integración (.NET)**: Validación de servicios, transacciones SQLite y lógica de negocio pura. Ubicadas en `TiendaDawWeb.Tests`.
+-   **Nivel 2: Pruebas de Componentes (bUnit)**: Testeo reactivo de los componentes Blazor, simulando eventos de usuario en C#.
+-   **Nivel 3: Pruebas de Extremo a Extremo (Cypress)**: Simulación de navegación real en el navegador, validando la integración total de todos los módulos. Ubicadas en `e2e/`.
+
+### Ejecución de Tests
+-   **Tests .NET**: `dotnet test`
+-   **Tests Cypress**: `cd e2e && npx cypress open`
+
+## 📚 Documentación
+
 ### Build y Tests
 
 ```bash
