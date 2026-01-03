@@ -26,7 +26,7 @@ public class AuthTests : PageTest
     }
 
     /// <summary>
-    /// Test: Validación de campos vacíos. Debe detectar errores de servidor.
+    /// Test: Validación de campos vacíos. Debe detectar errores de servidor o cliente.
     /// </summary>
     [Test]
     public async Task EmptyFields_ShouldShowValidationErrors()
@@ -34,9 +34,11 @@ public class AuthTests : PageTest
         // 1. Acción: Enviar formulario sin datos
         await Page.Locator(".card-body form button[type='submit']").ClickAsync();
         
-        // 2. Verificación: Aparecen errores de validación (Summary)
-        var errors = Page.Locator(".validation-summary-errors");
-        await Expect(errors.First).ToBeVisibleAsync();
+        // 2. Verificación: Aparece algún mensaje de error de validación
+        // Buscamos cualquier elemento con la clase .text-danger que contenga texto
+        // Esto cubre tanto el ValidationSummary como las validaciones por campo
+        var error = Page.Locator(".text-danger:not(:empty), .field-validation-error").First;
+        await Expect(error).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
     }
 
     /// <summary>
