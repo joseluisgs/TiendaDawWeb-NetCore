@@ -468,7 +468,7 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 - [Volumen 14: Optimización de Rendimiento - Output Cache](doc/14-OutputCache-Performance.md)
 - [Volumen 15: Gestión Global de Errores - Middleware Pro](doc/15-Global-Exception-Handling.md)
 - [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](doc/16-Entity-Auditing-EFCore.md)
-- [Volumen 17: Auditoría Automática de Entidades - EF Core Magic](doc/17-Entity-Auditing-EFCore.md)
+- [Volumen 17: Patrón de Mapeo de Objetos - Clean Controllers](doc/17-Object-Mapping-Pattern.md)
 
 
 

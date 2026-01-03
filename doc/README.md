@@ -54,5 +54,8 @@ Construcción de una red de seguridad global para capturar excepciones. Diferenc
 ### [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](16-Entity-Auditing-EFCore.md)
 Automatización del rastreo de creación y modificación de registros. Sobrescritura de SaveChangesAsync para inyectar metadatos de tiempo de forma transversal.
 
+### [Volumen 17: Patrón de Mapeo de Objetos - Clean Controllers](17-Object-Mapping-Pattern.md)
+Centralización de la lógica de conversión entre Modelos y ViewModels. Uso de métodos de extensión para aplicar el principio DRY y simplificar la lógica de los controladores.
+
 ---
 *Este material ha sido redactado con el máximo detalle para tu aprendizaje profesional y se actualizará continuamente con nuevas lecciones de supervivencia.*

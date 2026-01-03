@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Services.Interfaces;
 using TiendaDawWeb.ViewModels;
+using TiendaDawWeb.Web.Mappers;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -74,14 +75,8 @@ public class ProductController(
             if (saveResult.IsSuccess) imagenUrl = saveResult.Value;
         }
 
-        var product = new Product {
-            Nombre = model.Nombre,
-            Descripcion = model.Descripcion,
-            Precio = model.Precio,
-            Categoria = model.Categoria,
-            PropietarioId = user.Id,
-            Imagen = imagenUrl
-        };
+        // 🧹 REFACTOR: Usamos el Mapper para construir la entidad
+        var product = model.ToEntity(user.Id, imagenUrl);
 
         var result = await productService.CreateAsync(product);
 
@@ -114,16 +109,8 @@ public class ProductController(
             return RedirectToAction(nameof(Index));
         }
 
-        var viewModel = new ProductViewModel {
-            Id = product.Id,
-            Nombre = product.Nombre,
-            Descripcion = product.Descripcion,
-            Precio = product.Precio,
-            Categoria = product.Categoria,
-            ImagenUrl = product.Imagen
-        };
-
-        return View(viewModel);
+        // 🧹 REFACTOR: Usamos el método de extensión .ToViewModel()
+        return View(product.ToViewModel());
     }
 
     /// <summary>
@@ -144,13 +131,8 @@ public class ProductController(
             if (saveResult.IsSuccess) imagenUrl = saveResult.Value;
         }
 
-        var product = new Product {
-            Nombre = model.Nombre,
-            Descripcion = model.Descripcion,
-            Precio = model.Precio,
-            Categoria = model.Categoria,
-            Imagen = imagenUrl
-        };
+        // 🧹 REFACTOR: Usamos el Mapper para construir la entidad actualizada
+        var product = model.ToEntity(user.Id, imagenUrl);
 
         var result = await productService.UpdateAsync(id, product, user.Id);
 
