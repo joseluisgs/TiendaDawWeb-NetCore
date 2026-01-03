@@ -9,6 +9,7 @@
 [![Razor](https://img.shields.io/badge/Razor-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/razor)
 [![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 [![SignalR](https://img.shields.io/badge/SignalR-orange)](https://dotnet.microsoft.com/en-us/apps/aspnet/signalr)
+[![Playwright](https://img.shields.io/badge/Playwright-E2E-green)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC.**
@@ -37,6 +38,10 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [🚀 Tecnologías](#-tecnologías)
   - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
     - [Desarrollo Local](#desarrollo-local)
+    - [🚀 Desarrollo Ágil (Hot Reload)](#-desarrollo-ágil-hot-reload)
+  - [🧪 Estrategia de Testing Total](#-estrategia-de-testing-total)
+    - [Ejecución de Tests](#ejecución-de-tests)
+  - [📚 Documentación](#-documentación)
     - [Build y Tests](#build-y-tests)
   - [⚒️ Diagrama](#️-diagrama)
   - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
@@ -52,28 +57,27 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [🌐 Características](#-características-1)
     - [Para Usuarios](#para-usuarios)
     - [Para Administradores](#para-administradores)
-  - [📚 Documentación](#-documentación)
+  - [📚 Documentación](#-documentación-1)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
     - [Contacto](#contacto)
   - [Licencia de uso](#licencia-de-uso)
-
 
 ## ✨ Características
 
 ### Funcionalidades Principales
 
 - 🛍️ **Marketplace de Segunda Mano**: Compra y vende productos usados
-- 🔐 **Sistema de Roles**: ADMIN, USER, MODERATOR con permisos diferenciados
+- 🔐 **Sistema de Roles**: ADMIN, USER, MODERADOR con permisos diferenciados
 - 📧 **Notificaciones por Email**: Confirmación automática asíncrona de compras con templates HTML
-- 📊 **Panel de Administración Completo**: Dashboard con estadísticas en tiempo real, gestión de usuarios, productos y
-  compras
+- 📊 **Panel de Administración Completo**: Dashboard con estadísticas en tiempo real, gestión de usuarios, productos y compras gracias a Blazor Server y SignalR
 - 🔍 **Búsqueda Avanzada**: Filtros por nombre, categoría y precio
 - 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático con ImageSharp
 - 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
 - 📄 **Generación de PDFs**: Facturas automáticas con iText7 y diseño profesional
-- ❤️ **Sistema de Favoritos**: Gestión asícrona con AJAX
-- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivo
+- ❤️ **Sistema de Favoritos**: Gestión asíncrona con AJAX
+- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivo y en tiempo real con Blazor
+- 🆕 **Notificaciones en Tiempo Real**: Actualizaciones instantáneas con SignalR
 - 🛒 **Carrito de Compras**: Control de concurrencia con transacciones SERIALIZABLE
 - 🛡️ **Seguridad CSRF**: Protección completa contra ataques Cross-Site Request Forgery
 - 👤 **Gestión de Perfil**: Edición de perfil con avatar y cambio de contraseña
@@ -97,10 +101,13 @@ La aplicación incluye productos actuales y relevantes:
 - **SignalR** - Comunicación bidireccional para reactividad Blazor
 - **EF Core con SQLite In-Memory** - Motor SQL real en RAM con soporte de transacciones
 - **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
+- **InMemoryCache** - Caché de objetos en RAM para reducir consultas a BD
+- **OutputCache** - Caché de respuestas HTML en servidor para escalabilidad
 - **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
 - **Bootstrap 5.3** - Framework CSS responsive
 - **Bootstrap Icons** - Iconografía moderna
 - **Localization (I18n/L10n)** - Soporte multilenguaje
+- **Playwright** - Pruebas E2E automatizadas en navegador con C#
 
 ## 🏃‍♂️ Inicio Rápido
 
@@ -125,8 +132,8 @@ dotnet watch --project TiendaDawWeb.Web
 
 Este proyecto está optimizado para **Hot Reload**. Si usas `dotnet watch`, podrás ver los cambios en la UI al instante sin perder los datos de la base de datos SQLite en memoria.
 
-- **JetBrains Rider:** Activa "Apply hot reload changes on save" en los ajustes.
-- **Visual Studio:** Usa el icono de la llama naranja o inicia con `Ctrl + F5`.
+- **JetBrains Rider**: Activa "Apply hot reload changes on save" en los ajustes.
+- **Visual Studio**: Usa el icono de la llama naranja o inicia con `Ctrl + F5`.
 
 ## 🧪 Estrategia de Testing Total
 
@@ -134,11 +141,11 @@ WalaDaw implementa una pirámide de pruebas profesional para garantizar la máxi
 
 -   **Nivel 1: Pruebas Unitarias y de Integración (.NET)**: Validación de servicios, transacciones SQLite y lógica de negocio pura. Ubicadas en `TiendaDawWeb.Tests`.
 -   **Nivel 2: Pruebas de Componentes (bUnit)**: Testeo reactivo de los componentes Blazor, simulando eventos de usuario en C#.
--   **Nivel 3: Pruebas de Extremo a Extremo (Cypress)**: Simulación de navegación real en el navegador, validando la integración total de todos los módulos. Ubicadas en `e2e/`.
+-   **Nivel 3: Pruebas de Extremo a Extremo (Playwright)**: Simulación de navegación real en el navegador con C#, validando la integración total de todos los módulos. Ubicadas en `TiendaDawWeb.Tests.E2E`.
 
 ### Ejecución de Tests
 -   **Tests .NET**: `dotnet test`
--   **Tests Cypress**: `cd e2e && npx cypress open`
+-   **Tests E2E (Playwright)**: `cd TiendaDawWeb.Tests.E2E && dotnet test`
 
 ## 📚 Documentación
 
@@ -153,10 +160,8 @@ dotnet watch --project TiendaDawWeb.Web       # Modo desarrollo (Hot Reload)
 # 🧪 Pruebas Unitarias y de Componentes (.NET)
 dotnet test                                   # Ejecutar todos los tests de C#
 
-# 🤖 Pruebas de Extremo a Extremo (Cypress)
-cd e2e && npm install                         # Instalar dependencias (solo 1ª vez)
-npx cypress open                              # Abrir interfaz visual de Cypress
-npx cypress run                               # Ejecutar tests en consola (CI/CD)
+# 🤖 Pruebas de Extremo a Extremo (Playwright)
+cd TiendaDawWeb.Tests.E2E && dotnet test
 ```
 
 ## ⚒️ Diagrama
@@ -272,24 +277,34 @@ TiendaDawWeb-NetCore/
 ├── TiendaDawWeb.sln                 # Solución global de .NET
 │
 ├── TiendaDawWeb.Web/                # Proyecto Principal (ASP.NET Core 10)
-│   ├── Program.cs                   # Configuración de Pipeline, DI y SQLite In-Memory.
+│   ├── Program.cs                   # Configuración de Pipeline, DI, Cachés y SQLite In-Memory.
 │   ├── _Imports.razor               # Usings globales para Blazor.
 │   ├── Components/                  # Componentes Blazor Server (Reactividad)
+│   │   ├── Admin/                   # Componentes administrativos (StatsWidget).
 │   │   └── Ratings/                 # Dominio de valoraciones interactivo.
 │   ├── Data/                        # Persistencia y SeedData profesional.
 │   ├── Services/                    # Lógica de negocio y State Container.
+│   ├── Implementations/              # Implementaciones con InMemoryCache y OutputCache.
 │   ├── Controllers/                 # Controladores MVC y API Rest.
 │   ├── Views/                       # Vistas Razor y configuración global (_ViewStart).
 │   └── wwwroot/                     # Recursos estáticos (CSS, JS Legacy, Images).
 │
 ├── TiendaDawWeb.Tests/              # Pruebas Unitarias y de Componentes
 │   ├── Services/                    # Tests de lógica con SQLite In-Memory.
-│   └── Components/                  # Tests de UI Blazor con bUnit v2.x.
+│   ├── Components/                  # Tests de UI Blazor con bUnit v2.x.
+│   └── Infrastructure/              # Tests de auditoría automática.
 │
-└── e2e/                             # Pruebas de Extremo a Extremo (Cypress)
-    ├── cypress/e2e/                 # Especificaciones de pruebas (Auth, Flow, AJAX).
-    ├── cypress/fixtures/            # Archivos de prueba para subidas (Imágenes).
-    └── cypress.config.js            # Configuración del robot Cypress.
+└── TiendaDawWeb.Tests.E2E/         # Pruebas de Extremo a Extremo (Playwright)
+    ├── AuthTests.cs                 # Tests de autenticación y registro.
+    ├── FavoritesTests.cs            # Tests de sistema de favoritos (AJAX).
+    ├── LocalizationTests.cs          # Tests de localización y separadores decimales.
+    ├── ProductFlowTests.cs          # Tests de búsqueda y navegación de productos.
+    ├── ProductManagementTests.cs    # Tests de edición y subida de imágenes.
+    ├── ProfileTests.cs               # Tests de perfil y edición de usuario.
+    ├── PurchaseIntentTests.cs        # Tests de flujo de compra y carrito.
+    ├── RatingTests.cs               # Tests de valoraciones y ratings (Blazor).
+    ├── ErrorHandlingTests.cs         # Tests de páginas de error personalizadas.
+    └── Fixtures/                     # Archivos de prueba (SVG de test).
 ```
 
 ## 🏗️ Arquitectura
@@ -308,12 +323,14 @@ graph TD
         CTRL["MVC Controllers"]
         HUB["Blazor Hub (SignalR)"]
         VM["ViewModels"]
+        OUT["OutputCache (HTML)"]
     end
 
     subgraph CapaNegocio["Capa de Negocio (Servicios)"]
         SRV["Business Services (Interfaces/Impl)"]
         ROP["Railway Oriented Programming (Result)"]
         SC["State Container (Component Sync)"]
+        IMC["InMemoryCache (RAM)"]
     end
 
     subgraph CapaDatos["Capa de Datos (Persistencia)"]
@@ -326,15 +343,23 @@ graph TD
     UI_MVC --- CTRL
     JS_AJAX -.-> CTRL
     UI_BLZ <==> HUB
-    
+
     CTRL --> SRV
     HUB --> SRV
     HUB <--> SC
+
+    CTRL --> IMC
+    CTRL --> OUT
     
     SRV --> ROP
+    SRV --> IMC
+    SRV --> OUT
+    SRV --> SC
+
     SRV --> EF
+    SC --> EF
     SRV --> ID
-    
+
     EF --> DB
     ID --> DB
 
@@ -343,6 +368,8 @@ graph TD
     style UI_BLZ fill:#512bd4,color:#fff
     style HUB fill:#512bd4,color:#fff
     style ROP fill:#fff4dd,stroke:#d4a017
+    style IMC fill:#90ee90,stroke:#28a745
+    style OUT fill:#87ceeb,stroke:#007bff
 ```
 
 ### Railway Oriented Programming (ROP)
@@ -361,12 +388,11 @@ public async Task<Result<Product, DomainError>> GetByIdAsync(long id)
 ```
 
 
-
 ### ASP.NET Core Identity
 
 Sistema completo de autenticación y autorización:
 
-- Roles personalizados (ADMIN, USER, MODERATOR)
+- Roles personalizados (ADMIN, USER, MODERADOR)
 - Password hashing seguro
 - Cookie authentication
 - Claims-based authorization
@@ -398,12 +424,14 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
 |-----------|-----------------------|----------|-----------|
 | Admin     | admin@waladaw.com     | admin    | ADMIN     |
 | Prueba    | prueba@prueba.com     | user123  | USER      |
-| Moderador | moderador@waladaw.com | user123  | MODERATOR |
+| Moderador | moderador@waladaw.com | user123  | MODERADOR |
+| Otro      | otro@otro.com         | user123  | USER      |
+
 
 ## 🔒 Seguridad
 
 - ✅ Autenticación basada en ASP.NET Core Identity
-- ✅ Autorización por roles ([Authorize(Roles = "ADMIN")])
+- ✅ Autorización por roles (`[Authorize(Roles = "ADMIN")]`)
 - ✅ Protección CSRF con Anti-Forgery Tokens
 - ✅ Validación de subida de archivos (tipo y tamaño)
 - ✅ Sanitización de nombres de archivo
@@ -446,31 +474,31 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
     - Ventas por mes (últimos 12 meses)
 - ✅ Filtros por fecha y categoría
 
-
-
 ## 📚 Documentación
 
 Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra **[Guía de Supervivencia para el alumnado de DAW (Enciclopedia .NET 10)](doc/README.md)**, que incluye:
 
-- [Volumen 01: Arquitectura, Middlewares y DI](doc/01-Architecture-Pipeline-DI.md)
-- [Volumen 02: Controladores y Lógica de Negocio (Pattern Result)](doc/02-Controllers-Models-Results.md)
-- [Volumen 03: Razor Masterclass - Sintaxis y UI Inteligente](doc/03-Razor-Syntax-UI.md)
-- [Volumen 04: Blazor Server - Interactividad en Tiempo Real](doc/04-Blazor-Hybrid-SignalR.md)
-- [Volumen 05: EF Core y Persistencia Avanzada](doc/05-EFCore-Persistence-Seed.md)
-- [Volumen 06: Localización Estratégica (I18n)](doc/06-I18n-Localization-Decimal.md)
-- [Volumen 07: JavaScript & AJAX - Danza Asíncrona](doc/07-JS-AJAX-Security.md)
-- [Volumen 08: Operaciones y Producción (Docker)](doc/08-Ops-Docker-Files.md)
-- [Volumen 09: Evolución de la Interfaz - Razor vs AJAX vs Blazor](doc/09-BlazorVsRazorVsAjax.md)
-- [Volumen 10: Comunicación entre Componentes Blazor - State Container](doc/10-Blazor-Component-Communication.md)
-- [Volumen 11: Persistencia Volátil - Motor SQL en RAM](doc/11-SQLite-InMemory-Persistence.md)
-- [Volumen 12: Guía de Productividad - Hot Reload y Trucos](doc/12-Development-Tips.md)
-- [Volumen 13: Pruebas de Extremo a Extremo (E2E) - Cypress](doc/13-E2E-Testing-Cypress.md)
-- [Volumen 14: Optimización de Rendimiento - Output Cache](doc/14-OutputCache-Performance.md)
-- [Volumen 15: Gestión Global de Errores - Middleware Pro](doc/15-Global-Exception-Handling.md)
-- [Volumen 16: Auditoría Automática de Entidades - EF Core Magic](doc/16-Entity-Auditing-EFCore.md)
-- [Volumen 17: Patrón de Mapeo de Objetos - Clean Controllers](doc/17-Object-Mapping-Pattern.md)
-- [Volumen 18: Notificaciones en Tiempo Real - SignalR Pro](doc/18-SignalR-RealTime-Notifications.md)
-
+- [Volumen 01: Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md)
+- [Volumen 02: Guía de Productividad - Hot Reload y Trucos](doc/02-Development-Tips.md)
+- [Volumen 03: EF Core y Persistencia Avanzada](doc/03-EFCore-Persistence-Seed.md)
+- [Volumen 04: Persistencia Volátil - SQLite In-Memory](doc/04-SQLite-InMemory-Persistence.md)
+- [Volumen 05: Auditoría Automática de Entidades - EF Core Magic](doc/05-Entity-Auditing-EFCore.md)
+- [Volumen 06: Patrón de Mapeo de Objetos - Clean Controllers](doc/06-Object-Mapping-Pattern.md)
+- [Volumen 07: El Corazón de la App - Controladores y Resultados](doc/07-Controllers-Models-Results.md)
+- [Volumen 08: Gestión Global de Errores - Middleware de Seguridad](doc/08-Global-Exception-Handling.md)
+- [Volumen 09: Razor Masterclass - Sintaxis y UI Inteligente](doc/09-Razor-Syntax-UI.md)
+- [Volumen 10: La Torre de Babel - I18n y Localización](doc/10-I18n-Localization-Decimal.md)
+- [Volumen 11: JavaScript & AJAX - La Danza Asíncrona](doc/11-JS-AJAX-Security.md)
+- [Volumen 12: Evolución de la Interfaz - Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md)
+- [Volumen 13: Blazor Server - Interactividad en Tiempo Real](doc/13-Blazor-Server-Basics.md)
+- [Volumen 14: Comunicación entre Componentes - State Container](doc/14-Blazor-Component-Communication.md)
+- [Volumen 15: Notificaciones en Tiempo Real - SignalR Pro](doc/15-SignalR-RealTime-Notifications.md)
+- [Volumen 16: Cimientos de Calidad - Tests Unitarios y de Componentes](doc/16-Unit-Testing-NUnit-bUnit.md)
+- [Volumen 17: Métricas de Calidad - Cobertura de Código](doc/17-Code-Coverage.md)
+- [Volumen 18: Pruebas de Extremo a Extremo (E2E) - Playwright](doc/18-E2E-Testing-Playwright.md)
+- [Volumen 19: Optimización de Rendimiento - Caché en Memoria](doc/19-Optimizacion-InMemoryCache.md)
+- [Volumen 20: Optimización de Rendimiento - Output Cache](doc/20-OutputCache-Performance.md)
+- [Volumen 21: Operaciones y Producción - Docker y Ficheros](doc/21-Ops-Docker-Files.md)
 
 
 - Repositorio de apuntes de curso: [Desarrollo Web en Entornos Servidor](https://github.com/joseluisgs/DesarrolloWebEntornosServidor-05-2025-2026)
@@ -490,33 +518,33 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twi
 ### Contacto
 
 <p>
-  Cualquier cosa que necesites házmelo saber por si puedo ayudarte 💬.
+   Cualquier cosa que necesites házmelo saber por si puedo ayudarte 💬.
 </p>
 <p>
- <a href="https://joseluisgs.dev" target="_blank">
-        <img src="https://joseluisgs.github.io/img/favicon.png" 
-    height="30">
-    </a>  &nbsp;&nbsp;
-    <a href="https://github.com/joseluisgs" target="_blank">
-        <img src="https://distreau.com/github.svg" 
-    height="30">
-    </a> &nbsp;&nbsp;
-        <a href="https://twitter.com/JoseLuisGS_" target="_blank">
-        <img src="https://i.imgur.com/U4Uiaef.png" 
-    height="30">
-    </a> &nbsp;&nbsp;
-    <a href="https://www.linkedin.com/in/joseluisgonsan" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png" 
-    height="30">
-    </a>  &nbsp;&nbsp;
-    <a href="https://g.dev/joseluisgs" target="_blank">
-        <img loading="lazy" src="https://googlediscovery.com/wp-content/uploads/google-developers.png" 
-    height="30">
-    </a>  &nbsp;&nbsp;
-<a href="https://www.youtube.com/@joseluisgs" target="_blank">
-        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" 
-    height="30">
-    </a>  
+   <a href="https://joseluisgs.dev" target="_blank">
+        <img src="https://joseluisgs.github.io/img/favicon.png"
+     height="30">
+     </a> &nbsp;&nbsp;
+     <a href="https://github.com/joseluisgs" target="_blank">
+        <img src="https://distreau.com/github.svg"
+     height="30">
+     </a> &nbsp;&nbsp;
+     <a href="https://twitter.com/JoseLuisGS_" target="_blank">
+        <img src="https://i.imgur.com/U4Uiaef.png"
+     height="30">
+     </a> &nbsp;&nbsp;
+     <a href="https://www.linkedin.com/in/joseluisgonsan" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png"
+     height="30">
+     </a> &nbsp;&nbsp;
+     <a href="https://g.dev/joseluisgs" target="_blank">
+        <img loading="lazy" src="https://googlediscovery.com/wp-content/uploads/google-developers.png"
+     height="30">
+     </a>
+     <a href="https://www.youtube.com/@joseluisgs" target="_blank">
+        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png"
+     height="30">
+     </a>
 </p>
 
 ## Licencia de uso
@@ -525,10 +553,9 @@ Este repositorio y todo su contenido está licenciado bajo licencia **Creative C
 la [LICENSE](https://joseluisgs.dev/docs/license/). Por favor si compartes, usas o modificas este proyecto cita a su
 autor, y usa las mismas condiciones para su uso docente, formativo o educativo y no comercial.
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">
-JoseLuisGS</span>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">JoseLuisGS</span>
 by <a xmlns:cc="http://creativecommons.org/ns#" href="https://joseluisgs.dev/" property="cc:attributionName" rel="cc:attributionURL">
-José Luis González Sánchez</a> is licensed under
-a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons
+    José Luis González Sánchez</a> is licensed under
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons
 Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional License</a>.<br />Creado a partir de la obra
 en <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/joseluisgs" rel="dct:source">https://github.com/joseluisgs</a>.

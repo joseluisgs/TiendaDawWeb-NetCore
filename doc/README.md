@@ -97,8 +97,8 @@ Asegurando que la aplicación es rápida y está libre de errores.
  ## 🚢 Fase 7: Operaciones
  El camino hacia el despliegue real.
 
- ### [21. Operaciones y Producción - Docker y Ficheros](20-Ops-Docker-Files.md)
-Optimización de imágenes Docker, gestión de volúmenes y generación de PDFs.
+ ### [21. Operaciones y Producción - Docker y Ficheros](21-Ops-Docker-Files.md)
+ Optimización de imágenes Docker, gestión de volúmenes y generación de PDFs.
 
 ---
 *Este material ha sido redactado con rigor experto para transformar alumnos en ingenieros de software .NET.*
