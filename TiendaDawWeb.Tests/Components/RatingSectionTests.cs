@@ -53,17 +53,27 @@ public class RatingSectionTests : BunitTestContext
 
 
 
-    [SetUp]
+        [SetUp]
 
-    public void Setup()
 
-    {
 
-        _ratingServiceMock = new Mock<IRatingService>();
+        public void Setup()
 
-        _loggerMock = new Mock<ILogger<RatingSection>>();
 
-        _stateContainer = new RatingStateContainer();
+
+        {
+
+
+
+            _ratingServiceMock = new Mock<IRatingService>();
+
+
+
+            _loggerMock = new Mock<ILogger<RatingSection>>();
+
+
+
+            _stateContainer = new RatingStateContainer(_ratingServiceMock.Object);
 
         
 

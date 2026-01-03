@@ -14,6 +14,7 @@
 @inject RatingStateContainer StateContainer
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILogger<RatingSection> Logger
+@implements IDisposable
 
 <div class="mb-4">
     @if (_loading)
@@ -36,16 +37,17 @@
             <i class="bi bi-info-circle"></i> No puedes valorar tu propio producto.
         </div>
     }
-    else if (_userRating != null)
+    else if (GetUserRating() != null)
     {
+        var rating = GetUserRating();
         <div class="p-4 rounded border border-success bg-light mb-4 fade-in">
             <h5 class="text-success"><i class="bi bi-check-circle-fill"></i> ¡Gracias por tu valoración!</h5>
             <div class="d-flex align-items-center mb-2 mt-3">
-                <span>@RenderStars(_userRating.Puntuacion, 1.5)</span>
-                <span class="ms-2 fw-bold">@_userRating.Puntuacion / 5</span>
-                <span class="text-muted ms-3 small">@_userRating.CreatedAt.ToLocalTime().ToShortDateString()</span>
+                <span>@RenderStars(rating!.Puntuacion, 1.5)</span>
+                <span class="ms-2 fw-bold">@rating.Puntuacion / 5</span>
+                <span class="text-muted ms-3 small">@rating.CreatedAt.ToLocalTime().ToShortDateString()</span>
             </div>
-            <p class="mb-0 text-muted">@((MarkupString)(string.IsNullOrWhiteSpace(_userRating.Comentario) ? "<i>Sin comentario</i>" : _userRating.Comentario))</p>
+            <p class="mb-0 text-muted">@((MarkupString)(string.IsNullOrWhiteSpace(rating.Comentario) ? "<i>Sin comentario</i>" : rating.Comentario))</p>
         </div>
     }
     else
@@ -103,17 +105,17 @@
 </div>
 
 <div id="ratingsList">
-    @if (_ratings == null)
+    @if (StateContainer.Ratings == null)
     {
         <p>Cargando opiniones...</p>
     }
-    else if (!_ratings.Any())
+    else if (!StateContainer.Ratings.Any())
     {
         <div class="alert alert-light border"><i class="bi bi-info-circle"></i> No hay valoraciones todavía. Sé el primero en opinar.</div>
     }
     else
     {
-        @foreach (var rating in _ratings)
+        @foreach (var rating in StateContainer.Ratings)
         {
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
@@ -141,8 +143,6 @@
     [Parameter] public long? CurrentUserId { get; set; }
     [Parameter] public bool IsOwner { get; set; }
 
-    private List<Rating>? _ratings;
-    private Rating? _userRating;
     private bool _isAuthenticated;
     private bool _isOwner;
     private bool _loading = true;
@@ -153,53 +153,34 @@
     private string _errorMessage = "";
     private bool _showStarError = false;
 
+    private Rating? GetUserRating() => 
+        StateContainer.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
+
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("RatingSection inicializado para Producto {ProductId}", ProductId);
+        StateContainer.OnChange += HandleStateChange;
+        
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         _isAuthenticated = user.Identity?.IsAuthenticated ?? false;
         
         if (_isAuthenticated)
         {
-            Logger.LogDebug("Usuario autenticado detectado en RatingSection: {UserId}", CurrentUserId);
-            var identityUser = await UserManager.GetUserAsync(user);
-            if (identityUser != null)
-            {
-                _isOwner = IsOwner; 
-            }
+            _isOwner = IsOwner; 
         }
 
-        await LoadDataAsync();
+        await StateContainer.EnsureLoadedAsync(ProductId);
         _loading = false;
     }
 
-    private async Task LoadDataAsync()
+    private void HandleStateChange()
     {
-        Logger.LogDebug("RatingSection cargando valoraciones para Producto {ProductId}", ProductId);
-        var ratingsResult = await RatingService.GetByProductoIdAsync(ProductId);
-        if (ratingsResult.IsSuccess)
-        {
-            _ratings = ratingsResult.Value.ToList();
-            Logger.LogDebug("RatingSection: {Count} valoraciones cargadas", _ratings.Count);
-            if (_isAuthenticated && CurrentUserId.HasValue)
-            {
-                _userRating = _ratings.FirstOrDefault(r => r.UsuarioId == CurrentUserId.Value);
-                if (_userRating != null)
-                {
-                    Logger.LogDebug("RatingSection: El usuario ya ha valorado este producto");
-                }
-            }
-        }
-        else
-        {
-            Logger.LogError("RatingSection: Error al cargar valoraciones: {Error}", ratingsResult.Error.Message);
-        }
+        StateHasChanged();
     }
 
     private void SelectStar(int val)
     {
-        Logger.LogTrace("RatingSection: Estrella {Value} seleccionada", val);
         _selectedPuntuacion = val;
         _showStarError = false;
     }
@@ -220,36 +201,34 @@
         Logger.LogInformation("RatingSection: Intento de envío de valoración para Producto {ProductId}", ProductId);
         if (_selectedPuntuacion == 0)
         {
-            Logger.LogWarning("RatingSection: Intento de envío sin puntuación");
             _showStarError = true;
             return;
         }
 
-        if (!CurrentUserId.HasValue) 
-        {
-            Logger.LogWarning("RatingSection: Intento de envío sin usuario autenticado");
-            return;
-        }
+        if (!CurrentUserId.HasValue) return;
 
         _submitting = true;
         _errorMessage = "";
 
-        Logger.LogInformation("RatingSection: Guardando valoración de {Stars} estrellas por Usuario {UserId}", _selectedPuntuacion, CurrentUserId);
         var result = await RatingService.AddRatingAsync(CurrentUserId.Value, ProductId, _selectedPuntuacion, _comentario);
 
         if (result.IsSuccess)
         {
-            Logger.LogInformation("✅ RatingSection: Valoración guardada con éxito");
-            await LoadDataAsync();
-            StateContainer.NotifyRatingChanged();
+            Logger.LogInformation("✅ RatingSection: Valoración guardada. Notificando cambio...");
+            // Forzamos recarga en el contenedor
+            await StateContainer.RefreshAsync(ProductId);
         }
         else
         {
-            Logger.LogWarning("❌ RatingSection: Error al guardar valoración: {Error}", result.Error.Message);
             _errorMessage = result.Error.Message;
         }
 
         _submitting = false;
+    }
+
+    public void Dispose()
+    {
+        StateContainer.OnChange -= HandleStateChange;
     }
 
     private RenderFragment RenderStars(double val, double size) => builder =>

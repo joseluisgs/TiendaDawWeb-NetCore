@@ -13,14 +13,14 @@
 @inject ILogger<RatingSummary> Logger
 @implements IDisposable
 
-@if (_average.HasValue)
+@if (StateContainer.Ratings != null)
 {
-    @if (_count > 0)
+    @if (StateContainer.Count > 0)
     {
         <div class="mb-2 d-flex align-items-center">
-            <span class="me-2">@RenderStars(_average.Value, 2)</span>
-            <span class="fw-bold fs-5">@_average.Value.ToString("F1")</span>
-            <span class="text-muted ms-2">(@_count valoraciones)</span>
+            <span class="me-2">@RenderStars(StateContainer.Average, 2)</span>
+            <span class="fw-bold fs-5">@StateContainer.Average.ToString("F1")</span>
+            <span class="text-muted ms-2">(@StateContainer.Count valoraciones)</span>
         </div>
     }
     else
@@ -32,40 +32,18 @@
 @code {
     [Parameter] public long ProductId { get; set; }
 
-    private double? _average;
-    private int _count;
-
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("RatingSummary inicializado para Producto {ProductId}", ProductId);
         StateContainer.OnChange += HandleStateChange;
-        await LoadDataAsync();
+        // Solo llamamos a EnsureLoaded. Si el otro componente ya cargó, esto es instantáneo.
+        await StateContainer.EnsureLoadedAsync(ProductId);
     }
 
-    private async void HandleStateChange()
+    private void HandleStateChange()
     {
-        Logger.LogInformation("RatingSummary detectó cambio de estado para Producto {ProductId}. Recargando...", ProductId);
-        await LoadDataAsync();
-    }
-
-    private async Task LoadDataAsync()
-    {
-        Logger.LogDebug("RatingSummary cargando datos para Producto {ProductId}", ProductId);
-        var ratingsResult = await RatingService.GetByProductoIdAsync(ProductId);
-        if (ratingsResult.IsSuccess)
-        {
-            var ratings = ratingsResult.Value.ToList();
-            _count = ratings.Count;
-            _average = _count > 0 ? ratings.Average(r => r.Puntuacion) : 0;
-            Logger.LogDebug("RatingSummary: Datos cargados. Media: {Avg}, Votos: {Count}", _average, _count);
-        }
-        else
-        {
-            Logger.LogError("RatingSummary: Error al cargar valoraciones: {Error}", ratingsResult.Error.Message);
-            _average = 0;
-            _count = 0;
-        }
-        await InvokeAsync(StateHasChanged);
+        Logger.LogDebug("RatingSummary detectó cambio de estado para Producto {ProductId}. Actualizando UI...", ProductId);
+        StateHasChanged();
     }
 
     private RenderFragment RenderStars(double val, double size) => builder =>

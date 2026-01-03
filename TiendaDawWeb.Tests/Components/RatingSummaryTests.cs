@@ -27,7 +27,7 @@ public class RatingSummaryTests : BunitTestContext
         // Inicialización de dependencias mockeadas
         _ratingServiceMock = new Mock<IRatingService>();
         _loggerMock = new Mock<ILogger<RatingSummary>>();
-        _stateContainer = new RatingStateContainer();
+        _stateContainer = new RatingStateContainer(_ratingServiceMock.Object);
 
         // Inyección de servicios en el contexto de bUnit
         Services.AddSingleton(_ratingServiceMock.Object);
