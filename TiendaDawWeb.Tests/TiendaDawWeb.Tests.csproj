@@ -27,6 +27,12 @@
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
+  <!-- Configuración de Exclusión de Cobertura -->
+  <PropertyGroup>
+    <CoverletOutputFormat>cobertura,opencover</CoverletOutputFormat>
+    <ExcludeByFile>**/Migrations/*.cs;**/Program.cs;**/Data/SeedData.cs;**/Resources/*.cs</ExcludeByFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\TiendaDawWeb.Web\TiendaDawWeb.csproj" />
   </ItemGroup>
