@@ -1,1 +1,22 @@
+# Playwright E2E Test Artifacts
 TestResults/
+TestScreenshots/
+TestVideos/
+
+# Build outputs
+bin/
+obj/
+
+# IDE
+.idea/
+*.suo
+*.user
+*.cache
+
+# Test artifacts
+*.png
+*.mp4
+*.webm
+*.trx
+*.dump
+*.log

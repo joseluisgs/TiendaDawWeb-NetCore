@@ -1,74 +1,68 @@
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
+using TiendaDawWeb.Tests.E2E.Extensions;
 
-namespace TiendaDawWeb.Tests.E2E;
+namespace TiendaDawWeb.Tests.E2E.Auth;
 
 /**
  * MÓDULO DE AUTENTICACIÓN (E2E)
  * 
  * OBJETIVO: Validar que el flujo de acceso (Login) sea seguro y funcional desde el navegador.
  * TECNOLOGÍAS TESTEADAS: ASP.NET Core Identity, Playwright Locators, Validaciones DataAnnotations.
+ * 
+ * EJEMPLO DE USO DE TEST IDS:
+ * - Page.TestId("login-form") - Busca el formulario por data-testid
+ * - Page.TestId("email-input").FillAsync("admin@waladaw.com") - Busca input y escribe
+ * - Page.TestId("submit-button").ClickAsync() - Busca botón y hace click
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class AuthTests : PageTest
+public class AuthTests : E2ETestBase
 {
     private const string BaseUrl = "http://localhost:5000";
 
-    /// <summary>
-    /// Configuración previa a cada test: Navegar a la página de login
-    /// </summary>
     [SetUp]
     public async Task Setup()
     {
         await Page.GotoAsync($"{BaseUrl}/Auth/Login");
+        await CaptureScreenshotAsync("01-login-page-loaded");
     }
 
-    /// <summary>
-    /// Test: Validación de campos vacíos. Debe detectar errores de servidor o cliente.
-    /// </summary>
     [Test]
     public async Task EmptyFields_ShouldShowValidationErrors()
     {
-        // 1. Acción: Enviar formulario sin datos
-        await Page.Locator(".card-body form button[type='submit']").ClickAsync();
-        
-        // 2. Verificación: Aparece algún mensaje de error de validación
-        // Buscamos cualquier elemento con la clase .text-danger que contenga texto
-        // Esto cubre tanto el ValidationSummary como las validaciones por campo
+        await Page.TestId("submit-button").ClickAsync();
+        await CaptureScreenshotAsync("02-validation-errors");
+
         var error = Page.Locator(".text-danger:not(:empty), .field-validation-error").First;
         await Expect(error).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
     }
 
-    /// <summary>
-    /// Test: Login exitoso. El administrador debe entrar correctamente.
-    /// </summary>
     [Test]
     public async Task AdminLogin_ShouldSucceed()
     {
-        // 1. Acción: Rellenar credenciales de administrador
-        await Page.FillAsync("#Email", "admin@waladaw.com");
-        await Page.FillAsync("#Password", "admin");
-        await Page.ClickAsync(".card-body form button[type='submit']");
+        await Page.TestId("email-input").FillAsync("admin@waladaw.com");
+        await Page.TestId("password-input").FillAsync("admin");
+        await CaptureScreenshotAsync("03-credentials-filled");
         
-        // 2. Verificación: Cambio de URL y presencia del nombre en Navbar
+        await Page.TestId("submit-button").ClickAsync();
+        await CaptureScreenshotAsync("04-after-login");
+        
         await Expect(Page).Not.ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/Auth/Login.*"));
         await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Admin", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
     }
 
-    /// <summary>
-    /// Test: Seguridad. Debe rechazar credenciales incorrectas.
-    /// </summary>
     [Test]
     public async Task InvalidCredentials_ShouldShowErrorMessage()
     {
-        // 1. Acción: Intentar login con datos falsos
-        await Page.FillAsync("#Email", "hacker@maligno.com");
-        await Page.FillAsync("#Password", "123456");
-        await Page.ClickAsync(".card-body form button[type='submit']");
+        await Page.TestId("email-input").FillAsync("hacker@maligno.com");
+        await Page.TestId("password-input").FillAsync("123456");
+        await CaptureScreenshotAsync("05-invalid-credentials");
         
-        // 2. Verificación: Mensaje de error específico de Identity
+        await Page.TestId("submit-button").ClickAsync();
+        await CaptureScreenshotAsync("06-error-message");
+        
         var errorSummary = Page.Locator(".validation-summary-errors");
         await Expect(errorSummary).ToContainTextAsync(new System.Text.RegularExpressions.Regex("incorrectos", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
     }

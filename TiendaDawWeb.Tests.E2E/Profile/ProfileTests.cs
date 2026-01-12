@@ -1,8 +1,9 @@
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
+using TiendaDawWeb.Tests.E2E.Extensions;
 
-namespace TiendaDawWeb.Tests.E2E;
+namespace TiendaDawWeb.Tests.E2E.Profile;
 
 /**
  * MÓDULO DE PERFIL (E2E)
@@ -12,27 +13,26 @@ namespace TiendaDawWeb.Tests.E2E;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class ProfileTests : PageTest
+public class ProfileTests : E2ETestBase
 {
     private const string BaseUrl = "http://localhost:5000";
 
-    /// <summary>
-    /// Configuración: Asegurar que el usuario está logueado para ver su perfil.
-    /// </summary>
     [SetUp]
     public async Task Setup()
     {
         try
         {
             await Page.GotoAsync($"{BaseUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
-            await Page.FillAsync("#Email", "prueba@prueba.com");
-            await Page.FillAsync("#Password", "prueba");
-            await Page.ClickAsync(".card-body form button[type='submit']");
+            await CaptureScreenshotAsync("01-login-page");
+            
+            await Page.TestId("email-input").FillAsync("prueba@prueba.com");
+            await Page.TestId("password-input").FillAsync("prueba");
+            await CaptureScreenshotAsync("02-credentials-filled");
+            
+            await Page.TestId("submit-button").ClickAsync();
+            await CaptureScreenshotAsync("03-after-login");
 
-            // Espera explícita de navegación tras el submit
-            // await Page.WaitForLoadStateAsync(LoadState.NetworkIdle); // OPTIMIZADO: No es necesario esperar explícitamente
-
-            await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
+            await Expect(Page.TestId("user-name")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
         }
         catch (Exception ex)
         {
@@ -42,18 +42,14 @@ public class ProfileTests : PageTest
         }
     }
 
-    /// <summary>
-    /// Test: Visualización. Debe mostrar los datos reales del usuario logueado.
-    /// </summary>
     [Test]
     public async Task ProfileDisplay_ShouldShowCorrectUserData()
     {
         try
         {
-            // 1. Acción: Ir a la ruta personalizada
             await Page.GotoAsync($"{BaseUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await CaptureScreenshotAsync("04-profile-page");
 
-            // 2. Verificación: El contenido contiene los datos del SeedData
             var mainContent = Page.Locator("main");
             await Expect(mainContent).ToBeVisibleAsync(new() { Timeout = 10000 });
             await Expect(mainContent).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Prueba", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 5000 });
@@ -67,26 +63,21 @@ public class ProfileTests : PageTest
         }
     }
 
-    /// <summary>
-    /// Test: Navegación. Debe permitir entrar al modo edición y cargar valores.
-    /// </summary>
     [Test]
     public async Task ProfileEditNavigation_ShouldShowFormWithValues()
     {
         try
         {
-            // 1. Acción: Ir al perfil y click en Editar
             await Page.GotoAsync($"{BaseUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await CaptureScreenshotAsync("05-profile-page");
 
-            // Esperar a que el enlace de editar esté visible
             var editLink = Page.Locator("a:has-text('Editar')");
             await Expect(editLink).ToBeVisibleAsync(new() { Timeout = 10000 });
             await editLink.ClickAsync();
+            await CaptureScreenshotAsync("06-edit-form");
 
-            // Esperar que el formulario de edición sea visible (más fiable que NetworkIdle)
             await Expect(Page.Locator("#nombre")).ToBeVisibleAsync(new() { Timeout = 10000 });
 
-            // 2. Verificación: URL correcta y formulario precargado
             await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/app/perfil/editar.*"), new() { Timeout = 10000 });
 
             var nombreInput = Page.Locator("#nombre");

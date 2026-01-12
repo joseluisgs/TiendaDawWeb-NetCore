@@ -58,3 +58,12 @@ TiendaDawWeb.Web/wwwroot/uploads/*
 
 ## Coverage Results
 CoverageReport/
+
+## Playwright E2E Test Artifacts
+TestScreenshots/
+TestVideos/
+*.png
+*.mp4
+*.webm
+*.trx
+*.dump

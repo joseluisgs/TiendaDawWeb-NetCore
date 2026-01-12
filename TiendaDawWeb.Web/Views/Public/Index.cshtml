@@ -32,11 +32,11 @@
                 <div class="col-md-4">
                     <label class="form-label">@SharedLocalizer["Search"]</label>
                     <input class="form-control" name="q" placeholder="@SharedLocalizer["SearchProducts"]" type="text"
-                           value="@ViewBag.Search">
+                           value="@ViewBag.Search" data-testid="search-input">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">@SharedLocalizer["Category"]</label>
-                    <select class="form-select" name="categoria">
+                    <select class="form-select" name="categoria" data-testid="category-select">
                         <option value="">@SharedLocalizer["AllCategories"]</option>
                         @foreach (var categoria in Enum.GetValues<ProductCategory>()) {
                             var isSelected = ViewBag.Categoria == categoria.ToString();
@@ -50,15 +50,15 @@
                 <div class="col-md-2">
                     <label class="form-label">@SharedLocalizer["MinPrice"]</label>
                     <input class="form-control" name="minPrecio" placeholder="0" type="number" step="0.01"
-                           value="@ViewBag.MinPrecio">
+                           value="@ViewBag.MinPrecio" data-testid="min-price-input">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">@SharedLocalizer["MaxPrice"]</label>
                     <input class="form-control" name="maxPrecio" placeholder="9999" type="number" step="0.01"
-                           value="@ViewBag.MaxPrecio">
+                           value="@ViewBag.MaxPrecio" data-testid="max-price-input">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search"></i></button>
+                    <button class="btn btn-primary w-100" type="submit" data-testid="search-button"><i class="bi bi-search"></i></button>
                 </div>
             </form>
         </div>
@@ -74,15 +74,15 @@
         <div class="row row-cols-1 row-cols-md-3 g-4">
             @foreach (var producto in Model) {
                 <div class="col">
-                    <div class="card h-100 shadow-sm producto-card">
+                    <div class="card h-100 shadow-sm producto-card" data-testid="product-card">
                         <a href="@Url.Action("Details", "Product", new { id = producto.Id })"
                            class="text-decoration-none text-dark">
                             <img src="@producto.Imagen"
                                  class="card-img-top"
                                  alt="@producto.Nombre"
-                                 style="height: 300px; object-fit: cover; cursor: pointer;">
+                                 style="height: 300px; object-fit: cover; cursor: pointer;" data-testid="product-image">
                             <div class="card-body">
-                                <h5 class="card-title">@producto.Nombre</h5>
+                                <h5 class="card-title" data-testid="product-title">@producto.Nombre</h5>
                                 @if (!string.IsNullOrEmpty(producto.Descripcion)) {
                                     var descripcion = producto.Descripcion ?? "";
                                     var maxLength = Math.Min(descripcion.Length, 80);

@@ -1,1 +1,16 @@
+# Test Results
 TestResults/
+
+# Build outputs
+bin/
+obj/
+
+# Coverage
+*.coverage
+coverage.opencover.xml
+
+# IDE
+.idea/
+*.suo
+*.user
+*.cache

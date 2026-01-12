@@ -1,8 +1,9 @@
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
+using TiendaDawWeb.Tests.E2E.Extensions;
 
-namespace TiendaDawWeb.Tests.E2E;
+namespace TiendaDawWeb.Tests.E2E.Localization;
 
 /**
  * MÓDULO DE LOCALIZACIÓN (E2E - i18n)
@@ -12,48 +13,38 @@ namespace TiendaDawWeb.Tests.E2E;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class LocalizationTests : PageTest
+public class LocalizationTests : E2ETestBase
 {
     private const string BaseUrl = "http://localhost:5000";
 
-    /// <summary>
-    /// Forzamos el inicio en Español para tener un estado inicial conocido.
-    /// </summary>
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
         {
             Locale = "es-ES",
-            TimezoneId = "Europe/Madrid"
+            TimezoneId = "Europe/Madrid",
+            RecordVideoDir = "TestVideos"
         };
     }
 
-    /// <summary>
-    /// Test: Cambio de Idioma. Verifica que al cambiar de ES a EN, las etiquetas se actualizan.
-    /// </summary>
     [Test]
     public async Task ChangeLanguage_ShouldSwitchBetweenEsAndEn()
     {
-        // 1. Acción: Ir a la página pública
         await Page.GotoAsync($"{BaseUrl}/Public");
+        await CaptureScreenshotAsync("01-public-spanish");
 
-        // 2. Verificación Inicial (Español)
-        // Buscamos el label de búsqueda que en ES debe ser "Buscar"
         var searchLabel = Page.Locator("label.form-label").First;
         await Expect(searchLabel).ToContainTextAsync("Buscar");
 
-        // 3. Acción: Cambiar a Inglés mediante el Navbar
-        // El selector del dropdown de idioma usa el icono del globo
         await Page.Locator(".nav-link.dropdown-toggle:has(.bi-globe)").ClickAsync();
-        // Hacemos click en el enlace de English
+        await CaptureScreenshotAsync("02-language-dropdown");
+        
         await Page.Locator("a.dropdown-item:has-text('English')").ClickAsync();
+        await CaptureScreenshotAsync("03-public-english");
 
-        // 4. Verificación Final (Inglés)
-        // El label debe haber cambiado a "Search" automáticamente
         await Expect(searchLabel).ToHaveTextAsync("Search");
         
-        // Verificamos también el placeholder del input de búsqueda (usando el de main para evitar ambigüedad)
-        var searchInput = Page.Locator("main input[name='q']");
+        var searchInput = Page.TestId("search-input");
         await Expect(searchInput).ToHaveAttributeAsync("placeholder", "Search products...");
     }
 }
