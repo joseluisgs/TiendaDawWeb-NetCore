@@ -35,70 +35,76 @@ El **GlobalExceptionMiddleware** solo captura **excepciones inesperadas** (bugs/
 
 ### El Flujo Completo de Errores en WalaDaw
 
+```mermaid
+flowchart TD
+    A["📥 Petición HTTP"] --> B[1. GLOBAL EXCEPTION MIDDLEWARE]
+    
+    B --> C{¿Excepción inesperada?<br/>Bug, NullReference,<br/>DB timeout}
+    C -->|SÍ| D[📝 Log en Serilog]
+    D --> E[❌ Devuelve 500]
+    E --> F["📄 Página de error<br/>o JSON 500"]
+    
+    C -->|NO| G[2. MODEL BINDING + DATA ANNOTATIONS]
+    
+    G --> H{¿Datos inválidos?<br/>Email sin @,<br/>Campo vacío}
+    H -->|SÍ| I[❌ ModelState.IsValid = false]
+    I --> J["📝 Mostrar errores<br/>en formulario"]
+    
+    H -->|NO| K[3. CONTROLADOR]
+    K --> L[4. SERVICIO<br/>Lógica de Negocio]
+    
+    L --> M{¿Error esperado?<br/>Producto no existe,<br/>Email duplicado}
+    M -->|SÍ| N[✅ return Result.Failure]
+    N --> O[5. CONTROLADOR<br/>Match]
+    
+    M -->|NO| P[✅ Continúa normal]
+    P --> O
+    
+    O --> Q{¿Éxito o Error?}
+    Q -->|Éxito| R["📄 View / Redirect / JSON"]
+    Q -->|Error| S["📝 Manejo específico<br/>del error de dominio"]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style G fill:#e8f5e9
+    style L fill:#fce4ec
+    style O fill:#f3e5f5
+    style D fill:#ffebee
+    style I fill:#ffebee
+    style N fill:#e8f5e9
+    style S fill:#fff3e0
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        PIPELINE DE PETICIÓN HTTP                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  1. GLOBAL EXCEPTION MIDDLEWARE (Capa de Seguridad)                         │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  │                                                                           │
-│  │   ¿Excepción inesperada (NullReference, DB timeout, bug)?               │
-│  │                                                                          │
-│  │   ✅ SÍ → Captura, loguea en Serilog, devuelve 500                       │
-│  │   ❌ NO → Pasa al siguiente middleware                                   │
-│  │                                                                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  2. MODEL BINDING + DATA ANNOTATIONS (Validación de Entrada)                │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  │                                                                           │
-│  │   ¿El formulario tiene datos inválidos?                                  │
-│  │   (ej. email sin @, campo requerido vacío)                               │
-│  │                                                                          │
-│  │   ✅ SÍ → ModelState.IsValid = false                                     │
-│  │         → El Controlador muestra errores en la vista                    │
-│  │   ❌ NO → Continúa                                                       │
-│  │                                                                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  3. CONTROLADOR (Orquestación)                                              │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  │                                                                           │
-│  │   Llama al Servicio                                                      │
-│  │                                                                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  4. SERVICIO (Lógica de Negocio)                                            │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  │                                                                           │
-│  │   ¿Error de dominio esperado?                                            │
-│  │   (ej. producto no existe, usuario ya registrado)                        │
-│  │                                                                          │
-│  │   ✅ SÍ → return Result.Failure<Error>                                   │
-│  │   ❌ NO → Continúa normalmente                                           │
-│  │                                                                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  5. CONTROLADOR (Gestión del Resultado)                                     │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  │                                                                           │
-│  │   result.Match(                                                          │
-│  │       success: () => View/Json/Redirect,                                 │
-│  │       failure: error => Manejar error específico                         │
-│  │   )                                                                      │
-│  │                                                                           │
-└─────────────────────────────────────────────────────────────────────────────┘
+
+### Diagrama de Secuencia: Una Petición con Error
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant M as Middleware
+    participant C as Controlador
+    participant S as Servicio
+    participant DB as Base Datos
+
+    U->>M: POST /productos/crear
+    M->>M: ¿Excepción?
+    Note over M: No, continúa
+    
+    M->>C: Invoke action
+    C->>C: ModelState.IsValid?
+    Note over C: Sí, datos válidos
+    
+    C->>S: CreateAsync(datos)
+    S->>DB: SaveChanges()
+    
+    DB-->>S: ❌ TimeoutException!
+    S-->>C: throw DB timeout
+    C-->>M: Excepción propagada
+    
+    M->>M: Captura excepción
+    M->>M: Log en Serilog
+    M-->>U: ❌ 500 Internal Error
+    
+    Note over M,U: GlobalExceptionMiddleware<br/>captura el bug inesperado
 ```
 
 ### Resumen: ¿Quién Captura Qué?

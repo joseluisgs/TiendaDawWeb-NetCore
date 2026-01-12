@@ -251,67 +251,45 @@ public class ProductController : Controller
 
 ### 4.3. Diagrama: El Flujo de Validación Completo
 
-```
-                    PETICIÓN HTTP RECIBIDA
-                              │
-                              ▼
-            ┌─────────────────────────────────┐
-            │ 1. GLOBAL EXCEPTION MIDDLEWARE  │
-            │   (Red de seguridad global)     │
-            └─────────────────────────────────┘
-                              │
-              ¿Excepción inesperada?
-                              │
-              ┌───────────────┴───────────────┐
-              │                               │
-            SÍ ❌                           NO ✅
-              │                               │
-              ▼                               ▼
-        ┌─────────────┐            ┌─────────────────────┐
-        │ Log + 500   │            │ 2. MODEL BINDING    │
-        │ (Serilog)   │            │   + DATA ANNOTATIONS │
-        └─────────────┘            └─────────────────────┘
-                                          │
-                             ¿ModelState.IsValid?
-                                          │
-                         ┌────────────────┴────────────────┐
-                         │                                 │
-                       NO ❌                             YES ✅
-                         │                                 │
-                         ▼                                 ▼
-            ┌─────────────────────┐            ┌─────────────────────┐
-            │ Mostrar errores     │            │ 3. SERVICIO         │
-            │ en formulario       │            │   (Lógica negocio)  │
-            │ (View con mensajes) │            └─────────────────────┘
-            └─────────────────────┘                         │
-                                                 ¿Result.Success?
-                                                          │
-                                         ┌────────────────┴────────────────┐
-                                         │                                 │
-                                       SÍ ✅                              NO ❌
-                                         │                                 │
-                                         ▼                                 ▼
-                            ┌─────────────────────┐          ┌─────────────────────┐
-                            │ Continuar ejecución │          │ 4. CONTROLADOR      │
-                            │ (View/Redirect/JSON)│          │   (Match)           │
-                            └─────────────────────┘          └─────────────────────┘
-                                                                 │
-                                                    ¿Manejo específico?
-                                                                 │
-                                              ┌──────────────────┴──────────────────┐
-                                              │                                     │
-                                            View                                  Json
-                                              │                                     │
-                                              ▼                                     ▼
-                                    ┌─────────────────┐              ┌─────────────────┐
-                                    │ Mostrar ошибка  │              │ { success: false │
-                                    │ con TempData    │              │  error: "..." }  │
-                                    └─────────────────┘              └─────────────────┘
+```mermaid
+flowchart TD
+    A["📥 PETICIÓN HTTP"] --> B[1. GLOBAL EXCEPTION MIDDLEWARE]
+    
+    B --> C{¿Excepción<br/>inesperada?}
+    C -->|SÍ| D[📝 Log Serilog]
+    D --> E[❌ Error 500]
+    
+    C -->|NO| F[2. MODEL BINDING<br/>+ DATA ANNOTATIONS]
+    
+    F --> G{¿ModelState<br/>IsValid?}
+    G -->|NO| H[📝 Mostrar errores<br/>en formulario]
+    H --> I["❌ Vuelve a<br/>mostrar View"]
+    
+    G -->|SÍ| J[3. SERVICIO<br/>Lógica de Negocio]
+    
+    J --> K{¿Result<br/>Success?}
+    K -->|NO| L[4. CONTROLADOR<br/>Match]
+    K -->|SÍ| M["✅ Continuar<br/>ejecución normal"]
+    
+    L --> N{¿View o Json?}
+    N -->|View| O["📄 Mostrar View<br/>con TempData"]
+    N -->|Json| P["📄 { success: false<br/>error: '...' }"]
+    
+    M --> Q["✅ View / Redirect<br/>/ Json normal"]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style F fill:#e8f5e9
+    style J fill:#fce4ec
+    style L fill:#f3e5f5
+    style D fill:#ffebee
+    style H fill:#ffebee
+    style O fill:#fff3e0
+    style P fill:#fff3e0
+    style Q fill:#e8f5e9
 ```
 
----
-
-## 5. Errores Comunes y Cómo Evitarlos
+### 4.4. ¿Cuál usar en cada escenario?
 
 ### ❌ ERROR 1: Confundir Validación con Lógica de Negocio
 
