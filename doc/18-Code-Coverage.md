@@ -1,62 +1,125 @@
-# 19 - Métricas de Calidad: Cobertura de Código (Code Coverage)
+- [18. Code Coverage: Métricas de Calidad](#18-code-coverage-métricas-de-calidad)
+  - [1. Herramientas de Cobertura](#1-herramientas-de-cobertura)
+    - [1.1. Flujo de Cobertura](#11-flujo-de-cobertura)
+  - [2. Generar Informe de Cobertura](#2-generar-informe-de-cobertura)
+    - [2.1. Ejecutar Tests con Cobertura](#21-ejecutar-tests-con-cobertura)
+    - [2.2. Generar Dashboard Visual](#22-generar-dashboard-visual)
+  - [3. Interpretación del Dashboard](#3-interpretación-del-dashboard)
+    - [3.1. Métricas Clave](#31-métricas-clave)
+    - [3.2. Interpretación de Colores](#32-interpretación-de-colores)
+  - [4. Visualización en el Código](#4-visualización-en-el-código)
+    - [4.1. Colores en el Código](#41-colores-en-el-código)
+    - [4.2. Ejemplo de Código Marcado](#42-ejemplo-de-código-marcado)
+    - [4.3. Acción Correctiva](#43-acción-correctiva)
 
-En este volumen aprendemos a medir la efectividad de nuestra suite de pruebas. No basta con tener muchos tests; necesitamos saber qué porcentaje de nuestra lógica de negocio está realmente protegida contra errores.
+
+# 18. Code Coverage: Métricas de Calidad
+En esta sección, aprenderemos a medir y analizar la cobertura de código en nuestros proyectos .NET utilizando herramientas como Coverlet y ReportGenerator.
+
+## 1. Herramientas de Cobertura
+
+Para medir la efectividad de tests, usamos:
+
+| Herramienta         | Propósito                        |
+| ------------------- | -------------------------------- |
+| **Coverlet**        | Recolector de datos de cobertura |
+| **ReportGenerator** | Genera dashboard HTML            |
+
+### 1.1. Flujo de Cobertura
+
+```mermaid
+flowchart LR
+    A[dotnet test] --> B[Coverlet]
+    B --> C[coverage.cobertura.xml]
+    C --> D[ReportGenerator]
+    D --> E[Dashboard HTML]
+    
+    style A fill:#74b9ff
+    style B fill:#fdcb6e
+    style C fill:#dfe6e9
+    style D fill:#00b894
+    style E fill:#00b894
+```
 
 ---
 
-## 1. El Ecosistema de Cobertura en .NET
+## 2. Generar Informe de Cobertura
 
-Para obtener métricas precisas en **WalaDaw**, utilizamos un flujo de trabajo basado en dos herramientas estándar:
+### 2.1. Ejecutar Tests con Cobertura
 
-1.  **Coverlet**: Un recolector de datos ligero que se ejecuta junto a `dotnet test`. Analiza qué líneas de código se "iluminan" mientras los tests corren.
-2.  **ReportGenerator**: Una herramienta que transforma los archivos técnicos XML de Coverlet en un dashboard HTML interactivo y visual.
-
----
-
-## 2. Cómo generar el Informe de Cobertura
-
-Para obtener el informe unificado que incluya tanto los tests unitarios como los E2E, sigue estos pasos:
-
-### Paso 1: Ejecutar los tests con recolección
 ```bash
 dotnet test --collect:"XPlat Code Coverage"
 ```
-*Esto generará archivos `coverage.cobertura.xml` en las carpetas `TestResults/` de cada proyecto de prueba.*
 
-### Paso 2: Generar el dashboard visual
+Esto genera archivos `coverage.cobertura.xml` en `TestResults/`.
+
+### 2.2. Generar Dashboard Visual
+
 ```bash
-reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:Html
+reportgenerator -reports:"**/coverage.cobertura.xml" \
+    -targetdir:"CoverageReport" \
+    -reporttypes:Html
 ```
 
 ---
 
-## 3. Interpretación del Informe (Dashboard)
+## 3. Interpretación del Dashboard
 
-Al abrir `CoverageReport/index.html`, encontrarás las siguientes métricas clave:
+### 3.1. Métricas Clave
 
-### A. Line Coverage (Cobertura de Líneas)
-Es el porcentaje de líneas de código ejecutadas por al menos un test. 
-- **Verde (> 80%)**: Saludable.
-- **Amarillo (50-80%)**: Precaución, hay lógica crítica sin probar.
-- **Rojo (< 50%)**: Riesgo alto de regresiones.
+| Métrica             | Descripción                   | Umbral |
+| ------------------- | ----------------------------- | ------ |
+| **Line Coverage**   | % de líneas ejecutadas        | > 80%  |
+| **Branch Coverage** | % de ramas (if/else) probadas | > 70%  |
+| **Complexity**      | Complejidad del método        | < 10   |
 
-### B. Branch Coverage (Cobertura de Ramas)
-Mide si has probado todos los caminos posibles de un `if` o `switch`. Es la métrica más honesta, ya que detecta si probaste el caso de éxito pero olvidaste el de error.
+### 3.2. Interpretación de Colores
 
-### C. Cyclomatic Complexity (Complejidad Ciclomática)
-Indica qué tan difícil es de entender y mantener un método. Si un método tiene un número muy alto, es un candidato ideal para ser refactorizado en métodos más pequeños.
+```mermaid
+flowchart TD
+    A[Dashboard] --> B{Línea Coverage?}
+    B -->|Verde > 80%| C[✅ Saludable]
+    B -->|Amarillo 50-80%| D[⚠️ Precaución]
+    B -->|Rojo < 50%| E[❌ Riesgo alto]
+    
+    style C fill:#00b894
+    style D fill:#fdcb6e
+    style E fill:#d63031
+```
 
 ---
 
 ## 4. Visualización en el Código
 
-Una de las mayores ventajas de esta herramienta es la capacidad de ver el código fuente marcado:
-- **Líneas Verdes**: Código "seguro", verificado por tus tests.
-- **Líneas Rojas**: Código "ciego", cualquier cambio aquí podría romper la app sin que te enteres.
-- **Líneas Naranjas**: Ramas parciales (ej. se probó el `if` pero no el `else`).
+### 4.1. Colores en el Código
+
+| Color       | Significado                            |
+| ----------- | -------------------------------------- |
+| **Verde**   | Código probado por tests               |
+| **Rojo**    | Código no ejecutado (ciego)            |
+| **Naranja** | Rama parcial (solo `if` o solo `else`) |
+
+### 4.2. Ejemplo de Código Marcado
+
+```csharp
+public decimal Calculate(decimal precio)
+{
+    if (precio > 1000)        // ✅ Verde (probado)
+        return precio * 0.9m;  // ✅ Verde (probado)
+    else                      // ⚠️ Naranja (else no probado)
+        return precio;         // ⚠️ Naranja (else no probado)
+}
+```
+
+### 4.3. Acción Correctiva
+
+```csharp
+// Si una rama no está probada, añadir test:
+// [Test] public void Calculate_AppliesDiscount()
+// [Test] public void Calculate_NoDiscountForSmallAmount()
+```
 
 ---
 
-## 5. Conclusión del Experto
-
-La cobertura de código no es un objetivo de "llegar al 100%", sino una herramienta de diagnóstico. Úsala para identificar las zonas oscuras de tu `ProductService` o `PurchaseService` y prioriza el testing en las partes que manejan dinero o seguridad del usuario.
+**Anterior Volumen**: [17. Unit Testing](../17-Unit-Testing-NUnit-bUnit.md)  
+**Próximo Volumen**: [19. E2E Testing Playwright](../19-E2E-Testing-Playwright.md)

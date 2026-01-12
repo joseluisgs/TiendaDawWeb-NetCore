@@ -1,6 +1,20 @@
-# 15 - Gestión Global de Errores: El Middleware de Seguridad
+- [16. Gestión Global de Errores: El Middleware de Seguridad](#16-gestión-global-de-errores-el-middleware-de-seguridad)
+  - [1. ¿Qué es un Middleware de Excepciones?](#1-qué-es-un-middleware-de-excepciones)
+  - [2. Por qué es mejor que el predeterminado](#2-por-qué-es-mejor-que-el-predeterminado)
+  - [3. ¿Cuándo NO actúa el Middleware? (La Pregunta del Millón)](#3-cuándo-no-actúa-el-middleware-la-pregunta-del-millón)
+    - [El Flujo Completo de Errores en WalaDaw](#el-flujo-completo-de-errores-en-waladaw)
+    - [Diagrama de Secuencia: Una Petición con Error](#diagrama-de-secuencia-una-petición-con-error)
+    - [Resumen: ¿Quién Captura Qué?](#resumen-quién-captura-qué)
+  - [4. Implementación en WalaDaw](#4-implementación-en-waladaw)
+    - [La Clase Middleware (`TiendaDawWeb.Web/Middlewares/GlobalExceptionMiddleware.cs`)](#la-clase-middleware-tiendadawwebwebmiddlewaresglobalexceptionmiddlewarecs)
+    - [Registro en el Pipeline (`Program.cs`)](#registro-en-el-pipeline-programcs)
+  - [4. Beneficios para el Alumno](#4-beneficios-para-el-alumno)
+  - [5. Conclusión](#5-conclusión)
 
-En este volumen aprendemos a construir una "red de seguridad" que captura cualquier fallo inesperado en nuestra aplicación, evitando que el usuario vea pantallas técnicas y asegurando que nosotros (los desarrolladores) tengamos un rastro claro del error.
+
+# 16. Gestión Global de Errores: El Middleware de Seguridad
+
+En esta sección aprendemos a construir una "red de seguridad" que captura cualquier fallo inesperado en nuestra aplicación, evitando que el usuario vea pantallas técnicas y asegurando que nosotros (los desarrolladores) tengamos un rastro claro del error.
 
 ---
 
@@ -28,10 +42,10 @@ Nuestro Middleware personalizado detecta el origen de la petición:
 
 El **GlobalExceptionMiddleware** solo captura **excepciones inesperadas** (bugs/crashes). No captura:
 
-| Tipo de error | Capturado por | Ver documento |
-|---------------|---------------|---------------|
-| Validaciones de formulario (ej. email inválido) | ModelState | [Vol. 07: Controladores y Models](07-Controllers-Models-Results.md) |
-| Errores de dominio (ej. usuario no existe) | Result<T,E> | [Vol. 07: Controladores y Models](07-Controllers-Models-Results.md) |
+| Tipo de error                                   | Capturado por | Ver documento                                                       |
+| ----------------------------------------------- | ------------- | ------------------------------------------------------------------- |
+| Validaciones de formulario (ej. email inválido) | ModelState    | [Vol. 07: Controladores y Models](07-Controllers-Models-Results.md) |
+| Errores de dominio (ej. usuario no existe)      | Result<T,E>   | [Vol. 07: Controladores y Models](07-Controllers-Models-Results.md) |
 
 ### El Flujo Completo de Errores en WalaDaw
 
@@ -109,15 +123,15 @@ sequenceDiagram
 
 ### Resumen: ¿Quién Captura Qué?
 
-| Escenario | Ejemplo | Capturado por |
-|-----------|---------|---------------|
-| Bug de programación | `product.Name.Length` siendo `null` | GlobalExceptionMiddleware |
-| Timeout de base de datos | Conexión perdida | GlobalExceptionMiddleware |
-| Email sin formato | `"hola"` en campo `[EmailAddress]` | ModelState (DataAnnotations) |
-| Campo requerido vacío | `""` en `[Required]` | ModelState (DataAnnotations) |
-| Producto no existe | ID 99999 inexistente | Result<T,E> (servicio) |
-| Email ya registrado | Usuario duplicado | Result<T,E> (servicio) |
-| Password débil | Menos de 8 caracteres | Result<T,E> (servicio) |
+| Escenario                | Ejemplo                             | Capturado por                |
+| ------------------------ | ----------------------------------- | ---------------------------- |
+| Bug de programación      | `product.Name.Length` siendo `null` | GlobalExceptionMiddleware    |
+| Timeout de base de datos | Conexión perdida                    | GlobalExceptionMiddleware    |
+| Email sin formato        | `"hola"` en campo `[EmailAddress]`  | ModelState (DataAnnotations) |
+| Campo requerido vacío    | `""` en `[Required]`                | ModelState (DataAnnotations) |
+| Producto no existe       | ID 99999 inexistente                | Result<T,E> (servicio)       |
+| Email ya registrado      | Usuario duplicado                   | Result<T,E> (servicio)       |
+| Password débil           | Menos de 8 caracteres               | Result<T,E> (servicio)       |
 
 ---
 

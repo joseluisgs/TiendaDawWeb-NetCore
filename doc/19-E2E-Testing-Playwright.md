@@ -1,256 +1,172 @@
-# 13 - Pruebas de Extremo a Extremo (E2E) con Playwright (Deep Dive)
+- [19. E2E Testing con Playwright](#19-e2e-testing-con-playwright)
+  - [1. Configuración de Playwright](#1-configuración-de-playwright)
+    - [1.1. Instalación](#11-instalación)
+    - [1.2. Configuración del Contexto](#12-configuración-del-contexto)
+    - [1.3. Arquitectura de Test E2E](#13-arquitectura-de-test-e2e)
+  - [2. Selectores y Locators](#2-selectores-y-locators)
+    - [2.1. Tipos de Selectores (Orden de Preferencia)](#21-tipos-de-selectores-orden-de-preferencia)
+    - [2.2. Ejemplo de Test](#22-ejemplo-de-test)
+  - [3. Patrón Page Object](#3-patrón-page-object)
+    - [3.1. Estructura Page Object](#31-estructura-page-object)
+    - [3.2. Uso del Page Object](#32-uso-del-page-object)
+  - [4. Testeando Blazor Server](#4-testeando-blazor-server)
+    - [4.1. Espera de Conexión](#41-espera-de-conexión)
+    - [4.2. Test de Componente Blazor](#42-test-de-componente-blazor)
 
-En este volumen profundizamos en el uso de **Playwright**, la herramienta de automatización más potente del mercado, integrada nativamente en nuestra solución **.NET 10**. Aprenderás cómo configurar el entorno, dominar los selectores y testear flujos complejos de Blazor Server.
+
+# 19. E2E Testing con Playwright
+En esta sección, aprenderemos a realizar pruebas end-to-end (E2E) utilizando Playwright para garantizar que nuestra aplicación web funcione correctamente desde la perspectiva del usuario final.
 
 ---
 
-## 1. Configuración y Filosofía
+## 1. Configuración de Playwright
 
-A diferencia de otras herramientas, Playwright no inyecta código en la app; la controla desde fuera mediante protocolos de depuración.
+Playwright controla el navegador desde fuera, sin inyectar código en la app.
 
-### Requisitos de Instalación
-Tras compilar el proyecto de tests, es vital descargar los motores de renderizado:
+### 1.1. Instalación
+
 ```bash
 dotnet build
 npx playwright install chromium --with-deps
 ```
 
-### Configuración del Contexto (`BrowserNewContextOptions`)
-En Playwright, cada test corre en un **Browser Context** (una sesión de incógnito aislada). Podemos personalizarla sobrescribiendo el método `ContextOptions()` en nuestras clases de test:
+### 1.2. Configuración del Contexto
 
 ```csharp
 public override BrowserNewContextOptions ContextOptions()
 {
     return new BrowserNewContextOptions
     {
-        Locale = "es-ES",             // Fuerza el formato de fechas y moneda (€)
-        TimezoneId = "Europe/Madrid", // Sincroniza horas con el servidor
+        Locale = "es-ES",              // Formato de fechas y moneda
+        TimezoneId = "Europe/Madrid",  // Horas sincronizadas
         ViewportSize = new() { Width = 1280, Height = 720 },
-        AcceptDownloads = true        // Necesario para testear facturas PDF
+        AcceptDownloads = true
     };
 }
 ```
 
----
+### 1.3. Arquitectura de Test E2E
 
-## 2. El Arte de los Selectores (Locators)
-
-Playwright promueve el uso de **selectores orientados al usuario** (Accesibilidad) en lugar de clases CSS frágiles que cambian con el diseño.
-
-### Mejores Prácticas:
-1.  **`GetByRole`**: El más robusto. Busca por la función del elemento (botón, enlace, etc.).
-    ```csharp
-    await Page.GetByRole(AriaRole.Button, new() { Name = "Iniciar Sesión" }).ClickAsync();
-    ```
-2.  **`GetByPlaceholder` / `GetByLabel`**: Ideal para formularios.
-    ```csharp
-    await Page.GetByPlaceholder("tu@email.com").FillAsync("user@test.com");
-    ```
-3.  **`Locator` con CSS/Text**: Para casos específicos.
-    ```csharp
-    await Page.Locator(".card").GetByText("Ver Detalle").First.ClickAsync();
-    ```
-
-### 🚨 La Regla del Modo Estricto (Strict Mode)
-Si un selector devuelve más de un elemento, Playwright lanzará un error para evitar ambigüedad. 
-**Solución**: Refinar el selector o usar `.First` / `.Nth(index)`.
+```mermaid
+flowchart TD
+    A[Test E2E] --> B[Playwright]
+    B --> C[Navegador]
+    C --> D[Aplicación Web]
+    D --> E[Base Datos]
+    
+    style A fill:#fdcb6e
+    style B fill:#74b9ff
+    style C fill:#dfe6e9
+    style D fill:#00b894
+    style E fill:#dfe6e9
+```
 
 ---
 
-### 2.1 data-testid: El Superpoder del Mantenimiento de Tests
+## 2. Selectores y Locators
 
-**¿Por qué usar `data-testid` en lugar de selectores CSS/ID?**
+### 2.1. Tipos de Selectores (Orden de Preferencia)
 
-En proyectos reales, los selectores CSS tradicionales (`.card-body form button[type='submit']`) son **frágiles**. Cuando un diseñador cambia las clases CSS o refactoriza el HTML, **tus tests se rompen sin que el código de negocio falle**.
+| Selector           | Uso                       | Ejemplo                                              |
+| ------------------ | ------------------------- | ---------------------------------------------------- |
+| `GetByRole`        | Elementos por función     | `GetByRole(AriaRole.Button, new { Name = "Login" })` |
+| `GetByPlaceholder` | Campos de formulario      | `GetByPlaceholder("tu@email.com")`                   |
+| `GetByLabel`       | Labels asociados          | `GetByLabel("Email")`                                |
+| `GetByText`        | Texto visible             | `GetByText("Bienvenido")`                            |
+| `GetByTestId`      | data-testid personalizado | `GetByTestId("submit-button")`                       |
 
-**`data-testid`** es un atributo dedicado exclusivamente para testing:
-
-| Enfoque | Ejemplo | Problema |
-|---------|---------|----------|
-| CSS frágil | `.card-body form button[type='submit']` | Se rompe si cambias clases |
-| ID HTML | `#Email` | Funciona, pero no semántico |
-| **data-testid** | `data-testid="email-input"` | **Inmutable**, solo para tests |
-
-#### La Función de Extensión
-
-Centralizamos el acceso a `data-testid` con un método de extensión limpio:
+### 2.2. Ejemplo de Test
 
 ```csharp
-// Extensions/PlaywrightExtensions.cs
-public static class PlaywrightExtensions
+[Test]
+public async Task Login_WithValidCredentials_ShouldSucceed()
 {
-    /// <summary>
-    /// Busca un elemento por su atributo data-testid en la página
-    /// </summary>
-    public static ILocator TestId(this IPage page, string id) 
-        => page.GetByTestId(id);
-
-    /// <summary>
-    /// Busca un elemento por su atributo data-testid dentro de un locator
-    /// </summary>
-    public static ILocator TestId(this ILocator locator, string id) 
-        => locator.GetByTestId(id);
+    // Arrange
+    await Page.GotoAsync("/Auth/Login");
+    
+    // Act
+    await Page.GetByPlaceholder("tu@email.com").FillAsync("admin@waladaw.com");
+    await Page.GetByPlaceholder("••••••••").FillAsync("admin");
+    await Page.GetByRole(AriaRole.Button, new { Name = "Iniciar Sesión" }).ClickAsync();
+    
+    // Assert
+    await Expect(Page.Locator(".navbar")).ToContainTextAsync("Admin");
 }
 ```
 
-#### Ejemplo de Uso
-
-**Antes (selectores frágil):**
-```csharp
-await Page.FillAsync("#Email", "admin@waladaw.com");
-await Page.FillAsync("#Password", "admin");
-await Page.ClickAsync(".card-body form button[type='submit']");
-```
-
-**Después (con data-testid y extensión):**
-```csharp
-await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-await Page.TestId("password-input").FillAsync("admin");
-await Page.TestId("submit-button").ClickAsync();
-```
-
-**Encadenamiento para formularios complejos:**
-```csharp
-// Busca el formulario, luego busca el input dentro de él
-await Page.TestId("login-form").TestId("email-input").FillAsync("admin@waladaw.com");
-```
-
-#### Beneficios de Esta Estrategia
-
-1. **Tests más legibles**: `TestId("email-input")` es autoexplicativo
-2. **Resistente a refactorización**: Cambiar clases CSS no rompe tests
-3. **Separación de concerns**: El atributo `data-testid` está en la vista, no en el test
-4. **Documentación viva**: Los `data-testid` sirven como documentación de elementos clave de UI
-5. **Debugging fácil**: Buscas en HTML por `data-testid` y encuentras el elemento
-
-#### Convenciones de Nombrado
-
-| Patrón | Ejemplo | Uso |
-|--------|---------|-----|
-| `{elemento}-{tipo}` | `email-input`, `password-input` | Campos de formulario |
-| `{elemento}-{acción}` | `submit-button`, `search-button` | Botones |
-| `{sección}-{elemento}` | `login-form`, `cart-items` | Contenedores |
-| `{propósito}` | `product-title`, `seller-info` | Elementos clave |
-
-#### ¿Dónde añadir `data-testid`?
-
-No en todos los elementos, solo en los **claves para testing**:
-
-```html
-<!-- ✅ SÍ - elementos complejos o dinámicos -->
-<input asp-for="Email" data-testid="email-input" />
-<form data-testid="login-form">...</form>
-<button data-testid="submit-button">...</button>
-
-<!-- ❌ NO - elementos simples y estables -->
-<div class="card">...</div>        <!-- clase CSS suficiente -->
-<span>@producto.Precio</span>        <!-- texto visible estable -->
-```
-
-
-## 3. Aserciones Inteligentes (Web First Assertions)
-
-Playwright incluye un motor de re-intento automático en sus aserciones. Si un elemento tarda 2 segundos en aparecer por una llamada AJAX, el test esperará automáticamente antes de fallar.
-
-```csharp
-// El test no falla inmediatamente; espera hasta 5s (por defecto) a que el texto aparezca
-await Expect(Page.Locator(".navbar")).ToContainTextAsync("Bienvenido");
-
-// Negación robusta
-await Expect(Page.GetByText("Cargando...")).Not.ToBeVisibleAsync();
-```
-
 ---
 
-## 4. Testeando Blazor Server e Interactividad AJAX
+## 3. Patrón Page Object
 
-Blazor Server mantiene un túnel SignalR abierto. Playwright es capaz de detectar cuándo el DOM cambia tras un evento de C# en el navegador.
+### 3.1. Estructura Page Object
 
-### Sincronización en Valoraciones (Ratings):
 ```csharp
-// 1. Clic en un componente Blazor (C# procesa el evento en el servidor)
-await Page.Locator(".star-item").Nth(3).ClickAsync();
-
-// 2. Playwright detecta el cambio de estado en el DOM instantáneamente
-await Expect(Page.Locator(".toast-body")).ToBeVisibleAsync();
-```
-
-### Gestión de Descargas (Facturas PDF):
-Para validar que el servicio `IPdfService` genera un archivo real:
-```csharp
-var download = await Page.RunAndWaitForDownloadAsync(async () =>
+public class LoginPage
 {
-    await Page.GetByText("Factura").First.ClickAsync();
-});
-Assert.That(download.SuggestedFilename, Does.EndWith(".pdf"));
-```
-
----
-
-## 5. Estrategias de Supervivencia en Windows
-
-### Evitar el Bloqueo de SQLite (`database is locked`)
-Dado que usamos **SQLite In-Memory**, si lanzamos tests en paralelo, varios navegadores intentarán escribir en la misma RAM. 
-**Solución**: Forzamos la ejecución secuencial en `AssemblyInfo.cs`:
-```csharp
-[assembly: LevelOfParallelism(1)]
-```
-
-### Depuración Visual: Trace Viewer
-Si un test falla en CI/CD, Playwright puede grabar una traza completa. Puedes inspeccionarla con:
-```bash
-npx playwright show-trace path/to/trace.zip
-```
-Permite ver el DOM, la red y la consola en cada milisegundo del test.
-
----
-
-## 6. Videos y Screenshots por Test
-
-Nuestra clase base `E2ETestBase` configura automáticamente la grabación de video y captura de pantallas:
-
-```csharp
-public abstract class E2ETestBase : PageTest
-{
-    public override BrowserNewContextOptions ContextOptions()
+    private readonly IPage _page;
+    
+    public LoginPage(IPage page) => _page = page;
+    
+    public ILocator EmailInput => _page.GetByPlaceholder("tu@email.com");
+    public ILocator PasswordInput => _page.GetByPlaceholder("••••••••");
+    public ILocator SubmitButton => _page.GetByRole(AriaRole.Button, new { Name = "Iniciar Sesión" });
+    
+    public async Task LoginAsync(string email, string password)
     {
-        return new BrowserNewContextOptions
-        {
-            RecordVideoDir = "TestVideos",
-            Locale = "es-ES",
-            TimezoneId = "Europe/Madrid"
-        };
-    }
-
-    protected async Task CaptureScreenshotAsync(string stepName)
-    {
-        var path = $"TestScreenshots/{TestContext.CurrentContext.Test.Name}/{stepName}.png";
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        await Page.ScreenshotAsync(new() { Path = path, FullPage = true });
+        await EmailInput.FillAsync(email);
+        await PasswordInput.FillAsync(password);
+        await SubmitButton.ClickAsync();
     }
 }
 ```
 
-**Estructura de archivos generada:**
-```
-TestScreenshots/
-└── AuthTests/
-    └── AdminLogin_ShouldSucceed/
-        ├── 01-login-page-loaded.png
-        ├── 02-validation-errors.png
-        └── 03-credentials-filled.png
+### 3.2. Uso del Page Object
 
-TestVideos/
-└── PurchaseIntentTests.SearchSpecificProduct_AndVerifySeller_ShouldShowPurchaseOption.webm
+```csharp
+[Test]
+public async Task LoginTest()
+{
+    var loginPage = new LoginPage(Page);
+    await loginPage.LoginAsync("admin@waladaw.com", "admin");
+    
+    await Expect(Page.Locator(".navbar")).ToContainTextAsync("Admin");
+}
 ```
-
-Esto permite:
-- Debugging visual instantáneo al fallar un test
-- Documentación de flujos de usuario
-- Videos para presentaciones o reportes
 
 ---
 
-## 7. Conclusión Maestro
+## 4. Testeando Blazor Server
 
-Los tests E2E son tu **seguro de vida**. Mientras los tests unitarios te dicen que el código es correcto, Playwright te dice que **el usuario puede comprar**. Mantén tus selectores legibles, tus datos aislados y tus aserciones orientadas a la UI.
+### 4.1. Espera de Conexión
+
+```csharp
+[SetUp]
+public async Task Setup()
+{
+    await Page.GotoAsync("/Product/Details/1");
+    await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+}
+```
+
+### 4.2. Test de Componente Blazor
+
+```csharp
+[Test]
+public async Task RatingComponent_ShouldUpdateAfterVote()
+{
+    // El componente RatingSection está en la página
+    var ratingSection = Page.Locator("rating-section");
+    await Expect(ratingSection).ToBeVisibleAsync();
+    
+    // Clic en estrellas
+    await Page.Locator(".bi-star").Nth(3).ClickAsync();
+    
+    // Verificar actualización
+    await Expect(Page.Locator(".toast-body")).ToContainTextAsync("Gracias");
+}
+```
+
+---
+
+**Anterior Volumen**: [18. Code Coverage](../18-Code-Coverage.md)  
+**Próximo Volumen**: [20. InMemory Cache](../20-Optimizacion-InMemoryCache.md)

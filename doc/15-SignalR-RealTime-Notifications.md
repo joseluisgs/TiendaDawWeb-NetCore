@@ -1,46 +1,152 @@
-# 18 - Interactividad Pro: Notificaciones en Tiempo Real con SignalR
+- [15. SignalR: Notificaciones en Tiempo Real](#15-signalr-notificaciones-en-tiempo-real)
+  - [1. ¿Qué es SignalR?](#1-qué-es-signalr)
+    - [1.1. Petición-Respuesta vs Push](#11-petición-respuesta-vs-push)
+    - [1.2. Características](#12-características)
+  - [2. Componentes de la Solución](#2-componentes-de-la-solución)
+    - [2.1. El Hub (Servidor)](#21-el-hub-servidor)
+    - [2.2. IHubContext (Desde Controladores)](#22-ihubcontext-desde-controladores)
+    - [2.3. Cliente JavaScript](#23-cliente-javascript)
+  - [3. Caso de Uso: Broadcast](#3-caso-de-uso-broadcast)
+    - [3.1. Flujo Completo](#31-flujo-completo)
+  - [4. SignalR vs Blazor](#4-signalr-vs-blazor)
+    - [4.1. ¿Cuándo usar cada uno?](#41-cuándo-usar-cada-uno)
 
-En este volumen aprendemos a romper el modelo tradicional de "Petición-Respuesta" para permitir que el servidor envíe información al cliente sin que este la solicite (**Push Notifications**).
 
----
+# 15. SignalR: Notificaciones en Tiempo Real
+En esta sección, aprenderemos a implementar notificaciones en tiempo real utilizando SignalR en ASP.NET Core.
 
 ## 1. ¿Qué es SignalR?
 
-SignalR es una librería de Microsoft que abstrae el uso de **WebSockets**. Permite una comunicación bidireccional permanente entre el servidor y todos los navegadores conectados.
+SignalR permite comunicación **bidireccional permanente** entre servidor y cliente mediante WebSockets.
+
+### 1.1. Petición-Respuesta vs Push
+
+```mermaid
+flowchart LR
+    subgraph "TRADICIONAL (HTTP)"
+        A[Navegador] -->|1. Petición| B[Servidor]
+        B -->|2. Respuesta| A
+    end
+    
+    subgraph "TIEMPO REAL (SignalR)"
+        C[Navegador] <-->|Socket persistente| D[Servidor]
+        D -->|Push notification| C
+    end
+    
+    style C fill:#00b894
+    style D fill:#fdcb6e
+```
+
+### 1.2. Características
+
+| Aspecto       | Descripción                                  |
+| ------------- | -------------------------------------------- |
+| **Protocolo** | WebSockets (con fallback a SSE/Long Polling) |
+| **Conexión**  | Persistente (no requiere reconnect)          |
+| **Mensajes**  | Bidireccionales en tiempo real               |
 
 ---
 
 ## 2. Componentes de la Solución
 
-### A. El Servidor (The Hub)
-Hemos creado un `NotificationHub.cs`. Este es el centro de mando. Cuando el servidor quiere avisar de algo, le envía el mensaje al Hub, y el Hub lo reparte a los clientes.
+### 2.1. El Hub (Servidor)
 
-### B. El Mensajero (`IHubContext`)
-Para enviar mensajes desde fuera del Hub (por ejemplo, desde un Controlador), usamos la inyección de dependencias para obtener un `IHubContext`.
+```csharp
+public class NotificationHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+        await Clients.Caller.SendAsync("ReceiveNotification", "¡Conectado!");
+    }
+}
+```
 
-### C. El Receptor (JavaScript)
-Hemos creado `notifications.js`, que:
-1.  Se conecta al Hub al cargar la página.
-2.  Queda a la escucha de un evento llamado `ReceiveNotification`.
-3.  Cuando llega el evento, muestra un **Toast de Bootstrap** dinámicamente.
+### 2.2. IHubContext (Desde Controladores)
+
+```csharp
+public class ProductController : Controller
+{
+    private readonly IHubContext<NotificationHub> _hubContext;
+    
+    public ProductController(IHubContext<NotificationHub> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+    
+    public async Task<IActionResult> Create(ProductVM model)
+    {
+        await _productService.CreateAsync(model);
+        
+        // Broadcast a todos los clientes
+        await _hubContext.Clients.All.SendAsync("ReceiveNotification", 
+            $"¡Nuevo producto: {model.Nombre}!");
+            
+        return RedirectToAction("Index");
+    }
+}
+```
+
+### 2.3. Cliente JavaScript
+
+```javascript
+// notifications.js
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/notifications")
+    .build();
+
+connection.on("ReceiveNotification", (message) => {
+    showToast(message, "info");
+});
+
+connection.start();
+```
 
 ---
 
-## 3. Caso de Uso: Broadcast de Nuevo Producto
+## 3. Caso de Uso: Broadcast
 
-Cada vez que un usuario publica un producto en `ProductController.Create`:
-1.  El servidor procesa el guardado.
-2.  Dispara un mensaje masivo a todos los usuarios: `"¡Nuevo Producto!: [Nombre]"`.
-3.  Incluso si otro usuario está en otra página, verá aparecer el aviso en su pantalla al instante.
+```mermaid
+sequenceDiagram
+    participant U as Usuario 1
+    participant C as Controlador
+    participant H as NotificationHub
+    participant JS as Usuario 2 (Otro cliente)
+    
+    U->>C: Crear producto
+    C->>H: Clients.All.SendAsync("ReceiveNotification")
+    H->>JS: Notificación push
+    JS->>JS: Mostrar toast
+```
+
+### 3.1. Flujo Completo
+
+| Paso | Acción                              |
+| ---- | ----------------------------------- |
+| 1    | Usuario publica producto            |
+| 2    | Controlador guarda en BD            |
+| 3    | IHubContext envía mensaje           |
+| 4    | Hub distribuye a todos los clientes |
+| 5    | JavaScript muestra toast            |
 
 ---
 
-## 4. Diferencia con Blazor (Senior Tip)
+## 4. SignalR vs Blazor
 
-Aunque Blazor Server usa SignalR internamente para sincronizar el DOM, usar **SignalR puro** nos da un control total para tareas transversales (como notificaciones) que afectan a toda la web, no solo a un componente específico. Es la herramienta ideal para alertas, chats o sistemas de monitorización.
+| Criterio    | SignalR Puro            | Blazor Server         |
+| ----------- | ----------------------- | --------------------- |
+| **Uso**     | Notificaciones globales | Interfaz interactiva  |
+| **Control** | Total (JS + C#)         | Solo C#               |
+| **Ámbito**  | Toda la aplicación      | Componente específico |
+
+### 4.1. ¿Cuándo usar cada uno?
+
+| Tecnología  | Caso de uso                             |
+| ----------- | --------------------------------------- |
+| **SignalR** | Notificaciones, chats, alertas globales |
+| **Blazor**  | Formularios interactivos, UI compleja   |
 
 ---
 
-## 5. Conclusión para el Alumno
-
-Añadir tiempo real a una aplicación web la eleva a una categoría superior de experiencia de usuario. SignalR hace que WalaDaw se sienta como una aplicación moderna, reactiva y "viva".
+**Anterior Volumen**: [14. State Container](../14-Blazor-Component-Communication.md)  
+**Próximo Volumen**: [16. Exception Handling](../16-Global-Exception-Handling.md)

@@ -1,76 +1,166 @@
-# 16 - Cimientos de Calidad: Tests Unitarios y de Componentes
+- [17. Unit Testing: NUnit, Moq y bUnit](#17-unit-testing-nunit-moq-y-bunit)
+  - [1. Stack de Testing](#1-stack-de-testing)
+    - [1.1. Arquitectura de Testing](#11-arquitectura-de-testing)
+  - [2. Patrón AAA](#2-patrón-aaa)
+    - [2.1. Estructura del Test](#21-estructura-del-test)
+    - [2.2. Ejemplo Completo](#22-ejemplo-completo)
+  - [3. Testing con Moq](#3-testing-con-moq)
+    - [3.1. Crear Mocks](#31-crear-mocks)
+    - [3.2. Configurar Comportamiento](#32-configurar-comportamiento)
+    - [3.3. Flujo de Test con Mock](#33-flujo-de-test-con-mock)
+  - [4. Testing Blazor con bUnit](#4-testing-blazor-con-bunit)
+    - [4.1. Renderizar Componente](#41-renderizar-componente)
+    - [4.2. Simular Interacciones](#42-simular-interacciones)
+    - [4.3. Verificar Estados](#43-verificar-estados)
 
-En este volumen bajamos al nivel de los "engranajes" de nuestra aplicación. Los tests unitarios aseguran que cada función, servicio y componente Blazor haga exactamente lo que debe, aislándolos de factores externos como la base de datos o la red.
+
+# 17. Unit Testing: NUnit, Moq y bUnit
+En esta sección, aprenderemos a escribir pruebas unitarias efectivas para nuestra aplicación utilizando NUnit, Moq y bUnit.
+
+## 1. Stack de Testing
+
+Para garantizar calidad, usamos tres herramientas:
+
+| Herramienta | Propósito                     |
+| ----------- | ----------------------------- |
+| **NUnit**   | Motor de ejecución de pruebas |
+| **Moq**     | Crear mocks (dobles de test)  |
+| **bUnit**   | Renderizar componentes Blazor |
+
+### 1.1. Arquitectura de Testing
+
+```mermaid
+flowchart TD
+    subgraph "CAPAS DE TESTING"
+        A[Unit Tests] --> B[Integration Tests]
+        B --> C[E2E Tests]
+    end
+    
+    subgraph "HERRAMIENTAS"
+        A --> N[NUnit + Moq]
+        A --> B[bUnit]
+        C --> P[Playwright]
+    end
+    
+    style A fill:#74b9ff
+    style B fill:#fdcb6e
+    style C fill:#00b894
+```
 
 ---
 
-## 1. El Tridente de Calidad (.NET Testing Stack)
+## 2. Patrón AAA
 
-Para garantizar la fiabilidad de **WalaDaw**, combinamos tres herramientas potentes:
+Todos los tests siguen la estructura **Arrange-Act-Assert**.
 
-1.  **NUnit**: El motor de ejecución de pruebas más veterano y estable. Define el ciclo de vida (`[SetUp]`, `[Test]`).
-2.  **Moq**: La herramienta esencial para el **Aislamiento**. Permite crear "dobles" de servicios (ej. `IRatingService`) para probar controladores sin tocar datos reales.
-3.  **bUnit**: La librería específica para **Blazor**. Permite renderizar componentes en memoria, simular clics y verificar que el HTML generado es correcto.
-
----
-
-## 2. El Patrón Maestro: AAA (Arrange, Act, Assert)
-
-Todos nuestros tests siguen esta estructura para ser legibles y mantenibles:
-
--   **Arrange (Preparar)**: Configuramos el escenario, instanciamos objetos y preparamos los Mocks.
--   **Act (Actuar)**: Ejecutamos el método o renderizamos el componente que queremos probar.
--   **Assert (Verificar)**: Comprobamos que el resultado es el esperado.
+### 2.1. Estructura del Test
 
 ```csharp
 [Test]
 public void Should_Calculate_Cart_Total_Correctly()
 {
-    // Arrange
-    var service = new CarritoService(...);
-    // Act
+    // Arrange: Preparar escenario
+    var service = new CarritoService(_mockRepo.Object);
+    var expected = 99.99m;
+    
+    // Act: Ejecutar lógica
     var total = service.GetTotal();
+    
+    // Assert: Verificar resultado
+    Assert.That(total, Is.EqualTo(expected));
+}
+```
+
+### 2.2. Ejemplo Completo
+
+```csharp
+[Test]
+public async Task GetProductById_ReturnsProduct_WhenExists()
+{
+    // Arrange
+    var productId = 1L;
+    var mockRepo = new Mock<IProductRepository>();
+    mockRepo.Setup(r => r.GetByIdAsync(productId))
+            .ReturnsAsync(new Product { Id = productId, Nombre = "Test" });
+    
+    var service = new ProductService(mockRepo.Object);
+    
+    // Act
+    var result = await service.GetByIdAsync(productId);
+    
     // Assert
-    Assert.That(total, Is.EqualTo(expectedValue));
+    Assert.That(result.IsSuccess, Is.True);
+    Assert.That(result.Value.Nombre, Is.EqualTo("Test"));
 }
 ```
 
 ---
 
-## 3. Testeando Lógica de Negocio con Moq
+## 3. Testing con Moq
 
-En `TiendaDawWeb.Tests`, la clave es el **Aislamiento**. No probamos el servicio contra la base de datos (para eso están los de integración), sino contra interfaces mockeadas.
-
-### Ejemplo de Mocking:
-Si probamos un controlador que envía emails, no queremos enviar emails reales. Usamos Moq para verificar que el método `SendEmailAsync` fue llamado con los parámetros correctos.
-
----
-
-## 4. bUnit: Entrando en el DOM de Blazor
-
-Los componentes Blazor son especiales porque mezclan lógica C# con UI. Con bUnit podemos:
--   Verificar que un botón está deshabilitado si no hay login.
--   Simular que el usuario pulsa la 5ª estrella.
--   Verificar que el `StateContainer` notificó el cambio a otros componentes.
+### 3.1. Crear Mocks
 
 ```csharp
-// En bUnit, renderizamos el componente y buscamos elementos CSS
-var cut = RenderComponent<RatingSummary>(...);
-var stars = cut.FindAll("i.bi-star-fill");
-Assert.That(stars.Count, Is.EqualTo(5));
+var mockRepo = new Mock<IProductRepository>();
+var mockLogger = new Mock<ILogger<ProductService>>();
+```
+
+### 3.2. Configurar Comportamiento
+
+```csharp
+// Retorno de valor
+mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<long>()))
+        .ReturnsAsync((long id) => new Product { Id = id });
+
+// Verificar que se llamó
+mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+```
+
+### 3.3. Flujo de Test con Mock
+
+```mermaid
+flowchart LR
+    A[Test] -->|Arrange| M[Mock Repository]
+    A -->|Act| S[Servicio]
+    S -->|Usa| M
+    A -->|Assert| S
+    
+    style A fill:#fdcb6e
+    style M fill:#74b9ff
+    style S fill:#00b894
 ```
 
 ---
 
-## 5. Mejores Prácticas del Experto
+## 4. Testing Blazor con bUnit
 
-1.  **Test de una sola cosa**: Cada método `[Test]` debe validar un único comportamiento.
-2.  **Nombres Descriptivos**: `Should_RedirectToLogin_When_UserNotAuthenticated` es mejor que `Test1`.
-3.  **Independencia**: Un test nunca debe depender del resultado de otro.
-4.  **Aprovecha FluentAssertions**: Para que tus aserciones se lean como lenguaje natural (`result.Should().BeEquivalentTo(expected)`).
+### 4.1. Renderizar Componente
+
+```csharp
+using var ctx = new TestContext();
+
+var cut = ctx.RenderComponent<RatingSection>(parameters => 
+    parameters.Add(p => p.ProductId, 1)
+);
+
+Assert.Contains("Valoraciones", cut.Markup);
+```
+
+### 4.2. Simular Interacciones
+
+```csharp
+cut.Find("button").Click();
+
+Assert.Contains("Gracias", cut.Markup);
+```
+
+### 4.3. Verificar Estados
+
+```csharp
+cut.FindAll(".rating-star").Should().HaveCount(5);
+```
 
 ---
 
-## 6. Conclusión
-
-Los tests unitarios son los más rápidos de ejecutar y los que te dan feedback inmediato mientras programas. Una buena base de tests unitarios reduce el tiempo de depuración en un 80% y permite hacer refactors sin miedo.
+**Anterior Volumen**: [16. Exception Handling](../16-Global-Exception-Handling.md)  
+**Próximo Volumen**: [18. Code Coverage](../18-Code-Coverage.md)
