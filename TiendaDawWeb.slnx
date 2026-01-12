@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="TiendaDawWeb.Tests.E2E/TiendaDawWeb.Tests.E2E.csproj" />
+  <Project Path="TiendaDawWeb.Tests/TiendaDawWeb.Tests.csproj" />
+  <Project Path="TiendaDawWeb.Web/TiendaDawWeb.csproj" />
+</Solution>

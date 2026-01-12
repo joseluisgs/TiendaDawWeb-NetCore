@@ -274,7 +274,7 @@ classDiagram
 
 ```
 TiendaDawWeb-NetCore/
-├── TiendaDawWeb.sln                 # Solución global de .NET
+├── TiendaDawWeb.slnx                # Solución global de .NET (formato moderno)
 │
 ├── TiendaDawWeb.Web/                # Proyecto Principal (ASP.NET Core 10)
 │   ├── Program.cs                   # Configuración de Pipeline, DI, Cachés y SQLite In-Memory.
@@ -295,16 +295,17 @@ TiendaDawWeb-NetCore/
 │   └── Infrastructure/              # Tests de auditoría automática.
 │
 └── TiendaDawWeb.Tests.E2E/         # Pruebas de Extremo a Extremo (Playwright)
-    ├── AuthTests.cs                 # Tests de autenticación y registro.
-    ├── FavoritesTests.cs            # Tests de sistema de favoritos (AJAX).
-    ├── LocalizationTests.cs          # Tests de localización y separadores decimales.
-    ├── ProductFlowTests.cs          # Tests de búsqueda y navegación de productos.
-    ├── ProductManagementTests.cs    # Tests de edición y subida de imágenes.
-    ├── ProfileTests.cs               # Tests de perfil y edición de usuario.
-    ├── PurchaseIntentTests.cs        # Tests de flujo de compra y carrito.
-    ├── RatingTests.cs               # Tests de valoraciones y ratings (Blazor).
-    ├── ErrorHandlingTests.cs         # Tests de páginas de error personalizadas.
-    └── Fixtures/                     # Archivos de prueba (SVG de test).
+    ├── Auth/                        # Tests de autenticación y registro.
+    ├── Products/                    # Tests de búsqueda y gestión de productos.
+    ├── Purchase/                    # Tests de flujo de compra y carrito.
+    ├── Profile/                     # Tests de perfil y edición de usuario.
+    ├── Favorites/                   # Tests de sistema de favoritos (AJAX).
+    ├── Ratings/                     # Tests de valoraciones y ratings (Blazor).
+    ├── Localization/                # Tests de localización y separadores decimales.
+    ├── ErrorHandling/               # Tests de páginas de error personalizadas.
+    ├── E2ETestBase.cs               # Clase base con soporte de video y screenshots.
+    ├── Extensions/                  # Extensiones Playwright (TestId helper).
+    └── Fixtures/                    # Archivos de prueba (SVG de test).
 ```
 
 ## 🏗️ Arquitectura
