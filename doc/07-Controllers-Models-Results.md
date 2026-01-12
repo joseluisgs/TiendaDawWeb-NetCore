@@ -170,4 +170,232 @@ public async Task<IActionResult> Delete(long id)
 
 ---
 
+## 4. El Trío de Hierro: ModelState vs Result vs GlobalExceptionMiddleware
+
+Entender cuándo usar cada mecanismo es clave para escribir código profesional.
+
+### 4.1. ¿Cuál usar en cada escenario?
+
+| Escenario | Mecanismo | ¿Por qué? |
+|-----------|-----------|-----------|
+| Campo email vacío en formulario | **ModelState** | Validación de formato/tipo, no lógica de negocio |
+| Email no tiene formato válido | **ModelState** | Validación de sintaxis, no semántica |
+| Email ya existe en BD | **Result** | Regla de negocio específica de la aplicación |
+| Producto no encontrado | **Result** | Error semántico esperado |
+| Usuario sin permiso para eliminar | **Result** | Autorización es lógica de negocio |
+| NullReferenceException (bug) | **GlobalExceptionMiddleware** | Error inesperado, no previsto |
+| Timeout de base de datos | **GlobalExceptionMiddleware** | Fallo técnico, no validación |
+
+### 4.2. Ejemplo Completo: Un Controlador Robusto
+
+```csharp
+// TiendaDawWeb.Web/Controllers/ProductController.cs
+public class ProductController : Controller
+{
+    private readonly IProductService _productService;
+    private readonly ILogger<ProductController> _logger;
+
+    public ProductController(IProductService productService, ILogger<ProductController> logger)
+    {
+        _productService = productService;
+        _logger = logger;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(CreateProductVM model)
+    {
+        // ┌─────────────────────────────────────────────────────────────┐
+        // │ CAPA 1: ModelState (Validación de Formulario)              │
+        // │ ¿El usuario nos envió datos válidos?                        │
+        // └─────────────────────────────────────────────────────────────┘
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Intento de creación con datos inválidos");
+            return View(model); // Vuelve a mostrar el formulario con errores
+        }
+
+        // ┌─────────────────────────────────────────────────────────────┐
+        // │ CAPA 2: Servicio con Result (Lógica de Negocio)            │
+        // │ ¿La operación es válida según nuestras reglas?              │
+        // └─────────────────────────────────────────────────────────────┘
+        var result = await _productService.CreateAsync(model, User.GetUserId());
+
+        // ┌─────────────────────────────────────────────────────────────┐
+        // │ CAPA 3: Match (Gestión del Resultado)                      │
+        // │ ¿Qué hacemos con el resultado?                              │
+        // └─────────────────────────────────────────────────────────────┘
+        return result.Match(
+            onSuccess: product =>
+            {
+                _logger.LogInformation("Producto {ProductId} creado por usuario {UserId}", 
+                    product.Id, User.GetUserId());
+                TempData["Success"] = "Producto creado correctamente";
+                return RedirectToAction("Details", new { id = product.Id });
+            },
+            onFailure: error =>
+            {
+                _logger.LogWarning("Error al crear producto: {ErrorCode} - {Message}", 
+                    error.Code, error.Message);
+                
+                TempData["Error"] = error.Message;
+                return View(model);
+            }
+        );
+
+        // NOTA: Si algo falla inesperadamente (bug), el 
+        // GlobalExceptionMiddleware capturará la excepción y 
+        // devolverá una página de error 500.
+    }
+}
+```
+
+### 4.3. Diagrama: El Flujo de Validación Completo
+
+```
+                    PETICIÓN HTTP RECIBIDA
+                              │
+                              ▼
+            ┌─────────────────────────────────┐
+            │ 1. GLOBAL EXCEPTION MIDDLEWARE  │
+            │   (Red de seguridad global)     │
+            └─────────────────────────────────┘
+                              │
+              ¿Excepción inesperada?
+                              │
+              ┌───────────────┴───────────────┐
+              │                               │
+            SÍ ❌                           NO ✅
+              │                               │
+              ▼                               ▼
+        ┌─────────────┐            ┌─────────────────────┐
+        │ Log + 500   │            │ 2. MODEL BINDING    │
+        │ (Serilog)   │            │   + DATA ANNOTATIONS │
+        └─────────────┘            └─────────────────────┘
+                                          │
+                             ¿ModelState.IsValid?
+                                          │
+                         ┌────────────────┴────────────────┐
+                         │                                 │
+                       NO ❌                             YES ✅
+                         │                                 │
+                         ▼                                 ▼
+            ┌─────────────────────┐            ┌─────────────────────┐
+            │ Mostrar errores     │            │ 3. SERVICIO         │
+            │ en formulario       │            │   (Lógica negocio)  │
+            │ (View con mensajes) │            └─────────────────────┘
+            └─────────────────────┘                         │
+                                                 ¿Result.Success?
+                                                          │
+                                         ┌────────────────┴────────────────┐
+                                         │                                 │
+                                       SÍ ✅                              NO ❌
+                                         │                                 │
+                                         ▼                                 ▼
+                            ┌─────────────────────┐          ┌─────────────────────┐
+                            │ Continuar ejecución │          │ 4. CONTROLADOR      │
+                            │ (View/Redirect/JSON)│          │   (Match)           │
+                            └─────────────────────┘          └─────────────────────┘
+                                                                 │
+                                                    ¿Manejo específico?
+                                                                 │
+                                              ┌──────────────────┴──────────────────┐
+                                              │                                     │
+                                            View                                  Json
+                                              │                                     │
+                                              ▼                                     ▼
+                                    ┌─────────────────┐              ┌─────────────────┐
+                                    │ Mostrar ошибка  │              │ { success: false │
+                                    │ con TempData    │              │  error: "..." }  │
+                                    └─────────────────┘              └─────────────────┘
+```
+
+---
+
+## 5. Errores Comunes y Cómo Evitarlos
+
+### ❌ ERROR 1: Confundir Validación con Lógica de Negocio
+
+```csharp
+// ❌ MAL: Validación de negocio en el modelo con DataAnnotations
+public class ProductVM
+{
+    [Range(1, 1000000, ErrorMessage = "El precio debe ser positivo")]
+    public decimal Precio { get; set; }
+}
+
+// ✅ BIEN: Validación de tipo en modelo, validación de negocio en servicio
+public class ProductVM
+{
+    [Range(0.01, 1000000)] // Tipo de dato: debe ser un número positivo
+    public decimal Precio { get; set; }
+}
+
+// En el servicio:
+public async Task<Result<Product, ProductError>> CreateAsync(ProductVM vm, long userId)
+{
+    // Regla de negocio: El precio no puede ser superior al promedio
+    var promedio = await _context.Products.AverageAsync(p => p.Precio);
+    if (vm.Precio > promedio * 10)
+        return Result.Failure(ProductError.PriceTooHigh);
+}
+```
+
+### ❌ ERROR 2: Usar Excepciones para Errores de Negocio
+
+```csharp
+// ❌ MAL: Usar throw para errores esperados
+public async Task<Product> GetByIdAsync(long id)
+{
+    var product = await _context.Products.FindAsync(id);
+    if (product == null)
+        throw new ProductNotFoundException($"Producto {id} no encontrado");
+    return product;
+}
+
+// ✅ BIEN: Usar Result para errores esperados
+public async Task<Result<Product, ProductError>> GetByIdAsync(long id)
+{
+    var product = await _context.Products.FindAsync(id);
+    return product != null
+        ? Result.Success(product)
+        : Result.Failure(ProductError.NotFound(id));
+}
+```
+
+### ❌ ERROR 3: No Validar ModelState
+
+```csharp
+// ❌ MAL: Saltarse la validación del modelo
+[HttpPost]
+public async Task<IActionResult> Create(ProductVM model)
+{
+    var result = await _service.CreateAsync(model); // ¡Puede fallar por datos inválidos!
+    return result.Match(...)
+}
+
+// ✅ BIEN: Validar siempre el modelo primero
+[HttpPost]
+public async Task<IActionResult> Create(ProductVM model)
+{
+    if (!ModelState.IsValid)
+        return View(model); // Vuelve a mostrar con errores
+    
+    var result = await _service.CreateAsync(model);
+    return result.Match(...)
+}
+```
+
+---
+
+## 6. Buenas Prácticas Resumen
+
+1.  **Usa DataAnnotations** para validar el **formato** de los datos (tipos, rangos, formatos).
+2.  **Usa Result<T,E>** para validar las **reglas de negocio** (existencias, permisos, duplicados).
+3.  **Usa GlobalExceptionMiddleware** para capturar **bugs inesperados** (nulos, timeouts).
+4.  **SIEMPRE** verifica `ModelState.IsValid` antes de llamar a servicios.
+5.  **SIEMPRE** usa `Match()` para manejar explícitamente éxito y fracaso.
+6.  **NUNCA** uses `throw` para errores que el usuario puede causar normalmente.
+
+---
+
 Este volumen te ha introducido al cerebro de tu aplicación: cómo los controladores orquestan la lógica de negocio y cómo la comunicación con los servicios debe ser robusta y predecible. Ahora profundizaremos en cómo los datos llegan a la interfaz de usuario.
