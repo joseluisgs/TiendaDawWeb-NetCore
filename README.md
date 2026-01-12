@@ -494,51 +494,56 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 | 02  | [Guía de Productividad](doc/02-Development-Tips.md)               | Hot Reload, tricks y productividad en .NET 10                   |
 | 03  | [Controladores y Models](doc/03-Controllers-Models-Results.md)    | Orquestación, Model Binding, Result<T,E> y validaciones         |
 
+### 🔐 Autenticación y Autorización
+| #   | Documento                                                                | Descripción                                                         |
+| --- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 04  | [Authentication & Authorization](doc/04-Authentication-Authorization.md) | ASP.NET Core Identity, Roles, Claims, Policies y protección de rutas |
+
 ### 💾 Datos y Persistencia
 | #   | Documento                                                   | Descripción                                        |
 | --- | ----------------------------------------------------------- | -------------------------------------------------- |
-| 04  | [EF Core y Persistencia](doc/04-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba       |
-| 05  | [SQLite In-Memory](doc/05-SQLite-InMemory-Persistence.md)   | Base de datos volátil para testing rápido          |
-| 06  | [Auditoría Automática](doc/06-Entity-Auditing-EFCore.md)    | Tracking automático de quién/cuándo modifica datos |
-| 07  | [Object Mapping](doc/07-Object-Mapping-Pattern.md)          | Clean Controllers con mapeo de entidades a DTOs    |
+| 05  | [EF Core y Persistencia](doc/05-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba       |
+| 06  | [SQLite In-Memory](doc/06-SQLite-InMemory-Persistence.md)   | Base de datos volátil para testing rápido          |
+| 07  | [Auditoría Automática](doc/07-Entity-Auditing-EFCore.md)    | Tracking automático de quién/cuándo modifica datos |
+| 08  | [Object Mapping](doc/08-Object-Mapping-Pattern.md)          | Clean Controllers con mapeo de entidades a DTOs    |
 
 ### 🎨 Interfaz de Usuario (Razor & Blazor)
 | #   | Documento                                                   | Descripción                                        |
 | --- | ----------------------------------------------------------- | -------------------------------------------------- |
-| 08  | [Razor Masterclass](doc/08-Razor-Syntax-UI.md)              | Sintaxis Razor, Tag Helpers y patrones de UI       |
-| 09  | [I18n y Localización](doc/09-I18n-Localization-Decimal.md)  | Múltiples idiomas, formatos decimales y culturales |
-| 10  | [JavaScript & AJAX](doc/10-JS-AJAX-Security.md)             | Fetch API, favoritos AJAX y seguridad CSRF         |
-| 11  | [Razor vs AJAX vs Blazor](doc/11-BlazorVsRazorVsAjax.md)    | Comparativa de los tres enfoques de interfaz       |
-| 12  | [Blazor Server Basics](doc/12-Blazor-Server-Basics.md)      | Componentes interactivos con C#                    |
-| 13  | [State Container](doc/13-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor              |
+| 09  | [Razor Masterclass](doc/09-Razor-Syntax-UI.md)              | Sintaxis Razor, Tag Helpers y patrones de UI       |
+| 10  | [I18n y Localización](doc/10-I18n-Localization-Decimal.md)  | Múltiples idiomas, formatos decimales y culturales |
+| 11  | [JavaScript & AJAX](doc/11-JS-AJAX-Security.md)             | Fetch API, favoritos AJAX y seguridad CSRF         |
+| 12  | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md)    | Comparativa de los tres enfoques de interfaz       |
+| 13  | [Blazor Server Basics](doc/13-Blazor-Server-Basics.md)      | Componentes interactivos con C#                    |
+| 14  | [State Container](doc/14-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor              |
 
 ### ⚡ Interactividad y Tiempo Real
 | #   | Documento                                           | Descripción                                |
 | --- | --------------------------------------------------- | ------------------------------------------ |
-| 14  | [SignalR](doc/14-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real              |
+| 15  | [SignalR](doc/15-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real              |
 
 ### 🛡️ Validación y Manejo de Errores
 | #   | Documento                                                        | Descripción                                   |
 | --- | ---------------------------------------------------------------- | --------------------------------------------- |
-| 15  | [Global Exception Handling](doc/15-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
+| 16  | [Global Exception Handling](doc/16-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
 
 ### 🧪 Testing y Calidad
 | #   | Documento                                                            | Descripción                                       |
 | --- | -------------------------------------------------------------------- | ------------------------------------------------- |
-| 16  | [Unit Testing con NUnit y bUnit](doc/16-Unit-Testing-NUnit-bUnit.md) | Tests unitarios, integración y componentes Blazor |
-| 17  | [Code Coverage](doc/17-Code-Coverage.md)                             | Métricas de cobertura con Coverlet                |
-| 18  | [E2E Testing con Playwright](doc/18-E2E-Testing-Playwright.md)       | Tests automatizados de extremo a extremo          |
+| 17  | [Unit Testing con NUnit y bUnit](doc/17-Unit-Testing-NUnit-bUnit.md) | Tests unitarios, integración y componentes Blazor |
+| 18  | [Code Coverage](doc/18-Code-Coverage.md)                             | Métricas de cobertura con Coverlet                |
+| 19  | [E2E Testing con Playwright](doc/19-E2E-Testing-Playwright.md)       | Tests automatizados de extremo a extremo          |
 
 ### ⚡ Optimización y Rendimiento
 | #   | Documento                                              | Descripción                           |
 | --- | ------------------------------------------------------ | ------------------------------------- |
-| 19  | [InMemory Cache](doc/19-Optimizacion-InMemoryCache.md) | Caché de objetos en memoria           |
-| 20  | [Output Cache](doc/20-OutputCache-Performance.md)      | Caché de respuestas HTML renderizadas |
+| 20  | [InMemory Cache](doc/20-Optimizacion-InMemoryCache.md) | Caché de objetos en memoria           |
+| 21  | [Output Cache](doc/21-OutputCache-Performance.md)      | Caché de respuestas HTML renderizadas |
 
 ### 🐳 Operaciones y Producción
 | #   | Documento                                       | Descripción                                           |
 | --- | ----------------------------------------------- | ----------------------------------------------------- |
-| 21  | [Docker y Ficheros](doc/21-Ops-Docker-Files.md) | Contenedores, volúmenes y configuración de producción |
+| 22  | [Docker y Ficheros](doc/22-Ops-Docker-Files.md) | Contenedores, volúmenes y configuración de producción |
 
 ---
 
