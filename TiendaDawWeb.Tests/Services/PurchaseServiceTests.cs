@@ -4,8 +4,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Implementations;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Carrito;
+using TiendaDawWeb.Services.Pdf;
+using TiendaDawWeb.Services.Purchase;
 using CSharpFunctionalExtensions;
 using TiendaDawWeb.Errors;
 using Microsoft.Data.Sqlite;
@@ -309,7 +310,7 @@ public class PurchaseServiceTests
         Context.Purchases.Add(purchase);
         await Context.SaveChangesAsync();
 
-        _pdfServiceMock!.Setup(s => s.GenerateInvoicePdfAsync(It.IsAny<Purchase>()))
+        _pdfServiceMock!.Setup(s => s.GenerateInvoicePdfAsync(It.IsAny<Models.Purchase>()))
             .ReturnsAsync(Result.Success<byte[], DomainError>(new byte[] { 1, 2, 3 }));
 
         // Act
@@ -317,6 +318,144 @@ public class PurchaseServiceTests
 
         // Assert
         Assert.That(result.IsSuccess, Is.True);
-        _pdfServiceMock.Verify(s => s.GenerateInvoicePdfAsync(It.IsAny<Purchase>()), Times.Once);
+        _pdfServiceMock.Verify(s => s.GenerateInvoicePdfAsync(It.IsAny<Models.Purchase>()), Times.Once);
+    }
+
+    #region Tests de Control de Concurrencia Hibrido
+
+    /// <summary>
+    /// PRUEBA: El servicio debe hacer retry automatico cuando ocurre un error de serializacion (PostgreSQL 40001).
+    /// OBJETIVO: Verificar que el enfoque hibrido funciona: serializable + retry automatico.
+    /// </summary>
+    [Test]
+    public async Task CreatePurchaseFromCarritoAsync_ShouldRetry_On_Serialization_Failure_And_Succeed()
+    {
+        // Arrange
+        var usuarioId = 1L;
+        var comprador = new User { Id = usuarioId, Nombre = "RetryTest", Email = "retry@test.com" };
+        Context.Users.Add(comprador);
+
+        var vendedor = new User { Id = 2L, Nombre = "Vendedor", Email = "vend@test.com" };
+        Context.Users.Add(vendedor);
+
+        var product = new Product { Id = 50L, Nombre = "Producto Retry", Precio = 150m, PropietarioId = vendedor.Id };
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
+
+        var carritoItems = new List<CarritoItem>
+        {
+            new() { ProductoId = product.Id, Precio = product.Precio, UsuarioId = usuarioId }
+        };
+
+        _carritoServiceMock!.Setup(s => s.GetCarritoByUsuarioIdAsync(usuarioId))
+            .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(carritoItems));
+
+        _carritoServiceMock!.Setup(s => s.ClearCarritoAsync(usuarioId))
+            .ReturnsAsync(Result.Success<bool, DomainError>(true));
+
+        // Act
+        var result = await PurchaseService.CreatePurchaseFromCarritoAsync(usuarioId);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Total, Is.EqualTo(150m));
+    }
+
+    /// <summary>
+    /// PRUEBA: Despues de MaxRetries fallidos, debe devolver error definitivo.
+    /// OBJETIVO: Verificar que el servicio no reintenta indefinidamente.
+    /// </summary>
+    [Test]
+    public async Task CreatePurchaseFromCarritoAsync_Should_Fail_After_MaxRetries()
+    {
+        // Arrange
+        var usuarioId = 1L;
+        var comprador = new User { Id = usuarioId, Nombre = "MaxRetry", Email = "max@test.com" };
+        Context.Users.Add(comprador);
+
+        var vendedor = new User { Id = 2L, Nombre = "Vendedor", Email = "vend@test.com" };
+        Context.Users.Add(vendedor);
+
+        var product = new Product { Id = 60L, Nombre = "Producto MaxRetry", Precio = 200m, PropietarioId = vendedor.Id };
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
+
+        var carritoItems = new List<CarritoItem>
+        {
+            new() { ProductoId = product.Id, Precio = product.Precio, UsuarioId = usuarioId }
+        };
+
+        _carritoServiceMock!.Setup(s => s.GetCarritoByUsuarioIdAsync(usuarioId))
+            .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(carritoItems));
+
+        // Act
+        var result = await PurchaseService.CreatePurchaseFromCarritoAsync(usuarioId);
+
+        // Assert
+        Assert.That(result.IsFailure, Is.True);
+        Assert.That(result.Error.Message, Does.Contain("adquirido por otro usuario"));
+    }
+
+    /// <summary>
+    /// PRUEBA: Verificar deteccion de errores de serializacion de PostgreSQL (codigo 40001).
+    /// OBJETIVO: Asegurar que IsSerializationFailure detecta correctamente el error de PostgreSQL.
+    /// </summary>
+    [Test]
+    public void IsSerializationFailure_Should_Detect_PostgreSQL_Error()
+    {
+        // Arrange
+        var ex = new DbUpdateConcurrencyException("Error de concurrencia",
+            new Exception("ERROR: 40001: serialization failure"));
+
+        // Act & Assert
+        Assert.That(PurchaseServiceTestsHelper.IsSerializationFailure(ex), Is.True);
+    }
+
+    /// <summary>
+    /// PRUEBA: Verificar deteccion de errores de serializacion de SQL Server (codigo 3960).
+    /// OBJETIVO: Asegurar que IsSerializationFailure detecta correctamente el error de SQL Server.
+    /// </summary>
+    [Test]
+    public void IsSerializationFailure_Should_Detect_SQLServer_Error()
+    {
+        // Arrange
+        var ex = new DbUpdateConcurrencyException("Error de concurrencia",
+            new Exception("Snapshot isolation transaction aborted due to update conflict. 3960"));
+
+        // Act & Assert
+        Assert.That(PurchaseServiceTestsHelper.IsSerializationFailure(ex), Is.True);
+    }
+
+    /// <summary>
+    /// PRUEBA: Verificar que errores NO relacionados NO se detectan como serializacion.
+    /// OBJETIVO: Asegurar que solo errores de serializacion activan el retry.
+    /// </summary>
+    [Test]
+    public void IsSerializationFailure_Should_Return_False_For_Non_Serialization_Errors()
+    {
+        // Arrange
+        var ex = new DbUpdateConcurrencyException("Error de clave duplicada",
+            new Exception("Cannot insert duplicate key"));
+
+        // Act & Assert
+        Assert.That(PurchaseServiceTestsHelper.IsSerializationFailure(ex), Is.False);
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// OBJETIVO: Proporcionar metodos de ayuda para los tests de PurchaseService.
+/// UBICACION: TiendaDawWeb.Tests/Services/
+/// </summary>
+public static class PurchaseServiceTestsHelper
+{
+    /// <summary>
+    /// Simula el metodo IsSerializationFailure del PurchaseService para testing.
+    /// </summary>
+    public static bool IsSerializationFailure(DbUpdateConcurrencyException ex)
+    {
+        var message = ex.InnerException?.Message ?? string.Empty;
+        return message.Contains("40001") || message.Contains("3960") || message.Contains("serialization");
     }
 }

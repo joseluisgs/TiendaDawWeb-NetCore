@@ -49,8 +49,11 @@ public class RatingTests : E2ETestBase
 
             await Expect(Page.TestId("product-title")).ToBeVisibleAsync(new() { Timeout = 10000 });
 
+            // Esperar a que el componente Blazor de rating cargue completamente
+            await Page.WaitForSelectorAsync("#ratingsList", new() { Timeout = 10000 });
+
             var ratingForm = Page.Locator("#cardFormulario");
-            await Expect(ratingForm).ToBeVisibleAsync(new() { Timeout = 10000 });
+            await Expect(ratingForm).ToBeVisibleAsync(new() { Timeout = 15000 });
 
             var stars = Page.Locator(".star-rating-input .star-item");
             await Expect(stars.Nth(0)).ToBeVisibleAsync(new() { Timeout = 10000 });

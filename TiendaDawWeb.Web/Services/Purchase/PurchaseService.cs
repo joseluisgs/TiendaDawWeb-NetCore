@@ -19,11 +19,31 @@ public class PurchaseService(
     ILogger<PurchaseService> logger
 ) : IPurchaseService {
     private const string ProductsCacheKey = "all_products";
+    private const int MaxRetries = 2;
 
     public async Task<Result<Models.Purchase, DomainError>> CreatePurchaseFromCarritoAsync(long usuarioId) {
+        var attempt = 0;
+
+        while (attempt <= MaxRetries) {
+            try {
+                return await TryPurchaseAsync(usuarioId);
+            }
+            catch (DbUpdateConcurrencyException ex) when (IsSerializationFailure(ex) && attempt < MaxRetries) {
+                attempt++;
+                logger.LogWarning("Intento {Attempt} fallido por conflicto de concurrencia. Reintentando...", attempt);
+                await Task.Delay(50 * attempt);
+            }
+        }
+
+        return Result.Failure<Models.Purchase, DomainError>(
+            PurchaseError.ProductNotAvailable("El producto fue adquirido por otro usuario. Por favor, intenta con otro."));
+    }
+
+    private async Task<Result<Models.Purchase, DomainError>> TryPurchaseAsync(long usuarioId) {
         var strategy = context.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () => {
             using var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
             try {
                 var carritoResult = await carritoService.GetCarritoByUsuarioIdAsync(usuarioId);
                 if (carritoResult.IsFailure) return Result.Failure<Models.Purchase, DomainError>(carritoResult.Error);
@@ -66,7 +86,7 @@ public class PurchaseService(
             catch (DbUpdateConcurrencyException ex) {
                 await transaction.RollbackAsync();
                 logger.LogError(ex, "Error de concurrencia");
-                return Result.Failure<Models.Purchase, DomainError>(GenericError.ConcurrencyError("Otro usuario.modifico los datos"));
+                throw;
             }
             catch (Exception ex) {
                 await transaction.RollbackAsync();
@@ -74,6 +94,11 @@ public class PurchaseService(
                 return Result.Failure<Models.Purchase, DomainError>(GenericError.DatabaseError($"Error: {ex.Message}"));
             }
         });
+    }
+
+    private static bool IsSerializationFailure(DbUpdateConcurrencyException ex) {
+        var message = ex.InnerException?.Message ?? string.Empty;
+        return message.Contains("40001") || message.Contains("3960") || message.Contains("serialization");
     }
 
     public async Task<Result<Models.Purchase, DomainError>> GetByIdAsync(long id) {
