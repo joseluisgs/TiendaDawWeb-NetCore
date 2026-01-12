@@ -477,30 +477,62 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
 
 ## 📚 Documentación
 
-Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra **[Guía de Supervivencia para el alumnado de DAW (Enciclopedia .NET 10)](doc/README.md)**, que incluye:
+Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra documentación detallada en la carpeta [`doc/`](doc/):
 
-- [Volumen 01: Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md)
-- [Volumen 02: Guía de Productividad - Hot Reload y Trucos](doc/02-Development-Tips.md)
-- [Volumen 03: EF Core y Persistencia Avanzada](doc/03-EFCore-Persistence-Seed.md)
-- [Volumen 04: Persistencia Volátil - SQLite In-Memory](doc/04-SQLite-InMemory-Persistence.md)
-- [Volumen 05: Auditoría Automática de Entidades - EF Core Magic](doc/05-Entity-Auditing-EFCore.md)
-- [Volumen 06: Patrón de Mapeo de Objetos - Clean Controllers](doc/06-Object-Mapping-Pattern.md)
-- [Volumen 07: El Corazón de la App - Controladores y Resultados](doc/07-Controllers-Models-Results.md)
-- [Volumen 08: Gestión Global de Errores - Middleware de Seguridad](doc/08-Global-Exception-Handling.md)
-- [Volumen 09: Razor Masterclass - Sintaxis y UI Inteligente](doc/09-Razor-Syntax-UI.md)
-- [Volumen 10: La Torre de Babel - I18n y Localización](doc/10-I18n-Localization-Decimal.md)
-- [Volumen 11: JavaScript & AJAX - La Danza Asíncrona](doc/11-JS-AJAX-Security.md)
-- [Volumen 12: Evolución de la Interfaz - Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md)
-- [Volumen 13: Blazor Server - Interactividad en Tiempo Real](doc/13-Blazor-Server-Basics.md)
-- [Volumen 14: Comunicación entre Componentes - State Container](doc/14-Blazor-Component-Communication.md)
-- [Volumen 15: Notificaciones en Tiempo Real - SignalR Pro](doc/15-SignalR-RealTime-Notifications.md)
-- [Volumen 16: Cimientos de Calidad - Tests Unitarios y de Componentes](doc/16-Unit-Testing-NUnit-bUnit.md)
-- [Volumen 17: Métricas de Calidad - Cobertura de Código](doc/17-Code-Coverage.md)
-- [Volumen 18: Pruebas de Extremo a Extremo (E2E) - Playwright](doc/18-E2E-Testing-Playwright.md)
-- [Volumen 19: Optimización de Rendimiento - Caché en Memoria](doc/19-Optimizacion-InMemoryCache.md)
-- [Volumen 20: Optimización de Rendimiento - Output Cache](doc/20-OutputCache-Performance.md)
-- [Volumen 21: Operaciones y Producción - Docker y Ficheros](doc/21-Ops-Docker-Files.md)
+### 🏗️ Fundamentos y Arquitectura
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 01 | [Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md) | Middlewares, inyección de dependencias y configuración del host |
+| 02 | [Guía de Productividad](doc/02-Development-Tips.md) | Hot Reload, tricks y productividad en .NET 10 |
+| 07 | [Controladores y Models](doc/07-Controllers-Models-Results.md) | Orquestación, Model Binding, Result<T,E> y validaciones |
 
+### 💾 Datos y Persistencia
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 03 | [EF Core y Persistencia](doc/03-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba |
+| 04 | [SQLite In-Memory](doc/04-SQLite-InMemory-Persistence.md) | Base de datos volátil para testing rápido |
+| 05 | [Auditoría Automática](doc/05-Entity-Auditing-EFCore.md) | Tracking automático de quién/cuándo modifica datos |
+| 06 | [Object Mapping](doc/06-Object-Mapping-Pattern.md) | Clean Controllers con mapeo de entidades a DTOs |
+
+### 🎨 Interfaz de Usuario (Razor & Blazor)
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 09 | [Razor Masterclass](doc/09-Razor-Syntax-UI.md) | Sintaxis Razor, Tag Helpers y patrones de UI |
+| 10 | [I18n y Localización](doc/10-I18n-Localization-Decimal.md) | Múltiples idiomas, formatos decimales y culturales |
+| 12 | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md) | Comparativa de los tres enfoques de interfaz |
+| 13 | [Blazor Server Basics](doc/13-Blazor-Server-Basics.md) | Componentes interactivos con C# |
+| 14 | [State Container](doc/14-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor |
+
+### ⚡ Interactividad y Tiempo Real
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 11 | [JavaScript & AJAX](doc/11-JS-AJAX-Security.md) | Fetch API, favoritos AJAX y seguridad CSRF |
+| 15 | [SignalR](doc/15-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real |
+
+### 🛡️ Validación y Manejo de Errores
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 08 | [Global Exception Handling](doc/08-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
+
+### 🧪 Testing y Calidad
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 16 | [Unit Testing con NUnit y bUnit](doc/16-Unit-Testing-NUnit-bUnit.md) | Tests unitarios, integración y componentes Blazor |
+| 17 | [Code Coverage](doc/17-Code-Coverage.md) | Métricas de cobertura con Coverlet |
+| 18 | [E2E Testing con Playwright](doc/18-E2E-Testing-Playwright.md) | Tests automatizados de extremo a extremo |
+
+### ⚡ Optimización y Rendimiento
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 19 | [InMemory Cache](doc/19-Optimizacion-InMemoryCache.md) | Caché de objetos en memoria |
+| 20 | [Output Cache](doc/20-OutputCache-Performance.md) | Caché de respuestas HTML renderizadas |
+
+### 🐳 Operaciones y Producción
+| # | Documento | Descripción |
+|---|-----------|-------------|
+| 21 | [Docker y Ficheros](doc/21-Ops-Docker-Files.md) | Contenedores, volúmenes y configuración de producción |
+
+---
 
 - Repositorio de apuntes de curso: [Desarrollo Web en Entornos Servidor](https://github.com/joseluisgs/DesarrolloWebEntornosServidor-05-2025-2026)
 
