@@ -489,10 +489,10 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 ### 💾 Datos y Persistencia
 | # | Documento | Descripción |
 |---|-----------|-------------|
-| 03 | [EF Core y Persistencia](doc/03-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba |
-| 04 | [SQLite In-Memory](doc/04-SQLite-InMemory-Persistence.md) | Base de datos volátil para testing rápido |
-| 05 | [Auditoría Automática](doc/05-Entity-Auditing-EFCore.md) | Tracking automático de quién/cuándo modifica datos |
-| 06 | [Object Mapping](doc/06-Object-Mapping-Pattern.md) | Clean Controllers con mapeo de entidades a DTOs |
+| 04 | [EF Core y Persistencia](doc/04-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba |
+| 05 | [SQLite In-Memory](doc/05-SQLite-InMemory-Persistence.md) | Base de datos volátil para testing rápido |
+| 06 | [Auditoría Automática](doc/06-Entity-Auditing-EFCore.md) | Tracking automático de quién/cuándo modifica datos |
+| 07 | [Object Mapping](doc/07-Object-Mapping-Pattern.md) | Clean Controllers con mapeo de entidades a DTOs |
 
 ### 🎨 Interfaz de Usuario (Razor & Blazor)
 | # | Documento | Descripción |
