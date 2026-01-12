@@ -505,22 +505,22 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 ### 🎨 Interfaz de Usuario (Razor & Blazor)
 | #   | Documento                                                   | Descripción                                        |
 | --- | ----------------------------------------------------------- | -------------------------------------------------- |
-| 09  | [Razor Masterclass](doc/09-Razor-Syntax-UI.md)              | Sintaxis Razor, Tag Helpers y patrones de UI       |
-| 10  | [I18n y Localización](doc/10-I18n-Localization-Decimal.md)  | Múltiples idiomas, formatos decimales y culturales |
-| 12  | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md)    | Comparativa de los tres enfoques de interfaz       |
-| 13  | [Blazor Server Basics](doc/13-Blazor-Server-Basics.md)      | Componentes interactivos con C#                    |
-| 14  | [State Container](doc/14-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor              |
+| 08  | [Razor Masterclass](doc/08-Razor-Syntax-UI.md)              | Sintaxis Razor, Tag Helpers y patrones de UI       |
+| 09  | [I18n y Localización](doc/09-I18n-Localization-Decimal.md)  | Múltiples idiomas, formatos decimales y culturales |
+| 10  | [JavaScript & AJAX](doc/10-JS-AJAX-Security.md)             | Fetch API, favoritos AJAX y seguridad CSRF         |
+| 11  | [Razor vs AJAX vs Blazor](doc/11-BlazorVsRazorVsAjax.md)    | Comparativa de los tres enfoques de interfaz       |
+| 12  | [Blazor Server Basics](doc/12-Blazor-Server-Basics.md)      | Componentes interactivos con C#                    |
+| 13  | [State Container](doc/13-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor              |
 
 ### ⚡ Interactividad y Tiempo Real
 | #   | Documento                                           | Descripción                                |
 | --- | --------------------------------------------------- | ------------------------------------------ |
-| 11  | [JavaScript & AJAX](doc/11-JS-AJAX-Security.md)     | Fetch API, favoritos AJAX y seguridad CSRF |
-| 15  | [SignalR](doc/15-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real              |
+| 14  | [SignalR](doc/14-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real              |
 
 ### 🛡️ Validación y Manejo de Errores
 | #   | Documento                                                        | Descripción                                   |
 | --- | ---------------------------------------------------------------- | --------------------------------------------- |
-| 08  | [Global Exception Handling](doc/08-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
+| 15  | [Global Exception Handling](doc/15-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
 
 ### 🧪 Testing y Calidad
 | #   | Documento                                                            | Descripción                                       |
