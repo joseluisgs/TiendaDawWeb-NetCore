@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Product;
+using TiendaDawWeb.Services.Purchase;
 using TiendaDawWeb.ViewModels;
 
 namespace TiendaDawWeb.Controllers;

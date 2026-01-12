@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Favorite;
 
-namespace TiendaDawWeb.Services.Implementations;
+namespace TiendaDawWeb.Services.Favorite;
 
 /// <summary>
 ///     Servicio de gestión de favoritos con Railway Oriented Programming
@@ -27,13 +27,13 @@ public class FavoriteService(
         }
     }
 
-    public async Task<Result<Favorite, DomainError>> AddFavoriteAsync(long userId, long productId) {
+    public async Task<Result<Models.Favorite, DomainError>> AddFavoriteAsync(long userId, long productId) {
         try {
             var existsResult = await IsFavoriteAsync(userId, productId);
             if (existsResult.Value)
-                return Result.Failure<Favorite, DomainError>(FavoriteError.AlreadyExists);
+                return Result.Failure<Models.Favorite, DomainError>(FavoriteError.AlreadyExists);
 
-            var favorite = new Favorite {
+            var favorite = new Models.Favorite {
                 UsuarioId = userId,
                 ProductoId = productId
             };
@@ -42,11 +42,11 @@ public class FavoriteService(
             await context.SaveChangesAsync();
 
             logger.LogInformation("Favorito añadido: Usuario {UserId}, Producto {ProductId}", userId, productId);
-            return Result.Success<Favorite, DomainError>(favorite);
+            return Result.Success<Models.Favorite, DomainError>(favorite);
         }
         catch (Exception ex) {
             logger.LogError(ex, "Error añadiendo favorito");
-            return Result.Failure<Favorite, DomainError>(
+            return Result.Failure<Models.Favorite, DomainError>(
                 FavoriteError.ProductNotFound(productId));
         }
     }
@@ -71,7 +71,7 @@ public class FavoriteService(
         }
     }
 
-    public async Task<Result<IEnumerable<Product>, DomainError>> GetUserFavoritesAsync(long userId) {
+    public async Task<Result<IEnumerable<Models.Product>, DomainError>> GetUserFavoritesAsync(long userId) {
         try {
             var favorites = await context.Favorites
                 .Where(f => f.UsuarioId == userId)
@@ -81,11 +81,11 @@ public class FavoriteService(
                 .Select(f => f.Producto)
                 .ToListAsync();
 
-            return Result.Success<IEnumerable<Product>, DomainError>(favorites);
+            return Result.Success<IEnumerable<Models.Product>, DomainError>(favorites);
         }
         catch (Exception ex) {
             logger.LogError(ex, "Error obteniendo favoritos del usuario {UserId}", userId);
-            return Result.Failure<IEnumerable<Product>, DomainError>(
+            return Result.Failure<IEnumerable<Models.Product>, DomainError>(
                 FavoriteError.UserNotFound(userId));
         }
     }

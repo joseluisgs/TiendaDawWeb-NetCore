@@ -1,13 +1,7 @@
-@* 
-    OBJETIVO: Mostrar el resumen de valoraciones (media y total) de forma reactiva.
-    UBICACIÓN: /Components/Ratings/
-    RAZÓN: Se ubica aquí para agrupar todos los componentes relacionados con el dominio de 'Ratings'. 
-    Este componente actúa como un 'Observer' del StateContainer para actualizarse cuando alguien vota.
-*@
 @namespace TiendaDawWeb.Components.Ratings
-@using TiendaDawWeb.Services.Interfaces
+@using TiendaDawWeb.Services.Rating
 @using TiendaDawWeb.Models
-@using TiendaDawWeb.Services.Implementations
+@using Microsoft.AspNetCore.Identity
 @inject IRatingService RatingService
 @inject RatingStateContainer StateContainer
 @inject ILogger<RatingSummary> Logger
@@ -36,13 +30,12 @@
     {
         Logger.LogInformation("RatingSummary inicializado para Producto {ProductId}", ProductId);
         StateContainer.OnChange += HandleStateChange;
-        // Solo llamamos a EnsureLoaded. Si el otro componente ya cargó, esto es instantáneo.
         await StateContainer.EnsureLoadedAsync(ProductId);
     }
 
     private void HandleStateChange()
     {
-        Logger.LogDebug("RatingSummary detectó cambio de estado para Producto {ProductId}. Actualizando UI...", ProductId);
+        Logger.LogDebug("RatingSummary detecto cambio de estado para Producto {ProductId}. Actualizando UI...", ProductId);
         StateHasChanged();
     }
 

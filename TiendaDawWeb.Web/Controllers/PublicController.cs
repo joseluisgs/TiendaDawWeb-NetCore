@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Identity;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Product;
 
 namespace TiendaDawWeb.Controllers;
 

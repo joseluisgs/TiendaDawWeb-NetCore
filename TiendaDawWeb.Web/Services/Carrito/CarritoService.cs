@@ -4,9 +4,9 @@ using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Carrito;
 
-namespace TiendaDawWeb.Services.Implementations;
+namespace TiendaDawWeb.Services.Carrito;
 
 /// <summary>
 ///     Implementación del servicio de carrito
@@ -39,41 +39,30 @@ public class CarritoService(
 
     public async Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId) {
         try {
-            // Verificar que el producto existe y está disponible
             var producto = await context.Products
                 .FirstOrDefaultAsync(p => p.Id == productoId);
 
             if (producto == null || producto.Deleted)
                 return Result.Failure<CarritoItem, DomainError>(ProductError.NotFound(productoId));
 
-            // Verificar si está reservado (pero no por el usuario actual) o ya comprado
             if (producto.CompraId != null)
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductNotAvailableWithName(producto.Nombre));
 
-            // Si está reservado, verificar si la reserva expiró o es del usuario actual
-            // NOTE: En producción con SQL, considerar usar transacciones o locks para evitar race conditions
-            // El modelo CarritoItem ya tiene RowVersion para control de concurrencia optimista
             if (producto.Reservado) {
-                // Si está reservado por el usuario actual, permitir añadirlo (aunque ya debería estar en carrito)
                 if (producto.ReservadoPor == usuarioId) {
-                    // El usuario ya tiene este producto reservado, puede continuar
                 }
-                // Si no tiene fecha de reserva o la fecha es futura, está reservado por otro usuario
                 else if (!producto.ReservadoHasta.HasValue || producto.ReservadoHasta.Value > DateTime.UtcNow) {
-                    // Producto aún reservado por otro usuario
                     return Result.Failure<CarritoItem, DomainError>(
                         CarritoError.ProductNotAvailableWithName(producto.Nombre));
                 }
                 else {
-                    // Reserva expiró, liberar el producto
                     producto.Reservado = false;
                     producto.ReservadoHasta = null;
                     producto.ReservadoPor = null;
                 }
             }
 
-            // Verificar si ya existe en el carrito - si existe, retornar error
             var existingItem = await context.CarritoItems
                 .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.ProductoId == productoId);
 
@@ -81,12 +70,10 @@ public class CarritoService(
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductAlreadyInCartWithName(producto.Nombre));
 
-            // Marcar producto como reservado (5 minutos) para este usuario
             producto.Reservado = true;
             producto.ReservadoHasta = DateTime.UtcNow.AddMinutes(5);
             producto.ReservadoPor = usuarioId;
 
-            // Crear nuevo item sin cantidad
             var nuevoItem = new CarritoItem {
                 UsuarioId = usuarioId,
                 ProductoId = productoId,
@@ -97,11 +84,9 @@ public class CarritoService(
             context.CarritoItems.Add(nuevoItem);
             await context.SaveChangesAsync();
 
-            // INVALIDACIÓN DE CACHÉ
             cache.Remove(ProductsCacheKey);
             cache.Remove(ProductDetailsCacheKey(productoId));
 
-            // Recargar con navegación
             await context.Entry(nuevoItem)
                 .Reference(c => c.Producto)
                 .LoadAsync();
@@ -131,7 +116,6 @@ public class CarritoService(
 
             if (item == null) return Result.Failure<bool, DomainError>(CarritoError.ItemNotFound(itemId));
 
-            // Liberar la reserva del producto
             if (item.Producto != null) {
                 item.Producto.Reservado = false;
                 item.Producto.ReservadoHasta = null;
@@ -142,7 +126,6 @@ public class CarritoService(
             context.CarritoItems.Remove(item);
             await context.SaveChangesAsync();
 
-            // INVALIDACIÓN DE CACHÉ
             cache.Remove(ProductsCacheKey);
             if (item.Producto != null) {
                 cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
@@ -167,7 +150,6 @@ public class CarritoService(
 
             if (items.Count == 0) return Result.Success<bool, DomainError>(true);
 
-            // Liberar todas las reservas
             foreach (var item in items)
                 if (item.Producto != null) {
                     item.Producto.Reservado = false;
@@ -178,7 +160,6 @@ public class CarritoService(
             context.CarritoItems.RemoveRange(items);
             await context.SaveChangesAsync();
 
-            // INVALIDACIÓN DE CACHÉ
             cache.Remove(ProductsCacheKey);
             foreach (var item in items) {
                 if (item.Producto != null) {

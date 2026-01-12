@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Data;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Storage;
 
 namespace TiendaDawWeb.Controllers;
 

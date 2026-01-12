@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
 using TiendaDawWeb.Errors;
 
-namespace TiendaDawWeb.Services.Interfaces;
+namespace TiendaDawWeb.Services.Storage;
 
 /// <summary>
 /// Interfaz de servicio para gestión de almacenamiento de archivos

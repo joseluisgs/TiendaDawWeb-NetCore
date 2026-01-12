@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
 
-namespace TiendaDawWeb.Services.Interfaces;
+namespace TiendaDawWeb.Services.Carrito;
 
 /// <summary>
 /// Servicio para la gestión del carrito de compras

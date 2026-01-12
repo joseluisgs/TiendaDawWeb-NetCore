@@ -1,13 +1,6 @@
-@* 
-    OBJETIVO: Gestionar el formulario de votación y el listado detallado de valoraciones.
-    UBICACIÓN: /Components/Ratings/
-    RAZÓN: Centraliza la lógica de escritura (POST) y lectura (GET) de valoraciones en un solo componente reactivo.
-    Se comunica con otros componentes mediante el StateContainer notificando nuevos votos.
-*@
 @namespace TiendaDawWeb.Components.Ratings
-@using TiendaDawWeb.Services.Interfaces
+@using TiendaDawWeb.Services.Rating
 @using TiendaDawWeb.Models
-@using TiendaDawWeb.Services.Implementations
 @using Microsoft.AspNetCore.Identity
 @inject IRatingService RatingService
 @inject UserManager<User> UserManager
@@ -73,9 +66,7 @@
                         </div>
                         @if (_showStarError)
                         {
-                            <div class="text-danger small mt-1">
-                                Debes seleccionar una puntuación.
-                            </div>
+                            <div class="text-danger small mt-1">Debes seleccionar una puntuación.</div>
                         }
                     </div>
                     <div class="mb-3">
@@ -153,7 +144,7 @@
     private string _errorMessage = "";
     private bool _showStarError = false;
 
-    private Rating? GetUserRating() => 
+    private Models.Rating? GetUserRating() => 
         StateContainer.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
 
     protected override async Task OnInitializedAsync()
@@ -214,8 +205,7 @@
 
         if (result.IsSuccess)
         {
-            Logger.LogInformation("✅ RatingSection: Valoración guardada. Notificando cambio...");
-            // Forzamos recarga en el contenedor
+            Logger.LogInformation("RatingSection: Valoración guardada. Notificando cambio...");
             await StateContainer.RefreshAsync(ProductId);
         }
         else

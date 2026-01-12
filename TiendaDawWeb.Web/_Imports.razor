@@ -1,9 +1,3 @@
-@* 
-    OBJETIVO: Definir directivas @using globales para todos los componentes Blazor (.razor).
-    UBICACIÓN: Raíz del proyecto Web.
-    RAZÓN: Evita tener que importar los namespaces básicos (HttpClient, JSInterop, Models, etc.) 
-    en cada componente individual. Al estar en la raíz, aplica a todos los componentes del proyecto.
-*@
 @using System.Net.Http
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -14,6 +8,13 @@
 @using Microsoft.JSInterop
 @using TiendaDawWeb
 @using TiendaDawWeb.Models
-@using TiendaDawWeb.Services.Interfaces
+@using TiendaDawWeb.Services
+@using TiendaDawWeb.Services.Carrito
+@using TiendaDawWeb.Services.Email
+@using TiendaDawWeb.Services.Favorite
+@using TiendaDawWeb.Services.Product
+@using TiendaDawWeb.Services.Purchase
+@using TiendaDawWeb.Services.Rating
+@using TiendaDawWeb.Services.Storage
 @using TiendaDawWeb.ViewModels
 @using System.Globalization
