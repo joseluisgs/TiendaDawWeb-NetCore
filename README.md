@@ -58,6 +58,14 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
     - [Para Usuarios](#para-usuarios)
     - [Para Administradores](#para-administradores)
   - [📚 Documentación](#-documentación-1)
+    - [🏗️ Fundamentos y Arquitectura](#️-fundamentos-y-arquitectura)
+    - [💾 Datos y Persistencia](#-datos-y-persistencia)
+    - [🎨 Interfaz de Usuario (Razor \& Blazor)](#-interfaz-de-usuario-razor--blazor)
+    - [⚡ Interactividad y Tiempo Real](#-interactividad-y-tiempo-real)
+    - [🛡️ Validación y Manejo de Errores](#️-validación-y-manejo-de-errores)
+    - [🧪 Testing y Calidad](#-testing-y-calidad)
+    - [⚡ Optimización y Rendimiento](#-optimización-y-rendimiento)
+    - [🐳 Operaciones y Producción](#-operaciones-y-producción)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
     - [Contacto](#contacto)
@@ -422,7 +430,7 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
 ## 👥 Usuarios Demo
 
 | Usuario   | Email                 | Password | Rol       |
-|-----------|-----------------------|----------|-----------|
+| --------- | --------------------- | -------- | --------- |
 | Admin     | admin@waladaw.com     | admin    | ADMIN     |
 | Prueba    | prueba@prueba.com     | user123  | USER      |
 | Moderador | moderador@waladaw.com | user123  | MODERADOR |
@@ -480,57 +488,57 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
 Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra documentación detallada en la carpeta [`doc/`](doc/):
 
 ### 🏗️ Fundamentos y Arquitectura
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 01 | [Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md) | Middlewares, inyección de dependencias y configuración del host |
-| 02 | [Guía de Productividad](doc/02-Development-Tips.md) | Hot Reload, tricks y productividad en .NET 10 |
-| 07 | [Controladores y Models](doc/07-Controllers-Models-Results.md) | Orquestación, Model Binding, Result<T,E> y validaciones |
+| #   | Documento                                                         | Descripción                                                     |
+| --- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| 01  | [Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md) | Middlewares, inyección de dependencias y configuración del host |
+| 02  | [Guía de Productividad](doc/02-Development-Tips.md)               | Hot Reload, tricks y productividad en .NET 10                   |
+| 03  | [Controladores y Models](doc/03-Controllers-Models-Results.md)    | Orquestación, Model Binding, Result<T,E> y validaciones         |
 
 ### 💾 Datos y Persistencia
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 04 | [EF Core y Persistencia](doc/04-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba |
-| 05 | [SQLite In-Memory](doc/05-SQLite-InMemory-Persistence.md) | Base de datos volátil para testing rápido |
-| 06 | [Auditoría Automática](doc/06-Entity-Auditing-EFCore.md) | Tracking automático de quién/cuándo modifica datos |
-| 07 | [Object Mapping](doc/07-Object-Mapping-Pattern.md) | Clean Controllers con mapeo de entidades a DTOs |
+| #   | Documento                                                   | Descripción                                        |
+| --- | ----------------------------------------------------------- | -------------------------------------------------- |
+| 04  | [EF Core y Persistencia](doc/04-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba       |
+| 05  | [SQLite In-Memory](doc/05-SQLite-InMemory-Persistence.md)   | Base de datos volátil para testing rápido          |
+| 06  | [Auditoría Automática](doc/06-Entity-Auditing-EFCore.md)    | Tracking automático de quién/cuándo modifica datos |
+| 07  | [Object Mapping](doc/07-Object-Mapping-Pattern.md)          | Clean Controllers con mapeo de entidades a DTOs    |
 
 ### 🎨 Interfaz de Usuario (Razor & Blazor)
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 09 | [Razor Masterclass](doc/09-Razor-Syntax-UI.md) | Sintaxis Razor, Tag Helpers y patrones de UI |
-| 10 | [I18n y Localización](doc/10-I18n-Localization-Decimal.md) | Múltiples idiomas, formatos decimales y culturales |
-| 12 | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md) | Comparativa de los tres enfoques de interfaz |
-| 13 | [Blazor Server Basics](doc/13-Blazor-Server-Basics.md) | Componentes interactivos con C# |
-| 14 | [State Container](doc/14-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor |
+| #   | Documento                                                   | Descripción                                        |
+| --- | ----------------------------------------------------------- | -------------------------------------------------- |
+| 09  | [Razor Masterclass](doc/09-Razor-Syntax-UI.md)              | Sintaxis Razor, Tag Helpers y patrones de UI       |
+| 10  | [I18n y Localización](doc/10-I18n-Localization-Decimal.md)  | Múltiples idiomas, formatos decimales y culturales |
+| 12  | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md)    | Comparativa de los tres enfoques de interfaz       |
+| 13  | [Blazor Server Basics](doc/13-Blazor-Server-Basics.md)      | Componentes interactivos con C#                    |
+| 14  | [State Container](doc/14-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor              |
 
 ### ⚡ Interactividad y Tiempo Real
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 11 | [JavaScript & AJAX](doc/11-JS-AJAX-Security.md) | Fetch API, favoritos AJAX y seguridad CSRF |
-| 15 | [SignalR](doc/15-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real |
+| #   | Documento                                           | Descripción                                |
+| --- | --------------------------------------------------- | ------------------------------------------ |
+| 11  | [JavaScript & AJAX](doc/11-JS-AJAX-Security.md)     | Fetch API, favoritos AJAX y seguridad CSRF |
+| 15  | [SignalR](doc/15-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real              |
 
 ### 🛡️ Validación y Manejo de Errores
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 08 | [Global Exception Handling](doc/08-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
+| #   | Documento                                                        | Descripción                                   |
+| --- | ---------------------------------------------------------------- | --------------------------------------------- |
+| 08  | [Global Exception Handling](doc/08-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
 
 ### 🧪 Testing y Calidad
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 16 | [Unit Testing con NUnit y bUnit](doc/16-Unit-Testing-NUnit-bUnit.md) | Tests unitarios, integración y componentes Blazor |
-| 17 | [Code Coverage](doc/17-Code-Coverage.md) | Métricas de cobertura con Coverlet |
-| 18 | [E2E Testing con Playwright](doc/18-E2E-Testing-Playwright.md) | Tests automatizados de extremo a extremo |
+| #   | Documento                                                            | Descripción                                       |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------- |
+| 16  | [Unit Testing con NUnit y bUnit](doc/16-Unit-Testing-NUnit-bUnit.md) | Tests unitarios, integración y componentes Blazor |
+| 17  | [Code Coverage](doc/17-Code-Coverage.md)                             | Métricas de cobertura con Coverlet                |
+| 18  | [E2E Testing con Playwright](doc/18-E2E-Testing-Playwright.md)       | Tests automatizados de extremo a extremo          |
 
 ### ⚡ Optimización y Rendimiento
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 19 | [InMemory Cache](doc/19-Optimizacion-InMemoryCache.md) | Caché de objetos en memoria |
-| 20 | [Output Cache](doc/20-OutputCache-Performance.md) | Caché de respuestas HTML renderizadas |
+| #   | Documento                                              | Descripción                           |
+| --- | ------------------------------------------------------ | ------------------------------------- |
+| 19  | [InMemory Cache](doc/19-Optimizacion-InMemoryCache.md) | Caché de objetos en memoria           |
+| 20  | [Output Cache](doc/20-OutputCache-Performance.md)      | Caché de respuestas HTML renderizadas |
 
 ### 🐳 Operaciones y Producción
-| # | Documento | Descripción |
-|---|-----------|-------------|
-| 21 | [Docker y Ficheros](doc/21-Ops-Docker-Files.md) | Contenedores, volúmenes y configuración de producción |
+| #   | Documento                                       | Descripción                                           |
+| --- | ----------------------------------------------- | ----------------------------------------------------- |
+| 21  | [Docker y Ficheros](doc/21-Ops-Docker-Files.md) | Contenedores, volúmenes y configuración de producción |
 
 ---
 
