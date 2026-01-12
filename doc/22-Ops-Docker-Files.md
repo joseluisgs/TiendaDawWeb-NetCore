@@ -1,6 +1,21 @@
-# 21 - Operaciones y Producción: Docker, Ficheros y Despliegue
+- [22. Operaciones y Producción: Docker, Ficheros y Despliegue](#22-operaciones-y-producción-docker-ficheros-y-despliegue)
+  - [1. Docker: El Contenedor Indestructible](#1-docker-el-contenedor-indestructible)
+    - [1.1. El Dockerfile Multi-Stage: La Dieta Extrema de tu Aplicación](#11-el-dockerfile-multi-stage-la-dieta-extrema-de-tu-aplicación)
+  - [2. Persistencia en Contenedores: Los Volúmenes de Docker](#2-persistencia-en-contenedores-los-volúmenes-de-docker)
+    - [2.1. El Problema de `wwwroot/uploads`](#21-el-problema-de-wwwrootuploads)
+    - [2.2. La Solución: Mapeo de Volúmenes en `docker-compose.yml`](#22-la-solución-mapeo-de-volúmenes-en-docker-composeyml)
+  - [3. Procesamiento Profesional de Archivos: El Caso de las Imágenes](#3-procesamiento-profesional-de-archivos-el-caso-de-las-imágenes)
+    - [3.1. `SixLabors.ImageSharp`: El Cuchillo Suizo de las Imágenes](#31-sixlaborsimagesharp-el-cuchillo-suizo-de-las-imágenes)
+    - [3.2. Sirviendo Archivos Fuera de `wwwroot` (`PhysicalFileProvider`)](#32-sirviendo-archivos-fuera-de-wwwroot-physicalfileprovider)
+  - [4. Generación de Facturas en PDF (`QuestPDF`)](#4-generación-de-facturas-en-pdf-questpdf)
+    - [4.1. El Desafío de los PDFs](#41-el-desafío-de-los-pdfs)
+    - [4.2. La Solución: `QuestPDF`](#42-la-solución-questpdf)
+  - [5. docker-compose.yml: Orquestación de Servicios](#5-docker-composeyml-orquestación-de-servicios)
+  - [6. Conclusión](#6-conclusión)
 
-Tu aplicación funciona en local. Ahora, ¿cómo la preparas para el mundo real, donde miles de usuarios la usarán, con un rendimiento óptimo y una seguridad férrea?
+
+# 22. Operaciones y Producción: Docker, Ficheros y Despliegue
+En esta sección, abordaremos los aspectos clave para llevar tu aplicación ASP.NET Core a producción utilizando Docker. 
 
 ## 1. Docker: El Contenedor Indestructible
 
@@ -23,7 +38,7 @@ RUN dotnet restore "TiendaDawWeb.Web/TiendaDawWeb.csproj"
 
 # Copia todo el código fuente y compila la aplicación
 COPY . .
-WORKDIR "/src/TiendaDawWeb.Web" # Mueve el WORKDIR al directorio del proyecto web
+WORKDIR "/src/TiendaDawWeb.Web"
 RUN dotnet build "TiendaDawWeb.csproj" -c Release -o /app/build
 
 # Stage 2: publish - Genera los binarios listos para ejecutar
@@ -33,27 +48,46 @@ RUN dotnet publish "TiendaDawWeb.csproj" -c Release -o /app/publish /p:UseAppHos
 # Stage 3: final - Aquí usamos solo el Runtime de .NET (la "caja de herramientas" pequeña)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-EXPOSE 8080 # Puerto que escucha la aplicación dentro del contenedor
-EXPOSE 8081 # Puerto para HTTPS
+EXPOSE 8080
+EXPOSE 8081
 
-# Copia los archivos publicados desde la fase 'publish'
 COPY --from=publish /app/publish .
 
-# Crea el directorio de uploads y asigna permisos (muy importante en Linux/Docker)
 RUN mkdir -p wwwroot/uploads && chmod 777 wwwroot/uploads
 
-# Variables de entorno
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Comando para arrancar la aplicación
 ENTRYPOINT ["dotnet", "TiendaDawWeb.dll"]
 ```
 
 **Explicación Detallada:**
--   **Stage 1 (`AS build`)**: Usa la imagen `dotnet/sdk` (que incluye todas las herramientas de desarrollo y compilación, pesando cientos de MB). Se copia solo el `.csproj` para que Docker cachee la restauración de paquetes. Luego se copia el resto del código y se compila.
--   **Stage 2 (`AS publish`)**: Genera una versión auto-contenida y optimizada de tu aplicación.
--   **Stage 3 (`AS final`)**: La magia final. Usa la imagen `dotnet/aspnet` (solo el runtime, mucho más ligera). Copia **solo** el resultado de la etapa `publish`. La imagen final no contiene código fuente ni herramientas de compilación, lo que la hace más pequeña, más rápida de desplegar y más segura.
+- **Stage 1 (`AS build`)**: Usa la imagen `dotnet/sdk` (herramientas de desarrollo, cientos de MB). Copia solo el `.csproj` para que Docker cachee la restauración de paquetes.
+- **Stage 2 (`AS publish`)**: Genera una versión optimizada de tu aplicación.
+- **Stage 3 (`AS final`)**: Usa `dotnet/aspnet` (solo runtime, mucho más ligera). Copia **solo** el resultado de `publish`. La imagen final no contiene código fuente.
+
+```mermaid
+flowchart LR
+    subgraph "Build Stage"
+        B1[SDK 10.0<br/>~900MB] --> B2[Compila código]
+        B2 --> B3[Binarios]
+    end
+    
+    subgraph "Publish Stage"
+        P1[Optimización] --> P2[Binarios listos]
+    end
+    
+    subgraph "Final Stage"
+        F1[ASP.NET Runtime<br/>~200MB] --> F2[Imagen final<br/>~250MB]
+    end
+    
+    B3 --> P1
+    P2 --> F1
+    
+    style B1 fill:#FFB6C1
+    style F1 fill:#90EE90
+    style F2 fill:#90EE90
+```
 
 ---
 
@@ -61,23 +95,46 @@ ENTRYPOINT ["dotnet", "TiendaDawWeb.dll"]
 
 Los contenedores Docker son efímeros. Si apagas o borras un contenedor, ¡todo lo que guardaste dentro desaparece!
 
-### 2.1. El Problema de `wwwroot/uploads`:
+### 2.1. El Problema de `wwwroot/uploads`
+
 Si tu aplicación permite subir fotos de productos, y estas fotos se guardan dentro del contenedor (`/app/wwwroot/uploads`), se perderán cada vez que el contenedor se reinicie o se elimine.
 
 ### 2.2. La Solución: Mapeo de Volúmenes en `docker-compose.yml`
-Creamos un "volumen" que es una carpeta especial en el disco duro del servidor (fuera del contenedor) y la "mapeamos" a una carpeta dentro del contenedor.
+
+Creamos un "volumen" que es una carpeta especial en el disco duro del servidor y la "mapeamos" a una carpeta dentro del contenedor.
+
 ```yaml
 # TiendaDawWeb-NetCore/docker-compose.yml
 services:
-  waladaw:
-    # ... otras configuraciones ...
+  webapp:
+    build: .
+    ports:
+      - "8080:8080"
     volumes:
-      - waladaw-uploads:/app/wwwroot/uploads # Mapea el volumen externo al path interno del contenedor
-    # ...
+      - waladaw-uploads:/app/wwwroot/uploads
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
 volumes:
-  waladaw-uploads: # Define el volumen nombrado
+  waladaw-uploads:
     driver: local
 ```
+
+```mermaid
+flowchart TB
+    subgraph "Servidor (Host)"
+        subgraph "Docker"
+            C[Contenedor<br/>/app/wwwroot/uploads]
+        end
+        HV[Host Volume<br/>/var/lib/docker/volumes/...]
+    end
+    
+    C <-->|Mapeo bidireccional| HV
+    
+    style HV fill:#90EE90
+    style C fill:#E0FFFF
+```
+
 **Lección de Supervivencia**: Siempre que tu aplicación necesite almacenar datos que deban sobrevivir al ciclo de vida del contenedor (bases de datos, archivos subidos por usuarios, logs), usa volúmenes persistentes.
 
 ---
@@ -87,23 +144,40 @@ volumes:
 Nunca confíes en los usuarios. Si te suben una imagen de 10 MB, tu servidor puede colapsar o tu web ir lenta.
 
 ### 3.1. `SixLabors.ImageSharp`: El Cuchillo Suizo de las Imágenes
+
 Esta librería se usa en `StorageService` para:
--   **Redimensionar**: Limitar el tamaño máximo de las imágenes (ej. a 800px).
--   **Comprimir**: Reducir el tamaño del archivo sin perder calidad visible.
--   **Optimizar Formato**: Convertir a formatos más eficientes (como WebP o AVIF si fuera necesario).
--   **Cambio de Nombres**: Guardar la imagen con un `GUID` (un identificador único global) en lugar de su nombre original. Esto evita que dos usuarios suban una imagen con el mismo nombre y se sobreescriban, o que un usuario malicioso adivine nombres de archivos.
+- **Redimensionar**: Limitar el tamaño máximo de las imágenes (ej. a 800px).
+- **Comprimir**: Reducir el tamaño del archivo sin perder calidad visible.
+- **Optimizar Formato**: Convertir a formatos más eficientes (WebP, AVIF).
+- **Cambio de Nombres**: Guardar la imagen con un `GUID` para evitar colisiones.
+
+```mermaid
+flowchart LR
+    A[Usuario sube<br/>imagen 10MB] --> B[ImageSharp]
+    B --> C[Redimensionar<br/>800px máx]
+    B --> D[Comprimir<br/>70% calidad]
+    B --> E[Convertir<br/>WebP]
+    B --> F[Renombrar<br/>GUID.ext]
+    
+    C & D & E & F --> G[Imagen optimizada<br/>~100KB]
+    
+    style G fill:#90EE90
+```
 
 ### 3.2. Sirviendo Archivos Fuera de `wwwroot` (`PhysicalFileProvider`)
-Por defecto, `app.UseStaticFiles()` solo sirve archivos de `wwwroot`. Si tienes archivos en otra carpeta (ej. `/uploads` dentro de `wwwroot` pero con una configuración específica), necesitas un `FileProvider` personalizado:
+
+Por defecto, `app.UseStaticFiles()` solo sirve archivos de `wwwroot`. Si tienes archivos en otra carpeta, necesitas un `FileProvider` personalizado:
+
 ```csharp
 // TiendaDawWeb.Web/Program.cs
+var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(uploadPath), // Apunta a la carpeta física
-    RequestPath = "/uploads"                             // La ruta virtual para acceder a ellos
+    FileProvider = new PhysicalFileProvider(uploadPath),
+    RequestPath = "/uploads"
 });
 ```
-Esto permite que, si un usuario accede a `/uploads/mi-foto.jpg`, el servidor sepa dónde buscar esa foto en el sistema de archivos.
 
 ---
 
@@ -111,42 +185,127 @@ Esto permite que, si un usuario accede a `/uploads/mi-foto.jpg`, el servidor sep
 
 Generar documentos PDF complejos es una tarea que requiere precisión.
 
-### 4.1. El Desafío de los PDFs:
--   Convertir HTML a PDF es lento, consume muchos recursos y es propenso a errores de formato.
--   Generar PDFs directamente es dibujar el documento.
+### 4.1. El Desafío de los PDFs
+
+- Convertir HTML a PDF es lento, consume muchos recursos y es propenso a errores de formato.
+- Generar PDFs directamente es dibujar el documento.
 
 ### 4.2. La Solución: `QuestPDF`
-`QuestPDF` es una librería que permite definir la estructura de un documento PDF usando código C# de forma declarativa (parecido a cómo se construye una UI).
--   Define un "layout" (filas, columnas, texto, imágenes).
--   Genera el PDF directamente en memoria.
--   El servidor puede entonces enviarlo al navegador como un `FileStreamResult` (un "chorro de bytes" que el navegador interpreta como un PDF).
+
+`QuestPDF` permite definir la estructura de un documento PDF usando código C# de forma declarativa.
 
 ```csharp
-// TiendaDawWeb.Web/Services/Implementations/PdfService.cs (Simplificado)
+// TiendaDawWeb.Web/Services/Implementations/PdfService.cs
 public async Task<byte[]> GenerateInvoicePdfAsync(Purchase purchase)
 {
     var document = Document.Create(container =>
     {
-        // Define el layout del PDF aquí: cabecera, tabla de productos, footer
         container.Page(page =>
         {
             page.Header().Text("Factura #" + purchase.Id);
             page.Content().Column(column =>
             {
                 column.Item().Text("Detalles de la compra...");
-                // ... tablas de productos, totales ...
             });
-            page.Footer().Text(text => text.Span("Página ").CurrentPageNumber().Span(" de ").TotalPages());
+            page.Footer().Text(text => text.Span("Página ")
+                .CurrentPageNumber().Span(" de ").TotalPages());
         });
     });
 
     using var stream = new MemoryStream();
-    document.GeneratePdf(stream); // Genera el PDF en un stream de memoria
-    return stream.ToArray(); // Devuelve el PDF como un array de bytes
+    document.GeneratePdf(stream);
+    return stream.ToArray();
 }
 ```
-**Lección de Supervivencia**: Cuando necesites generar documentos complejos, busca librerías que trabajen directamente con el formato de destino (ej. PDF) en lugar de convertir un formato intermedio (HTML).
+
+```mermaid
+flowchart LR
+    A[Datos Purchase] --> B[QuestPDF Builder]
+    B --> C[Document Definition<br/>Header, Content, Footer]
+    C --> D[GeneratePdf]
+    D --> E[MemoryStream]
+    E --> F[byte[] PDF]
+    F --> G[FileStreamResult<br/>Descargar en navegador]
+    
+    style G fill:#90EE90
+```
+
+**Lección de Supervivencia**: Cuando necesites generar documentos complejos, busca librerías que trabajen directamente con el formato de destino (PDF) en lugar de convertir un formato intermedio (HTML).
 
 ---
 
+## 5. docker-compose.yml: Orquestación de Servicios
+
+```yaml
+version: '3.8'
+
+services:
+  waladaw:
+    build:
+      context: .
+      dockerfile: TiendaDawWeb.Web/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db;Database=TiendaDaw;User=sa;Password=YourPassword123;
+    depends_on:
+      - db
+    volumes:
+      - waladaw-uploads:/app/wwwroot/uploads
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourPassword123
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+volumes:
+  waladaw-uploads:
+    driver: local
+  sqlserver-data:
+    driver: local
+```
+
+```mermaid
+flowchart TB
+    subgraph "Docker Network"
+        subgraph "waladaw-service"
+            W[Web App<br/>:8080]
+        end
+        subgraph "db-service"
+            D[SQL Server<br/>:1433]
+        end
+    end
+    
+    W <-->|1433| D
+    
+    W -->|Puerto 8080| H[Host<br/>:8080]
+    D -->|Puerto 1433| H2[Host<br/>:1433]
+    
+    subgraph "Volumes"
+        V1[waladaw-uploads]
+        V2[sqlserver-data]
+    end
+    
+    W --> V1
+    D --> V2
+    
+    style W fill:#E0FFFF
+    style D fill:#E0FFFF
+```
+
+---
+
+## 6. Conclusión
+
 Este volumen te ha guiado por los retos de llevar tu aplicación a producción: desde cómo Docker la empaqueta de forma eficiente hasta cómo gestiona los datos que suben los usuarios y los documentos que genera el sistema. Eres ahora un arquitecto de operaciones.
+
+---
+
+**Volúmenes relacionados:**
+- Volumen anterior: [21. Optimización de Rendimiento: Output Cache en .NET 10](21-OutputCache-Performance.md)

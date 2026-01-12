@@ -109,18 +109,18 @@ Los Tag Helpers son atributos `asp-*` que se procesan en el servidor.
 
 ```mermaid
 flowchart TD
-    A["<input asp-for='Nombre' />"] --> B[Genera]
-    B --> C[id="Nombre"]
-    B --> D[name="Nombre"]
-    B --> E[value="valor actual"]
-    B --> F[data-val-* attributes]
+    A[Tag Helper Input] --> B[Genera]
+    B --> C["id=&quot;Nombre&quot;"]
+    B --> D["name=&quot;Nombre&quot;"]
+    B --> E["value=&quot;valor actual&quot;"]
+    B --> F[data-val attributes]
     
-    style A fill:#fdcb6e
-    style B fill:#00b894
-    style C fill:#dfe6e9
-    style D fill:#dfe6e9
-    style E fill:#dfe6e9
-    style F fill:#dfe6e9
+    style A fill:#fdcb6e,stroke:#333,color:#000
+    style B fill:#00b894,stroke:#333,color:#fff
+    style C fill:#dfe6e9,stroke:#333,color:#000
+    style D fill:#dfe6e9,stroke:#333,color:#000
+    style E fill:#dfe6e9,stroke:#333,color:#000
+    style F fill:#dfe6e9,stroke:#333,color:#000
 ```
 
 ---
@@ -213,8 +213,8 @@ flowchart TD
     end
     
     subgraph "VISTAS"
-        D[View 1] -->|@RenderBody| B
-        E[View 2] -->|@RenderBody| B
+        D[View 1] -.->|RenderBody| B
+        E[View 2] -.->|RenderBody| B
     end
     
     style B fill:#fdcb6e
