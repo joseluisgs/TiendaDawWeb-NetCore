@@ -1,40 +1,67 @@
-# 02. El Cerebro de la App: Controladores y Lógica de Negocio (La Visión Senior)
+- [3. Controladores, Model Binding y Patrón Result](#3-controladores-model-binding-y-patrón-result)
+  - [1. Rol del Controlador: Orquestador](#1-rol-del-controlador-orquestador)
+    - [1.1. Lo que SÍ debe hacer un Controlador](#11-lo-que-sí-debe-hacer-un-controlador)
+    - [1.2. Lo que NO debe hacer un Controlador](#12-lo-que-no-debe-hacer-un-controlador)
+    - [1.3. Ejemplo de Controlador Limpio](#13-ejemplo-de-controlador-limpio)
+  - [2. Model Binding](#2-model-binding)
+    - [2.1. ¿Cómo funciona?](#21-cómo-funciona)
+    - [2.2. Fuentes del Model Binding (Orden de Prioridad)](#22-fuentes-del-model-binding-orden-de-prioridad)
+    - [2.3. Validación Automática con ModelState](#23-validación-automática-con-modelstate)
+  - [3. Patrón Result](#3-patrón-result)
+    - [3.1. ¿Por qué Result?](#31-por-qué-result)
+    - [3.2. Implementación en Servicios](#32-implementación-en-servicios)
+    - [3.3. Consumo con Match](#33-consumo-con-match)
+  - [4. Trío de Hierro: ModelState vs Result vs Middleware](#4-trío-de-hierro-modelstate-vs-result-vs-middleware)
+    - [4.1. ¿Cuándo usar cada uno?](#41-cuándo-usar-cada-uno)
+    - [4.2. Ejemplo Completo de Controlador Robusto](#42-ejemplo-completo-de-controlador-robusto)
+  - [5. Errores Comunes](#5-errores-comunes)
+    - [5.1. Confundir Validación con Lógica de Negocio](#51-confundir-validación-con-lógica-de-negocio)
+    - [5.2. Usar Excepciones para Errores de Negocio](#52-usar-excepciones-para-errores-de-negocio)
+    - [5.3. No Validar ModelState](#53-no-validar-modelstate)
+  - [6. Buenas Prácticas](#6-buenas-prácticas)
 
-Los controladores son los directores de orquesta de tu aplicación. Reciben las peticiones, coordinan a los actores (Servicios) y deciden el resultado (una vista HTML, un JSON, una redirección).
 
-## 1. El Rol del Controlador: Orquestador, no Ejecutor
+# 3. Controladores, Model Binding y Patrón Result
+En esta sección, desglosaremos las responsabilidades de los controladores, el proceso de model binding y cómo implementar el patrón Result para manejar errores de negocio de manera elegante.
 
-Un error muy común es meter lógica de negocio o acceso directo a la base de datos en los controladores.
+## 1. Rol del Controlador: Orquestador
 
-### 1.1. Lo que SÍ debe hacer un Controlador:
--   **Recibir la Petición**: Extraer datos de la URL, formulario o cuerpo (JSON).
--   **Validar la Entrada**: Asegurarse de que los datos recibidos son válidos.
--   **Delegar a Servicios**: Llamar a la capa de servicios para ejecutar la lógica de negocio.
--   **Gestionar el Resultado**: Decidir si mostrar una vista, redirigir, devolver un JSON o un error.
+Los controladores son los directores de orquesta. Reciben peticiones, coordinan servicios y deciden resultados.
 
-### 1.2. Lo que NO debe hacer un Controlador:
--   **Acceder directamente a la Base de Datos**: Eso es trabajo de la capa de datos (EF Core).
--   **Implementar lógica de negocio compleja**: Eso es trabajo de la capa de servicios.
+### 1.1. Lo que SÍ debe hacer un Controlador
+
+| Responsabilidad         | Descripción                             |
+| ----------------------- | --------------------------------------- |
+| **Recibir Petición**    | Extraer datos de URL, formulario o JSON |
+| **Validar Entrada**     | Verificar que los datos son válidos     |
+| **Delegar a Servicios** | Llamar a la capa de negocio             |
+| **Gestionar Resultado** | Decidir vista, redirect, JSON o error   |
+
+### 1.2. Lo que NO debe hacer un Controlador
+
+| ❌ Evitar                   | ✅ En su lugar            |
+| -------------------------- | ------------------------ |
+| Acceso directo a BD        | Capa de servicios        |
+| Lógica de negocio compleja | Servicios especializados |
+| Validación de negocio      | Result<T,E> en servicios |
+
+### 1.3. Ejemplo de Controlador Limpio
 
 ```csharp
-// TiendaDawWeb.Web/Controllers/ProductController.cs (Ejemplo Simplificado)
-public class ProductController(IProductService productService, ILogger<ProductController> logger) : Controller
+public class ProductController(
+    IProductService productService, 
+    ILogger<ProductController> logger) : Controller
 {
-    // C# 14 Primary Constructor: Las dependencias se inyectan aquí
-    // El controlador NO SABE cómo productService obtiene los productos. Solo sabe que PUEDE obtenerlos.
-
-    [HttpGet("details/{id}")] // Atributo de ruta: /Product/details/5
+    [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(long id)
     {
-        logger.LogInformation("Petición GET para detalles del producto ID: {ProductId}", id);
+        logger.LogInformation("Petición GET para producto ID: {ProductId}", id);
         
-        // 1. Delegar a un servicio
         var result = await productService.GetByIdAsync(id);
-
-        // 2. Gestionar el resultado del servicio (Patrón Result)
+        
         return result.Match(
-            onSuccess: (product) => View(product),       // Éxito: Mostrar la vista con el producto
-            onFailure: (error) => HandleDomainError(error) // Fallo: Gestionar el error de negocio
+            onSuccess: product => View(product),
+            onFailure: error => HandleDomainError(error)
         );
     }
 }
@@ -42,338 +69,237 @@ public class ProductController(IProductService productService, ILogger<ProductCo
 
 ---
 
-## 2. Model Binding: La Magia de Traducir HTML a C#
+## 2. Model Binding
 
-El Model Binding es el proceso por el cual ASP.NET Core convierte automáticamente los datos de una petición HTTP (URL, formulario, JSON) en objetos C# fuertemente tipados.
+El proceso por el cual ASP.NET Core convierte datos HTTP en objetos C#.
 
 ### 2.1. ¿Cómo funciona?
--   ASP.NET Core examina los parámetros de tu método de acción (ej. `long id`, `ProductViewModel model`).
--   Busca datos en la petición (ruta, query string, cuerpo del formulario/JSON) con nombres que coincidan.
--   Intenta convertir esos datos al tipo C# del parámetro.
 
-```csharp
-// El framework busca un parámetro 'id' en la URL
-public IActionResult GetProductById(long id) { /* ... */ }
-
-// El framework rellena automáticamente un objeto 'model' con los datos del formulario
-[HttpPost]
-public IActionResult CreateProduct(ProductViewModel model) { /* ... */ }
-```
+1. Examina los parámetros del método
+2. Busca datos en la petición (ruta, query, formulario, JSON)
+3. Convierte al tipo C# del parámetro
 
 ### 2.2. Fuentes del Model Binding (Orden de Prioridad)
-1.  **Ruta (Route Data)**: Parámetros en la URL (ej. `/products/{id}`).
-2.  **Query String**: Parámetros después de `?` (ej. `/products?name=abc`).
-3.  **Form Data**: Campos de un formulario HTML (`<input>`).
-4.  **JSON Body**: Cuando envías JSON en el cuerpo de la petición (típico de APIs REST).
 
-### 2.3. Validación Automática (`ModelState.IsValid`)
-Una vez que el Model Binding ha rellenado tu objeto, ASP.NET Core ejecuta automáticamente las **Validaciones de Data Annotations** que hayas definido en tu modelo (`[Required]`, `[EmailAddress]`). Los resultados se almacenan en `ModelState`.
+| #   | Fuente       | Ejemplo                  |
+| --- | ------------ | ------------------------ |
+| 2.1 | Route Data   | `/products/{id}`         |
+| 2.2 | Query String | `/products?name=abc`     |
+| 2.3 | Form Data    | `<input name="email">`   |
+| 2.4 | JSON Body    | `{ "email": "x@x.com" }` |
+
+### 2.3. Validación Automática con ModelState
 
 ```csharp
 [HttpPost]
 public async Task<IActionResult> Create(ProductViewModel model)
 {
-    if (!ModelState.IsValid) // ¿El modelo tiene errores de validación (ej. campo requerido vacío)?
+    // ❌ NUNCA te saltes esta validación
+    if (!ModelState.IsValid)
     {
-        logger.LogWarning("Intento de creación de producto con datos inválidos.");
-        return View(model); // Vuelve a mostrar el formulario con los errores pintados
+        logger.LogWarning("Intento de creación con datos inválidos");
+        return View(model);  // Vuelve a mostrar con errores
     }
-
-    // Si llegamos aquí, el modelo es válido. Delegamos al servicio.
-    var result = await productService.CreateProductAsync(model);
-    // ...
+    
+    var result = await _productService.CreateAsync(model);
+    return result.Match(...)
 }
 ```
-**Lección de Supervivencia**: Siempre, siempre, SIEMPRE verifica `ModelState.IsValid` en cualquier acción que reciba datos de un usuario. ¡No confíes en el cliente!
+
+⚠️ **Lección de Supervivencia**: SIEMPRE verifica `ModelState.IsValid`. ¡No confíes en el cliente!
 
 ---
 
-## 3. El Patrón Result: Lógica de Negocio Robusta y Funcional
+## 3. Patrón Result
 
-Ya hemos hablado de que las excepciones (`throw`) son para fallos inesperados. Para los errores de negocio que podemos prever (ej. "El usuario no existe", "No tienes permiso"), usamos el **Patrón Result** con `CSharpFunctionalExtensions`.
+Para errores de negocio previsibles, usamos `Result<T, E>` en lugar de excepciones.
 
-### 3.1. ¿Por qué Result es Superior a Excepciones para Negocio?
--   **Claridad del Flujo**: El código se lee mejor, sabes cuándo un método puede fallar.
--   **Tipado Fuerte**: El tipo de error `DomainError` es explícito, no un genérico `Exception`.
--   **Rendimiento**: Crear excepciones es costoso en CPU. `Result` es solo un objeto.
--   **Obliga a Gestionar**: El compilador te fuerza a considerar tanto el éxito como el fallo.
+### 3.1. ¿Por qué Result?
 
-### 3.2. Implementación en la Capa de Servicios (`ProductService.cs`)
+| Beneficio              | Descripción                             |
+| ---------------------- | --------------------------------------- |
+| **Claridad**           | Código más legible                      |
+| **Tipado Fuerte**      | Error explícito, no Exception genérico  |
+| **Rendimiento**        | Exceptions son costosas                 |
+| **Obliga a Gestionar** | Compilador fuerza manejo de ambos casos |
+
+### 3.2. Implementación en Servicios
+
 ```csharp
-// TiendaDawWeb.Web/Services/Implementations/ProductService.cs
-public async Task<Result<Product, DomainError>> GetByIdAsync(long id)
+public async Task<Result<Product, ProductError>> GetByIdAsync(long id)
 {
     var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-    if (product == null)
-    {
-        // En lugar de 'throw new ProductNotFoundException()', devolvemos un Fallo con un Error de Dominio
-        return Result.Failure<Product, DomainError>(ProductError.NotFound(id));
-    }
-    return Result.Success<Product, DomainError>(product);
+    
+    return product != null
+        ? Result.Success(product)
+        : Result.Failure(ProductError.NotFound(id));
 }
 
-public async Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false)
+public async Task<Result<bool, ProductError>> DeleteAsync(long id, long userId, bool isAdmin)
 {
-    // Validaciones de negocio:
-    // 1. ¿El producto existe?
-    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-    if (product == null) return Result.Failure<bool, DomainError>(ProductError.NotFound(id));
-
-    // 2. ¿Tiene permiso el usuario? (Solo el dueño o un Admin)
+    var product = await _context.Products.FindAsync(id);
+    if (product == null) 
+        return Result.Failure(ProductError.NotFound(id));
+    
     if (!isAdmin && product.PropietarioId != userId)
-    {
-        return Result.Failure<bool, DomainError>(ProductError.Unauthorized(userId, id));
-    }
-
-    // 3. ¿Está vendido? (Lógica de negocio: No se borra si ya hay una compra)
+        return Result.Failure(ProductError.Unauthorized(userId, id));
+    
     if (product.CompraId != null)
-    {
-        return Result.Failure<bool, DomainError>(ProductError.ProductAlreadySold(id));
-    }
-
+        return Result.Failure(ProductError.ProductAlreadySold(id));
+    
     _context.Products.Remove(product);
     await _context.SaveChangesAsync();
-    return Result.Success<bool, DomainError>(true);
+    return Result.Success(true);
 }
 ```
 
-### 3.3. Consumo en Controladores (El Patrón `Match`)
-El método `Match` te permite ejecutar diferentes bloques de código según si el `Result` fue éxito o fallo.
+### 3.3. Consumo con Match
+
 ```csharp
-// TiendaDawWeb.Web/Controllers/ProductController.cs (Fragmento)
-[HttpPost]
-public async Task<IActionResult> Delete(long id)
-{
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Obtenemos el ID del usuario logueado
-    var isAdmin = User.IsInRole("ADMIN");
+var result = await _productService.DeleteAsync(id, userId, isAdmin);
 
-    var result = await productService.DeleteAsync(id, long.Parse(userId), isAdmin);
-
-    return result.Match(
-        onSuccess: (deleted) => {
-            TempData["SuccessMessage"] = "Producto eliminado con éxito.";
-            return RedirectToAction("MyProducts");
-        },
-        onFailure: (error) => {
-            logger.LogError("Error al eliminar producto {ProductId}: {ErrorCode} - {ErrorMessage}", id, error.Code, error.Message);
-            // Aquí puedes mapear los errores de dominio a respuestas HTTP o mensajes de vista específicos
-            if (error.Code == ProductError.NotFound(id).Code) return NotFound(error.Message);
-            if (error.Code == ProductError.Unauthorized(long.Parse(userId), id).Code) return Forbid(error.Message);
-            // ... otros errores
-            TempData["ErrorMessage"] = error.Message; // Muestra el mensaje de error en la vista
-            return RedirectToAction("MyProducts");
-        }
-    );
-}
+return result.Match(
+    onSuccess: deleted => {
+        TempData["SuccessMessage"] = "Producto eliminado";
+        return RedirectToAction("MyProducts");
+    },
+    onFailure: error => {
+        logger.LogError("Error: {Code} - {Message}", error.Code, error.Message);
+        TempData["ErrorMessage"] = error.Message;
+        return RedirectToAction("MyProducts");
+    }
+);
 ```
-**Lección para Superdioses**: El `Patrón Result` te obliga a escribir código más robusto y predecible. Es la base de la programación funcional en C#.
 
 ---
 
-## 4. El Trío de Hierro: ModelState vs Result vs GlobalExceptionMiddleware
-
-Entender cuándo usar cada mecanismo es clave para escribir código profesional.
-
-### 4.1. ¿Cuál usar en cada escenario?
-
-| Escenario | Mecanismo | ¿Por qué? |
-|-----------|-----------|-----------|
-| Campo email vacío en formulario | **ModelState** | Validación de formato/tipo, no lógica de negocio |
-| Email no tiene formato válido | **ModelState** | Validación de sintaxis, no semántica |
-| Email ya existe en BD | **Result** | Regla de negocio específica de la aplicación |
-| Producto no encontrado | **Result** | Error semántico esperado |
-| Usuario sin permiso para eliminar | **Result** | Autorización es lógica de negocio |
-| NullReferenceException (bug) | **GlobalExceptionMiddleware** | Error inesperado, no previsto |
-| Timeout de base de datos | **GlobalExceptionMiddleware** | Fallo técnico, no validación |
-
-### 4.2. Ejemplo Completo: Un Controlador Robusto
-
-```csharp
-// TiendaDawWeb.Web/Controllers/ProductController.cs
-public class ProductController : Controller
-{
-    private readonly IProductService _productService;
-    private readonly ILogger<ProductController> _logger;
-
-    public ProductController(IProductService productService, ILogger<ProductController> logger)
-    {
-        _productService = productService;
-        _logger = logger;
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create(CreateProductVM model)
-    {
-        // ┌─────────────────────────────────────────────────────────────┐
-        // │ CAPA 1: ModelState (Validación de Formulario)              │
-        // │ ¿El usuario nos envió datos válidos?                        │
-        // └─────────────────────────────────────────────────────────────┘
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Intento de creación con datos inválidos");
-            return View(model); // Vuelve a mostrar el formulario con errores
-        }
-
-        // ┌─────────────────────────────────────────────────────────────┐
-        // │ CAPA 2: Servicio con Result (Lógica de Negocio)            │
-        // │ ¿La operación es válida según nuestras reglas?              │
-        // └─────────────────────────────────────────────────────────────┘
-        var result = await _productService.CreateAsync(model, User.GetUserId());
-
-        // ┌─────────────────────────────────────────────────────────────┐
-        // │ CAPA 3: Match (Gestión del Resultado)                      │
-        // │ ¿Qué hacemos con el resultado?                              │
-        // └─────────────────────────────────────────────────────────────┘
-        return result.Match(
-            onSuccess: product =>
-            {
-                _logger.LogInformation("Producto {ProductId} creado por usuario {UserId}", 
-                    product.Id, User.GetUserId());
-                TempData["Success"] = "Producto creado correctamente";
-                return RedirectToAction("Details", new { id = product.Id });
-            },
-            onFailure: error =>
-            {
-                _logger.LogWarning("Error al crear producto: {ErrorCode} - {Message}", 
-                    error.Code, error.Message);
-                
-                TempData["Error"] = error.Message;
-                return View(model);
-            }
-        );
-
-        // NOTA: Si algo falla inesperadamente (bug), el 
-        // GlobalExceptionMiddleware capturará la excepción y 
-        // devolverá una página de error 500.
-    }
-}
-```
-
-### 4.3. Diagrama: El Flujo de Validación Completo
+## 4. Trío de Hierro: ModelState vs Result vs Middleware
 
 ```mermaid
 flowchart TD
     A["📥 PETICIÓN HTTP"] --> B[1. GLOBAL EXCEPTION MIDDLEWARE]
-    
     B --> C{¿Excepción<br/>inesperada?}
-    C -->|SÍ| D[📝 Log Serilog]
-    D --> E[❌ Error 500]
+    C -->|SÍ| D[📝 Log + 500]
+    C -->|NO| E[2. MODEL BINDING<br/>+ DATA ANNOTATIONS]
+    E --> F{¿ModelState<br/>IsValid?}
+    F -->|NO| G[📝 Errores en View]
+    F -->|SÍ| H[3. SERVICIO<br/>Result<T,E>]
+    H --> I{¿Success?}
+    I -->|NO| J[4. CONTROLADOR<br/>Match]
+    I -->|SÍ| K[✅ Éxito]
+    J --> L[Gestionar error<br/>de dominio]
+    G --> M[Mostrar formulario<br/>con errores]
+    K --> N[View / Redirect / JSON]
+    L --> N
+    M --> N
     
-    C -->|NO| F[2. MODEL BINDING<br/>+ DATA ANNOTATIONS]
-    
-    F --> G{¿ModelState<br/>IsValid?}
-    G -->|NO| H[📝 Mostrar errores<br/>en formulario]
-    H --> I["❌ Vuelve a<br/>mostrar View"]
-    
-    G -->|SÍ| J[3. SERVICIO<br/>Lógica de Negocio]
-    
-    J --> K{¿Result<br/>Success?}
-    K -->|NO| L[4. CONTROLADOR<br/>Match]
-    K -->|SÍ| M["✅ Continuar<br/>ejecución normal"]
-    
-    L --> N{¿View o Json?}
-    N -->|View| O["📄 Mostrar View<br/>con TempData"]
-    N -->|Json| P["📄 { success: false<br/>error: '...' }"]
-    
-    M --> Q["✅ View / Redirect<br/>/ Json normal"]
-    
-    style A fill:#e1f5fe
     style B fill:#fff3e0
-    style F fill:#e8f5e9
-    style J fill:#fce4ec
-    style L fill:#f3e5f5
+    style E fill:#e8f5e9
+    style H fill:#fce4ec
+    style J fill:#f3e5f5
     style D fill:#ffebee
-    style H fill:#ffebee
-    style O fill:#fff3e0
-    style P fill:#fff3e0
-    style Q fill:#e8f5e9
+    style G fill:#ffebee
 ```
 
-### 4.4. ¿Cuál usar en cada escenario?
+### 4.1. ¿Cuándo usar cada uno?
 
-### ❌ ERROR 1: Confundir Validación con Lógica de Negocio
+| Escenario              | Mecanismo                 | ¿Por qué?                |
+| ---------------------- | ------------------------- | ------------------------ |
+| Email vacío            | ModelState                | Validación de formato    |
+| Email sin @            | ModelState                | Validación de sintaxis   |
+| Email ya existe        | Result                    | Regla de negocio         |
+| Producto no encontrado | Result                    | Error semántico esperado |
+| NullReferenceException | GlobalExceptionMiddleware | Bug inesperado           |
+| Timeout BD             | GlobalExceptionMiddleware | Fallo técnico            |
+
+### 4.2. Ejemplo Completo de Controlador Robusto
 
 ```csharp
-// ❌ MAL: Validación de negocio en el modelo con DataAnnotations
+[HttpPost]
+public async Task<IActionResult> Create(CreateProductVM model)
+{
+    // CAPA 1: ModelState
+    if (!ModelState.IsValid)
+        return View(model);
+    
+    // CAPA 2: Servicio con Result
+    var result = await _productService.CreateAsync(model, User.GetUserId());
+    
+    // CAPA 3: Match
+    return result.Match(
+        onSuccess: product => {
+            TempData["Success"] = "Producto creado";
+            return RedirectToAction("Details", new { id = product.Id });
+        },
+        onFailure: error => {
+            TempData["Error"] = error.Message;
+            return View(model);
+        }
+    );
+}
+```
+
+---
+
+## 5. Errores Comunes
+
+### 5.1. Confundir Validación con Lógica de Negocio
+
+```csharp
+// ❌ MAL: Regla de negocio en DataAnnotations
 public class ProductVM
 {
     [Range(1, 1000000, ErrorMessage = "El precio debe ser positivo")]
     public decimal Precio { get; set; }
 }
 
-// ✅ BIEN: Validación de tipo en modelo, validación de negocio en servicio
+// ✅ BIEN: Validación de tipo en VM, regla de negocio en servicio
 public class ProductVM
 {
-    [Range(0.01, 1000000)] // Tipo de dato: debe ser un número positivo
+    [Range(0.01, 1000000)]  // Solo tipo de dato
     public decimal Precio { get; set; }
 }
 
 // En el servicio:
-public async Task<Result<Product, ProductError>> CreateAsync(ProductVM vm, long userId)
-{
-    // Regla de negocio: El precio no puede ser superior al promedio
-    var promedio = await _context.Products.AverageAsync(p => p.Precio);
-    if (vm.Precio > promedio * 10)
-        return Result.Failure(ProductError.PriceTooHigh);
-}
+if (vm.Precio > promedio * 10)
+    return Result.Failure(ProductError.PriceTooHigh);
 ```
 
-### ❌ ERROR 2: Usar Excepciones para Errores de Negocio
+### 5.2. Usar Excepciones para Errores de Negocio
 
 ```csharp
-// ❌ MAL: Usar throw para errores esperados
-public async Task<Product> GetByIdAsync(long id)
-{
-    var product = await _context.Products.FindAsync(id);
-    if (product == null)
-        throw new ProductNotFoundException($"Producto {id} no encontrado");
-    return product;
-}
+// ❌ MAL
+throw new ProductNotFoundException($"Producto {id} no encontrado");
 
-// ✅ BIEN: Usar Result para errores esperados
-public async Task<Result<Product, ProductError>> GetByIdAsync(long id)
-{
-    var product = await _context.Products.FindAsync(id);
-    return product != null
-        ? Result.Success(product)
-        : Result.Failure(ProductError.NotFound(id));
-}
+// ✅ BIEN
+return Result.Failure(ProductError.NotFound(id));
 ```
 
-### ❌ ERROR 3: No Validar ModelState
+### 5.3. No Validar ModelState
 
 ```csharp
-// ❌ MAL: Saltarse la validación del modelo
-[HttpPost]
-public async Task<IActionResult> Create(ProductVM model)
-{
-    var result = await _service.CreateAsync(model); // ¡Puede fallar por datos inválidos!
-    return result.Match(...)
-}
+// ❌ MAL
+var result = await _service.CreateAsync(model);  // Puede fallar por datos inválidos
 
-// ✅ BIEN: Validar siempre el modelo primero
-[HttpPost]
-public async Task<IActionResult> Create(ProductVM model)
-{
-    if (!ModelState.IsValid)
-        return View(model); // Vuelve a mostrar con errores
-    
-    var result = await _service.CreateAsync(model);
-    return result.Match(...)
-}
+// ✅ BIEN
+if (!ModelState.IsValid) return View(model);
+var result = await _service.CreateAsync(model);
 ```
 
 ---
 
-## 6. Buenas Prácticas Resumen
+## 6. Buenas Prácticas
 
-1.  **Usa DataAnnotations** para validar el **formato** de los datos (tipos, rangos, formatos).
-2.  **Usa Result<T,E>** para validar las **reglas de negocio** (existencias, permisos, duplicados).
-3.  **Usa GlobalExceptionMiddleware** para capturar **bugs inesperados** (nulos, timeouts).
-4.  **SIEMPRE** verifica `ModelState.IsValid` antes de llamar a servicios.
-5.  **SIEMPRE** usa `Match()` para manejar explícitamente éxito y fracaso.
-6.  **NUNCA** uses `throw` para errores que el usuario puede causar normalmente.
+| #   | Práctica                                      |
+| --- | --------------------------------------------- |
+| 6.1 | Usa DataAnnotations para **formato** de datos |
+| 6.2 | Usa Result<T,E> para **reglas de negocio**    |
+| 6.3 | Usa GlobalExceptionMiddleware para **bugs**   |
+| 6.4 | SIEMPRE verifica `ModelState.IsValid`         |
+| 6.5 | SIEMPRE usa `Match()` para Result             |
+| 6.6 | NUNCA uses `throw` para errores de negocio    |
 
 ---
 
-Este volumen te ha introducido al cerebro de tu aplicación: cómo los controladores orquestan la lógica de negocio y cómo la comunicación con los servicios debe ser robusta y predecible. Ahora profundizaremos en cómo los datos llegan a la interfaz de usuario.
+**Anterior Volumen**: [02. Guía de Productividad](../02-Development-Tips.md)  
+**Próximo Volumen**: [04. Autenticación y Autorización](../04-Authentication-Authorization.md)

@@ -1,58 +1,135 @@
-# 16 - Auditoría Automática de Entidades con EF Core
+- [7. Auditoría Automática de Entidades con EF Core](#7-auditoría-automática-de-entidades-con-ef-core)
+  - [1. Enfoque Manual vs Automático](#1-enfoque-manual-vs-automático)
+    - [1.1. El Enfoque "Junior" (Manual)](#11-el-enfoque-junior-manual)
+    - [1.2. El Enfoque "Senior" (Automático)](#12-el-enfoque-senior-automático)
+  - [2. Implementación del Sistema de Auditoría](#2-implementación-del-sistema-de-auditoría)
+    - [2.1. Clase Base (`AuditableEntity.cs`)](#21-clase-base-auditableentitycs)
+    - [2.2. Interceptor en DbContext](#22-interceptor-en-dbcontext)
+    - [2.3. Entidades que heredan de AuditableEntity](#23-entidades-que-heredan-de-auditableentity)
+  - [3. Beneficios del Sistema](#3-beneficios-del-sistema)
+    - [3.1. Flujo Completo](#31-flujo-completo)
 
-En el desarrollo de aplicaciones empresariales, es vital saber cuándo se creó un registro y cuándo se modificó por última vez. En este volumen aprendemos a automatizar este proceso usando la potencia de Entity Framework Core.
 
----
+# 7. Auditoría Automática de Entidades con EF Core
+En esta sección, aprenderemos a implementar un sistema de auditoría automática para nuestras entidades en EF Core. Este sistema registrará automáticamente las marcas de tiempo y los usuarios responsables cada vez que una entidad sea creada o modificada, eliminando la necesidad de repetir este código en cada operación de guardado.
 
-## 1. El Enfoque "Manual" (Junior)
 
-Tradicionalmente, un desarrollador tendría que escribir este código en cada acción de sus controladores:
+## 1. Enfoque Manual vs Automático
+
+### 1.1. El Enfoque "Junior" (Manual)
+
 ```csharp
+// ❌ Repetitivo y propenso a olvidos
 producto.Nombre = "Nuevo Nombre";
-producto.UpdatedAt = DateTime.UtcNow; // <--- Repetitivo y propenso a olvidos
+producto.UpdatedAt = DateTime.UtcNow;
 _context.SaveChanges();
+```
+
+### 1.2. El Enfoque "Senior" (Automático)
+
+```mermaid
+flowchart TD
+    subgraph "AUDITORÍA AUTOMÁTICA"
+        A[SaveChangesAsync] --> B[ChangeTracker]
+        B --> C{¿Entidad Auditable?}
+        C -->|Sí| D[¿Added o Modified?]
+        C -->|No| E[No tocar]
+        D -->|Added| F[CreatedAt = Now]
+        D -->|Modified| G[UpdatedAt = Now]
+        F --> H[Base de Datos]
+        G --> H
+    end
+    
+    style A fill:#74b9ff
+    style D fill:#fdcb6e
+    style F fill:#00b894
+    style G fill:#00b894
+    style H fill:#45b7d1
 ```
 
 ---
 
-## 2. El Enfoque "Automático" (Senior)
+## 2. Implementación del Sistema de Auditoría
 
-Hemos implementado un sistema donde las entidades se "auditán" solas.
-
-### A. La Clase Base (`AuditableEntity.cs`)
-Todas nuestras clases de negocio (`Product`, `Purchase`, `Rating`, etc.) heredan de esta base que contiene los campos:
-- `CreatedAt`
-- `UpdatedAt`
-- `CreatedBy` (Opcional)
-- `UpdatedBy` (Opcional)
-
-### B. El Interceptor (`ApplicationDbContext.cs`)
-Hemos sobrescrito el método `SaveChangesAsync`. Antes de que los datos viajen a la base de datos, EF Core:
-1.  Revisa qué entidades han cambiado (`ChangeTracker`).
-2.  Si la entidad es de tipo `AuditableEntity`, rellena la fecha automáticamente.
+### 2.1. Clase Base (`AuditableEntity.cs`)
 
 ```csharp
-public override Task<int> SaveChangesAsync(...) {
-    foreach (var entry in ChangeTracker.Entries<AuditableEntity>()) {
+public abstract class AuditableEntity
+{
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
+}
+```
+
+### 2.2. Interceptor en DbContext
+
+```csharp
+public override Task<int> SaveChangesAsync(
+    CancellationToken cancellationToken = new())
+{
+    foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+    {
         if (entry.State == EntityState.Added)
+        {
             entry.Entity.CreatedAt = DateTime.UtcNow;
+            entry.Entity.CreatedBy = GetCurrentUserId();
+        }
         else if (entry.State == EntityState.Modified)
+        {
             entry.Entity.UpdatedAt = DateTime.UtcNow;
+            entry.Entity.UpdatedBy = GetCurrentUserId();
+        }
     }
-    return base.SaveChangesAsync();
+    
+    return base.SaveChangesAsync(cancellationToken);
+}
+```
+
+### 2.3. Entidades que heredan de AuditableEntity
+
+```csharp
+public class Product : AuditableEntity
+{
+    public long Id { get; set; }
+    public string Nombre { get; set; }
+    public decimal Precio { get; set; }
+    // CreatedAt y UpdatedAt vienen de AuditableEntity
 }
 ```
 
 ---
 
-## 3. Beneficios para el Proyecto
+## 3. Beneficios del Sistema
 
-1.  **Código Limpio (DRY)**: Los controladores y servicios se centran solo en la lógica de negocio. No hay código de "fontanería" para gestionar fechas.
-2.  **Consistencia**: Garantizamos que TODOS los registros tengan su rastro de auditoría sin excepción.
-3.  **Trazabilidad**: Si un producto cambia de precio, sabremos exactamente en qué segundo ocurrió.
+| Beneficio               | Descripción                                        |
+| ----------------------- | -------------------------------------------------- |
+| **Código Limpio (DRY)** | Sin código de fontanería en controladores          |
+| **Consistencia**        | TODOS los registros tienen auditoría               |
+| **Trazabilidad**        | Saber exactamente cuándo se modificó cada registro |
+
+### 3.1. Flujo Completo
+
+```mermaid
+sequenceDiagram
+    participant C as Controlador
+    participant S as Servicio
+    participant DB as DbContext
+    participant E as Entidad
+    participant BD as Base Datos
+    
+    C->>S: UpdateProduct(id, datos)
+    S->>DB: context.Products.Update(product)
+    DB->>E: ChangeTracker detecta cambio
+    E->>DB: UpdatedAt = DateTime.UtcNow
+    DB->>BD: INSERT/UPDATE con auditoría
+    BD-->>DB: ✅ Guardado
+    DB-->>S: ✅ Éxito
+    S-->>C: ✅ Éxito
+```
 
 ---
 
-## 4. Conclusión para el Alumno
-
-La auditoría automática demuestra por qué Entity Framework Core es mucho más que un simple mapeador de tablas. Es un motor con inteligencia capaz de inyectar comportamiento transversal en toda nuestra aplicación, mejorando la calidad del dato y la productividad del equipo.
+**Anterior Volumen**: [06. SQLite In-Memory](../06-SQLite-InMemory-Persistence.md)  
+**Próximo Volumen**: [08. Object Mapping](../08-Object-Mapping-Pattern.md)

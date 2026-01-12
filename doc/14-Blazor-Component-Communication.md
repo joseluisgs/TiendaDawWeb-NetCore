@@ -1,106 +1,141 @@
-# 10 - Comunicación entre Componentes Blazor: El Patrón State Container
+- [14. State Container: Comunicación entre Componentes](#14-state-container-comunicación-entre-componentes)
+  - [1. El Problema: Componentes Desacoplados](#1-el-problema-componentes-desacoplados)
+  - [2. La Solución: State Container](#2-la-solución-state-container)
+  - [3. Implementación del Patrón](#3-implementación-del-patrón)
+    - [3.1. Registro como Scoped](#31-registro-como-scoped)
+    - [3.2. Clase State Container](#32-clase-state-container)
+  - [4. Suscripción y Notificación](#4-suscripción-y-notificación)
+    - [4.1. Componente Emisor (Formulario)](#41-componente-emisor-formulario)
+    - [4.2. Componente Receptor (Resumen)](#42-componente-receptor-resumen)
 
-En aplicaciones modernas, a menudo necesitamos que dos partes de la interfaz que **no tienen una relación padre-hijo** se hablen entre sí. En este proyecto, el formulario de valoraciones y el resumen de la cabecera están en lugares distintos del DOM.
 
----
+# 14. State Container: Comunicación entre Componentes
+En este capítulo, aprenderemos a implementar el patrón State Container en Blazor para facilitar la comunicación entre componentes que no tienen una relación directa de padre-hijo.
+
 
 ## 1. El Problema: Componentes Desacoplados
 
-En `Details.cshtml`, inyectamos dos componentes independientes:
-1.  `<RatingSummary />` (en la parte superior, junto al precio).
-2.  `<RatingSection />` (en la parte inferior, con el formulario).
+En `Details.cshtml`, tenemos dos componentes independientes:
 
-Si un usuario vota en la sección inferior, la cabecera debe actualizarse automáticamente para reflejar la nueva media. Como no son padre e hijo, no podemos usar `EventCallback` de forma sencilla.
+| Componente          | Ubicación                        |
+| ------------------- | -------------------------------- |
+| `<RatingSummary />` | Parte superior (junto al precio) |
+| `<RatingSection />` | Parte inferior (formulario)      |
+
+**Problema**: Cuando un usuario vota en la sección inferior, la cabecera debe actualizarse. Como no son padre-hijo, `EventCallback` no funciona.
 
 ---
 
-## 2. La Solución: El Patrón State Container
-
-Hemos implementado un **State Container** (`RatingStateContainer.cs`). Este patrón actúa como un "Bus de Datos" o "Mediador" que vive en la memoria de la sesión del usuario.
-
-### Cómo funciona el flujo:
+## 2. La Solución: State Container
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuario
     participant RS as RatingSection (Emisor)
-    participant SC as RatingStateContainer (Mediador)
+    participant SC as StateContainer (Mediador)
     participant RSum as RatingSummary (Receptor)
-    participant S as IRatingService
-
-    Note over RSum, SC: Inicialización
-    RSum->>SC: Se suscribe al evento OnChange
-
-    Note over U, S: Flujo de Acción
-    U->>RS: Envía Valoración
-    RS->>S: AddRatingAsync()
-    S-->>RS: Result.Success
-
-    Note over RS, RSum: Notificación Reactiva
-    RS->>SC: NotifyRatingChanged()
-    SC-->>RSum: Dispara Evento OnChange
     
-    Note over RSum, S: Actualización de UI
-    RSum->>S: GetByProductoIdAsync()
-    S-->>RSum: Nuevos Datos
+    Note over RSum, SC: Inicialización
+    RSum->>SC: Suscribirse a OnChange
+    
+    Note over U, S: Acción de Usuario
+    U->>RS: Enviar valoración
+    RS->>S: AddRatingAsync()
+    S-->>RS: Éxito
+    
+    Note over RS, RSum: Notificación
+    RS->>SC: NotifyStateChanged()
+    SC-->>RSum: Dispara evento OnChange
+    
+    Note over RSum, S: Actualización
+    RSum->>S: GetRatingsAsync()
+    S-->>RSum: Nuevos datos
     RSum->>RSum: StateHasChanged()
 ```
 
-1.  **Registro Scoped**: El servicio se registra como `Scoped` en `Program.cs`. Esto significa que hay una instancia única por cada pestaña/usuario conectado.
-2.  **El Evento (Trigger)**: El contenedor tiene un evento C# de tipo `Action`.
-3.  **Suscripción (Listener)**: El componente que quiere "escuchar" cambios (`RatingSummary`) se suscribe al evento cuando se inicializa.
-4.  **Notificación (Publisher)**: El componente que realiza la acción (`RatingSection`) llama a un método del contenedor que dispara el evento.
-
 ---
 
-## 3. Implementación Técnica
+## 3. Implementación del Patrón
 
-### El Contenedor (`Services/Implementations/RatingStateContainer.cs`)
+### 3.1. Registro como Scoped
+
 ```csharp
-public class RatingStateContainer {
-    public event Action OnChange; // El evento al que todos se suscriben
-    public void NotifyRatingChanged() => OnChange?.Invoke(); // Notifica a los oyentes
-}
+// Program.cs
+builder.Services.AddScoped<RatingStateContainer>();
 ```
 
-### El Receptor (`RatingSummary.razor`)
+**Importante**: `Scoped` = una instancia por sesión de usuario.
+
+### 3.2. Clase State Container
+
 ```csharp
-protected override void OnInitialized() {
-    // Nos suscribimos al evento
-    StateContainer.OnChange += HandleStateChange;
-}
+public class RatingStateContainer
+{
+    private long? _currentProductId;
+    public event Action? OnRatingChanged;
 
-private async void HandleStateChange() {
-    await LoadDataAsync(); // Recargamos la media
-    StateHasChanged();     // Forzamos el renderizado de Blazor
-}
+    public long? CurrentProductId
+    {
+        get => _currentProductId;
+        set
+        {
+            if (_currentProductId != value)
+            {
+                _currentProductId = value;
+                NotifyStateChanged();
+            }
+        }
+    }
 
-public void Dispose() {
-    // IMPORTANTE: Desuscribirse para evitar fugas de memoria
-    StateContainer.OnChange -= HandleStateChange;
-}
-```
-
-### El Emisor (`RatingSection.razor`)
-```csharp
-private async Task HandleSubmit() {
-    var result = await RatingService.AddRatingAsync(...);
-    if (result.IsSuccess) {
-        StateContainer.NotifyRatingChanged(); // ¡Avisamos a todo el mundo!
+    private void NotifyStateChanged()
+    {
+        OnRatingChanged?.Invoke();
     }
 }
 ```
 
 ---
 
-## 4. Ventajas para el Alumno
+## 4. Suscripción y Notificación
 
-- **Desacoplamiento Total**: `RatingSummary` no sabe que existe `RatingSection`, y viceversa. Solo conocen el contenedor de estado.
-- **Reactividad Real**: Proporciona una experiencia de "Single Page Application" (SPA) dentro de una estructura MVC.
-- **Tipado Fuerte**: A diferencia de los eventos de JavaScript (AJAX), aquí usamos eventos de C# con total soporte de IntelliSense y compilación.
+### 4.1. Componente Emisor (Formulario)
+
+```razor
+@inject RatingStateContainer StateContainer
+
+<EditForm Model="newRating" OnValidSubmit="SubmitRating">
+    <InputNumber @bind-Value="newRating.Value" />
+    <button type="submit">Votar</button>
+</EditForm>
+
+@code {
+    private async Task SubmitRating()
+    {
+        await _ratingService.AddAsync(newRating);
+        StateContainer.CurrentProductId = ProductId;  // Trigger
+    }
+}
+```
+
+### 4.2. Componente Receptor (Resumen)
+
+```razor
+@inject RatingStateContainer StateContainer
+@implements IDisposable
+
+@code {
+    protected override void OnInitialized()
+    {
+        StateContainer.OnRatingChanged += StateHasChanged;
+    }
+    
+    public void Dispose()
+    {
+        StateContainer.OnRatingChanged -= StateHasChanged;
+    }
+}
+```
 
 ---
 
-## 5. Ciclo de Vida y Memoria (Senior Tip)
-
-Es vital enseñar al alumno que cualquier componente que se suscriba a un evento de un servicio **debe implementar `IDisposable`** y desuscribirse. Si no se hace, el componente nunca será recolectado por el Garbage Collector mientras el servicio esté vivo, provocando fugas de memoria (Memory Leaks).
+**Anterior Volumen**: [13. Blazor Server Basics](../13-Blazor-Server-Basics.md)  
+**Próximo Volumen**: [15. SignalR](../15-SignalR-RealTime-Notifications.md)

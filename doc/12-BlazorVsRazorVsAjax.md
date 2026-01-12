@@ -1,102 +1,157 @@
-# 09 - Evolución de la Interfaz: Razor vs AJAX vs Blazor Server
+- [12. Razor vs AJAX vs Blazor: Evolución de la Interfaz](#12-razor-vs-ajax-vs-blazor-evolución-de-la-interfaz)
+  - [1. Enfoque Tradicional: Razor MVC](#1-enfoque-tradicional-razor-mvc)
+    - [1.1. Flujo de Petición](#11-flujo-de-petición)
+    - [1.2. Características](#12-características)
+    - [1.3. Ejemplo](#13-ejemplo)
+  - [2. Enfoque Dinámico: MVC + AJAX](#2-enfoque-dinámico-mvc--ajax)
+    - [2.1. Flujo AJAX](#21-flujo-ajax)
+    - [2.2. Ventajas y Desventajas](#22-ventajas-y-desventajas)
+  - [3. La Modernidad: Blazor Server](#3-la-modernidad-blazor-server)
+    - [3.1. Flujo de Blazor](#31-flujo-de-blazor)
+    - [3.2. Componente de Valoraciones](#32-componente-de-valoraciones)
+  - [4. Comparativa de Tecnologías](#4-comparativa-de-tecnologías)
+    - [4.1. ¿Cuándo usar cada uno?](#41-cuándo-usar-cada-uno)
 
-Este documento detalla la evolución técnica de la aplicación "WalaDaw", analizando las tres grandes etapas en la construcción de interfaces dinámicas en ASP.NET Core, tomando como caso de estudio el sistema de valoraciones (Ratings).
+
+# 12. Razor vs AJAX vs Blazor: Evolución de la Interfaz
+En esta sección, compararemos tres enfoques populares para construir interfaces web en ASP.NET Core: Razor MVC tradicional, AJAX dinámico y Blazor Server moderno.
+
+## 1. Enfoque Tradicional: Razor MVC
+
+El servidor procesa la petición, construye el HTML completo y lo envía al navegador.
+
+### 1.1. Flujo de Petición
+
+```mermaid
+flowchart LR
+    A[Navegador] -->|HTTP Request| B[Servidor]
+    B -->|Query DB| C[Base Datos]
+    C -->|Datos| B
+    B -->|HTML completo| A
+    
+    style B fill:#74b9ff
+    style C fill:#dfe6e9
+```
+
+### 1.2. Características
+
+| Aspecto          | Descripción                         |
+| ---------------- | ----------------------------------- |
+| **Acoplamiento** | HTML y lógica juntos                |
+| **Recarga**      | Página completa en cada interacción |
+| **SEO**          | Excelente (HTML completo)           |
+| **Simplicidad**  | Sin JavaScript                      |
+
+### 1.3. Ejemplo
+
+```csharp
+[HttpPost]
+public IActionResult Vote(int rating)
+{
+    _ratingService.AddRating(rating);
+    return RedirectToAction("Details", new { id = Model.Id });
+}
+```
 
 ---
 
-## 1. El Enfoque Tradicional: Razor & MVC (Server-Side Rendering)
+## 2. Enfoque Dinámico: MVC + AJAX
 
-Es el punto de partida. El servidor procesa una petición HTTP, consulta la base de datos, construye el HTML completo y lo envía al navegador.
+El servidor expone APIs y el cliente usa JavaScript para intercambiar datos.
 
-### Características:
-- **Acoplamiento Fuerte:** El código de presentación (HTML) y la lógica de datos están en el mismo ciclo de vida.
-- **Recarga de Página:** Cualquier interacción (ej. enviar un voto) requiere que el navegador refresque toda la página para mostrar el nuevo estado.
+### 2.1. Flujo AJAX
 
-### Ventajas:
-- Excelente para SEO (el HTML llega completo).
-- Simplicidad arquitectónica (no requiere JavaScript).
-- Muy seguro (todo ocurre en el servidor).
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant JS as JavaScript
+    participant API as ApiController
+    participant DB as Base Datos
+    
+    U->>JS: Clic en estrella
+    JS->>API: fetch('/api/ratings', POST)
+    API->>DB: Guardar valoración
+    DB-->>API: Éxito
+    API-->>JS: { success: true, average: 4.5 }
+    JS->>JS: Actualizar DOM
+    JS->>U: Notificación toast
+```
 
-### Desventajas en Ratings:
-- Experiencia de usuario (UX) pobre: la página "parpadea" al votar.
-- Pérdida de estado: si el usuario estaba haciendo scroll, lo pierde al recargar.
+### 2.2. Ventajas y Desventajas
 
----
-
-## 2. El Enfoque Dinámico: MVC + AJAX (jQuery/Fetch)
-
-Para mejorar la UX sin recargar, introducimos AJAX. El servidor expone un `ApiController` y el cliente usa JavaScript para intercambiar datos en segundo plano.
-
-### Lo que hemos portado (Legacy):
-En nuestra vista `Details.cshtml`, usábamos `ratings.js` para consumir la `RatingApiController`.
-
-### Ventajas:
-- **UX Fluida:** El usuario vota y las estrellas se actualizan sin refrescar la página.
-- **Carga Diferida:** Podemos cargar el contenido principal y luego, de forma asíncrona, las valoraciones.
-
-### Desventajas y Complejidad (El "Dolor" del Senior):
-1. **Duplicidad de Lógica:** Debes validar en JS (frontend) y de nuevo en C# (backend).
-2. **Seguridad (CSRF):** Debes gestionar manualmente los `RequestVerificationToken` en las cabeceras de `fetch`.
-3. **Mantenimiento:** Tienes lógica de negocio fragmentada en dos lenguajes (C# y JavaScript).
-4. **Fragilidad de DOM:** Si cambias un ID en el HTML y olvidas actualizarlo en el JS, la aplicación rompe silenciosamente.
+| Ventajas                 | Desventajas                    |
+| ------------------------ | ------------------------------ |
+| UX fluida (sin parpadeo) | Duplicidad de lógica (JS + C#) |
+| Carga diferida           | Gestión manual de CSRF         |
+| Menor ancho de banda     | Mantenimiento complejo         |
 
 ---
 
 ## 3. La Modernidad: Blazor Server
 
-Blazor nos permite escribir interfaces ricas e interactivas usando **C# en lugar de JavaScript**. Se comunica con el servidor mediante un túnel binario en tiempo real (**SignalR**).
+Blazor permite escribir interfaces en **C#** sin JavaScript, comunicándose via **SignalR**.
 
-### ¿Qué nos aporta en este proyecto?
-Hemos sustituido los DIVs vacíos de AJAX por componentes reales como `<RatingSection />`.
+### 3.1. Flujo de Blazor
 
-### Beneficios Clave:
-- **Ecosistema Único (Single Language Stack):** Usamos el mismo modelo `Rating.cs` y el mismo servicio `IRatingService` tanto para la lógica de servidor como para la UI reactiva.
-- **Comunicación mediante Estado (State Container):** 
-  - Usamos `RatingStateContainer` (patrón *Observer*).
-  - Cuando un componente cambia algo (ej. el formulario de voto), el otro componente (la cabecera) se entera y se actualiza automáticamente. Intentar esto con AJAX requiere eventos globales de JS o recargas manuales complejas.
-- **Seguridad Integrada:** Al ejecutarse en el servidor, Blazor tiene acceso directo al contexto del usuario (`UserManager`, `AuthenticationStateProvider`) sin exponer APIs sensibles o tokens CSRF de forma manual.
-- **Componentización:** Hemos encapsulado la lógica de las estrellas en un `RenderFragment` reutilizable dentro de C#.
+```mermaid
+flowchart LR
+    A[Navegador] -->|SignalR| B[Servidor Blazor]
+    B -->|Circuit| C[Componente C#]
+    C -->|Llamada DB| D[Base Datos]
+    D -->|Datos| C
+    C -->|UI Updates| B
+    B -->|UI Updates| A
+    
+    style B fill:#fdcb6e
+    style C fill:#00b894
+    style D fill:#dfe6e9
+```
 
----
+### 3.2. Componente de Valoraciones
 
-## 4. Tabla Comparativa de Rendimiento y Desarrollo
+```razor
+@* RatingComponent.razor *@
+<div class="rating">
+    @for (int i = 1; i <= 5; i++)
+    {
+        <span @onclick="() => SetRating(i)"
+              class="@(i <= CurrentRating ? "bi-star-fill" : "bi-star")">
+        </span>
+    }
+</div>
 
-| Característica | Razor (Tradicional) | MVC + AJAX | Blazor Server |
-| :--- | :--- | :--- | :--- |
-| **Lenguaje UI** | C# (HTML estático) | JavaScript | C# (Razor Components) |
-| **UX** | Pobre (Refresco) | Alta (Single Page) | Alta (Reactiva) |
-| **Productividad** | Alta | Baja (Context Switching) | Muy Alta |
-| **SEO** | Nativo | Complejo | Excelente (Prerendering) |
-| **Estado** | Stateless (Cookies/Session) | Manual en JS | Automático en el Server |
-| **Conexión** | Peticiones cortas | Peticiones cortas | Persistente (SignalR) |
-
----
-
-## 5. Caso de Éxito: AdminStatsWidget (El Dashboard en Tiempo Real)
-
-Si el sistema de ratings demuestra la interactividad, el **AdminStatsWidget** demuestra la **potencia operativa**. Este componente muestra estadísticas globales (usuarios, productos, ventas) con refresco automático.
-
-### ¿Por qué es casi imposible con las otras tecnologías?
-
-1.  **Con Razor Tradicional:**
-    - Sería **imposible** tener datos "en vivo". El administrador tendría que pulsar F5 manualmente o usar un `<meta http-equiv="refresh">` que recargaría toda la página, perdiendo cualquier otra tarea que estuviera haciendo.
-
-2.  **Con AJAX (jQuery/JS):**
-    - **Complejidad de Infraestructura:** Tendrías que crear un `Controller` de API solo para devolver estos datos.
-    - **Gestión de Timers:** Tendrías que gestionar `setInterval` en JavaScript. Si la petición tarda más que el intervalo, podrías saturar el navegador con peticiones encoladas.
-    - **Manipulación de DOM:** Tendrías que buscar cada ID (`#users-count`, `#sales-count`) y actualizar el texto manualmente. Si cambias el diseño en el HTML, el JS dejaría de funcionar.
-    - **Feedback de Usuario:** Implementar el spinner de carga que aparece y desaparece requiere gestionar estados de CSS manualmente en cada llamada.
-
-3.  **La Solución Blazor:**
-    - **Acceso Directo:** El componente usa `IProductService` y `IPurchaseService` directamente. No hay APIs intermedias.
-    - **Lógica de Temporizador en C#:** Usamos un `System.Timers.Timer` estándar de .NET.
-    - **UI Reactiva Nativa:** Solo cambiamos el valor de una variable C# (`usersCount++`) y Blazor se encarga de que el usuario vea el cambio.
-    - **Estado de Carga:** Controlamos el botón de "Refrescar" con un simple booleano `isLoading`, que deshabilita el botón y muestra el spinner automáticamente gracias al *Data Binding*.
+@code {
+    private int CurrentRating { get; set; }
+    
+    private async Task SetRating(int rating)
+    {
+        CurrentRating = rating;
+        await Http.PostAsJsonAsync("api/ratings", new { Rating = rating });
+    }
+}
+```
 
 ---
 
-## 6. Conclusión para el Alumno
+## 4. Comparativa de Tecnologías
 
-La migración realizada en el sistema de Ratings demuestra que **Blazor Server** ofrece lo mejor de los dos mundos: la potencia y seguridad del acceso directo a servicios C# (como Razor) con la fluidez y reactividad de las aplicaciones modernas (como AJAX/React).
+| Criterio        | Razor MVC        | MVC + AJAX     | Blazor Server |
+| --------------- | ---------------- | -------------- | ------------- |
+| **Lenguaje**    | C# + HTML        | C# + JS + HTML | Solo C#       |
+| **UX**          | Recarga completa | Fluida         | Fluida        |
+| **SEO**         | Excelente        | Buena          | Limitado      |
+| **Complejidad** | Baja             | Media-Alta     | Media         |
+| **JavaScript**  | No necesario     | Requerido      | Mínimo        |
 
-El uso de un **State Container** es la pieza clave para entender la comunicación entre componentes, permitiendo que la aplicación se comporte como un todo orgánico en lugar de piezas aisladas que no saben qué está haciendo la otra.
+### 4.1. ¿Cuándo usar cada uno?
+
+| Tecnología    | Caso de uso                       |
+| ------------- | --------------------------------- |
+| **Razor MVC** | Páginas estáticas, SEO crítico    |
+| **AJAX**      | Integraciones con APIs externas   |
+| **Blazor**    | Interfaces interactivas complejas |
+
+---
+
+**Anterior Volumen**: [11. JavaScript y AJAX](../11-JS-AJAX-Security.md)  
+**Próximo Volumen**: [13. Blazor Server Basics](../13-Blazor-Server-Basics.md)

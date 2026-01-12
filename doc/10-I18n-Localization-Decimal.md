@@ -1,150 +1,190 @@
-# 06. La Torre de Babel Conquistada: I18n y Localización (Ultimate Master Edition)
+- [10. I18n y Localización: La Torre de Babel](#10-i18n-y-localización-la-torre-de-babel)
+  - [1. Archivos de Recursos (.resx)](#1-archivos-de-recursos-resx)
+    - [1.1. Organización de Recursos](#11-organización-de-recursos)
+    - [1.2. Estructura de Archivos](#12-estructura-de-archivos)
+    - [1.3. Uso en Vistas](#13-uso-en-vistas)
+    - [1.4. Uso en Controladores](#14-uso-en-controladores)
+  - [2. Configuración de Middleware](#2-configuración-de-middleware)
+    - [2.1. Registro de Servicios](#21-registro-de-servicios)
+    - [2.2. Orden de Middleware](#22-orden-de-middleware)
+    - [2.3. Configuración en Program.cs](#23-configuración-en-programcs)
+  - [3. Formatos Culturales](#3-formatos-culturales)
+    - [3.1. Diferencias Clave](#31-diferencias-clave)
+    - [3.2. Ejemplo de Formato](#32-ejemplo-de-formato)
+  - [4. Cambio de Idioma](#4-cambio-de-idioma)
+    - [4.1. Dropdown de Idiomas](#41-dropdown-de-idiomas)
+    - [4.2. Cookie de Cultura](#42-cookie-de-cultura)
 
-Hacer una web multi-idioma no es solo traducir palabras. Es entender que cada cultura tiene sus propias reglas para fechas, números y monedas. Es una danza compleja entre el servidor, el cliente y el lenguaje.
 
-## 1. El Diccionario Global: Archivos de Recursos (.resx)
+# 10. I18n y Localización: La Torre de Babel
+En esta sección, aprenderemos a internacionalizar y localizar nuestra aplicación ASP.NET Core MVC para soportar múltiples idiomas y formatos culturales.
 
-Los archivos `.resx` son tus diccionarios de traducción. Contienen pares clave-valor para cada idioma.
+## 1. Archivos de Recursos (.resx)
 
-### 1.1. Organización Profesional de los `.resx`:
--   **`SharedResource.es.resx`**: Contiene traducciones comunes (Login, Home, Footer, etiquetas genéricas).
--   **`Messages.es.resx`**: Contiene traducciones específicas de mensajes de error o validaciones.
--   **`TiendaDawWeb.Web/Resources/`**: Es la carpeta donde se almacenan.
+Los archivos `.resx` son diccionarios de traducción con pares clave-valor.
 
-### 1.2. Clases Generadas Automáticamente:
-Cuando compilas, .NET genera internamente clases C# a partir de estos `.resx`. Por ejemplo, `SharedResource.es.resx` se convierte en una clase que te permite acceder a las traducciones: `Localizer["Clave"]`.
+### 1.1. Organización de Recursos
 
-### 1.3. Uso en el Código:
--   **En Vistas (`.cshtml`)**:
-    ```razor
-    @inject IStringLocalizer<SharedResource> Localizer // Inyecta el "diccionario"
-    <h1>@Localizer["TituloBienvenida"]</h1> // Accede a la traducción
-    ```
--   **En Controladores/Servicios**:
-    ```csharp
-    // Constructor
-    public ProductController(IStringLocalizer<SharedResource> localizer) { ... }
-    // En un método
-    var mensaje = _localizer["ProductoNoEncontrado"];
-    ```
+| Archivo                  | Propósito                                  |
+| ------------------------ | ------------------------------------------ |
+| `SharedResource.es.resx` | Traducciones comunes (Login, Home, Footer) |
+| `Messages.es.resx`       | Mensajes de error y validaciones           |
 
----
+### 1.2. Estructura de Archivos
 
-## 2. Configuración del Middleware de Localización (`Program.cs`)
-
-El Middleware de Localización es crucial para que ASP.NET Core sepa qué idioma debe usar.
-
-### 2.1. Registro de Servicios:
-```csharp
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources"); // Indica dónde están los .resx
-
-builder.Services.AddControllersWithViews()
-    .AddViewLocalization() // Habilita la localización para vistas Razor
-    .AddDataAnnotationsLocalization(); // Habilita la localización para los atributos de validación
+```
+Resources/
+├── SharedResource.es.resx
+├── SharedResource.en.resx
+├── Messages.es.resx
+└── Messages.en.resx
 ```
 
-### 2.2. El Orden de los Middleware es Vital (¡La Danza Cultural!)
-```csharp
-var supportedCultures = new[] { 
-    new CultureInfo("es-ES"), new CultureInfo("en-US"), 
-    // ... otros idiomas
-};
+### 1.3. Uso en Vistas
 
-app.UseRequestLocalization(new RequestLocalizationOptions
+```razor
+@inject IStringLocalizer<SharedResource> Localizer
+
+<h1>@Localizer["TituloBienvenida"]</h1>
+<button>@Localizer["BtnGuardar"]</button>
+```
+
+### 1.4. Uso en Controladores
+
+```csharp
+public class ProductController : Controller
 {
-    DefaultRequestCulture = new RequestCulture("es-ES"), // Idioma por defecto
-    SupportedCultures = supportedCultures,
-    SupportedUICultures = supportedCultures,
-    // Proveedores: Cómo detectamos el idioma del usuario
-    RequestCultureProviders = new List<IRequestCultureProvider>
+    private readonly IStringLocalizer<SharedResource> _localizer;
+    
+    public ProductController(IStringLocalizer<SharedResource> localizer)
     {
-        new QueryStringRequestCultureProvider(), // Ejemplo: ?lang=en o ?culture=fr
-        new CookieRequestCultureProvider(),      // Guarda la preferencia del usuario en una cookie
-        new AcceptLanguageHeaderRequestCultureProvider() // Lee la preferencia del navegador
+        _localizer = localizer;
     }
-});
-```
-**Lección de Supervivencia**: El middleware `app.UseRequestLocalization` debe ir **ANTES** de `app.UseRouting()`, `app.UseAuthentication()` y `app.UseAuthorization()`. Si no, la aplicación intentará procesar la ruta o autenticar al usuario antes de saber en qué idioma está, pudiendo causar errores inesperados o mensajes incorrectos.
-
----
-
-## 3. El Desafío Cultural: Comas, Puntos y Separadores Decimales
-
-Este es un problema clásico que rompe formularios y frustra a los usuarios.
--   **`es-ES`**: `1.000,50 €` (punto para miles, coma para decimales).
--   **`en-US`**: `$1,000.50` (coma para miles, punto para decimales).
-
-### 3.1. El Problema en el `Model Binding`:
-Cuando un usuario en España envía "10,50" en un formulario y el servidor está configurado para la cultura `en-US` (o no la detecta bien), ASP.NET Core intenta parsear "10,50" como un número americano, lo que resultará en:
--   Un valor `0`.
--   Un error de validación.
--   Un `FormatException`.
-
-### 3.2. La Solución Definitiva: `DecimalModelBinder` (El "Traductor de Números")
-
-Hemos implementado un `DecimalModelBinder` personalizado en `/Binders`.
-
-**¿Cómo funciona?**
-1.  **Intercepta**: Antes de que el Model Binder por defecto actúe, el nuestro toma el control.
-2.  **Limpia**: Elimina símbolos de moneda, espacios y otros caracteres no numéricos.
-3.  **Detecta Cultura**: Utiliza `CultureInfo.CurrentCulture` (que ya ha sido establecida por el middleware de localización) para saber si debe esperar una coma o un punto como separador decimal.
-4.  **Parseo Seguro**: Convierte el texto limpio a un `decimal` de forma segura.
-
-```csharp
-// TiendaDawWeb.Web/Binders/DecimalModelBinder.cs
-public class DecimalModelBinder : IModelBinder
-{
-    public Task BindModelAsync(ModelBindingContext bindingContext)
+    
+    public IActionResult NotFound()
     {
-        var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-        if (valueProviderResult == ValueProviderResult.None) return Task.CompletedTask;
-
-        var value = valueProviderResult.FirstValue; // Obtenemos el texto del formulario (ej. "10,50")
-
-        // Aquí se limpia y se parsea usando la cultura del hilo actual
-        // ... (lógica de limpieza y decimal.TryParse) ...
-        
-        bindingContext.Result = ModelBindingResult.Success(parsedValue);
-        return Task.CompletedTask;
+        var mensaje = _localizer["ProductoNoEncontrado"];
+        return View();
     }
 }
 ```
 
-### 3.3. Activación del `DecimalModelBinder` (en `Program.cs`):
+---
+
+## 2. Configuración de Middleware
+
+### 2.1. Registro de Servicios
+
 ```csharp
-builder.Services.AddControllersWithViews(options =>
+builder.Services.AddLocalization(options => 
+    options.ResourcesPath = "Resources");
+
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+```
+
+### 2.2. Orden de Middleware
+
+```mermaid
+flowchart LR
+    A[Request] --> B[RequestLocalization]
+    B -->|Detecta cultura| C[Controller/View]
+    C --> D[Response con cultura]
+    
+    subgraph "CULTURAS SOPORTADAS"
+        ES["es-ES (Español)"]
+        EN["en-US (English)"]
+        FR["fr-FR (Français)"]
+    end
+    
+    B --> ES
+    B --> EN
+    B --> FR
+    
+    style B fill:#fdcb6e
+    style C fill:#00b894
+```
+
+### 2.3. Configuración en Program.cs
+
+```csharp
+var supportedCultures = new[] 
 {
-    // ¡CRÍTICO! Insertamos nuestro binder al principio de la lista.
-    // Esto asegura que se ejecute ANTES que los binders por defecto de .NET.
-    options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
-})
-// ... otras configuraciones de localización ...
+    new CultureInfo("es-ES"),
+    new CultureInfo("en-US"),
+    new CultureInfo("fr-FR")
+};
+
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("es-ES"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+
+app.UseRequestLocalization(localizationOptions);
 ```
-**Lección de Supervivencia**: Cualquier entrada numérica de usuario, especialmente en un entorno global, es una fuente potencial de errores si no se manejan las diferencias culturales de forma explícita. Este `DecimalModelBinder` es un ejemplo perfecto de cómo solucionar un problema real de internacionalización.
 
 ---
 
-## 4. El Conflicto con la Etiqueta `<base href>` (Lección de HTML y Blazor)
+## 3. Formatos Culturales
 
-Este fue un problema que descubrimos en vivo en el proyecto.
--   **`Blazor Server`** requiere la etiqueta `<base href="~/" />` en el `<head>` del HTML. Esta etiqueta le dice al navegador cuál es la "raíz" de la aplicación para que todas las URLs relativas (especialmente las de SignalR) se resuelvan correctamente.
--   **`Selectores de Idioma en el Navbar`**: En nuestro `_Navbar.cshtml`, los enlaces para cambiar de idioma eran del tipo `<a href="?lang=es">Español</a>`.
+Cada cultura tiene reglas diferentes para números, fechas y monedas.
 
-### 4.1. El Problema:
-Cuando el navegador ve `<base href="~/" />`, y estás en la URL `/Products/Details/5`, al pulsar `?lang=es`, el navegador lo interpreta como: `/Details/5?lang=es` (es decir, mantiene el path de la base). **Esto provoca que la URL se construya mal o que el cambio de idioma no se aplique porque no se redirige correctamente.**
+### 3.1. Diferencias Clave
 
-### 4.2. La Solución Magistral: Enlaces de Idioma con Rutas Absolutas Dinámicas
-Modificamos los enlaces en `_Navbar.cshtml` para que siempre incluyan la ruta completa de la página actual antes de añadir el parámetro de idioma:
+| Concepto    | es-ES (España) | en-US (EEUU) |
+| ----------- | -------------- | ------------ |
+| **Decimal** | `1.234,56`     | `1,234.56`   |
+| **Moneda**  | `1.234,56 €`   | `$1,234.56`  |
+| **Fecha**   | `31/12/2025`   | `12/31/2025` |
+
+### 3.2. Ejemplo de Formato
+
+```csharp
+decimal precio = 1234.56m;
+
+// es-ES
+var es = new CultureInfo("es-ES");
+Console.WriteLine(precio.ToString("C", es));  // "1.234,56 €"
+
+// en-US
+var en = new CultureInfo("en-US");
+Console.WriteLine(precio.ToString("C", en));  // "$1,234.56"
+```
+
+---
+
+## 4. Cambio de Idioma
+
+### 4.1. Dropdown de Idiomas
+
 ```razor
-<li>
-    <a class="dropdown-item @(currentCulture == "es" ? "active" : "")" 
-       href="@(Context.Request.Path)?lang=es">Español</a>
-</li>
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle" 
+            data-bs-toggle="dropdown">
+        🌍 @CurrentCulture
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="?culture=es-ES">🇪🇸 Español</a></li>
+        <li><a class="dropdown-item" href="?culture=en-US">🇺🇸 English</a></li>
+    </ul>
+</div>
 ```
-**`Context.Request.Path`**: Esto devuelve la ruta actual de la petición (ej. `/Admin/Dashboard` o `/Products/Details/5`). Al añadirle `?lang=es`, el navegador envía la petición correcta al servidor, y el middleware de localización puede actuar.
 
-**Lección de Supervivencia**: La etiqueta `<base>` puede simplificar la gestión de rutas en Single Page Applications (SPAs) como Blazor, pero puede introducir conflictos con los enlaces HTML tradicionales que usan rutas relativas. Siempre ten esto en cuenta cuando integres SPAs en aplicaciones MVC existentes.
+### 4.2. Cookie de Cultura
+
+```csharp
+// La cultura se guarda en cookie y se mantiene entre peticiones
+Response.Cookies.Append(
+    ".AspNetCore.Culture",
+    $"c={culture}|uic={culture}",
+    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+);
+```
 
 ---
 
-Este volumen te ha proporcionado una comprensión profunda de cómo se gestiona la internacionalización en ASP.NET Core, desde la traducción de textos hasta la delicada danza de los formatos numéricos y la resolución de conflictos con otras tecnologías. Eres ahora un experto en hacer que tu aplicación hable todos los idiomas.
+**Anterior Volumen**: [09. Razor Masterclass](../09-Razor-Syntax-UI.md)  
+**Próximo Volumen**: [11. JavaScript y AJAX](../11-JS-AJAX-Security.md)

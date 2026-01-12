@@ -1,89 +1,163 @@
-# 01. La Forja de .NET: Arquitectura, Middlewares y DI (La Ultimate Master Edition)
+- [1. La Forja de .NET: Arquitectura, Middlewares y DI](#1-la-forja-de-net-arquitectura-middlewares-y-di)
+  - [1. El Viaje de una Petición (Middleware Pipeline)](#1-el-viaje-de-una-petición-middleware-pipeline)
+    - [1.1. Pipeline Visual](#11-pipeline-visual)
+    - [1.1. Middlewares Clave en WalaDaw](#11-middlewares-clave-en-waladaw)
+  - [2. Inyección de Dependencias (DI)](#2-inyección-de-dependencias-di)
+    - [2.1. ¿Por qué usar DI?](#21-por-qué-usar-di)
+    - [2.2. Los 3 Tiempos de Vida](#22-los-3-tiempos-de-vida)
+    - [2.3. Peligro del Singleton](#23-peligro-del-singleton)
+  - [3. Constructores Primarios C# 14](#3-constructores-primarios-c-14)
+    - [3.1. Sintaxis Antigua vs Nueva](#31-sintaxis-antigua-vs-nueva)
+    - [3.2. Beneficio](#32-beneficio)
+  - [4. ViewModels: Seguridad y Flexibilidad](#4-viewmodels-seguridad-y-flexibilidad)
+    - [4.1. ¿Por qué ViewModels?](#41-por-qué-viewmodels)
+    - [4.2. Ejemplo de ViewModel](#42-ejemplo-de-viewmodel)
+    - [4.3. Seguridad: Overposting](#43-seguridad-overposting)
+  - [5. Patrón Result](#5-patrón-result)
+    - [5.1. Definición en Servicio](#51-definición-en-servicio)
+    - [5.2. Uso en Controlador](#52-uso-en-controlador)
+    - [5.3. Ventajas del Patrón Result](#53-ventajas-del-patrón-result)
+  - [6. TempData y Flash Messages](#6-tempdata-y-flash-messages)
+    - [6.1. Flujo de TempData](#61-flujo-de-tempdata)
+    - [6.2. Mostrar en Vista](#62-mostrar-en-vista)
+    - [6.3. Característica Especial](#63-característica-especial)
+  - [7. ContentRoot y WebRoot](#7-contentroot-y-webroot)
+    - [7.1. Diferencias Clave](#71-diferencias-clave)
+    - [7.2. Problema Común](#72-problema-común)
+    - [7.3. Solución en Program.cs](#73-solución-en-programcs)
+    - [7.4. Troubleshooting](#74-troubleshooting)
 
-Bienvenido al viaje al centro de la arquitectura de una aplicación .NET 10. Aquí no solo verás dónde van los archivos, sino *por qué* y *cómo* cada pieza encaja para construir un sistema robusto, escalable y mantenible. Prepárate para entender el cerebro de tu aplicación.
+# 1. La Forja de .NET: Arquitectura, Middlewares y DI
+.NET Core es una plataforma modular y flexible. En este capítulo, exploraremos cómo funciona su arquitectura interna, el pipeline de middlewares y la inyección de dependencias (DI).
 
-## 1. El Viaje Inesperado de una Petición (The Middleware Pipeline)
 
-Imagina tu aplicación ASP.NET Core como una fábrica de coches. Cada estación de trabajo (Middleware) realiza una tarea específica en el coche (petición HTTP) antes de pasarlo a la siguiente. El orden es CRÍTICO:
+## 1. El Viaje de una Petición (Middleware Pipeline)
 
-```text
-Usuario (Navegador)
-       ↓ (Petición HTTP)
-┌────────────────────────────────┐
-│           Kestrel (Servidor Web)        │
-└────────────────────────────────┘
-       ↓
-┌────────────────────────────────┐
-│ 1. `app.UseExceptionHandler`   │  <- Si algo falla, el primero en capturarlo.
-│                                │
-│ 2. `app.UseHttpsRedirection`   │  <- ¿Es HTTP? Redirigir a HTTPS.
-│                                │
-│ 3. `app.UseStaticFiles`        │  <- ¿Es un CSS/JS/Imagen? Servir y FIN de la petición.
-│                                │
-│ 4. `app.UseRouting`            │  <- Mira la URL, ¿a dónde va esta petición?
-│                                │
-│ 5. `app.UseRequestLocalization`│  <- ¿En qué idioma quiere la web el usuario?
-│                                │
-│ 6. `app.UseAuthentication`     │  <- ¿Quién eres? (Lee la cookie de sesión).
-│                                │
-│ 7. `app.UseAuthorization`      │  <- ¿Tienes permiso para hacer esto?
-│                                │
-│ 8. `app.UseSession`            │  <- ¿Necesitamos datos temporales para este usuario?
-│                                │
-│ 9. `app.MapControllerRoute`    │  <- ¡Aquí está el Controlador! Ejecuta el código.
-│                                │
-│ 10. `app.MapRazorPages`        │  <- O quizás una Razor Page.
-│                                │
-│ 11. `app.MapBlazorHub`         │  <- O la conexión con Blazor Server.
-└────────────────────────────────┘
-       ↓ (Respuesta HTTP)
-Usuario (Navegador)
+Imagina tu aplicación ASP.NET Core como una fábrica. Cada estación (Middleware) realiza una tarea específica en la petición HTTP.
+
+### 1.1. Pipeline Visual
+
+```mermaid
+flowchart LR
+    subgraph "📥 PETICIÓN"
+        Client[Navegador Web]
+    end
+    
+    subgraph "🏭 PIPELINE MIDDLEWARE"
+        Kestrel[Kestrel<br/>Servidor]
+        Exception[Exception<br/>Handler]
+        Https[Https<br/>Redirection]
+        Static[Static<br/>Files]
+        Routing[Routing]
+        Localization[Localization]
+        Auth[Authentication]
+        Authorization[Authorization]
+        Session[Session]
+        End[Controller<br/>Razor<br/>Blazor]
+    end
+    
+    subgraph "📤 RESPUESTA"
+        Response[Navegador Web]
+    end
+    
+    Client -->|HTTP Request| Kestrel
+    Kestrel --> Exception
+    Exception --> Https
+    Https --> Static
+    Static -->|Si no es static| Routing
+    Routing --> Localization
+    Localization --> Auth
+    Auth --> Authorization
+    Authorization --> Session
+    Session --> End
+    End -->|HTTP Response| Response
+    
+    style Exception fill:#ff6b6b
+    style Auth fill:#4ecdc4
+    style Authorization fill:#4ecdc4
+    style End fill:#45b7d1
 ```
 
-**La Regla de Oro**: El orden de `app.Use...` importa MUCHO. Un `UseAuthentication` después de `MapControllerRoute` significa que tus controladores se ejecutarán antes de saber quién es el usuario.
+**La Regla de Oro**: El orden de `app.Use...` importa MUCHO.
 
-## 3. Inyección de Dependencias (DI): El Contenedor Maestro de Objetos
+### 1.1. Middlewares Clave en WalaDaw
 
-La Inyección de Dependencias es el patrón estrella de .NET Core. Te permite construir aplicaciones "desacopladas". En lugar de que tus clases creen sus dependencias (`new MiServicio()`), las piden a un "Contenedor" (el sistema de DI).
+| #   | Middleware               | Función                            |
+| --- | ------------------------ | ---------------------------------- |
+| 1.1 | `UseExceptionHandler`    | Captura excepciones no controladas |
+| 1.2 | `UseHttpsRedirection`    | Redirige HTTP a HTTPS              |
+| 1.3 | `UseStaticFiles`         | Serve CSS, JS, imágenes            |
+| 1.4 | `UseRouting`             | Analiza la URL y determina la ruta |
+| 1.5 | `UseRequestLocalization` | Configura idioma del usuario       |
+| 1.6 | `UseAuthentication`      | Identifica al usuario (cookie)     |
+| 1.7 | `UseAuthorization`       | Verifica permisos de acceso        |
+| 1.8 | `UseSession`             | Datos temporales por usuario       |
+| 1.9 | `MapControllerRoute`     | Ejecuta el controlador             |
 
-### 3.1. ¿Por qué usar DI? (Beneficios Clave)
--   **Testabilidad**: Puedes "simular" dependencias (Mocks) en tus pruebas sin tocar la base de datos real.
--   **Mantenibilidad**: Si cambias la implementación de `IProductService` (ej. de SQL a NoSQL), solo modificas una línea en `Program.cs`.
--   **Extensibilidad**: Fácilmente puedes añadir nuevas funcionalidades sin modificar código existente (Open/Closed Principle).
+---
 
-### 3.2. Los 3 Tiempos de Vida (Lifetimes) - Una Metáfora Avanzada
-Imagina el servidor como un gran centro comercial.
+## 2. Inyección de Dependencias (DI)
 
-1.  **Transient (`AddTransient`)**:
-    *   **Metáfora**: Un café desechable. Cada vez que entras a una tienda (una clase pide el servicio), te dan un café nuevo.
-    *   **Comportamiento**: Se crea una nueva instancia del objeto cada vez que se pide.
-    *   **Uso**: Servicios ligeros, sin estado, que no necesitan ser compartidos. Ejemplos: Procesadores de cálculos puntuales.
+La DI es el patrón estrella de .NET Core. En lugar de que tus clases creen sus dependencias (`new MiServicio()`), las piden a un contenedor.
 
-2.  **Scoped (`AddScoped`)**:
-    *   **Metáfora**: Una pulsera para un evento. Te la dan al entrar (cuando llega una petición HTTP), y te la quitan al salir (cuando la petición termina). Mientras la tienes, puedes acceder a las atracciones (otros servicios) usando la misma pulsera.
-    *   **Comportamiento**: Se crea una instancia por cada petición HTTP. Todos los objetos que pidan este servicio durante la misma petición recibirán la **misma instancia**.
-    *   **Uso**: Es el ciclo de vida más común y seguro para la mayoría de los servicios de negocio, especialmente aquellos que interactúan con una base de datos (`ApplicationDbContext`). Asegura la coherencia transaccional.
+### 2.1. ¿Por qué usar DI?
 
-3.  **Singleton (`AddSingleton`)**:
-    *   **Metáfora**: El edificio del centro comercial. Solo hay uno.
-    *   **Comportamiento**: Se crea una única instancia del objeto la primera vez que se pide (o al iniciar la aplicación) y se reutiliza para todas las peticiones y todos los usuarios durante toda la vida de la aplicación.
-    *   **Uso**: Servicios de configuración, cachés globales, Background Services.
-    *   **Peligro**: Si guardas datos específicos de un usuario en un Singleton, ¡todos los usuarios verán los datos del primero! Es crucial que los Singletons sean "thread-safe" y no mantengan estado por usuario.
+- **Testabilidad**: Puedes simular dependencias (mocks) en pruebas
+- **Mantenibilidad**: Cambiar implementación sin modificar código existente
+- **Extensibilidad**: Añadir funcionalidades sin tocar código (Open/Closed)
 
-```csharp
-// Program.cs - Configuración de DI
-builder.Services.AddScoped<IProductService, ProductService>(); // Servicio de negocio
-builder.Services.AddSingleton<ITimeService, RealTimeService>(); // Ejemplo de Singleton
-builder.Services.AddTransient<IRandomNumberGenerator, GuidRandomNumberGenerator>(); // Ejemplo de Transient
+### 2.2. Los 3 Tiempos de Vida
+
+```mermaid
+flowchart TB
+    subgraph "⏱️ LIFETIMES"
+        direction TB
+        
+        T["Transient<br/>☕ Café desechable"]
+        S["Scoped<br/>🎫 Pulsera de evento"]
+        G["Singleton<br/>🏢 Edificio"]
+        
+        T -->|"Nueva instancia<br/>cada vez"| T2[Request 1: New<br/>Request 2: New<br/>Request 3: New]
+        S -->|"Una por request"| S2[Request 1: Instance<br/>Request 2: Different Instance]
+        G -->|"Una para todos"| G2[Request 1: Same<br/>Request 2: Same<br/>Request 3: Same]
+    end
+    
+    style T fill:#74b9ff
+    style S fill:#00cec9
+    style G fill:#fdcb6e
+    style T2 fill:#dfe6e9
+    style S2 fill:#dfe6e9
+    style G2 fill:#ffeaa7
 ```
 
-## 4. Constructores Primarios (C# 14): La Elegancia del Código Moderno
+| Lifetime      | Metáfora                      | Comportamiento                  | Uso Común                        |
+| ------------- | ----------------------------- | ------------------------------- | -------------------------------- |
+| **Transient** | Café desechable               | Nueva instancia cada vez        | Servicios ligeros, sin estado    |
+| **Scoped**    | Pulsera de evento             | Una instancia por petición HTTP | Servicios de negocio, DB Context |
+| **Singleton** | Edificio del centro comercial | Una instancia para toda la app  | Configuración, caché global      |
 
-C# evoluciona. La sintaxis de los constructores primarios, disponible en .NET 8+ y plenamente adoptada en .NET 10/C# 14, reduce el "ruido" visual en tus clases.
-
-**Antes (C# antiguo):**
 ```csharp
-public class MyService : IMyService
+// Program.cs
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddSingleton<ITimeService, RealTimeService>();
+builder.Services.AddTransient<IRandomNumberGenerator, GuidRandomNumberGenerator>();
+```
+
+### 2.3. Peligro del Singleton
+
+⚠️ **Atención**: Si guardas datos específicos de un usuario en un Singleton, ¡todos los usuarios verán los mismos datos! Los Singletons deben ser thread-safe.
+
+---
+
+## 3. Constructores Primarios C# 14
+
+C# 14 introduce constructores primarios que reducen el ruido visual en tus clases.
+
+### 3.1. Sintaxis Antigua vs Nueva
+
+```csharp
+// Antes (C# antiguo)
+public class MyService
 {
     private readonly ILogger<MyService> _logger;
     private readonly IRepository _repository;
@@ -93,157 +167,151 @@ public class MyService : IMyService
         _logger = logger;
         _repository = repository;
     }
-
-    public void DoSomething() { _logger.LogInformation("Doing something."); }
 }
-```
 
-**Ahora (C# 14 con Constructores Primarios):**
-```csharp
+// Ahora (C# 14)
 public class MyService(ILogger<MyService> logger, IRepository repository) : IMyService
 {
-    // 'logger' y 'repository' están automáticamente disponibles en toda la clase
-    // No necesitas declarar los campos privados ni asignarlos en el constructor.
-    public void DoSomething() { logger.LogInformation("Doing something."); }
+    // 'logger' y 'repository' están disponibles automáticamente
+    public void DoSomething() => logger.LogInformation("Doing something.");
 }
 ```
-**Beneficio**: Código más conciso, legible y menos propenso a errores (ej. olvidarse de asignar un campo). Es un sello de calidad en tu código.
 
-## 5. ViewModels: El Escudo de Seguridad y la Flexibilidad del Diseño
+### 3.2. Beneficio
 
-Un "ViewModel" es un modelo diseñado específicamente para una vista (`.cshtml`).
+Código más conciso, legible y menos propenso a errores (ej. olvidar asignar un campo).
 
-### 5.1. ¿Por qué ViewModels y no el Modelo de Dominio directo?
-1.  **Seguridad (Overposting)**: Imagina que tu `Product` tiene una propiedad `bool IsApproved` y un hacker la añade oculta a tu formulario. Si tu `ActionResult` recibe un `Product`, podría actualizar `IsApproved` sin que lo sepas. Con un `ProductViewModel` que NO tenga `IsApproved`, el ataque es imposible.
-2.  **Abstracción de la UI**: La vista puede necesitar datos de 3 modelos diferentes (ej. `Product`, `User`, `Category`) o solo un subconjunto de propiedades. El ViewModel es una clase plana que agrupa SOLO lo que la vista necesita.
-3.  **Validación Específica**: Las reglas de validación de la base de datos (Ej. Longitud máxima del texto) pueden ser diferentes de las reglas de la interfaz de usuario (Ej. Un campo es obligatorio en la UI pero opcional en la BD). Las `Data Annotations` se aplican en el ViewModel.
+---
 
-### 5.2. Ejemplo de Uso (`RegisterViewModel.cs`)
+## 4. ViewModels: Seguridad y Flexibilidad
+
+Un ViewModel es un modelo diseñado específicamente para una vista.
+
+### 4.1. ¿Por qué ViewModels?
+
+| Beneficio       | Descripción                                     |
+| --------------- | ----------------------------------------------- |
+| **Seguridad**   | Previene overposting (campos ocultos malicious) |
+| **Abstracción** | La vista recibe solo lo que necesita            |
+| **Validación**  | Reglas específicas de UI separadas de BD        |
+
+### 4.2. Ejemplo de ViewModel
+
 ```csharp
-// TiendaDawWeb.Web/ViewModels/RegisterViewModel.cs
 public class RegisterViewModel
 {
-    [Required(ErrorMessage = "Validacion.EmailRequerido")]
-    [EmailAddress(ErrorMessage = "Validacion.EmailInvalido")]
+    [Required, EmailAddress]
     public string Email { get; set; }
 
-    [Required(ErrorMessage = "Validacion.PasswordRequerido")]
-    [DataType(DataType.Password)]
-    [StringLength(100, ErrorMessage = "Validacion.PasswordLongitud", MinimumLength = 4)]
+    [Required, DataType(DataType.Password)]
+    [StringLength(100, MinimumLength = 4)]
     public string Password { get; set; }
 
-    [DataType(DataType.Password)]
-    [Compare("Password", ErrorMessage = "Validacion.PasswordConfirmacion")]
+    [DataType(DataType.Password), Compare("Password")]
     public string ConfirmPassword { get; set; }
-    
-    // ... otros campos como Nombre, Apellidos que la UI necesita
 }
+```
+
+### 4.3. Seguridad: Overposting
+
+```csharp
+// ❌ PELIGROSO: El usuario podría enviar 'IsAdmin=true' oculto
+public IActionResult Create(Product product) => ...
+
+// ✅ SEGURO: Solo recibe campos del ViewModel
+public IActionResult Create(ProductViewModel vm) => ...
 ```
 
 ---
 
-## 6. Patrón Result: Elegancia Funcional para la Gestión de Errores
+## 5. Patrón Result
 
-Las excepciones (`throw`) son costosas en rendimiento y rompen el flujo de la aplicación. Para errores de negocio previsibles (ej. "Producto no encontrado", "Usuario sin permiso"), usamos el **Patrón Result** con la librería `CSharpFunctionalExtensions`.
+Las excepciones son costosas y rompen el flujo. Para errores de negocio, usamos `Result<T, E>`.
 
-### 6.1. ¿Cómo funciona?
-Una función que puede fallar no devuelve `T` directamente, sino `Result<T, E>`, donde `T` es el valor de éxito y `E` es el valor de error.
+### 5.1. Definición en Servicio
 
-**Ejemplo en un Servicio (`IProductService.cs`):**
 ```csharp
 public interface IProductService
 {
-    // Devuelve un Producto o un DomainError
     Task<Result<Product, DomainError>> GetByIdAsync(long id);
-    Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false);
+    Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin);
 }
 ```
 
-**6.2. Uso en el Controlador (`ProductController.cs`):**
-```csharp
-// Mal: Usando excepciones
-try {
-    var product = await _productService.GetByIdAsync(id); // Podría lanzar ProductNotFoundException
-    return View(product);
-} catch (ProductNotFoundException) {
-    return NotFound();
-}
+### 5.2. Uso en Controlador
 
-// Bien: Usando el Patrón Result
+```csharp
 var result = await _productService.GetByIdAsync(id);
 return result.Match(
-    onSuccess: (product) => View(product),       // Si hay éxito, renderiza la vista
-    onFailure: (error) => {                      // Si hay fallo, gestiona el error
-        // 'error' es nuestro objeto DomainError tipado
-        if (error.Code == ProductError.NotFound(id).Code) {
-            return NotFound();
-        }
-        // ... otros tipos de errores
-        return BadRequest(error.Message); // O un error genérico
+    onSuccess: product => View(product),
+    onFailure: error => error.Code switch
+    {
+        ProductError.NotFound.Code => NotFound(),
+        _ => BadRequest(error.Message)
     }
 );
 ```
-**Ventaja**: El compilador te obliga a gestionar ambos caminos (éxito y fallo). Esto hace tu código más robusto, predecible y fácil de depurar. El controlador no tiene que saber cómo se produce el error, solo cómo reaccionar a él.
+
+### 5.3. Ventajas del Patrón Result
+
+- ✅ El compilador obliga a gestionar éxito y fallo
+- ✅ Código más robusto y predecible
+- ✅ Rendimiento (no usa excepciones para flujo normal)
 
 ---
 
-## 7. Gestión de Mensajes Temporales (Flash Messages con TempData)
+## 6. TempData y Flash Messages
 
-¿Cómo informar al usuario de que "El producto se creó correctamente" después de una redirección? Las variables normales se pierden tras el `return RedirectToAction()`.
+`TempData` guarda datos en una cookie cifrada que sobrevive a una redirección.
 
-### 7.1. `TempData` al Rescate
-`TempData` es un diccionario que guarda datos en una cookie de sesión cifrada. La magia es que los datos solo sobreviven a **una redirección HTTP**. Después de leerse una vez, se eliminan automáticamente.
+### 6.1. Flujo de TempData
 
-**Flujo de Ejemplo:**
-1.  **Controlador (`ProductController.cs`)**:
-    ```csharp
-    [HttpPost]
-    public IActionResult Create(ProductViewModel model)
-    {
-        // ... lógica para guardar el producto ...
-        TempData["SuccessMessage"] = "¡El producto se ha creado con éxito!";
-        return RedirectToAction("Index"); // Redirecciona a la lista de productos
-    }
-    ```
-2.  **Vista (`_Notifications.cshtml` - Parcial Global)**:
-    Este archivo se incluye en `_Layout.cshtml` y contiene la lógica para mostrar las alertas.
-    ```razor
-    @* TiendaDawWeb.Web/Views/Shared/_Notifications.cshtml *@
-    @if (TempData["SuccessMessage"] is string successMessage)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] is string errorMessage)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    ```
-**Beneficio**: Feedback claro y conciso al usuario sin lógica duplicada en cada vista.
-
----
-
-## 8. Troubleshooting: El misterio del `ContentRoot` y `WebRoot`
-
-Uno de los desafíos más sutiles en proyectos con estructuras complejas o al ejecutar desde diferentes ubicaciones es asegurar que ASP.NET Core sepa dónde están sus archivos.
-
-### 8.1. `ContentRootPath` vs `WebRootPath`
--   **`ContentRootPath`**: Es el directorio base de tu aplicación. Aquí se buscan las vistas (`.cshtml`), `appsettings.json`, y las DLLs de tu proyecto.
--   **`WebRootPath`**: Es la carpeta donde se encuentran tus archivos estáticos (`wwwroot`). CSS, JavaScript, imágenes.
-
-### 8.2. El Fallo al Ejecutar desde la Raíz de la Solución
-Si ejecutas `dotnet run --project TiendaDawWeb.Web` desde la raíz de la solución (`TiendaDawWeb-NetCore`), el `ContentRootPath` por defecto será la raíz de la solución. Esto significa que `app.UseStaticFiles()` buscará `wwwroot` en la raíz de la solución (donde no está) y `Views` también fallará.
-
-**La Solución Implementada en `Program.cs`**:
 ```csharp
-// Lógica de detección inteligente al inicio de Program.cs
-// Esta lógica asegura que el ContentRootPath y WebRootPath apunten a TiendaDawWeb.Web
-// incluso si 'dotnet run' se ejecuta desde la raíz de la solución.
+// Controlador
+[HttpPost]
+public IActionResult Create(ProductViewModel model)
+{
+    _productService.Create(model);
+    TempData["SuccessMessage"] = "¡Producto creado!";
+    return RedirectToAction("Index");  // La redirección mantiene el mensaje
+}
+```
+
+### 6.2. Mostrar en Vista
+
+```razor
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["ErrorMessage"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+```
+
+### 6.3. Característica Especial
+
+⚡ Los datos en TempData se eliminan automáticamente después de leerse una vez.
+
+---
+
+## 7. ContentRoot y WebRoot
+
+### 7.1. Diferencias Clave
+
+| Concepto            | Descripción                                      |
+| ------------------- | ------------------------------------------------ |
+| **ContentRootPath** | Directorio base (vistas, appsettings.json, DLLs) |
+| **WebRootPath**     | Carpeta `wwwroot` (CSS, JS, imágenes estáticas)  |
+
+### 7.2. Problema Común
+
+Al ejecutar `dotnet run` desde la raíz de la solución, las rutas pueden fallar.
+
+### 7.3. Solución en Program.cs
+
+```csharp
 var currentDir = Directory.GetCurrentDirectory();
 var isRoot = !Directory.Exists(Path.Combine(currentDir, "wwwroot")) && 
              Directory.Exists(Path.Combine(currentDir, "TiendaDawWeb.Web", "wwwroot"));
@@ -252,21 +320,21 @@ var contentRoot = isRoot ? Path.Combine(currentDir, "TiendaDawWeb.Web") : curren
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
-    Args = args,
     ContentRootPath = contentRoot,
-    WebRootPath = "wwwroot" // Se asume que 'wwwroot' está dentro del ContentRootPath
+    WebRootPath = "wwwroot"
 });
-// ...
-// Si estamos en la raíz de la solución y 'wwwroot' no está ahí,
-// pero sí en la subcarpeta 'TiendaDawWeb.Web', entonces ajustamos la WebRootPath del builder.
+
 if (isRoot)
 {
-    builder.Environment.WebRootPath = Path.Combine(contentRoot, "wwwroot"); // Forzar la WebRootPath
-    builder.WebHost.UseStaticWebAssets(); // Y activar los Static Web Assets para Blazor
+    builder.Environment.WebRootPath = Path.Combine(contentRoot, "wwwroot");
+    builder.WebHost.UseStaticWebAssets();
 }
 ```
-**Lección de Supervivencia**: Siempre que tengas problemas con rutas (`View not found`, `404` en archivos estáticos), lo primero es verificar el `ContentRootPath` y `WebRootPath` de tu aplicación. El "troubleshooting" en .NET comienza con entender el entorno de ejecución.
+
+### 7.4. Troubleshooting
+
+Cuando veas `View not found` o 404 en archivos estátiços, verifica primero `ContentRootPath` y `WebRootPath`.
 
 ---
 
-Este volumen ha sentado las bases de la arquitectura y el flujo de la aplicación. Prepárate para el siguiente nivel.
+**Próximo Volumen**: [02. Guía de Productividad](../02-Development-Tips.md)
