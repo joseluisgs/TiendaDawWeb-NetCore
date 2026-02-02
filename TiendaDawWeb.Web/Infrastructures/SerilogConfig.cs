@@ -30,6 +30,7 @@ public static class SerilogConfig
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Error)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Validation", LogEventLevel.Error)
             .MinimumLevel.Override("Npgsql", LogEventLevel.Error)
+            .MinimumLevel.Override("MongoDB", LogEventLevel.Error)
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
                 theme: AnsiConsoleTheme.Code);

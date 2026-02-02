@@ -1,364 +1,124 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using TiendaDawWeb.Data;
-using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Carrito;
-using TiendaDawWeb.Services.Email;
-using TiendaDawWeb.Services.Favorite;
-using TiendaDawWeb.Services.Pdf;
-using TiendaDawWeb.Services.Product;
-using TiendaDawWeb.Services.Purchase;
-using TiendaDawWeb.Services.Rating;
-using TiendaDawWeb.Services.Storage;
-using TiendaDawWeb.Services.BackgroundServices;
-using System.Globalization;
-using System.Text;
-using System.Threading.Channels;
-using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.FileProviders;
 using Serilog;
-using TiendaDawWeb.Binders;
 using TiendaDawWeb.Web.Infrastructures;
-using TiendaDawWeb.Web.Middlewares;
-using TiendaDawWeb.Web.Hubs;
-using Microsoft.Data.Sqlite;
-using Microsoft.AspNetCore.OutputCaching;
+using System.Globalization;
 
-// Configuración de Serilog
 Log.Logger = SerilogConfig.Configure().CreateLogger();
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    Args = args,
-    ContentRootPath = Directory.GetCurrentDirectory(),
-    WebRootPath = "wwwroot"
-});
+var options = WebRootConfig.CreateOptionsWithArgs(args);
+var builder = WebApplication.CreateBuilder(options);
 
-// OBJETIVO: Cargar los recursos estáticos (JS/CSS) de librerías de componentes (como Blazor).
-// RAZÓN: Sin esto, los archivos virtuales de Blazor (_framework/blazor.server.js) no se encontrarían 
-// durante el desarrollo si se sirven desde paquetes NuGet o proyectos referenciados.
 builder.WebHost.UseStaticWebAssets();
 
-// AJUSTE DINÁMICO DE RUTAS:
-// Si ejecutamos desde la raíz de la solución, el 'ContentRoot' por defecto podría ser erróneo.
-// Este bloque asegura que el servidor encuentre siempre la carpeta 'wwwroot' de la Web.
-if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")) && 
-    Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "TiendaDawWeb.Web", "wwwroot")))
-{
-    var projectPath = Path.Combine(Directory.GetCurrentDirectory(), "TiendaDawWeb.Web");
-    builder.Environment.ContentRootPath = projectPath;
-    builder.Environment.WebRootPath = Path.Combine(projectPath, "wwwroot");
-}
+builder.Host.UseSerilog(Log.Logger);
 
-// Use Serilog for logging
-builder.Host.UseSerilog();
-
-// Configurar cultura española por defecto
 var defaultCulture = new CultureInfo("es-ES");
 CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
 CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
-// CONFIGURACIÓN DE PERSISTENCIA (SQLite In-Memory Persistente):
-// 1. Creamos una conexión manual que mantendremos abierta durante todo el ciclo de vida de la app.
-//    DataSource=:memory: indica que la DB vive solo en la RAM.
-var keepAliveConnection = new SqliteConnection("DataSource=:memory:");
-keepAliveConnection.Open();
+Log.Information("🚀 Inicializando TiendaDawWeb...");
 
-// 2. Registramos el DbContext usando esa conexión persistente.
-//    Aunque el DbContext es Scoped, todos compartirán la misma conexión Singleton (la misma RAM).
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(keepAliveConnection));
+// ============================================================================
+// 🔧 CONFIGURACIÓN DE SERVICIOS (Extension Methods en Infrastructure)
+// ============================================================================
 
-// 3. Opcional: Registramos la conexión para que se cierre limpiamente al apagar el servidor.
-builder.Services.AddSingleton(keepAliveConnection);
+var services = builder.Services;
+var configuration = builder.Configuration;
+var environment = builder.Environment;
 
-// ASP.NET Core Identity
-builder.Services.AddIdentity<User, IdentityRole<long>>(options =>
-{
-    // Password settings - configuración flexible para desarrollo
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 4;
-    
-    // User settings
-    options.User.RequireUniqueEmail = true;
-    
-    // Signin settings
-    options.SignIn.RequireConfirmedEmail = false;
-    options.SignIn.RequireConfirmedPhoneNumber = false;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+// Data
+services.AddDatabases();
 
-// Configurar cookies de autenticación
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Auth/Login";
-    options.LogoutPath = "/Auth/Logout";
-    options.AccessDeniedPath = "/Auth/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    options.SlidingExpiration = true;
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.Strict;
-});
+// Auth
+services.AddAuthentication(configuration);
 
-// Servicios de aplicación (Scoped para mantener contexto por request)
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IFavoriteService, FavoriteService>();
-builder.Services.AddScoped<IStorageService, StorageService>();
-builder.Services.AddScoped<ICarritoService, CarritoService>();
-builder.Services.AddScoped<IPurchaseService, PurchaseService>();
-builder.Services.AddScoped<IRatingService, RatingService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IPdfService, PdfService>();
-builder.Services.AddScoped<RatingStateContainer>();
+// Email
+services.AddEmail();
 
-// 📧 EMAIL: Channel para procesamiento asíncrono de emails
-builder.Services.AddSingleton(Channel.CreateUnbounded<EmailMessage>());
-builder.Services.AddHostedService<EmailBackgroundService>();
+// Business
+services.AddApplicationServices();
+services.AddBackgroundJobs();
 
-// 📰 BACKGROUND JOBS: Servicio de tarefas programadas (novedades semanales)
-builder.Services.AddScoped<ProductoReportTask>();
-builder.Services.AddHostedService<BackgroundJobService>();
+// Servicios Adicionales
+services.AddCleanupServices();
+services.AddAppLocalization();
 
-// Background Services
-builder.Services.AddHostedService<CarritoCleanupService>();
-builder.Services.AddHostedService<ReservaCleanupService>();
+// Core - MVC, Razor Pages, Blazor
+services.AddMvcControllers();
+services.AddAppRazorPages();
+services.AddBlazorServer();
 
-// Registro de servicios de localización para soportar .resx
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+// Cache & Session
+services.AddCaching();
 
-// CONFIGURACIÓN MVC Y BLAZOR:
-builder.Services.AddControllersWithViews(options =>
-{
-    // Registra nuestro binder personalizado para tratar comas decimales correctamente en toda la app
-    options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
-})
-.AddViewLocalization() // Habilita la traducción en las vistas (.cshtml)
-.AddDataAnnotationsLocalization(); // Habilita la traducción en los mensajes de validación de los Modelos
+// Security
+services.AddAppAntiforgery();
 
-builder.Services.AddRazorPages();
+// CORS
+services.AddCorsPolicy(configuration, environment.IsDevelopment());
 
-// Registra los servicios necesarios para Blazor Server
-// DetailedErrors = true es fundamental en desarrollo para ver por qué falla un componente
-builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; }); 
+// SignalR (Realtime)
+services.AddAppSignalR();
 
-// 🚀 MEJORA DE RENDIMIENTO: Registro de OutputCache (.NET 10)
-// Permite cachear la salida HTML en el servidor para reducir carga de CPU y DB.
-builder.Services.AddOutputCache();
-
-// 🧠 CACHÉ DE APLICACIÓN: Registro de IMemoryCache para optimizar servicios
-builder.Services.AddMemoryCache();
-
-// 🔔 INTERACTIVIDAD: Registro de SignalR
-// Habilita la comunicación bidireccional en tiempo real, para las notificaciones push
-// No tiene nada que ver con Blazor, que usa SignalR internamente.,
-// esto es solo para nuestro Hub personalizado.
-builder.Services.AddSignalR();
-
-// CONFIGURACIÓN DE SEGURIDAD AJAX:
-// Obliga a que las peticiones POST de JS/Blazor incluyan este nombre de cabecera con el token CSRF
-builder.Services.AddAntiforgery(options =>
-{
-    options.HeaderName = "RequestVerificationToken";
-});
-
-// GESTIÓN DE ESTADO Y CACHÉ:
-builder.Services.AddDistributedMemoryCache(); // Almacén en memoria para la sesión
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true; // Impide que JavaScript acceda a la cookie de sesión (Seguridad)
-    options.Cookie.IsEssential = true; // La sesión se cargará aunque el usuario no haya aceptado cookies de rastreo
-});
-
-// CORS (si es necesario para desarrollo)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
-});
-
-// Logging (handled by Serilog)
-// Removed default logging configuration
+// ============================================================================
+// 🚀 CONSTRUCCIÓN DE LA APLICACIÓN
+// ============================================================================
 
 var app = builder.Build();
+var isDevelopment = app.Environment.IsDevelopment();
 
-// SEED DATA: Inicialización de la base de datos con datos de prueba
-// Usamos un Scope para asegurar que el DbContext se libere correctamente tras la carga
-using (var scope = app.Services.CreateScope())
+Log.Information("✅ Aplicación construida");
+
+// ============================================================================
+// 📍 PIPELINE DE MIDDLEWARES (Extension Methods)
+// ============================================================================
+
+if (!isDevelopment)
 {
-    var services = scope.ServiceProvider;
-    try
-    {
-        // 🚨 PASO CRÍTICO (SQLite In-Memory):
-        // A diferencia del proveedor 'InMemory', SQLite es un motor real que requiere 
-        // que las tablas existan físicamente en la memoria antes de insertar datos.
-        // EnsureCreatedAsync() analiza nuestros Modelos y crea el esquema (tablas y relaciones) 
-        // automáticamente en cada arranque del servidor.
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureCreatedAsync();
-        
-        // Una vez las tablas existen, procedemos a llenarlas con datos de prueba
-        await SeedData.InitializeAsync(services);
-    }
-    catch (Exception ex)
-    {
-        var scopeLogger = services.GetRequiredService<ILogger<Program>>();
-        scopeLogger.LogError(ex, "Error al inicializar la base de datos");
-    }
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+else
+{
+    Log.Information("🔓 Modo desarrollo: HTTP permitido (sin redirección HTTPS)");
 }
 
-// GESTIÓN DEL SISTEMA DE ARCHIVOS (UPLOADS):
-var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-var uploadPath = Path.Combine(webRootPath, "uploads");
-
-// Asegura que la carpeta física exista para evitar errores de IO
-if (!Directory.Exists(webRootPath))
-{
-    Directory.CreateDirectory(webRootPath);
-}
-
-// Lógica de limpieza: Borramos los uploads antiguos al reiniciar el servidor
-// Esto mantiene la base de datos InMemory sincronizada con los archivos físicos
-try 
-{
-    if (Directory.Exists(uploadPath))
-    {
-        Log.Information("🗑️ Limpiando directorio uploads en: {Path}", uploadPath);
-        Directory.Delete(uploadPath, true);
-        Log.Information("✅ Directorio uploads limpiado");
-    }
-}
-catch (Exception ex)
-{
-    Log.Warning(ex, "⚠️ No se pudo limpiar completamente el directorio uploads, se intentará usar el existente.");
-}
-
-// Recrea el directorio vacío si no existe
-if (!Directory.Exists(uploadPath))
-{
-    Directory.CreateDirectory(uploadPath);
-}
-Log.Information("📁 Directorio uploads listo en: {Path}", uploadPath);
-
-// Middleware Pipeline - El orden aquí es CRÍTICO.
-
-// 🚨 RED DE SEGURIDAD GLOBAL: Captura excepciones no controladas
-if (!app.Environment.IsDevelopment())
+if (!isDevelopment)
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 else
 {
-    // En desarrollo, podemos usar el handler personalizado o la página detallada
-    app.UseExceptionHandler("/Error"); 
-    // app.UseDeveloperExceptionPage(); // Comentamos para probar nuestra página de error
+    app.UseExceptionHandler("/Error");
 }
 
-// 🌐 CAPTURA DE CÓDIGOS DE ESTADO (404, 403, etc.)
-// Redirige a ErrorController pasando el código
-app.UseStatusCodePagesWithReExecute("/Error/{0}"); 
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
-// Redirige automáticamente peticiones HTTP a HTTPS
-app.UseHttpsRedirection();
-
-// 🚀 MAP STATIC ASSETS (.NET 9+): Serve wwwroot files with build-time compression,
-// fingerprinting, caching, and ETag support. Favicon is served automatically.
 app.MapStaticAssets();
-
-// Permite servir archivos desde wwwroot (css, js, imágenes)
-// Nota: MapStaticAssets() ya maneja wwwroot. UseStaticFiles() aquí es redundante
-// pero se mantiene para compatibilidad con IIS durante desarrollo.
-// app.UseStaticFiles();
-
-// Configura archivos estáticos para el directorio virtual de uploads
-// Esto permite que /uploads/foto.jpg sea accesible aunque esté fuera de wwwroot
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(uploadPath),
-    RequestPath = "/uploads"
-});
-
-// Analiza la URL y decide qué ruta corresponde a la petición (antes de ejecutarla)
+app.ConfigureStaticFiles();
 app.UseRouting();
-
-// 🚀 MEJORA DE RENDIMIENTO: Middleware de OutputCache.
-// Debe ir después de Routing pero antes de Authentication si queremos servir caché a anónimos.
-// app.UseOutputCache();
-
-// Configurar las culturas soportadas por la aplicación
-var supportedCultures = new[] 
-{ 
-    new CultureInfo("es-ES"),
-    new CultureInfo("en-US"),
-    new CultureInfo("fr-FR"),
-    new CultureInfo("de-DE"),
-    new CultureInfo("pt-PT")
-};
-
-// Middleware de Localización: Detecta el idioma del usuario (Cookie, QueryString o Header)
-// y lo aplica al hilo actual para traducir la UI
-app.UseRequestLocalization(new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new RequestCulture("es-ES"),
-    SupportedCultures = supportedCultures,
-    SupportedUICultures = supportedCultures,
-    ApplyCurrentCultureToResponseHeaders = true,
-    RequestCultureProviders = new List<IRequestCultureProvider>
-    {
-        new QueryStringRequestCultureProvider(), 
-        new CookieRequestCultureProvider(),
-        new AcceptLanguageHeaderRequestCultureProvider()
-    }
-});
-
-Log.Information("🌍 Soporte de localización configurado, idioma por defecto: 🇪🇸 es-ES");
-
-// Identifica quién es el usuario (lee la cookie de autenticación)
+app.UseAppLocalization();
 app.UseAuthentication();
-// Determina si el usuario identificado tiene permiso para acceder al recurso solicitado
 app.UseAuthorization();
-// Habilita el uso de variables de sesión (necesario para el carrito de compras)
 app.UseSession();
-
-// Enrutamiento de controladores MVC (Controller/Action/Id)
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// Habilita el enrutamiento para Razor Pages si existieran
-app.MapRazorPages();
-
-// Punto de conexión para Blazor Server. Crea el túnel SignalR para la interactividad real-time
-app.MapBlazorHub(); 
-
-// Punto de conexión para nuestro Hub de Notificaciones personalizado
-app.MapHub<NotificationHub>("/notificationHub");
-
-// Endpoint de salud del sistema: útil para monitorización y Docker
-
-// Health check endpoint
+app.MapAppEndpoints();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-// Startup banner - matching Spring Boot style
-var appUrls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://localhost:5000";
-var port = appUrls.Split(';').FirstOrDefault()?.Split(':').LastOrDefault() ?? "5000";
-Log.Information("🌐 Acceso: http://localhost:{Port}/Public", port);
-Log.Information("🔑 Login admin: admin@waladaw.com / admin");
-Log.Information("🔑 Login user: prueba@prueba.com / prueba");
+// ============================================================================
+// 🗄️ INICIALIZACIÓN DE DATOS
+// ============================================================================
+
+await app.InitializeDatabaseAsync(isDevelopment);
+app.InitializeStorage(isDevelopment);
+
+PrintStartupInfo(isDevelopment, configuration);
+
+// ============================================================================
+// ▶️ ARRANQUE DE LA APLICACIÓN
+// ============================================================================
 
 try
 {
-    Log.Information("🚀 Aplicación iniciada correctamente");
     app.Run();
 }
 catch (Exception ex)
@@ -369,4 +129,37 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+/// <summary>
+/// Imprime en los logs la información de inicio de la aplicación.
+/// </summary>
+static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration)
+{
+    var urls = configuration["ASPNETCORE_URLS"]?.Split(';') ?? new[] { "http://localhost:5000" };
+    var firstUrl = urls.FirstOrDefault() ?? "http://localhost:5000";
+    var protocol = firstUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
+    var host = firstUrl.Contains("://") ? firstUrl.Split("://")[1].Split(':')[0] : "localhost";
+    var port = firstUrl.Contains(':') ? firstUrl.Split(':').Last() : "5000";
+
+    var mode = isDevelopment ? "DESARROLLO" : "PRODUCCION";
+    var baseUrl = $"{protocol}://{host}:{port}";
+
+    Log.Information("=================================================================");
+    Log.Information("TiendaDawWeb - Aplicación Web Educativa");
+    Log.Information("=================================================================");
+    Log.Information("Acceso Publico:         {BaseUrl}/Public", baseUrl);
+    Log.Information("Panel Admin:            {BaseUrl}/Admin", baseUrl);
+    Log.Information("=================================================================");
+    Log.Information("CREDENCIALES DE PRUEBA:");
+    Log.Information("  Admin:   admin@waladaw.com / admin (ROLE_ADMIN)");
+    Log.Information("  Usuario: prueba@prueba.com / prueba (ROLE_USER)");
+    Log.Information("=================================================================");
+    Log.Information("DATOS SEMBRADOS (Seed):");
+    Log.Information("  SQLite In-Memory: 10 usuarios, 42 productos");
+    Log.Information("  Roles: ADMIN, MODERATOR, USER");
+    Log.Information("=================================================================");
+    Log.Information("🚀 Aplicacion iniciada correctamente en {BaseUrl} ({Mode})",
+        baseUrl, mode);
+    Log.Information("=================================================================");
 }
