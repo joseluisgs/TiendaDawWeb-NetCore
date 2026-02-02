@@ -9,15 +9,28 @@ using TiendaDawWeb.Services.Pdf;
 
 namespace TiendaDawWeb.Services.Pdf;
 
+/// <summary>
+///     Servicio de generación de facturas en formato PDF usando QuestPDF
+/// </summary>
 public class PdfService : IPdfService {
     private const decimal IvaRate = 1.21m;
     private readonly ILogger<PdfService> _logger;
 
+    /// <summary>
+    ///     Inicializa el servicio PDF con licencia comunitaria.
+    /// </summary>
+    /// <param name="logger">Logger para errores</param>
     public PdfService(ILogger<PdfService> logger) {
         _logger = logger;
         Settings.License = LicenseType.Community;
     }
 
+    /// <summary>
+    ///     Genera un PDF con la factura de una compra.
+    ///     Incluye información del cliente, productos comprados y desglose de IVA.
+    /// </summary>
+    /// <param name="purchase">Datos de la compra</param>
+    /// <returns>Bytes del PDF generado o error</returns>
     public async Task<Result<byte[], DomainError>> GenerateInvoicePdfAsync(Models.Purchase purchase) {
         try {
             var pdfBytes = Document.Create(container => {

@@ -9,6 +9,9 @@ using TiendaDawWeb.Services.Email;
 
 namespace TiendaDawWeb.Services.Email;
 
+/// <summary>
+///     Servicio de envío de emails con soporte para cola asíncrona y adjuntos
+/// </summary>
 public class EmailService(
     IConfiguration configuration,
     ILogger<EmailService> logger,
@@ -17,6 +20,12 @@ public class EmailService(
 {
     private readonly Channel<EmailMessage> _emailChannel = emailChannel;
 
+    /// <summary>
+    ///     Envía un email de bienvenida a un nuevo usuario.
+    /// </summary>
+    /// <param name="toEmail">Email del destinatario</param>
+    /// <param name="userName">Nombre del usuario</param>
+    /// <returns>True si se envió o error</returns>
     public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName)
     {
         var subject = "Bienvenido a WalaDaw!";
@@ -24,6 +33,13 @@ public class EmailService(
         return await SendEmailAsync(toEmail, subject, body);
     }
 
+    /// <summary>
+    ///     Envía un email de confirmación de compra con factura adjunta opcional.
+    /// </summary>
+    /// <param name="toEmail">Email del destinatario</param>
+    /// <param name="purchase">Datos de la compra</param>
+    /// <param name="pdfAttachment">Bytes del PDF de factura</param>
+    /// <returns>True si se envió o error</returns>
     public async Task<Result<bool, DomainError>> SendPurchaseConfirmationEmailAsync(
         string toEmail, Models.Purchase purchase, byte[]? pdfAttachment = null)
     {
@@ -32,6 +48,15 @@ public class EmailService(
         return await SendEmailAsync(toEmail, subject, body, pdfAttachment, $"factura-{purchase.Id}.pdf");
     }
 
+    /// <summary>
+    ///     Envía un email con opciones de adjuntos.
+    /// </summary>
+    /// <param name="toEmail">Email del destinatario</param>
+    /// <param name="subject">Asunto del email</param>
+    /// <param name="body">Cuerpo del email (HTML soportado)</param>
+    /// <param name="attachment">Bytes del adjunto opcional</param>
+    /// <param name="attachmentName">Nombre del adjunto</param>
+    /// <returns>True si se envió o error</returns>
     public async Task<Result<bool, DomainError>> SendEmailAsync(
         string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null)
     {
@@ -80,6 +105,10 @@ public class EmailService(
         }
     }
 
+    /// <summary>
+    ///     Encola un mensaje de email para procesamiento asíncrono.
+    /// </summary>
+    /// <param name="emailMessage">Mensaje a encolar</param>
     public void EnqueueEmail(EmailMessage emailMessage)
     {
         _emailChannel.Writer.TryWrite(emailMessage);

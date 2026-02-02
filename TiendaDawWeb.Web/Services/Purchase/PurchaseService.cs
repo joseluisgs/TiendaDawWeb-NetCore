@@ -11,6 +11,9 @@ using TiendaDawWeb.Services.Purchase;
 
 namespace TiendaDawWeb.Services.Purchase;
 
+/// <summary>
+///     Servicio de gestión de compras con soporte para concurrencia y caché
+/// </summary>
 public class PurchaseService(
     ApplicationDbContext context,
     ICarritoService carritoService,
@@ -22,6 +25,12 @@ public class PurchaseService(
     private const string ProductsCacheKey = "all_products";
     private const int MaxRetries = 2;
 
+    /// <summary>
+    ///     Crea una compra a partir del carrito del usuario.
+    ///     Implementa reintento automático por conflictos de concurrencia.
+    /// </summary>
+    /// <param name="usuarioId">ID del usuario comprador</param>
+    /// <returns>La compra creada o un error</returns>
     public async Task<Result<Models.Purchase, DomainError>> CreatePurchaseFromCarritoAsync(long usuarioId)
     {
         var attempt = 0;
@@ -152,6 +161,11 @@ public class PurchaseService(
         return message.Contains("40001") || message.Contains("3960") || message.Contains("serialization");
     }
 
+    /// <summary>
+    ///     Obtiene una compra específica por su ID con todos los detalles.
+    /// </summary>
+    /// <param name="id">ID de la compra</param>
+    /// <returns>La compra encontrada o error</returns>
     public async Task<Result<Models.Purchase, DomainError>> GetByIdAsync(long id)
     {
         try
@@ -174,6 +188,13 @@ public class PurchaseService(
         }
     }
 
+    /// <summary>
+    ///     Obtiene las compras de un usuario con paginación.
+    /// </summary>
+    /// <param name="usuarioId">ID del usuario</param>
+    /// <param name="page">Número de página (1-based)</param>
+    /// <param name="pageSize">Cantidad de elementos por página</param>
+    /// <returns>Lista paginada de compras o error</returns>
     public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetByUserAsync(long usuarioId, int page = 1,
         int pageSize = 10)
     {
@@ -197,6 +218,12 @@ public class PurchaseService(
         }
     }
 
+    /// <summary>
+    ///     Obtiene todas las compras del sistema con paginación (para admin).
+    /// </summary>
+    /// <param name="page">Número de página</param>
+    /// <param name="pageSize">Cantidad de elementos por página</param>
+    /// <returns>Lista paginada de compras o error</returns>
     public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetAllAsync(int page = 1, int pageSize = 10)
     {
         try
@@ -218,6 +245,14 @@ public class PurchaseService(
         }
     }
 
+    /// <summary>
+    ///     Obtiene compras dentro de un rango de fechas con paginación.
+    /// </summary>
+    /// <param name="desde">Fecha de inicio</param>
+    /// <param name="hasta">Fecha de fin</param>
+    /// <param name="page">Número de página</param>
+    /// <param name="pageSize">Cantidad de elementos por página</param>
+    /// <returns>Lista paginada de compras o error</returns>
     public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetByDateRangeAsync(DateTime desde, DateTime hasta,
         int page = 1, int pageSize = 10)
     {
@@ -241,6 +276,11 @@ public class PurchaseService(
         }
     }
 
+    /// <summary>
+    ///     Genera un PDF con la factura de la compra.
+    /// </summary>
+    /// <param name="purchaseId">ID de la compra</param>
+    /// <returns>Bytes del PDF generado o error</returns>
     public async Task<Result<byte[], DomainError>> GeneratePdfAsync(long purchaseId)
     {
         try

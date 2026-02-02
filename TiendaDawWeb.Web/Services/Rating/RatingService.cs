@@ -7,11 +7,22 @@ using TiendaDawWeb.Services.Rating;
 
 namespace TiendaDawWeb.Services.Rating;
 
+/// <summary>
+///     Servicio de gestión de valoraciones de productos con Railway Oriented Programming
+/// </summary>
 public class RatingService(
     ApplicationDbContext context,
     ILogger<RatingService> logger
 ) : IRatingService
 {
+    /// <summary>
+    ///     Añade una nueva valoración a un producto.
+    /// </summary>
+    /// <param name="usuarioId">ID del usuario que valora</param>
+    /// <param name="productoId">ID del producto valorado</param>
+    /// <param name="puntuacion">Puntuación del 1 al 5</param>
+    /// <param name="Comentario">Comentario opcional de la valoración</param>
+    /// <returns>La valoración creada o un error</returns>
     public async Task<Result<Models.Rating, DomainError>> AddRatingAsync(
         long usuarioId, long productoId, int puntuacion, string? comentario)
     {
@@ -50,6 +61,11 @@ public class RatingService(
         });
     }
 
+    /// <summary>
+    ///     Obtiene todas las valoraciones de un producto ordenadas por fecha descendente.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>Lista de valoraciones o error</returns>
     public async Task<Result<IEnumerable<Models.Rating>, DomainError>> GetByProductoIdAsync(long productoId)
     {
         try
@@ -69,6 +85,11 @@ public class RatingService(
         }
     }
 
+    /// <summary>
+    ///     Obtiene una valoración específica por su ID.
+    /// </summary>
+    /// <param name="id">ID de la valoración</param>
+    /// <returns>La valoración encontrada o error</returns>
     public async Task<Result<Models.Rating, DomainError>> GetByIdAsync(long id)
     {
         try
@@ -90,6 +111,14 @@ public class RatingService(
         }
     }
 
+    /// <summary>
+    ///     Actualiza una valoración existente del usuario.
+    /// </summary>
+    /// <param name="ratingId">ID de la valoración a actualizar</param>
+    /// <param name="usuarioId">ID del usuario propietario</param>
+    /// <param name="puntuacion">Nueva puntuación (1-5)</param>
+    /// <param name="comentario">Nuevo comentario opcional</param>
+    /// <returns>La valoración actualizada o error</returns>
     public async Task<Result<Models.Rating, DomainError>> UpdateRatingAsync(
         long ratingId, long usuarioId, int puntuacion, string? comentario)
     {
@@ -117,6 +146,13 @@ public class RatingService(
         });
     }
 
+    /// <summary>
+    ///     Elimina una valoración. Solo el propietario o admin pueden eliminarla.
+    /// </summary>
+    /// <param name="ratingId">ID de la valoración</param>
+    /// <param name="usuarioId">ID del usuario que elimina</param>
+    /// <param name="isAdmin">Indica si el usuario es administrador</param>
+    /// <returns>True si se eliminó o error</returns>
     public async Task<Result<bool, DomainError>> DeleteRatingAsync(long ratingId, long usuarioId, bool isAdmin = false)
     {
         try
@@ -144,6 +180,11 @@ public class RatingService(
         }
     }
 
+    /// <summary>
+    ///     Calcula el promedio de puntuación de un producto.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>Promedio de puntuación o 0 si no hay valoraciones</returns>
     public async Task<Result<double, DomainError>> GetAverageRatingAsync(long productoId)
     {
         try
@@ -162,6 +203,13 @@ public class RatingService(
         }
     }
 
+    /// <summary>
+    ///     Verifica si un usuario puede valorar un producto.
+    ///     Solo pueden valorar usuarios que han comprado el producto.
+    /// </summary>
+    /// <param name="usuarioId">ID del usuario</param>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>True si puede valorar o error</returns>
     public async Task<Result<bool, DomainError>> CanUserRateProductAsync(long usuarioId, long productoId)
     {
         try

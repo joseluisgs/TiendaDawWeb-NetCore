@@ -3,11 +3,12 @@ using TiendaDawWeb.Data.Abstractions;
 namespace TiendaDawWeb.Models;
 
 /// <summary>
-/// Clase base para entidades con auditoría de timestamps.
+/// Clase base abstracta para entidades con auditoría de timestamps.
+/// Proporciona campos comunes para seguimiento de creación y modificación.
 /// </summary>
 public abstract class AuditableEntity : ITimestamped
 {
-    /// <summary>Fecha de creación (se asigna en INSERT).</summary>
+    /// <summary>Fecha de creación del registro (se asigna en INSERT).</summary>
     public DateTime CreatedAt { get; set; }
 
     /// <summary>Fecha de última modificación (se asigna en INSERT/UPDATE).</summary>

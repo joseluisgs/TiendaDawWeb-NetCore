@@ -5,10 +5,13 @@ using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Product;
 
 namespace TiendaDawWeb.Services.Product;
 
+/// <summary>
+/// Servicio de productos con caché en memoria y patrón Result.
+/// Implementa operaciones CRUD con validaciones y gestión de caché.
+/// </summary>
 public class ProductService(
     ApplicationDbContext context,
     IMemoryCache cache,
@@ -18,6 +21,10 @@ public class ProductService(
     private const string ProductsCacheKey = "all_products";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
+    /// <summary>
+    /// Obtiene un producto por su ID con caché.
+    /// Devuelve: Result.Success(Producto) | Result.Failure(NotFound)
+    /// </summary>
     public async Task<Result<Models.Product, DomainError>> GetByIdAsync(long id)
     {
         try
@@ -48,6 +55,10 @@ public class ProductService(
         }
     }
 
+    /// <summary>
+    /// Obtiene todos los productos disponibles con caché.
+    /// Devuelve: Result.Success(List) | Result.Failure nunca
+    /// </summary>
     public async Task<Result<IEnumerable<Models.Product>, DomainError>> GetAllAsync()
     {
         try
@@ -74,6 +85,10 @@ public class ProductService(
         }
     }
 
+    /// <summary>
+    /// Busca productos por nombre y categoría con filtros opcionales.
+    /// Devuelve: Result.Success(List) | Result.Failure nunca
+    /// </summary>
     public async Task<Result<IEnumerable<Models.Product>, DomainError>> SearchAsync(string? nombre, string? categoria)
     {
         try
@@ -101,6 +116,10 @@ public class ProductService(
         }
     }
 
+    /// <summary>
+    /// Crea un nuevo producto.
+    /// Devuelve: Result.Success(Producto) | Result.Failure(InvalidPrice)
+    /// </summary>
     public async Task<Result<Models.Product, DomainError>> CreateAsync(Models.Product product)
     {
         if (product.Precio <= 0)
@@ -119,6 +138,10 @@ public class ProductService(
         });
     }
 
+    /// <summary>
+    /// Actualiza un producto existente (solo el propietario puede actualizar).
+    /// Devuelve: Result.Success(Producto) | Result.Failure(NotFound/NotOwner)
+    /// </summary>
     public async Task<Result<Models.Product, DomainError>> UpdateAsync(long id, Models.Product updatedProduct, long userId)
     {
         var product = await context.Products
@@ -151,6 +174,11 @@ public class ProductService(
         });
     }
 
+    /// <summary>
+    /// Elimina un producto (soft-delete, solo propietario o admin).
+    /// No permite eliminar productos ya vendidos.
+    /// Devuelve: Result.Success(true) | Result.Failure(NotFound/NotOwner/CannotDeleteSold)
+    /// </summary>
     public async Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false)
     {
         var producto = await context.Products

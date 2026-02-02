@@ -1,7 +1,8 @@
 namespace TiendaDawWeb.Services.BackgroundServices;
 
 /// <summary>
-/// Servicio de fondo que ejecuta tareas programadas.
+///     Servicio de fondo que ejecuta tareas programadas diariamente.
+///     Coordina la ejecución de jobs como reportes de productos.
 /// </summary>
 public class BackgroundJobService(
     IServiceProvider serviceProvider,
@@ -13,6 +14,10 @@ public class BackgroundJobService(
     private readonly int _executionIntervalMinutes = 1440;
     private readonly int _executionIntervalHours = 168;
 
+    /// <summary>
+    ///     Punto de entrada del servicio de fondo.
+    ///     Espera el intervalo configurado antes de iniciar la ejecución periódica.
+    /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("BackgroundJobService iniciado - Modo: {Modo}",
@@ -46,6 +51,9 @@ public class BackgroundJobService(
         logger.LogInformation("BackgroundJobService detenido");
     }
 
+    /// <summary>
+    ///     Ejecuta los trabajos programados del sistema.
+    /// </summary>
     private async Task ExecuteJobsAsync(CancellationToken ct)
     {
         using var scope = serviceProvider.CreateScope();
