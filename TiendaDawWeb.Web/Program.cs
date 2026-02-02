@@ -17,44 +17,15 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
 using TiendaDawWeb.Binders;
+using TiendaDawWeb.Web.Infrastructures;
 using TiendaDawWeb.Web.Middlewares;
 using TiendaDawWeb.Web.Hubs;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.OutputCaching;
 
-// Configura la codificación de la consola a UTF8 para evitar problemas con tildes y eñes en los logs
-Console.OutputEncoding = Encoding.UTF8;
-
-// Configuración de Serilog: Reemplaza el logger por defecto de .NET por uno más potente y visual
-Log.Logger = new LoggerConfiguration()
-    // Define el nivel mínimo de log global. 'Information' es ideal para ver qué pasa sin saturar.
-    .MinimumLevel.Information()
-    
-    // 💡 FILTRO ANTI-RUIDO:
-    // 'Override' permite cambiar el nivel de log para namespaces específicos.
-    
-    // Silenciamos los logs internos de Microsoft (ASP.NET Core) a 'Warning'. 
-    // Solo veremos si algo falla, no cada petición HTTP interna.
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    
-    // Excepto los mensajes sobre el ciclo de vida de la app (ej. "Application started").
-    // Queremos ver que la app ha arrancado correctamente.
-    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-    
-    // Silenciamos las consultas SQL generadas por Entity Framework.
-    // Evita que la consola se llene de comandos SELECT/INSERT cada vez que la app accede a datos.
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
-    
-    // Configura la salida hacia la consola
-    .WriteTo.Console(
-        // Define el formato visual: [Fecha Hora NIVEL] Mensaje + Excepción si la hubiera
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
-        // Aplica un tema de colores elegante para que los logs sean fáciles de leer de un vistazo
-        theme: AnsiConsoleTheme.Code)
-    .CreateLogger();
+// Configuración de Serilog
+Log.Logger = SerilogConfig.Configure().CreateLogger();
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {

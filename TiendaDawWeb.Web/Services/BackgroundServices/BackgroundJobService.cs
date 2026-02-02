@@ -1,7 +1,3 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
 namespace TiendaDawWeb.Services.BackgroundServices;
 
 /// <summary>
@@ -10,12 +6,12 @@ namespace TiendaDawWeb.Services.BackgroundServices;
 public class BackgroundJobService(
     IServiceProvider serviceProvider,
     ILogger<BackgroundJobService> logger,
-    IConfiguration configuration
+    IHostEnvironment environment
 ) : BackgroundService
 {
-    private readonly bool _isDevelopment = configuration.GetValue<bool>("IsDevelopment");
-    private readonly int _executionIntervalMinutes = configuration.GetValue<int>("Scheduler:ExecutionIntervalMinutes", 1);
-    private readonly int _executionIntervalHours = configuration.GetValue<int>("Scheduler:ExecutionIntervalHours", 168);
+    private readonly bool _isDevelopment = environment.IsDevelopment();
+    private readonly int _executionIntervalMinutes = 1440;
+    private readonly int _executionIntervalHours = 168;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
