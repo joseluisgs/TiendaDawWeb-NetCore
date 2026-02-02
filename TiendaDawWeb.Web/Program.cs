@@ -52,6 +52,7 @@ services.AddCaching();
 
 // Security
 services.AddAppAntiforgery();
+services.AddRateLimitingPolicy();
 
 // CORS
 services.AddCorsPolicy(configuration, environment.IsDevelopment());
@@ -71,6 +72,12 @@ Log.Information("✅ Aplicación construida");
 // ============================================================================
 // 📍 PIPELINE DE MIDDLEWARES (Extension Methods)
 // ============================================================================
+
+// Security Headers - Siempre activo (no afecta funcionalidad)
+app.UseSecurityHeaders();
+
+// Rate Limiting - Protege contra DDoS y fuerza bruta
+app.UseRateLimiting();
 
 if (!isDevelopment)
 {
