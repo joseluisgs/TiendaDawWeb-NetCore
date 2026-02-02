@@ -103,6 +103,7 @@ public class ProductService(
             product.Precio = updatedProduct.Precio;
             product.Categoria = updatedProduct.Categoria;
             if (!string.IsNullOrEmpty(updatedProduct.Imagen)) product.Imagen = updatedProduct.Imagen;
+            // UpdatedAt se actualiza automáticamente por el interceptor
             cache.Remove(ProductsCacheKey);
             cache.Remove(ProductDetailsCacheKey(id));
             await context.SaveChangesAsync();

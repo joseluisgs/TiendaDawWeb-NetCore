@@ -57,5 +57,6 @@ public class Product : AuditableEntity {
         Deleted = true;
         DeletedAt = DateTime.UtcNow;
         DeletedBy = deletedBy;
+        // UpdatedAt se actualiza automáticamente por el interceptor
     }
 }

@@ -41,8 +41,9 @@ public class TimestampInterceptor : SaveChangesInterceptor
     private static void UpdateTimestamps(DbContext context)
     {
         var now = DateTime.UtcNow;
-
-        foreach (var entry in context.ChangeTracker.Entries<ITimestamped>())
+        var entries = context.ChangeTracker.Entries<ITimestamped>().ToList();
+        
+        foreach (var entry in entries)
         {
             switch (entry.State)
             {
@@ -74,7 +75,6 @@ public static class TimestampExtensions
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         entity.Property("UpdatedAt")
-            .IsRequired()
-            .ValueGeneratedOnUpdate();
+            .IsRequired();
     }
 }
