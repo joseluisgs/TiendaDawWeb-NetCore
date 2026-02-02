@@ -37,7 +37,7 @@
             <div class="mb-3 d-flex gap-2">
                 <span class="badge bg-secondary" data-testid="product-category">@SharedLocalizer[$"Category.{Model.Categoria}"]</span>
                 <span class="badge bg-light text-dark border">
-                    <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @((Model.UpdatedAt ?? Model.CreatedAt).ToLocalTime().ToString("g"))
+                    <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @Model.UpdatedAt.ToLocalTime().ToString("g")
                 </span>
                 @if (isAuthenticated && Model.CompraId.HasValue) {
                     <span class="badge bg-danger">

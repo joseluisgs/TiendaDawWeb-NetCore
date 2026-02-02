@@ -38,17 +38,20 @@ public class EmailService(
         try
         {
             var smtpHost = configuration["Email:SmtpHost"];
-            var smtpPort = int.Parse(configuration["Email:SmtpPort"] ?? "587");
+            var smtpPortRaw = configuration["Email:SmtpPort"] ?? "587";
             var smtpUser = configuration["Email:SmtpUser"];
             var smtpPass = configuration["Email:SmtpPass"];
             var fromEmail = configuration["Email:FromEmail"] ?? smtpUser;
             var fromName = configuration["Email:FromName"] ?? "WalaDaw";
 
-            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser))
+            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser) || 
+                smtpHost.StartsWith("${") || smtpPortRaw.StartsWith("${"))
             {
-                logger.LogWarning("Configuracion SMTP no disponible");
+                logger.LogWarning("Configuracion SMTP no disponible o incompleta");
                 return Result.Success<bool, DomainError>(true);
             }
+
+            var smtpPort = int.Parse(smtpPortRaw);
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName, fromEmail));

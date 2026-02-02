@@ -1,21 +1,24 @@
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using TiendaDawWeb.Data.Abstractions;
 
 namespace TiendaDawWeb.Models;
 
 /// <summary>
 /// Entidad de usuario con soporte de ASP.NET Core Identity
 /// </summary>
-public class User : IdentityUser<long>
+public class User : IdentityUser<long>, ITimestamped
 {
-    // OBJETIVO: Integrar propiedades de auditoría sin romper la herencia de Identity.
-    // Usamos composición o simplemente añadimos las propiedades. 
-    // Como C# no soporta herencia múltiple, añadiremos las propiedades de AuditableEntity manualmente
-    // o haremos que implemente una interfaz. Por simplicidad didáctica, las añadiremos aquí.
+    /// <summary>Fecha de creación.</summary>
+    public DateTime CreatedAt { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }
+    /// <summary>Fecha de última modificación.</summary>
+    public DateTime UpdatedAt { get; set; }
+
+    /// <summary>ID del usuario que creó el registro.</summary>
     public string? CreatedBy { get; set; }
+
+    /// <summary>ID del usuario que realizó la última modificación.</summary>
     public string? UpdatedBy { get; set; }
 
     [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -29,13 +32,12 @@ public class User : IdentityUser<long>
     public string? Avatar { get; set; }
 
     [Required]
-    public string Rol { get; set; } = "USER"; // ADMIN, USER, MODERATOR
+    public string Rol { get; set; } = "USER";
 
     public bool Deleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
     public string? DeletedBy { get; set; }
 
-    // Relaciones
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     public virtual ICollection<Purchase> Purchases { get; set; } = new List<Purchase>();
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

@@ -22,6 +22,14 @@ public class BackgroundJobService(
         logger.LogInformation("BackgroundJobService iniciado - Modo: {Modo}",
             _isDevelopment ? "DESARROLLO" : "PRODUCCION");
 
+        var interval = _isDevelopment
+            ? TimeSpan.FromMinutes(_executionIntervalMinutes)
+            : TimeSpan.FromHours(_executionIntervalHours);
+
+        logger.LogInformation("Primera ejecucion en {Interval} minutos", Math.Round(interval.TotalMinutes, 0));
+
+        await Task.Delay(interval, stoppingToken);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -51,12 +59,6 @@ public class BackgroundJobService(
 
         await productoTask.ExecuteAsync();
 
-        var interval = _isDevelopment
-            ? TimeSpan.FromMinutes(_executionIntervalMinutes)
-            : TimeSpan.FromHours(_executionIntervalHours);
-
-        logger.LogDebug("Siguiente ejecucion en {Interval} minutos", Math.Round(interval.TotalMinutes, 0));
-
-        await Task.Delay(interval, ct);
+        logger.LogDebug("Job completado, esperando siguiente ejecucion");
     }
 }

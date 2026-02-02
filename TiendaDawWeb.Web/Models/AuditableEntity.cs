@@ -1,22 +1,21 @@
+using TiendaDawWeb.Data.Abstractions;
+
 namespace TiendaDawWeb.Models;
 
 /// <summary>
-/// OBJETIVO: Definir los campos comunes para el rastreo y auditoría de registros.
-/// UBICACIÓN: /Models
-/// RAZÓN: Proporciona una base estandarizada para que EF Core pueda identificar qué 
-/// entidades deben ser auditadas automáticamente al guardar cambios.
+/// Clase base para entidades con auditoría de timestamps.
 /// </summary>
-public abstract class AuditableEntity
+public abstract class AuditableEntity : ITimestamped
 {
-    // Fecha en la que se creó el registro
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>Fecha de creación (se asigna en INSERT).</summary>
+    public DateTime CreatedAt { get; set; }
 
-    // Fecha de la última modificación (opcional al inicio)
-    public DateTime? UpdatedAt { get; set; }
+    /// <summary>Fecha de última modificación (se asigna en INSERT/UPDATE).</summary>
+    public DateTime UpdatedAt { get; set; }
 
-    // ID del usuario que creó el registro (opcional, para sistemas multiusuario)
+    /// <summary>ID del usuario que creó el registro.</summary>
     public string? CreatedBy { get; set; }
 
-    // ID del usuario que realizó la última modificación
+    /// <summary>ID del usuario que realizó la última modificación.</summary>
     public string? UpdatedBy { get; set; }
 }
