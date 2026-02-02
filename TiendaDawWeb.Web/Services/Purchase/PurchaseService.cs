@@ -48,7 +48,7 @@ public class PurchaseService(
                 var carritoResult = await carritoService.GetCarritoByUsuarioIdAsync(usuarioId);
                 if (carritoResult.IsFailure) return Result.Failure<Models.Purchase, DomainError>(carritoResult.Error);
                 var carritoItems = carritoResult.Value.ToList();
-                if (!carritoItems.Any()) return Result.Failure<Models.Purchase, DomainError>(PurchaseError.EmptyCarrito);
+                if (!carritoItems.Any()) return Result.Failure<Models.Purchase, DomainError>(PurchaseError.EmptyCarrito());
 
                 var productIds = carritoItems.Select(ci => ci.ProductoId).ToList();
                 var productos = await context.Products.Where(p => productIds.Contains(p.Id) && !p.Deleted).ToListAsync();

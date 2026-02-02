@@ -13,6 +13,7 @@ using TiendaDawWeb.Services.Storage;
 using TiendaDawWeb.Services.BackgroundServices;
 using System.Globalization;
 using System.Text;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
@@ -143,6 +144,14 @@ builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<RatingStateContainer>();
+
+// 📧 EMAIL: Channel para procesamiento asíncrono de emails
+builder.Services.AddSingleton(Channel.CreateUnbounded<EmailMessage>());
+builder.Services.AddHostedService<EmailBackgroundService>();
+
+// 📰 BACKGROUND JOBS: Servicio de tarefas programadas (novedades semanales)
+builder.Services.AddScoped<ProductoReportTask>();
+builder.Services.AddHostedService<BackgroundJobService>();
 
 // Background Services
 builder.Services.AddHostedService<CarritoCleanupService>();
@@ -291,8 +300,14 @@ app.UseStatusCodePagesWithReExecute("/Error/{0}");
 // Redirige automáticamente peticiones HTTP a HTTPS
 app.UseHttpsRedirection();
 
+// 🚀 MAP STATIC ASSETS (.NET 9+): Serve wwwroot files with build-time compression,
+// fingerprinting, caching, and ETag support. Favicon is served automatically.
+app.MapStaticAssets();
+
 // Permite servir archivos desde wwwroot (css, js, imágenes)
-app.UseStaticFiles();
+// Nota: MapStaticAssets() ya maneja wwwroot. UseStaticFiles() aquí es redundante
+// pero se mantiene para compatibilidad con IIS durante desarrollo.
+// app.UseStaticFiles();
 
 // Configura archivos estáticos para el directorio virtual de uploads
 // Esto permite que /uploads/foto.jpg sea accesible aunque esté fuera de wwwroot

@@ -31,7 +31,7 @@ public class FavoriteService(
         try {
             var existsResult = await IsFavoriteAsync(userId, productId);
             if (existsResult.Value)
-                return Result.Failure<Models.Favorite, DomainError>(FavoriteError.AlreadyExists);
+                return Result.Failure<Models.Favorite, DomainError>(FavoriteError.AlreadyExists());
 
             var favorite = new Models.Favorite {
                 UsuarioId = userId,
@@ -57,7 +57,7 @@ public class FavoriteService(
                 .FirstOrDefaultAsync(f => f.UsuarioId == userId && f.ProductoId == productId);
 
             if (favorite == null)
-                return Result.Failure<bool, DomainError>(FavoriteError.NotFound);
+                return Result.Failure<bool, DomainError>(FavoriteError.NotFound());
 
             context.Favorites.Remove(favorite);
             await context.SaveChangesAsync();
@@ -67,7 +67,7 @@ public class FavoriteService(
         }
         catch (Exception ex) {
             logger.LogError(ex, "Error eliminando favorito");
-            return Result.Failure<bool, DomainError>(FavoriteError.NotFound);
+            return Result.Failure<bool, DomainError>(FavoriteError.NotFound());
         }
     }
 

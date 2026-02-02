@@ -1,34 +1,46 @@
 namespace TiendaDawWeb.Errors;
 
 /// <summary>
-///     Errores relacionados con productos
+/// Errores del dominio de productos (HTTP 404, 409, 400).
 /// </summary>
-public static class ProductError {
-    public static DomainError AlreadySold =>
-        new BusinessError("PRODUCT_SOLD", "Este producto ya ha sido vendido");
+public static class ProductError
+{
+    /// <summary>Crea error para producto no encontrado.</summary>
+    /// <param name="id">ID del producto.</param>
+    /// <returns>NotFoundError (HTTP 404).</returns>
+    public static NotFoundError NotFound(long id) =>
+        NotFoundError.FromId(id, "Producto");
 
-    public static DomainError CannotDeleteSold =>
-        new BusinessError("CANNOT_DELETE_SOLD", "No se puede eliminar un producto que ya ha sido vendido");
+    /// <summary>Crea error para producto ya vendido.</summary>
+    /// <returns>ConflictError (HTTP 409).</returns>
+    public static ConflictError AlreadySold() =>
+        new("Este producto ya ha sido vendido");
 
-    public static DomainError NotOwner =>
-        new ForbiddenError("NOT_OWNER", "No eres el propietario de este producto");
+    /// <summary>Crea error cuando no se puede eliminar un producto vendido.</summary>
+    /// <returns>BusinessRuleError (HTTP 400).</returns>
+    public static BusinessRuleError CannotDeleteSold() =>
+        new("No se puede eliminar un producto que ya ha sido vendido");
 
-    public static DomainError InvalidPrice =>
-        new ValidationError("INVALID_PRICE", "El precio debe ser mayor que cero");
+    /// <summary>Crea error cuando el usuario no es propietario.</summary>
+    /// <param name="productId">ID del producto.</param>
+    /// <returns>ForbiddenError (HTTP 403).</returns>
+    public static ForbiddenError NotOwner(long productId) =>
+        ForbiddenError.NotOwner("producto", productId.ToString());
 
-    public static DomainError NotFound(long id) {
-        return new NotFoundError("PRODUCT_NOT_FOUND", $"Producto con ID {id} no encontrado");
-    }
+    /// <summary>Crea error para precio inválido.</summary>
+    /// <returns>ValidationError (HTTP 400).</returns>
+    public static ValidationError InvalidPrice() =>
+        ValidationError.Create("El precio debe ser mayor que cero");
 
-    public static DomainError InvalidData(string message) {
-        return new ValidationError("INVALID_DATA", message);
-    }
+    /// <summary>Crea error para datos inválidos.</summary>
+    /// <param name="message">Mensaje de error.</param>
+    /// <returns>ValidationError (HTTP 400).</returns>
+    public static ValidationError InvalidData(string message) =>
+        ValidationError.Create(message);
 
-    private record NotFoundError(string Code, string Message) : DomainError(Code, Message);
-
-    private record BusinessError(string Code, string Message) : DomainError(Code, Message);
-
-    private record ForbiddenError(string Code, string Message) : DomainError(Code, Message);
-
-    private record ValidationError(string Code, string Message) : DomainError(Code, Message);
+    /// <summary>Crea error para datos inválidos con detalles por campo.</summary>
+    /// <param name="errores">Diccionario de errores por campo.</param>
+    /// <returns>ValidationError (HTTP 400).</returns>
+    public static ValidationError InvalidDataWithFields(Dictionary<string, string[]> errores) =>
+        ValidationError.WithFieldErrors(errores);
 }

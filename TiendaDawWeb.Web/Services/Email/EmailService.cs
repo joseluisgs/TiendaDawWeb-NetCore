@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using CSharpFunctionalExtensions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -10,24 +11,32 @@ namespace TiendaDawWeb.Services.Email;
 
 public class EmailService(
     IConfiguration configuration,
-    ILogger<EmailService> logger
-) : IEmailService {
-    public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName) {
+    ILogger<EmailService> logger,
+    Channel<EmailMessage> emailChannel
+) : IEmailService
+{
+    private readonly Channel<EmailMessage> _emailChannel = emailChannel;
+
+    public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName)
+    {
         var subject = "Bienvenido a WalaDaw!";
         var body = $@"<html><body><h1>Hola {userName},</h1><p>Gracias por registrarte.</p></body></html>";
         return await SendEmailAsync(toEmail, subject, body);
     }
 
     public async Task<Result<bool, DomainError>> SendPurchaseConfirmationEmailAsync(
-        string toEmail, Models.Purchase purchase, byte[]? pdfAttachment = null) {
+        string toEmail, Models.Purchase purchase, byte[]? pdfAttachment = null)
+    {
         var subject = $"Confirmacion de compra #{purchase.Id} - WalaDaw";
         var body = $@"<html><body><h1>Compra confirmada!</h1><p>Total: {purchase.Total:C}</p></body></html>";
         return await SendEmailAsync(toEmail, subject, body, pdfAttachment, $"factura-{purchase.Id}.pdf");
     }
 
     public async Task<Result<bool, DomainError>> SendEmailAsync(
-        string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null) {
-        try {
+        string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null)
+    {
+        try
+        {
             var smtpHost = configuration["Email:SmtpHost"];
             var smtpPort = int.Parse(configuration["Email:SmtpPort"] ?? "587");
             var smtpUser = configuration["Email:SmtpUser"];
@@ -35,7 +44,8 @@ public class EmailService(
             var fromEmail = configuration["Email:FromEmail"] ?? smtpUser;
             var fromName = configuration["Email:FromName"] ?? "WalaDaw";
 
-            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser)) {
+            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser))
+            {
                 logger.LogWarning("Configuracion SMTP no disponible");
                 return Result.Success<bool, DomainError>(true);
             }
@@ -59,10 +69,17 @@ public class EmailService(
 
             return Result.Success<bool, DomainError>(true);
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
             logger.LogError(ex, "Error al enviar email a {Email}", toEmail);
             return Result.Failure<bool, DomainError>(
                 GenericError.UnexpectedError($"Error al enviar email: {ex.Message}"));
         }
+    }
+
+    public void EnqueueEmail(EmailMessage emailMessage)
+    {
+        _emailChannel.Writer.TryWrite(emailMessage);
+        logger.LogDebug("Email encolado para: {To}", emailMessage.To);
     }
 }

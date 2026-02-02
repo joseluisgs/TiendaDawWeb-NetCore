@@ -77,7 +77,7 @@ public class ProductService(
 
     public async Task<Result<Models.Product, DomainError>> CreateAsync(Models.Product product) {
         try {
-            if (product.Precio <= 0) return Result.Failure<Models.Product, DomainError>(ProductError.InvalidPrice);
+            if (product.Precio <= 0) return Result.Failure<Models.Product, DomainError>(ProductError.InvalidPrice());
             context.Products.Add(product);
             await context.SaveChangesAsync();
             cache.Remove(ProductsCacheKey);
@@ -97,7 +97,7 @@ public class ProductService(
                 .Include(p => p.Ratings)
                 .FirstOrDefaultAsync(p => p.Id == id);
             if (product == null) return Result.Failure<Models.Product, DomainError>(ProductError.NotFound(id));
-            if (product.PropietarioId != userId) return Result.Failure<Models.Product, DomainError>(ProductError.NotOwner);
+            if (product.PropietarioId != userId) return Result.Failure<Models.Product, DomainError>(ProductError.NotOwner(id));
             product.Nombre = updatedProduct.Nombre;
             product.Descripcion = updatedProduct.Descripcion;
             product.Precio = updatedProduct.Precio;
@@ -119,8 +119,8 @@ public class ProductService(
         try {
             var producto = await context.Products.Include(p => p.Compra).FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
             if (producto == null) return Result.Failure<bool, DomainError>(ProductError.NotFound(id));
-            if (producto.CompraId.HasValue) return Result.Failure<bool, DomainError>(ProductError.CannotDeleteSold);
-            if (!isAdmin && producto.PropietarioId != userId) return Result.Failure<bool, DomainError>(ProductError.NotOwner);
+            if (producto.CompraId.HasValue) return Result.Failure<bool, DomainError>(ProductError.CannotDeleteSold());
+            if (!isAdmin && producto.PropietarioId != userId) return Result.Failure<bool, DomainError>(ProductError.NotOwner(id));
             producto.SoftDelete($"User-{userId}");
             await context.SaveChangesAsync();
             cache.Remove(ProductsCacheKey);

@@ -12,11 +12,11 @@ public class RatingService(
     ILogger<RatingService> logger
 ) : IRatingService {
     public async Task<Result<Models.Rating, DomainError>> AddRatingAsync(long usuarioId, long productoId, int puntuacion, string? comentario) {
-        if (puntuacion < 1 || puntuacion > 5) return Result.Failure<Models.Rating, DomainError>(RatingError.InvalidRating);
+        if (puntuacion < 1 || puntuacion > 5) return Result.Failure<Models.Rating, DomainError>(RatingError.InvalidRating());
         var producto = await context.Products.FirstOrDefaultAsync(p => p.Id == productoId && !p.Deleted);
         if (producto == null) return Result.Failure<Models.Rating, DomainError>(RatingError.ProductNotFound(productoId));
         var existingRating = await context.Ratings.FirstOrDefaultAsync(r => r.UsuarioId == usuarioId && r.ProductoId == productoId);
-        if (existingRating != null) return Result.Failure<Models.Rating, DomainError>(RatingError.AlreadyRated);
+        if (existingRating != null) return Result.Failure<Models.Rating, DomainError>(RatingError.AlreadyRated());
         var rating = new Models.Rating { UsuarioId = usuarioId, ProductoId = productoId, Puntuacion = puntuacion, Comentario = comentario, CreatedAt = DateTime.UtcNow };
         context.Ratings.Add(rating);
         await context.SaveChangesAsync();
@@ -49,10 +49,10 @@ public class RatingService(
     }
 
     public async Task<Result<Models.Rating, DomainError>> UpdateRatingAsync(long ratingId, long usuarioId, int puntuacion, string? comentario) {
-        if (puntuacion < 1 || puntuacion > 5) return Result.Failure<Models.Rating, DomainError>(RatingError.InvalidRating);
+        if (puntuacion < 1 || puntuacion > 5) return Result.Failure<Models.Rating, DomainError>(RatingError.InvalidRating());
         var rating = await context.Ratings.Include(r => r.Usuario).Include(r => r.Producto).FirstOrDefaultAsync(r => r.Id == ratingId);
-        if (rating == null) return Result.Failure<Models.Rating, DomainError>(RatingError.NotFound(ratingId));
-        if (rating.UsuarioId != usuarioId) return Result.Failure<Models.Rating, DomainError>(RatingError.Unauthorized);
+            if (rating == null) return Result.Failure<Models.Rating, DomainError>(RatingError.NotFound(ratingId));
+            if (rating.UsuarioId != usuarioId) return Result.Failure<Models.Rating, DomainError>(RatingError.Unauthorized());
         rating.Puntuacion = puntuacion;
         rating.Comentario = comentario;
         await context.SaveChangesAsync();
@@ -63,7 +63,7 @@ public class RatingService(
         try {
             var rating = await context.Ratings.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == ratingId);
             if (rating == null) return Result.Failure<bool, DomainError>(RatingError.NotFound(ratingId));
-            if (!isAdmin && rating.UsuarioId != usuarioId) return Result.Failure<bool, DomainError>(RatingError.Unauthorized);
+            if (!isAdmin && rating.UsuarioId != usuarioId) return Result.Failure<bool, DomainError>(RatingError.Unauthorized());
             context.Ratings.Remove(rating);
             await context.SaveChangesAsync();
             return Result.Success<bool, DomainError>(true);

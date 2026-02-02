@@ -1,14 +1,14 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Exceptions;
 
 namespace TiendaDawWeb.Web.Middlewares;
 
 /// <summary>
-/// OBJETIVO: Centralizar el manejo de excepciones de toda la aplicación.
-/// UBICACIÓN: /Middlewares
-/// RAZÓN: Actúa como una red de seguridad global. Captura cualquier error no controlado,
-/// lo registra en el log y devuelve una respuesta coherente según el tipo de cliente (API o Web).
+/// Middleware centralizado de manejo de excepciones.
+/// Soporta tanto errores del dominio como excepciones tipadas.
 /// </summary>
 public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
@@ -16,53 +16,65 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
     {
         try
         {
-            // Continuar con el siguiente componente del pipeline
             await next(context);
         }
         catch (Exception ex)
         {
-            // 1. Loguear el error con Serilog incluyendo detalles del contexto
-            logger.LogError(ex, "🚨 ERROR NO CONTROLADO en {Path}: {Message}", 
-                context.Request.Path, ex.Message);
-
-            // 2. Gestionar la respuesta según el origen
+            logger.LogError(ex, "🚨 ERROR en {Path}: {Message}", context.Request.Path, ex.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        var (statusCode, message, errors) = exception switch
+        {
+            NotFoundException notFound => (404, notFound.Message, null),
+            ValidationException validation => (400, validation.Message, validation.ValidationErrors),
+            BusinessException business => (400, business.Message, null),
+            UnauthorizedException => (401, "No autorizado", null),
+            ForbiddenException => (403, "Acceso prohibido", null),
+            ConflictException conflict => (409, conflict.Message, null),
+            InternalException => (500, "Error interno del servidor", null),
+            ArgumentException argument => (400, argument.Message, null),
+            InvalidOperationException => (400, "Operación inválida", null),
+            _ => (500, "Ha ocurrido un error interno", null)
+        };
 
-        // Comprobamos si la petición es para una API (AJAX)
-        bool isApiRequest = context.Request.Path.StartsWithSegments("/api") || 
+        context.Response.StatusCode = statusCode;
+
+        bool isApiRequest = context.Request.Path.StartsWithSegments("/api") ||
                            context.Request.Headers["Accept"].ToString().Contains("application/json");
 
         if (isApiRequest)
         {
-            // RESPUESTA PARA APIs: JSON estructurado
             context.Response.ContentType = "application/json";
-            
+
             var response = new
             {
                 success = false,
-                message = "Ha ocurrido un error interno en el servidor.",
-                error = exception.Message // En producción, es mejor no exponer este detalle
+                message,
+                errorType = exception.GetType().Name.Replace("Exception", ""),
+                errors,
+                timestamp = DateTime.UtcNow.ToString("o")
             };
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            return context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            }));
         }
         else
         {
-            // RESPUESTA PARA WEB: Redirigir al controlador de errores amigable
-            context.Response.Redirect("/Error");
+            context.Response.Redirect($"/Error?code={statusCode}&message={Uri.EscapeDataString(message)}");
             return Task.CompletedTask;
         }
     }
 }
 
 /// <summary>
-/// Método de extensión para facilitar el registro en Program.cs
+/// Extensiones para registrar el middleware.
 /// </summary>
 public static class GlobalExceptionMiddlewareExtensions
 {
