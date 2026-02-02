@@ -6,7 +6,7 @@ using Moq;
 using System.Security.Claims;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Favorite;
 using CSharpFunctionalExtensions;
 using TiendaDawWeb.Errors;
 using FluentAssertions;

@@ -3,7 +3,7 @@ using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Favorite;
 using NUnit.Framework;
 using Moq;
 using Microsoft.Extensions.Logging;
@@ -94,7 +94,7 @@ public class FavoriteServiceTests
         var result = await _favoriteService.AddFavoriteAsync(userId, productId);
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(FavoriteError.AlreadyExists);
+        result.Error.Should().Be(FavoriteError.AlreadyExists());
     }
 
     [Test]
@@ -140,7 +140,7 @@ public class FavoriteServiceTests
         var result = await _favoriteService.RemoveFavoriteAsync(1L, 1L);
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(FavoriteError.NotFound);
+        result.Error.Should().Be(FavoriteError.NotFound());
     }
 
     [Test]

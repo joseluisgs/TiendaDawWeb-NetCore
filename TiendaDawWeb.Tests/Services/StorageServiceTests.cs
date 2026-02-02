@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Storage;
 using FluentAssertions;
 using System.Text;
 
@@ -117,7 +117,7 @@ public class StorageServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Message.Should().Contain("Extensión de archivo no permitida");
+        result.Error.Message.Should().Contain("Extension no permitida");
     }
 
     [Test]

@@ -3,7 +3,7 @@ using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Product;
 using NUnit.Framework;
 using Moq;
 using Microsoft.Extensions.Caching.Memory;
@@ -315,7 +315,7 @@ public class ProductServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(ProductError.InvalidPrice);
+        result.Error.Should().Be(ProductError.InvalidPrice());
     }
 
     /// <summary>
@@ -334,7 +334,7 @@ public class ProductServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(ProductError.NotOwner);
+        result.Error.Should().Be(ProductError.NotOwner(productId));
     }
 
     /// <summary>
@@ -355,7 +355,7 @@ public class ProductServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(ProductError.CannotDeleteSold);
+        result.Error.Should().Be(ProductError.CannotDeleteSold());
     }
 
     /// <summary>

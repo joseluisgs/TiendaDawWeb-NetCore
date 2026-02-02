@@ -50,7 +50,8 @@ public class AuditingTests
         // Assert
         Assert.That(product.CreatedAt, Is.Not.EqualTo(default(DateTime)));
         Assert.That(product.CreatedAt, Is.LessThanOrEqualTo(DateTime.UtcNow));
-        Assert.That(product.UpdatedAt, Is.Null);
+        // UpdatedAt también se asigna en el insert, no es null ni default
+        Assert.That(product.UpdatedAt, Is.Not.EqualTo(default(DateTime)));
     }
 
     [Test]
@@ -77,7 +78,7 @@ public class AuditingTests
 
         // Assert
         Assert.That(product.CreatedAt, Is.EqualTo(originalCreated)); // El creado no cambia
-        Assert.That(product.UpdatedAt, Is.Not.Null);
+        Assert.That(product.UpdatedAt, Is.Not.EqualTo(default(DateTime)));
         Assert.That(product.UpdatedAt, Is.GreaterThan(originalCreated));
     }
 }

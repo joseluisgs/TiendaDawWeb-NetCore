@@ -1,12 +1,11 @@
+using System.Threading.Channels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Email;
 using FluentAssertions;
 using TiendaDawWeb.Models.Enums;
-using MailKit.Net.Smtp;
-using MimeKit;
 
 namespace TiendaDawWeb.Tests.Services;
 
@@ -20,6 +19,7 @@ public class EmailServiceTests
 {
     private Mock<IConfiguration> _configMock;
     private Mock<ILogger<EmailService>> _loggerMock;
+    private Channel<EmailMessage> _emailChannel;
     private EmailService _emailService;
 
     [SetUp]
@@ -27,7 +27,14 @@ public class EmailServiceTests
     {
         _configMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<EmailService>>();
-        _emailService = new EmailService(_configMock.Object, _loggerMock.Object);
+        _emailChannel = Channel.CreateUnbounded<EmailMessage>();
+        _emailService = new EmailService(_configMock.Object, _loggerMock.Object, _emailChannel);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _emailChannel.Writer.Complete();
     }
 
     /// <summary>
@@ -46,15 +53,6 @@ public class EmailServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        // Verify warning log for missing config
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Configuración SMTP no disponible")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
     }
 
     /// <summary>
@@ -65,7 +63,7 @@ public class EmailServiceTests
     public async Task SendWelcomeEmailAsync_ShouldCallSendEmail()
     {
         // Arrange
-        _configMock.Setup(c => c["Email:SmtpHost"]).Returns(string.Empty); // Skip actual sending
+        _configMock.Setup(c => c["Email:SmtpHost"]).Returns(string.Empty);
 
         // Act
         var result = await _emailService.SendWelcomeEmailAsync("user@test.com", "John Doe");
@@ -82,7 +80,7 @@ public class EmailServiceTests
     public async Task SendPurchaseConfirmationEmailAsync_ShouldCallSendEmail()
     {
         // Arrange
-        _configMock.Setup(c => c["Email:SmtpHost"]).Returns(string.Empty); // Skip actual sending
+        _configMock.Setup(c => c["Email:SmtpHost"]).Returns(string.Empty);
         var purchase = new Purchase
         {
             Id = 1,

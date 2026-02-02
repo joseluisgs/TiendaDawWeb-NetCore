@@ -3,9 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Data;
+using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Rating;
 using Microsoft.Data.Sqlite;
 
 namespace TiendaDawWeb.Tests.Services;
@@ -83,7 +84,7 @@ public class RatingServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Code.Should().Be("INVALID_RATING");
+        result.Error.Should().BeOfType<ValidationError>();
     }
 
     /// <summary>

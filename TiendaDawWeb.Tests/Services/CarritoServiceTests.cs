@@ -7,7 +7,7 @@ using TiendaDawWeb.Data;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
 using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Carrito;
 
 namespace TiendaDawWeb.Tests.Services;
 
@@ -88,7 +88,7 @@ public class CarritoServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<CarritoError>();
+        result.Error.Should().BeOfType<ConflictError>();
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public class CarritoServiceTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Code.Should().Be("PRODUCT_NOT_AVAILABLE");
+        result.Error.Should().BeOfType<BusinessRuleError>();
     }
 
     /// <summary>

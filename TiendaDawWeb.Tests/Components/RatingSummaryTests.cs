@@ -4,8 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Components.Ratings;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Interfaces;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Rating;
 using CSharpFunctionalExtensions;
 
 namespace TiendaDawWeb.Tests.Components;

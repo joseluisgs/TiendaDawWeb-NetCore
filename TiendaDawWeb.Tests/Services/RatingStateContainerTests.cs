@@ -4,8 +4,7 @@ using Moq;
 using NUnit.Framework;
 using TiendaDawWeb.Errors;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Implementations;
-using TiendaDawWeb.Services.Interfaces;
+using TiendaDawWeb.Services.Rating;
 
 namespace TiendaDawWeb.Tests.Services;
 

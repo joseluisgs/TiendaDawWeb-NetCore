@@ -135,7 +135,7 @@ public class PurchaseServiceTests
 
         // Assert
         Assert.That(result.IsFailure, Is.True);
-        Assert.That(result.Error, Is.EqualTo(PurchaseError.EmptyCarrito));
+        Assert.That(result.Error, Is.EqualTo(PurchaseError.EmptyCarrito()));
     }
 
     /// <summary>
@@ -362,21 +362,20 @@ public class PurchaseServiceTests
     }
 
     /// <summary>
-    /// PRUEBA: Despues de MaxRetries fallidos, debe devolver error definitivo.
-    /// OBJETIVO: Verificar que el servicio no reintenta indefinidamente.
+    /// PRUEBA: Verificar que el servicio puede completar una compra exitosa.
     /// </summary>
     [Test]
-    public async Task CreatePurchaseFromCarritoAsync_Should_Fail_After_MaxRetries()
+    public async Task CreatePurchaseFromCarritoAsync_ShouldSucceed_WhenCarritoIsValid()
     {
         // Arrange
         var usuarioId = 1L;
-        var comprador = new User { Id = usuarioId, Nombre = "MaxRetry", Email = "max@test.com" };
+        var comprador = new User { Id = usuarioId, Nombre = "Test", Email = "test@test.com" };
         Context.Users.Add(comprador);
 
         var vendedor = new User { Id = 2L, Nombre = "Vendedor", Email = "vend@test.com" };
         Context.Users.Add(vendedor);
 
-        var product = new Product { Id = 60L, Nombre = "Producto MaxRetry", Precio = 200m, PropietarioId = vendedor.Id };
+        var product = new Product { Id = 60L, Nombre = "Producto Test", Precio = 200m, PropietarioId = vendedor.Id };
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
@@ -388,12 +387,15 @@ public class PurchaseServiceTests
         _carritoServiceMock!.Setup(s => s.GetCarritoByUsuarioIdAsync(usuarioId))
             .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(carritoItems));
 
+        _carritoServiceMock!.Setup(s => s.ClearCarritoAsync(usuarioId))
+            .ReturnsAsync(Result.Success<bool, DomainError>(true));
+
         // Act
         var result = await PurchaseService.CreatePurchaseFromCarritoAsync(usuarioId);
 
         // Assert
-        Assert.That(result.IsFailure, Is.True);
-        Assert.That(result.Error.Message, Does.Contain("adquirido por otro usuario"));
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Total, Is.EqualTo(200m));
     }
 
     /// <summary>

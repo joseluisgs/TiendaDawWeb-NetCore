@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Implementations;
+using TiendaDawWeb.Services.Pdf;
 using TiendaDawWeb.Models.Enums;
 
 namespace TiendaDawWeb.Tests.Services;
