@@ -30,7 +30,7 @@
                         </div>
                         <div class="col-md-6">
                             <p><strong>Total Pagado:</strong></p>
-                            <p class="text-success fs-4 fw-bold">@Model.Total.ToString("C")</p>
+                            <p class="text-success fs-4 fw-bold">@Model.Total.ToString("C", new CultureInfo("es-ES"))</p>
                         </div>
                     </div>
 
@@ -70,7 +70,7 @@
                                         <td>
                                             <span class="badge bg-secondary">@producto.Categoria</span>
                                         </td>
-                                        <td class="text-end">@producto.Precio.ToString("C")</td>
+                                        <td class="text-end">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</td>
                                     </tr>
                                 }
                             </tbody>

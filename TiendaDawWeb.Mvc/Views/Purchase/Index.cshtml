@@ -55,7 +55,7 @@
                                                          style="width: 50px; height: 50px; object-fit: cover;">
                                                     <div>
                                                         <small class="fw-bold d-block">@product.Nombre</small>
-                                                        <small class="text-muted">@product.Precio.ToString("C")</small>
+                                                        <small class="text-muted">@product.Precio.ToString("C", new CultureInfo("es-ES"))</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -72,7 +72,7 @@
                                 </div>
                                 <div class="col-md-4 text-end">
                                     <h6 class="text-muted mb-2">Total Pagado</h6>
-                                    <h3 class="text-success mb-3">@purchase.Total.ToString("C")</h3>
+                                    <h3 class="text-success mb-3">@purchase.Total.ToString("C", new CultureInfo("es-ES"))</h3>
                                     
                                     <div class="d-grid gap-2">
                                         <a href="@Url.Action("Details", new { id = purchase.Id })" 
