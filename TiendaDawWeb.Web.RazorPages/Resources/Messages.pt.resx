@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Common UI Strings -->
+  <data name="Welcome" xml:space="preserve">
+    <value>Bem-vindo</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Início</value>
+  </data>
+  <data name="Products" xml:space="preserve">
+    <value>Produtos</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Pesquisar</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Categoria</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>Todas as categorias</value>
+  </data>
+  <data name="MinPrice" xml:space="preserve">
+    <value>Preço mínimo</value>
+  </data>
+  <data name="MaxPrice" xml:space="preserve">
+    <value>Preço máximo</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Entrar</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Sair</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Registar</value>
+  </data>
+  <data name="Cart" xml:space="preserve">
+    <value>Carrinho</value>
+  </data>
+  <data name="MyAccount" xml:space="preserve">
+    <value>Minha conta</value>
+  </data>
+  <data name="MyProducts" xml:space="preserve">
+    <value>Meus produtos</value>
+  </data>
+  <data name="MyPurchases" xml:space="preserve">
+    <value>Minhas compras</value>
+  </data>
+  <data name="AddToCart" xml:space="preserve">
+    <value>Adicionar ao carrinho</value>
+  </data>
+  <data name="Buy" xml:space="preserve">
+    <value>Comprar</value>
+  </data>
+  <data name="Reserved" xml:space="preserve">
+    <value>Reservado</value>
+  </data>
+  <data name="Available" xml:space="preserve">
+    <value>Disponível</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>Preço</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Descrição</value>
+  </data>
+  <data name="Seller" xml:space="preserve">
+    <value>Vendedor</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Detalhes</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>Favorito</value>
+  </data>
+  
+  <!-- Product related -->
+  <data name="ProductName" xml:space="preserve">
+    <value>Nome do produto</value>
+  </data>
+  <data name="ProductDescription" xml:space="preserve">
+    <value>Descrição do produto</value>
+  </data>
+  <data name="ProductReserved" xml:space="preserve">
+    <value>Produto reservado</value>
+  </data>
+  <data name="NoProductsAvailable" xml:space="preserve">
+    <value>Nenhum produto disponível no momento.</value>
+  </data>
+  <data name="SearchProducts" xml:space="preserve">
+    <value>Pesquisar produtos...</value>
+  </data>
+  
+  <!-- Admin Panel -->
+  <data name="AdminPanel" xml:space="preserve">
+    <value>Painel de administração</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Painel</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Utilizadores</value>
+  </data>
+  <data name="Sales" xml:space="preserve">
+    <value>Vendas</value>
+  </data>
+  <data name="Purchases" xml:space="preserve">
+    <value>Compras</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>Estatísticas</value>
+  </data>
+  
+  <!-- Messages -->
+  <data name="ProductNotAvailable" xml:space="preserve">
+    <value>O produto não está disponível ou está reservado por outro utilizador</value>
+  </data>
+  <data name="ProductAddedToCart" xml:space="preserve">
+    <value>Produto adicionado ao carrinho</value>
+  </data>
+  <data name="ErrorAddingToCart" xml:space="preserve">
+    <value>Erro ao adicionar ao carrinho</value>
+  </data>
+  <data name="PurchaseCompleted" xml:space="preserve">
+    <value>Compra realizada com sucesso</value>
+  </data>
+  <data name="ErrorProcessingPurchase" xml:space="preserve">
+    <value>Erro ao processar a compra</value>
+  </data>
+  
+  <!-- Pagination -->
+  <data name="Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Próximo</value>
+  </data>
+  <data name="Showing" xml:space="preserve">
+    <value>Mostrando</value>
+  </data>
+  <data name="Of" xml:space="preserve">
+    <value>de</value>
+  </data>
+  <data name="Items" xml:space="preserve">
+    <value>itens</value>
+  </data>
+  
+  <!-- Shipping Information -->
+  <data name="Shipping.Title" xml:space="preserve">
+    <value>Informações de envio</value>
+  </data>
+  <data name="Shipping.Completed" xml:space="preserve">
+    <value>Envio concluído</value>
+  </data>
+  <data name="Shipping.Message" xml:space="preserve">
+    <value>Os produtos foram entregues ao comprador.</value>
+  </data>
+  <data name="Shipping.Method" xml:space="preserve">
+    <value>Método</value>
+  </data>
+  <data name="Shipping.StandardMethod" xml:space="preserve">
+    <value>Envio padrão (3-5 dias)</value>
+  </data>
+  
+  <!-- Ratings -->
+  <data name="Rating.Title" xml:space="preserve">
+    <value>Avaliações</value>
+  </data>
+  <data name="Rating.Average" xml:space="preserve">
+    <value>Classificação média</value>
+  </data>
+  <data name="Rating.AddYours" xml:space="preserve">
+    <value>Adicione a sua avaliação</value>
+  </data>
+  <data name="Rating.MustPurchase" xml:space="preserve">
+    <value>Você deve comprar este produto para avaliá-lo</value>
+  </data>
+  <data name="Rating.AlreadyRated" xml:space="preserve">
+    <value>Você já avaliou este produto</value>
+  </data>
+  
+  <!-- Deletion Errors -->
+  <data name="Error.CannotDeleteSoldProduct" xml:space="preserve">
+    <value>Não é possível eliminar um produto que já foi vendido</value>
+  </data>
+  <data name="Error.CannotDeleteActiveUser" xml:space="preserve">
+    <value>Não é possível eliminar um utilizador com atividade comercial</value>
+  </data>
+  
+  <!-- Filters -->
+  <data name="Filter.MinPrice" xml:space="preserve">
+    <value>Preço mínimo</value>
+  </data>
+  <data name="Filter.MaxPrice" xml:space="preserve">
+    <value>Preço máximo</value>
+  </data>
+  <data name="Filter.Apply" xml:space="preserve">
+    <value>Aplicar filtros</value>
+  </data>
+  
+  <!-- Additional Navigation -->
+  <data name="Nav.Favorites" xml:space="preserve">
+    <value>Favoritos</value>
+  </data>
+  <data name="Nav.Profile" xml:space="preserve">
+    <value>Meu Perfil</value>
+  </data>
+  <data name="Nav.Admin" xml:space="preserve">
+    <value>Administração</value>
+  </data>
+  
+  <!-- Additional Errors -->
+  <data name="Error.CannotDeleteUserWithProducts" xml:space="preserve">
+    <value>Não é possível eliminar um utilizador com produtos à venda</value>
+  </data>
+  <data name="Error.InvalidPrice" xml:space="preserve">
+    <value>O preço deve ser um número válido (use . ou , como separador decimal)</value>
+  </data>
+</root>

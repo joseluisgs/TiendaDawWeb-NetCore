@@ -1,0 +1,88 @@
+@using Microsoft.AspNetCore.Identity
+@using TiendaDawWeb.Shared.Models
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <title>@ViewData["Title"] - WalaDaw</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="~/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="~/favicon-64x64.png">
+    <link rel="icon" type="image/png" sizes="256x256" href="~/favicon-256x256.png">
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <style>
+        body {
+            background-image: url('/images/fondo.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        
+        main.container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    @Html.AntiForgeryToken()
+    
+    <partial name="_Navbar" />
+
+    <!-- Toast Container for notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11050;">
+    </div>
+
+    <main role="main" class="container mt-8">
+        <partial name="_Notifications" />
+        @RenderBody()
+    </main>
+
+    <footer class="mt-auto py-3 bg-dark text-white-50">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-1">
+                    <i class="bi bi-c-circle"></i> @DateTime.Now.Year WalaDaw - Desarrollo Web en Entornos Servidor 2DAW
+                </p>
+                <p class="mb-1">
+                    <a class="text-white-50 text-decoration-none me-3" href="https://github.com/joseluisgs" target="_blank">
+                        <i class="bi bi-github"></i> José Luis González Sánchez
+                    </a>
+                    <a class="text-white-50 text-decoration-none" href="https://joseluisgs.dev" target="_blank">
+                        <i class="bi bi-globe"></i> JoseLuisGS.Dev
+                    </a>
+                </p>
+                <p class="mb-0">
+                    <i class="bi bi-building"></i> IES Luis Vives (Leganés)
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/favorites.js" asp-append-version="true"></script>
+    <script src="~/js/cart.js" asp-append-version="true"></script>
+    <script src="~/js/ratings.js" asp-append-version="true"></script>
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+    <script src="_framework/blazor.server.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,133 @@
+/* Estilos personalizados para WalaDaw */
+
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Cards */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Jumbotron */
+.jumbotron {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Botones */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Avatar en navbar */
+.navbar .rounded-circle {
+    border: 2px solid white;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+}
+
+/* Alertas */
+.alert {
+    border-left: 4px solid;
+}
+
+.alert-success {
+    border-left-color: var(--success-color);
+}
+
+.alert-danger {
+    border-left-color: var(--danger-color);
+}
+
+.alert-info {
+    border-left-color: var(--primary-color);
+}
+
+/* Loading spinner para Blazor */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .jumbotron {
+        padding: 2rem !important;
+    }
+    
+    .jumbotron h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Estrellas de rating */
+.bi-star-fill, .bi-star {
+    font-size: 1rem;
+}
