@@ -1,11 +1,13 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Admin.EstadisticasModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Estadísticas Avanzadas";
     var productosMasVendidos = ViewBag.ProductosMasVendidos as IEnumerable<dynamic>;
     var compradoresActivos = ViewBag.CompradoresActivos as IEnumerable<dynamic>;
     var vendedoresActivos = ViewBag.VendedoresActivos as IEnumerable<dynamic>;
     var ventasPorMes = ViewBag.VentasPorMes as IEnumerable<dynamic>;
+    var culture = new CultureInfo("es-ES");
 }
 
 <div class="container-fluid">

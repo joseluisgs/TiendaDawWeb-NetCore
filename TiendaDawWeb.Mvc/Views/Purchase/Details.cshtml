@@ -50,7 +50,7 @@
                         <div class="col-md-6 mb-3">
                             <h6 class="text-muted">Total Pagado</h6>
                             <p class="mb-0 text-success fs-4 fw-bold">
-                                @Model.Total.ToString("C")
+                                @Model.Total.ToString("C", new CultureInfo("es-ES"))
                             </p>
                         </div>
                     </div>
@@ -183,10 +183,10 @@
                         <span class="text-success">GRATIS</span>
                     </div>
                     <hr>
-                    <div class="d-flex justify-content-between">
-                        <strong>Total:</strong>
-                        <strong class="text-success">@Model.Total.ToString("C")</strong>
-                    </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total:</strong>
+                            <strong>@Model.Total.ToString("C", new CultureInfo("es-ES"))</strong>
+                        </div>
                 </div>
             </div>
         </div>

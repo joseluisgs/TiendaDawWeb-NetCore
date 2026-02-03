@@ -1,5 +1,6 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Profile.IndexModel
+@using System.Globalization
 @{
     ViewData["Title"] = "Mi Perfil";
 }
@@ -133,7 +134,7 @@
                                             <small class="text-muted">@producto.Categoria</small>
                                         </div>
                                         <div class="text-end">
-                                            <strong class="text-success d-block">@producto.Precio.ToString("C")</strong>
+                                            <strong class="text-success d-block">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
                                             @if (producto.CompraId != null)
                                             {
                                                 <span class="badge bg-danger">Vendido</span>
@@ -184,7 +185,7 @@
                                             </small>
                                         </div>
                                         <div class="text-end">
-                                            <strong class="text-success d-block">@compra.Total.ToString("C")</strong>
+                                            <strong class="text-success d-block">@compra.Total.ToString("C", new CultureInfo("es-ES"))</strong>
                                             <a asp-page="/Purchase/Details" asp-route-id="@compra.Id" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i> Ver
                                             </a>

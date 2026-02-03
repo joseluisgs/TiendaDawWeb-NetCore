@@ -53,7 +53,7 @@
                            param-ProductId="@Model.Product.Id"/>
             </div>
 
-            <h2 class="text-primary mb-4" data-testid="product-price">@Model.Product.Precio.ToString("C2")</h2>
+            <h2 class="text-primary mb-4" data-testid="product-price">@Model.Product.Precio.ToString("N2", new System.Globalization.CultureInfo("es-ES")) €</h2>
 
             <div class="mb-4">
                 <h5>Descripción</h5>
