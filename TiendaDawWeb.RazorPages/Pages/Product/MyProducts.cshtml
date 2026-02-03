@@ -61,7 +61,7 @@
                                     <i class="bi bi-person"></i> @(producto.Propietario?.Nombre ?? "Usuario") @(producto.Propietario?.Apellidos ?? "")
                                 </div>
                                 <div>
-                                    <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @producto.UpdatedAt.ToLocalTime().ToString("g")
+                                    <i class="bi bi-calendar3"></i> @SharedLocalizer["Created"]: @producto.CreatedAt.ToLocalTime().ToString("g")
                                 </div>
                             </div>
                         </div>

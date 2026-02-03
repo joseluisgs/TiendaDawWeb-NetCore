@@ -65,7 +65,7 @@ public class IndexModel(
         if (minPrecio.HasValue) products = products.Where(p => (float)p.Precio >= minPrecio.Value);
         if (maxPrecio.HasValue) products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
 
-        products = products.OrderByDescending(p => p.UpdatedAt);
+        products = products.OrderByDescending(p => p.CreatedAt);
 
         var totalItems = products.Count();
         var totalPages = (int)Math.Ceiling(totalItems / (double)size);
