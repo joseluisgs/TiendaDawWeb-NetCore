@@ -162,4 +162,133 @@ public class StorageServiceTests
         // Assert
         result.IsSuccess.Should().BeTrue(); // Idempotencia: Si no existe, "ya está borrado"
     }
+
+    /// <summary>
+    /// PRUEBA: DeleteFileAsync con path nulo retorna success.
+    /// </summary>
+    [Test]
+    public async Task DeleteFileAsync_ShouldReturnSuccess_WhenPathIsNull()
+    {
+        // Act
+        var result = await _storageService.DeleteFileAsync(null!);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// PRUEBA: DeleteFileAsync con path vacío retorna success.
+    /// </summary>
+    [Test]
+    public async Task DeleteFileAsync_ShouldReturnSuccess_WhenPathIsEmpty()
+    {
+        // Act
+        var result = await _storageService.DeleteFileAsync("");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// PRUEBA: SaveFileAsync con archivo nulo retorna error.
+    /// </summary>
+    [Test]
+    public async Task SaveFileAsync_ShouldReturnError_WhenFileIsNull()
+    {
+        // Act
+        var result = await _storageService.SaveFileAsync(null!, "products");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("vacio");
+    }
+
+    /// <summary>
+    /// PRUEBA: SaveFileAsync con archivo vacío retorna error.
+    /// </summary>
+    [Test]
+    public async Task SaveFileAsync_ShouldReturnError_WhenFileIsEmpty()
+    {
+        // Arrange
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.FileName).Returns("empty.jpg");
+        fileMock.Setup(f => f.Length).Returns(0);
+
+        // Act
+        var result = await _storageService.SaveFileAsync(fileMock.Object, "products");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("vacio");
+    }
+
+    /// <summary>
+    /// PRUEBA: FileExists retorna false para path nulo.
+    /// </summary>
+    [Test]
+    public void FileExists_ShouldReturnFalse_WhenPathIsNull()
+    {
+        // Act
+        var result = _storageService.FileExists(null!);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// PRUEBA: FileExists retorna false para path vacío.
+    /// </summary>
+    [Test]
+    public void FileExists_ShouldReturnFalse_WhenPathIsEmpty()
+    {
+        // Act
+        var result = _storageService.FileExists("");
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// PRUEBA: FileExists retorna true cuando archivo existe.
+    /// </summary>
+    [Test]
+    public void FileExists_ShouldReturnTrue_WhenFileExists()
+    {
+        // Arrange
+        var relativePath = "uploads/products/exists.jpg";
+        var fullPath = Path.Combine(_tempPath, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllTextAsync(fullPath, "content");
+
+        // Act
+        var result = _storageService.FileExists("/" + relativePath);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// PRUEBA: SaveFileAsync guarda con extensión correcta.
+    /// </summary>
+    [Test]
+    public async Task SaveFileAsync_ShouldSaveWithCorrectExtension()
+    {
+        // Arrange
+        var content = "PNG content";
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.FileName).Returns("image.png");
+        fileMock.Setup(f => f.Length).Returns(stream.Length);
+        fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+            .Callback<Stream, CancellationToken>((target, token) => stream.CopyTo(target))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _storageService.SaveFileAsync(fileMock.Object, "products");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().EndWith(".png");
+    }
 }
