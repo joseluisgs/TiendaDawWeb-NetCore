@@ -103,12 +103,11 @@
                     </button>
                 }
                 else {
-                    <form asp-page="/Carrito/AddToCart" asp-route-productId="@Model.Product.Id"
-                          method="post" class="flex-grow-1">
-                        <button type="submit" class="btn btn-success w-100" data-testid="add-to-cart-button">
-                            <i class="bi bi-cart-plus"></i> Añadir al Carrito
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-success w-100 flex-grow-1"
+                            onclick="addToCart(@Model.Product.Id, this)"
+                            data-testid="add-to-cart-button">
+                        <i class="bi bi-cart-plus"></i> Añadir al Carrito
+                    </button>
                 }
 
                 @if (isAuthenticated && !isOwner) {

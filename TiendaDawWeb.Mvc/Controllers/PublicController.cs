@@ -75,8 +75,8 @@ public class PublicController(
         if (minPrecio.HasValue) products = products.Where(p => (float)p.Precio >= minPrecio.Value);
         if (maxPrecio.HasValue) products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
 
-        // Ordenar por fecha de última modificación (o creación si no hay modificación) descendente
-        products = products.OrderByDescending(p => p.UpdatedAt);
+        // Ordenar por fecha de creación descendente
+        products = products.OrderByDescending(p => p.CreatedAt);
 
         // Calculate pagination
         var totalItems = products.Count();
