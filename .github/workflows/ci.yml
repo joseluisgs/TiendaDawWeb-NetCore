@@ -117,9 +117,42 @@ jobs:
           path: ./publish
           retention-days: 5
 
+  validate-docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install DocFX
+        run: dotnet tool install --global docfx
+
+      - name: Create fallback docfx.json
+        run: |
+          if [ ! -f docfx.json ]; then
+            printf '%s\n' '{' '  "metadata": [' '    {' '      "src": [' '        {' '          "files": ["TiendaDawWeb.Web/TiendaDawWeb.csproj"],' '          "properties": {' '            "TargetFramework": "net10.0"' '          }' '        }' '      ],' '      "dest": "api"' '    }' '  ],' '  "build": {' '    "content": [' '      {' '        "files": ["api/*.yml", "doc/*.md", "*.md"]' '      },' '      {' '        "files": ["api/**.yml"],' '        "src": "api"' '      }' '    ],' '    "dest": "_site",' '    "template": ["default"],' '    "globalMetadataFiles": [],' '    "fileMetadataFiles": []' '  }' '}' > docfx.json
+          fi
+
+      - name: Build Documentation (HTML)
+        run: docfx docfx.json
+
+      - name: Upload Documentation Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiendadawweb-docs
+          path: _site
+          if-no-files-found: warn
+          retention-days: 7
+
   summary:
     name: Summary
-    needs: [build, test, publish]
+    needs: [build, test, publish, validate-docs]
     runs-on: ubuntu-latest
     if: always()
 
@@ -133,6 +166,7 @@ jobs:
           echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Test (Unit + Coverage) | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Publish | ${{ needs.publish.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docs (HTML) | ${{ needs.validate-docs.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ needs.build.result }}" == "success" ]] && [[ "${{ needs.test.result }}" == "success" ]]; then
             echo "✅ All checks passed!" >> $GITHUB_STEP_SUMMARY
