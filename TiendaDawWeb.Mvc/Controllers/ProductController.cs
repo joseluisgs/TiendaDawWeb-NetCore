@@ -143,6 +143,11 @@ public class ProductController(
             return RedirectToAction(nameof(Index));
         }
 
+        if (product.CompraId.HasValue) {
+            TempData["Error"] = "No puedes editar un producto que ha sido vendido";
+            return RedirectToAction(nameof(MyProducts));
+        }
+
         // 🧹 REFACTOR: Usamos el método de extensión .ToViewModel()
         return View(product.ToViewModel());
     }
@@ -188,6 +193,23 @@ public class ProductController(
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Auth");
 
+        var productResult = await productService.GetByIdAsync(id);
+        if (productResult.IsFailure) {
+            TempData["Error"] = "Producto no encontrado";
+            return RedirectToAction(nameof(MyProducts));
+        }
+
+        var product = productResult.Value;
+        if (product.PropietarioId != user.Id && !User.IsInRole("ADMIN")) {
+            TempData["Error"] = "No tienes permiso para eliminar este producto";
+            return RedirectToAction(nameof(MyProducts));
+        }
+
+        if (product.CompraId.HasValue) {
+            TempData["Error"] = "No puedes eliminar un producto que ha sido vendido";
+            return RedirectToAction(nameof(MyProducts));
+        }
+
         var result = await productService.DeleteAsync(id, user.Id, User.IsInRole("ADMIN"));
 
         if (result.IsFailure)
@@ -195,7 +217,7 @@ public class ProductController(
         else
             TempData["Success"] = "Producto eliminado exitosamente";
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(MyProducts));
     }
 
     /// <summary>

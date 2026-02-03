@@ -1,14 +1,17 @@
 @namespace TiendaDawWeb.Shared.Blazor.Ratings
 @using TiendaDawWeb.Shared.Services.Rating
 @using TiendaDawWeb.Shared.Models
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.Components.Authorization
 @inject IRatingService RatingService
-@inject UserManager<User> UserManager
 @inject RatingStateContainer StateContainer
-@inject AuthenticationStateProvider AuthStateProvider
 @inject ILogger<RatingSection> Logger
 @implements IDisposable
+
+@{
+    var userRating = StateContainer.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
+    var canRate = _isAuthenticated && !_isOwner && _canRate;
+    var otherRatings = StateContainer.Ratings?.Where(r => r.UsuarioId != CurrentUserId).ToList();
+    var totalRatings = otherRatings?.Count ?? 0;
+}
 
 <div class="mb-4">
     @if (_loading)
@@ -19,36 +22,23 @@
             </div>
         </div>
     }
-    else if (!_isAuthenticated)
+    else if (userRating != null)
     {
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle"></i> Debes <a href="/Auth/Login" class="alert-link">iniciar sesión</a> para dejar una valoración.
-        </div>
-    }
-    else if (_isOwner)
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> No puedes valorar tu propio producto.
-        </div>
-    }
-    else if (GetUserRating() != null)
-    {
-        var rating = GetUserRating();
         <div class="p-4 rounded border border-success bg-light mb-4 fade-in">
             <h5 class="text-success"><i class="bi bi-check-circle-fill"></i> ¡Gracias por tu valoración!</h5>
             <div class="d-flex align-items-center mb-2 mt-3">
-                <span>@RenderStars(rating!.Puntuacion, 1.5)</span>
-                <span class="ms-2 fw-bold">@rating.Puntuacion / 5</span>
-                <span class="text-muted ms-3 small">@rating.CreatedAt.ToLocalTime().ToShortDateString()</span>
+                <span>@RenderStars(userRating.Puntuacion, 1.5)</span>
+                <span class="ms-2 fw-bold">@userRating.Puntuacion / 5</span>
+                <span class="text-muted ms-3 small">@userRating.CreatedAt.ToLocalTime().ToShortDateString()</span>
             </div>
-            <p class="mb-0 text-muted">@((MarkupString)(string.IsNullOrWhiteSpace(rating.Comentario) ? "<i>Sin comentario</i>" : rating.Comentario))</p>
+            <p class="mb-0 text-muted">@((MarkupString)(string.IsNullOrWhiteSpace(userRating.Comentario) ? "<i>Sin comentario</i>" : userRating.Comentario))</p>
         </div>
     }
-    else
+    else if (canRate)
     {
         <div class="card border-primary mb-4" id="cardFormulario">
             <div class="card-header bg-primary text-white">
-                <i class="bi bi-pencil-square"></i> Escribe tu valoración
+                <i class="bi bi-pencil-square"></i> Valora tu compra ahora
             </div>
             <div class="card-body">
                 <form @onsubmit="HandleSubmit" @onsubmit:preventDefault>
@@ -96,18 +86,11 @@
     }
 </div>
 
-<div id="ratingsList">
-    @if (StateContainer.Ratings == null)
-    {
-        <p>Cargando opiniones...</p>
-    }
-    else if (!StateContainer.Ratings.Any())
-    {
-        <div class="alert alert-light border"><i class="bi bi-info-circle"></i> No hay valoraciones todavía. Sé el primero en opinar.</div>
-    }
-    else
-    {
-        @foreach (var rating in StateContainer.Ratings)
+@if (otherRatings != null && otherRatings.Any())
+{
+    <div id="ratingsList">
+        <h4 class="mb-3"><i class="bi bi-star-fill text-warning"></i> @(totalRatings == 1 ? "Valoración" : "Valoraciones")</h4>
+        @foreach (var rating in otherRatings)
         {
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
@@ -127,16 +110,26 @@
                 </div>
             </div>
         }
-    }
-</div>
+    </div>
+}
+else if (!canRate && _loading == false)
+{
+    <div class="alert alert-light border">
+        <i class="bi bi-info-circle"></i> No hay valoraciones todavía. 
+        <a href="@ProductUrl" class="alert-link fw-bold">¡Compra</a> y valora!
+    </div>
+}
 
 @code {
     [Parameter] public long ProductId { get; set; }
     [Parameter] public long? CurrentUserId { get; set; }
     [Parameter] public bool IsOwner { get; set; }
+    [Parameter] public bool IsAuthenticated { get; set; }
+    [Parameter] public string? ProductUrl { get; set; }
 
     private bool _isAuthenticated;
     private bool _isOwner;
+    private bool _canRate;
     private bool _loading = true;
     private bool _submitting = false;
     private int _selectedPuntuacion = 0;
@@ -145,31 +138,25 @@
     private string _errorMessage = "";
     private bool _showStarError = false;
 
-    private Models.Rating? GetUserRating() => 
-        StateContainer.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
-
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("RatingSection inicializado para Producto {ProductId}", ProductId);
         StateContainer.OnChange += HandleStateChange;
         
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        _isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        _isAuthenticated = IsAuthenticated;
+        _isOwner = IsOwner;
         
-        if (_isAuthenticated)
+        if (_isAuthenticated && CurrentUserId.HasValue)
         {
-            _isOwner = IsOwner; 
+            var canRateResult = await RatingService.CanUserRateProductAsync(CurrentUserId.Value, ProductId);
+            _canRate = canRateResult.IsSuccess && canRateResult.Value;
         }
 
         await StateContainer.EnsureLoadedAsync(ProductId);
         _loading = false;
     }
 
-    private void HandleStateChange()
-    {
-        StateHasChanged();
-    }
+    private void HandleStateChange() => StateHasChanged();
 
     private void SelectStar(int val)
     {
@@ -177,10 +164,7 @@
         _showStarError = false;
     }
 
-    private void HoverStar(int val)
-    {
-        _hoverPuntuacion = val;
-    }
+    private void HoverStar(int val) => _hoverPuntuacion = val;
 
     private string GetStarClass(int starValue)
     {
@@ -190,7 +174,7 @@
 
     private async Task HandleSubmit()
     {
-        Logger.LogInformation("RatingSection: Intento de envío de valoración para Producto {ProductId}", ProductId);
+        Logger.LogInformation("RatingSection: Intento de envío para Producto {ProductId}", ProductId);
         if (_selectedPuntuacion == 0)
         {
             _showStarError = true;
@@ -206,7 +190,7 @@
 
         if (result.IsSuccess)
         {
-            Logger.LogInformation("RatingSection: Valoración guardada. Notificando cambio...");
+            Logger.LogInformation("RatingSection: Valoración guardada");
             await StateContainer.RefreshAsync(ProductId);
         }
         else
@@ -217,10 +201,7 @@
         _submitting = false;
     }
 
-    public void Dispose()
-    {
-        StateContainer.OnChange -= HandleStateChange;
-    }
+    public void Dispose() => StateContainer.OnChange -= HandleStateChange;
 
     private RenderFragment RenderStars(double val, double size) => builder =>
     {

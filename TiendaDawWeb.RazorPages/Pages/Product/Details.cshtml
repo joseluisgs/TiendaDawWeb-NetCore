@@ -9,7 +9,6 @@
     var currentUser = await UserManager.GetUserAsync(User);
     var isOwner = currentUser != null && Model.Product.PropietarioId == currentUser.Id;
     var isAuthenticated = User?.Identity?.IsAuthenticated == true;
-    var productId = Model.Product.Id;
 }
 
 <!-- CONTEXTO PARA SCRIPTS EXTERNOS -->
@@ -124,7 +123,6 @@
 
     <div class="row mt-5">
         <div class="col-12">
-            <h3 class="mb-4"><i class="bi bi-star-fill text-warning"></i> Valoraciones</h3>
             @* Código original con AJAX comentado para propósitos didácticos *@
             @* 
             <div id="ratingSectionAJAX" class="mb-4"></div>
@@ -134,7 +132,9 @@
             <component type="typeof(TiendaDawWeb.Shared.Blazor.Ratings.RatingSection)" render-mode="ServerPrerendered"
                        param-ProductId="@Model.Product.Id"
                        param-CurrentUserId="@currentUser?.Id"
-                       param-IsOwner="@isOwner"/>
+                       param-IsOwner="@isOwner"
+                       param-IsAuthenticated="@isAuthenticated"
+                       param-ProductUrl="@(Url.Page("/Product/Details", new { id = Model.Product.Id }))"/>
         </div>
     </div>
 </div>
