@@ -107,6 +107,9 @@ jobs:
           name: build-output
           path: TiendaDawWeb.Web/bin/Release/net10.0/
 
+      - name: Restore dependencies
+        run: dotnet restore
+
       - name: Publish
         run: dotnet publish --no-build --configuration Release --output ./publish
 
