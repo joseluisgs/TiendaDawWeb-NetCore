@@ -129,13 +129,10 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" asp-page="/Carrito/Index" data-testid="cart-icon">
                             <i class="bi bi-cart3"></i> @Localizer["Nav.Cart"]
-                            @if (cartCount > 0)
-                            {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" data-testid="cart-count">
-                                    @cartCount
-                                    <span class="visually-hidden">productos en carrito</span>
-                                </span>
-                            }
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger @(cartCount > 0 ? "" : "d-none")" data-testid="cart-count">
+                                @cartCount
+                                <span class="visually-hidden">productos en carrito</span>
+                            </span>
                         </a>
                     </li>
                     <li class="nav-item dropdown">

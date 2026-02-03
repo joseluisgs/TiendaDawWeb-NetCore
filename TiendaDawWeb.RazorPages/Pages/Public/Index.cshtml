@@ -112,14 +112,9 @@
                                 @if (SignInManager.IsSignedIn(User) && currentUser != null && currentUser.Email != producto.Propietario?.Email) {
                                     <div class="col-md-6 text-end">
                                         @if (!producto.Reservado) {
-                                            <form asp-page="/Carrito/Add"
-                                                  asp-route-productoId="@producto.Id"
-                                                  method="post"
-                                                  style="display: inline-block;">
-                                                <button type="submit" class="btn btn-success btn-sm">
-                                                    <i class="bi bi-cart-plus"></i> @SharedLocalizer["AddToCart"]
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-success btn-sm" onclick="addToCart(@producto.Id, this)">
+                                                <i class="bi bi-cart-plus"></i> @SharedLocalizer["AddToCart"]
+                                            </button>
                                         }
                                         else {
                                             <span class="badge bg-warning text-dark">

@@ -83,30 +83,33 @@
 </div>
 
 @section Scripts {
+    @Html.AntiForgeryToken()
     <script>
         async function removeFavorite(productId) {
             if (!confirm('¿Estás seguro de que quieres eliminar este producto de tus favoritos?')) {
                 return;
             }
 
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
             try {
-                const response = await fetch('/api/favorites/' + productId, {
-                    method: 'DELETE',
+                const response = await fetch('/Api/Favorites?handler=Delete&productoId=' + productId, {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'RequestVerificationToken': token || ''
                     }
                 });
 
-                if (response.ok) {
-                    // Recargar la página para mostrar los cambios
+                const data = await response.json();
+                
+                if (data.success) {
                     window.location.reload();
                 } else {
-                    const data = await response.json();
-                    alert(data.message || 'Error al eliminar el favorito. Por favor, intenta de nuevo.');
+                    alert(data.message || 'Error al eliminar el favorito.');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al eliminar el favorito. Por favor, intenta de nuevo.');
+                alert('Error al eliminar el favorito.');
             }
         }
     </script>

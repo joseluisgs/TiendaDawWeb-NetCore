@@ -34,4 +34,34 @@ public class IndexModel(
 
         return Page();
     }
+
+    public async Task<IActionResult> OnPostRemoveAsync(long itemId) {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) return RedirectToPage("/Auth/Login");
+
+        var result = await carritoService.RemoveFromCarritoAsync(itemId);
+        
+        if (result.IsFailure) {
+            TempData["Error"] = result.Error;
+        } else {
+            TempData["Success"] = "Producto eliminado del carrito";
+        }
+
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostClearAsync() {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) return RedirectToPage("/Auth/Login");
+
+        var result = await carritoService.ClearCarritoAsync(user.Id);
+        
+        if (result.IsFailure) {
+            TempData["Error"] = result.Error;
+        } else {
+            TempData["Success"] = "Carrito vaciado";
+        }
+
+        return RedirectToPage();
+    }
 }

@@ -14,20 +14,13 @@ async function toggleFavorite(productId) {
             console.error("❌ Anti-Forgery token not found!");
         }
 
-        // 2. Realizar la petición al API
-        const response = await fetch('/api/favorites/toggle', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': token || ''
-            },
-            body: JSON.stringify({ productId: productId })
+        // 2. Realizar la petición al API - Razor Pages usa ?handler=
+        const response = await fetch('/Api/Favorites?handler=Toggle&productoId=' + productId, {
+            method: 'GET'
         });
 
         if (response.status === 401) {
             showToast('Debes iniciar sesión para añadir favoritos', 'info');
-            // Opcional: Redirigir al login después de un breve delay
-            // setTimeout(() => window.location.href = '/Auth/Login', 2000);
             return;
         }
 

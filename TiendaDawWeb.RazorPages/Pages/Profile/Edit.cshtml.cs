@@ -78,8 +78,29 @@ public class EditModel(
             return RedirectToPage("/Profile/Index");
         }
 
-        TempData["Error"] = "Error al actualizar el perfil: " +
+        TempData["Error"] = "Error al actualizar el perfil: " + 
                             string.Join(", ", updateResult.Errors.Select(e => e.Description));
+        UserProfile = user;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostDeleteAvatarAsync() {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) return RedirectToPage("/Auth/Login");
+
+        if (!string.IsNullOrEmpty(user.Avatar)) {
+            try {
+                await storageService.DeleteFileAsync(user.Avatar);
+                user.Avatar = null;
+                await userManager.UpdateAsync(user);
+                TempData["Success"] = "Avatar eliminado correctamente";
+            }
+            catch (Exception ex) {
+                logger.LogError(ex, "Error al eliminar avatar para usuario {UserId}", user.Id);
+                TempData["Error"] = "Error al eliminar el avatar";
+            }
+        }
+
         UserProfile = user;
         return Page();
     }

@@ -21,25 +21,18 @@ async function addToCart(productId, button = null) {
             console.warn('CSRF token not found, request may fail');
         }
         
-        const response = await fetch('/Carrito/Add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'RequestVerificationToken': token || ''
-            },
-            body: `productoId=${productId}&__RequestVerificationToken=${encodeURIComponent(token || '')}`
+        const response = await fetch('/Carrito/Add?productoId=' + productId, {
+            method: 'GET'
         });
 
+        const data = await response.json();
+        
         if (response.redirected) {
-            // Handle redirect (probably to login)
             window.location.href = response.url;
             return;
         }
-
-        const text = await response.text();
         
         if (response.ok) {
-            // Success - show notification and update cart badge
             showToast('Producto añadido al carrito', 'success');
             updateCartBadge();
             
@@ -81,13 +74,11 @@ async function removeFromCart(itemId, element = null) {
             console.warn('CSRF token not found, request may fail');
         }
         
-        const response = await fetch('/app/carrito/remove', {
-            method: 'POST',
+        const response = await fetch('/Carrito/Remove?itemId=' + itemId, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'RequestVerificationToken': token || ''
-            },
-            body: `itemId=${itemId}&__RequestVerificationToken=${encodeURIComponent(token || '')}`
+            }
         });
 
         if (response.ok) {
@@ -113,14 +104,26 @@ async function removeFromCart(itemId, element = null) {
 }
 
 /**
- * Update cart badge with current count
+ * Update cart badge with current count from server
  */
 async function updateCartBadge() {
     try {
-        // The badge updates on page reload or via server-side rendering
-        // For SPA-like behavior, we could add an API endpoint here
-        // For now, we'll just assume server-side updates
-        console.log('Cart updated - badge will update on next page load');
+        const response = await fetch('/Api/CartCount', {
+            method: 'GET'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const badge = document.querySelector('[data-testid="cart-count"]');
+            if (badge) {
+                badge.textContent = data.count;
+                if (data.count > 0) {
+                    badge.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                }
+            }
+        }
     } catch (error) {
         console.error('Error updating cart badge:', error);
     }
