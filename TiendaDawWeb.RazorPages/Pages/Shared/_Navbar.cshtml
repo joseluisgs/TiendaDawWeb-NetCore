@@ -19,7 +19,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand" asp-controller="Public" asp-action="Index">
+        <a class="navbar-brand" asp-page="/Public/Index">
             <img src="~/images/logo.svg" alt="Logo" class="d-inline-block align-text-top" height="30">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -28,28 +28,27 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Public" asp-action="Index">
+                    <a class="nav-link" asp-page="/Public/Index">
                         <i class="bi bi-house-door"></i> @Localizer["Nav.Home"]
                     </a>
                 </li>
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Product" asp-action="MyProducts">
+                        <a class="nav-link" asp-page="/Product/MyProducts">
                             <i class="bi bi-bag"></i> @Localizer["Nav.MyProducts"]
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Purchase" asp-action="MyPurchases">
+                        <a class="nav-link" asp-page="/Purchase/Index">
                             <i class="bi bi-receipt"></i> @Localizer["Nav.MyPurchases"]
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Favorite" asp-action="Index">
+                        <a class="nav-link" asp-page="/Favorite/Index">
                             <i class="bi bi-heart"></i> @Localizer["Nav.Favorites"]
                         </a>
                     </li>
-                    @* Admin dropdown if isAdmin *@
                     @if (currentUser?.Rol == "ADMIN")
                     {
                         <li class="nav-item dropdown">
@@ -58,22 +57,22 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                    <a class="dropdown-item" asp-page="/Admin/Index">
                                         <i class="bi bi-speedometer2"></i> @Localizer["Dashboard"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Usuarios">
+                                    <a class="dropdown-item" asp-page="/Admin/Usuarios">
                                         <i class="bi bi-people"></i> @Localizer["Users"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Productos">
+                                    <a class="dropdown-item" asp-page="/Admin/Productos">
                                         <i class="bi bi-box-seam"></i> @Localizer["Products"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Ventas">
+                                    <a class="dropdown-item" asp-page="/Admin/Ventas">
                                         <i class="bi bi-cash-stack"></i> @Localizer["Sales"]
                                     </a>
                                 </li>
@@ -83,7 +82,7 @@
                 }
             </ul>
 
-                <form action="@Url.Action("Index", "Public")" class="d-flex me-3" method="get" role="search">
+                <form action="/Public" class="d-flex me-3" method="get" role="search">
                     <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="search" value="@ViewBag.Search" data-testid="navbar-search-input">
                     <button class="btn btn-outline-light ms-2" type="submit" data-testid="navbar-search-button"><i class="bi bi-search"></i></button>
                 </form>
@@ -128,7 +127,7 @@
                 @if (SignInManager.IsSignedIn(User) && currentUser != null)
                 {
                     <li class="nav-item">
-                        <a class="nav-link position-relative" asp-controller="Carrito" asp-action="Index" data-testid="cart-icon">
+                        <a class="nav-link position-relative" asp-page="/Carrito/Index" data-testid="cart-icon">
                             <i class="bi bi-cart3"></i> @Localizer["Nav.Cart"]
                             @if (cartCount > 0)
                             {
@@ -147,7 +146,7 @@
                             <li><h6 class="dropdown-header">@(currentUser.Rol ?? "USER")</h6></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                <a class="dropdown-item" asp-page="/Profile/Index">
                                     <i class="bi bi-person"></i> @Localizer["Nav.Profile"]
                                 </a>
                             </li>
@@ -163,7 +162,7 @@
                 else
                 {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                        <a class="nav-link" asp-page="/Auth/Login">
                             <i class="bi bi-person"></i> @Localizer["Nav.Login"]
                         </a>
                     </li>
@@ -175,6 +174,6 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <form asp-controller="Auth" asp-action="Logout" id="logoutForm" method="post" style="display: none;">
+    <form asp-page="/Auth/Logout" method="post" id="logoutForm" style="display: none;">
     </form>
 }
