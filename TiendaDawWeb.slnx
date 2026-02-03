@@ -5,7 +5,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="TiendaDawWeb.Shared/TiendaDawWeb.Shared.csproj" />
-  <Project Path="TiendaDawWeb.Shared.Components/TiendaDawWeb.Shared.Components.csproj" />
+  <Project Path="TiendaDawWeb.Shared.Blazor/TiendaDawWeb.Shared.Blazor.csproj" />
   <Project Path="TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj" />
   <Project Path="TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj" />
   <Project Path="TiendaDawWeb.Tests/TiendaDawWeb.Tests.csproj" />

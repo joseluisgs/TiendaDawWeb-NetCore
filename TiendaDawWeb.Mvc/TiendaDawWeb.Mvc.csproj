@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TiendaDawWeb.Shared\TiendaDawWeb.Shared.csproj" />
-    <ProjectReference Include="..\TiendaDawWeb.Shared.Components\TiendaDawWeb.Shared.Components.csproj" />
+    <ProjectReference Include="..\TiendaDawWeb.Shared.Blazor\TiendaDawWeb.Shared.Blazor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

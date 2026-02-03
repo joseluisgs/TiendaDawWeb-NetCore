@@ -50,7 +50,7 @@
                 @* Código original con AJAX comentado para propósitos didácticos *@
                 @* <script>loadRatings();</script> *@
 
-                <component type="typeof(TiendaDawWeb.Shared.Components.Ratings.RatingSummary)" render-mode="ServerPrerendered"
+                <component type="typeof(TiendaDawWeb.Shared.Blazor.Ratings.RatingSummary)" render-mode="ServerPrerendered"
                            param-ProductId="@Model.Product.Id"/>
             </div>
 
@@ -131,7 +131,7 @@
             <div id="ratingsListAJAX"></div> 
             *@
 
-            <component type="typeof(TiendaDawWeb.Shared.Components.Ratings.RatingSection)" render-mode="ServerPrerendered"
+            <component type="typeof(TiendaDawWeb.Shared.Blazor.Ratings.RatingSection)" render-mode="ServerPrerendered"
                        param-ProductId="@Model.Product.Id"
                        param-CurrentUserId="@currentUser?.Id"
                        param-IsOwner="@isOwner"/>
