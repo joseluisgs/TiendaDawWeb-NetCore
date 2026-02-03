@@ -16,9 +16,49 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     
                     <div class="mb-3">
-                        <label asp-for="ProductViewModel.Nombre" class="form-label"></label>
-                        <input asp-for="ProductViewModel.Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max" />
-                        <span asp-validation-for="ProductViewModel.Nombre" class="text-danger"></span>
+                        <label asp-for="Input.Nombre" class="form-label"></label>
+                        <input asp-for="Input.Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max" />
+                        <span asp-validation-for="Input.Nombre" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Input.Descripcion" class="form-label"></label>
+                        <textarea asp-for="Input.Descripcion" class="form-control" rows="4" 
+                                  placeholder="Describe tu producto con detalle..."></textarea>
+                        <span asp-validation-for="Input.Descripcion" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Precio" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="Input.Precio" 
+                                       class="form-control" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0.01"
+                                       placeholder="19.99" />
+                                <span class="input-group-text">€</span>
+                            </div>
+                            <span asp-validation-for="Input.Precio" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Categoria" class="form-label"></label>
+                            <select asp-for="Input.Categoria" class="form-select" asp-items="Html.GetEnumSelectList<ProductCategory>()">
+                                <option value="">-- Selecciona una categoría --</option>
+                            </select>
+                            <span asp-validation-for="Input.Categoria" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Input.ImagenFile" class="form-label"></label>
+                        <input asp-for="Input.ImagenFile" class="form-control" type="file" accept="image/*" />
+                        <span asp-validation-for="Input.ImagenFile" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
+                        </small>
                     </div>
                     
                     <div class="mb-3">

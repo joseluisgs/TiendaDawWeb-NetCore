@@ -62,4 +62,22 @@ public class DetailsModel(
         Product = result.Value;
         return Page();
     }
+
+    public async Task<IActionResult> OnPostDeleteAsync(long id) {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
+
+        var result = await productService.DeleteAsync(id, user.Id);
+        
+        if (result.IsFailure) {
+            TempData["Error"] = result.Error;
+            Product = (await productService.GetByIdAsync(id)).Value;
+            return Page();
+        }
+        
+        TempData["Success"] = "Producto eliminado correctamente";
+        return RedirectToPage("/Product/MyProducts");
+    }
 }

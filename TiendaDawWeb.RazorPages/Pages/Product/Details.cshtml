@@ -5,10 +5,12 @@
 @inject IStringLocalizer<SharedResource> SharedLocalizer
 
 @{
-    ViewData["Title"] = Model.Product.Nombre;
+    ViewData["Title"] = Model.Product?.Nombre ?? "Producto";
     var currentUser = await UserManager.GetUserAsync(User);
-    var isOwner = currentUser != null && Model.Product.PropietarioId == currentUser.Id;
+    var isOwner = currentUser != null && Model.Product != null && Model.Product.PropietarioId == currentUser.Id;
     var isAuthenticated = User?.Identity?.IsAuthenticated == true;
+    var productId = Model.Product?.Id;
+    var productoVendido = Model.Product?.CompraId.HasValue ?? false;
 }
 
 <!-- CONTEXTO PARA SCRIPTS EXTERNOS -->
@@ -26,6 +28,14 @@
 }
 
 <div class="container mt-4" data-testid="product-details-page">
+    @if (Model.Product == null) {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> El producto no existe o ha sido eliminado.
+            <a asp-page="/Public/Index" class="alert-link">Volver al inicio</a>
+        </div>
+    }
+    else
+    {
     <div class="row">
         <div class="col-md-6">
             <img src="@Model.Product.ImagenOrDefault" class="img-fluid rounded shadow" alt="@Model.Product.Nombre" data-testid="product-image">
@@ -137,4 +147,4 @@
                        param-ProductUrl="@(Url.Page("/Product/Details", new { id = Model.Product.Id }))"/>
         </div>
     </div>
-</div>
+    }

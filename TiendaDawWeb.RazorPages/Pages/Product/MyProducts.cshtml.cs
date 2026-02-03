@@ -29,4 +29,19 @@ public class MyProductsModel(
         Products = result.Value.Where(p => p.PropietarioId == user.Id);
         return Page();
     }
+
+    public async Task<IActionResult> OnPostDeleteAsync(long id) {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) return RedirectToPage("/Auth/Login");
+
+        var result = await productService.DeleteAsync(id, user.Id);
+        
+        if (result.IsFailure) {
+            TempData["Error"] = result.Error;
+        } else {
+            TempData["Success"] = "Producto eliminado correctamente";
+        }
+        
+        return RedirectToPage("/Product/MyProducts");
+    }
 }
