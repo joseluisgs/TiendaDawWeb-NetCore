@@ -42,19 +42,29 @@ public static class LocalizationConfig
             new CultureInfo("pt-PT")
         };
 
-        app.UseRequestLocalization(new RequestLocalizationOptions
+        var localizationOptions = new RequestLocalizationOptions
         {
             DefaultRequestCulture = new RequestCulture("es-ES"),
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures,
-            ApplyCurrentCultureToResponseHeaders = true,
-            RequestCultureProviders = new List<IRequestCultureProvider>
-            {
-                new QueryStringRequestCultureProvider(),
-                new CookieRequestCultureProvider(),
-                new AcceptLanguageHeaderRequestCultureProvider()
-            }
-        });
+            ApplyCurrentCultureToResponseHeaders = true
+        };
+
+        // Configurar QueryStringRequestCultureProvider para usar 'lang' en lugar de 'culture'
+        var queryProvider = new QueryStringRequestCultureProvider
+        {
+            QueryStringKey = "lang",
+            UIQueryStringKey = "lang"
+        };
+
+        localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider>
+        {
+            queryProvider,
+            new CookieRequestCultureProvider(),
+            new AcceptLanguageHeaderRequestCultureProvider()
+        };
+
+        app.UseRequestLocalization(localizationOptions);
 
         Log.Information("🌍 Culturas soportadas: es-ES, en-US, fr-FR, de-DE, pt-PT");
 

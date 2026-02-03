@@ -1,0 +1,206 @@
+@using Microsoft.Extensions.Localization
+@using TiendaDawWeb.Resources
+@model IEnumerable<Product>
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+@inject IStringLocalizer<Messages> Localizer
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+
+@*
+// Codigo para depurar la cultura
+@{
+    var debugCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    var debugUICulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+}
+<div style="position:fixed;top:0;right:0;background:yellow;z-index:99999;">
+    Culture: @debugCulture | UICulture: @debugUICulture
+</div>*@
+
+@{
+    ViewData["Title"] = "Inicio";
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+@* Include carousel - exact clone from Spring Boot original *@
+<partial name="_Carousel"/>
+
+<div class="container mb-5">
+    @* Filters card - matches Spring Boot original *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="@Url.Action("Index", "Public")" class="row g-3" method="get">
+                <div class="col-md-4">
+                    <label class="form-label">@SharedLocalizer["Search"]</label>
+                    <input class="form-control" name="q" placeholder="@SharedLocalizer["SearchProducts"]" type="text"
+                           value="@ViewBag.Search" data-testid="search-input">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@SharedLocalizer["Category"]</label>
+                    <select class="form-select" name="categoria" data-testid="category-select">
+                        <option value="">@SharedLocalizer["AllCategories"]</option>
+                        @foreach (var categoria in Enum.GetValues<ProductCategory>()) {
+                            var isSelected = ViewBag.Categoria == categoria.ToString();
+                            var categoryKey = $"Category.{categoria}";
+                            <option value="@categoria" selected="@isSelected">
+                                @SharedLocalizer[categoryKey]
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">@SharedLocalizer["MinPrice"]</label>
+                    <input class="form-control" name="minPrecio" placeholder="0" type="number" step="0.01"
+                           value="@ViewBag.MinPrecio" data-testid="min-price-input">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">@SharedLocalizer["MaxPrice"]</label>
+                    <input class="form-control" name="maxPrecio" placeholder="9999" type="number" step="0.01"
+                           value="@ViewBag.MaxPrecio" data-testid="max-price-input">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit" data-testid="search-button"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* Product list - *@
+    @if (!Model.Any()) {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> @SharedLocalizer["NoProductsFound"]
+        </div>
+    }
+    else {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var producto in Model) {
+                <div class="col">
+                    <div class="card h-100 shadow-sm producto-card" data-testid="product-card">
+                        <a href="@Url.Action("Details", "Product", new { id = producto.Id })"
+                           class="text-decoration-none text-dark">
+                            <img src="@producto.Imagen"
+                                 class="card-img-top"
+                                 alt="@producto.Nombre"
+                                 style="height: 300px; object-fit: cover; cursor: pointer;" data-testid="product-image">
+                            <div class="card-body">
+                                <h5 class="card-title" data-testid="product-title">@producto.Nombre</h5>
+                                @if (!string.IsNullOrEmpty(producto.Descripcion)) {
+                                    var descripcion = producto.Descripcion ?? "";
+                                    var maxLength = Math.Min(descripcion.Length, 80);
+                                    var wasTruncated = descripcion.Length > 80;
+                                    <p class="card-text text-muted small">
+                                        @descripcion.Substring(0, maxLength)@(wasTruncated ? "..." : "")
+                                    </p>
+                                }
+                                <span class="badge bg-info">@SharedLocalizer[$"Category.{producto.Categoria}"]</span>
+                                <div class="mt-2 text-muted small">
+                                    <div class="mb-1">
+                                        <i class="bi bi-person"></i> @(producto.Propietario?.Nombre ?? "Usuario") @(producto.Propietario?.Apellidos ?? "")
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-calendar3"></i> @SharedLocalizer["Updated"]: @producto.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="card-footer bg-white">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h4 class="text-primary mb-0">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</h4>
+                                </div>
+                                @if (SignInManager.IsSignedIn(User) && currentUser != null && currentUser.Email != producto.Propietario?.Email) {
+                                    <div class="col-md-6 text-end">
+                                        @if (!producto.Reservado) {
+                                            <form asp-controller="Carrito"
+                                                  asp-action="Add"
+                                                  asp-route-productoId="@producto.Id"
+                                                  method="post"
+                                                  style="display: inline-block;">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-cart-plus"></i> @SharedLocalizer["AddToCart"]
+                                                </button>
+                                            </form>
+                                        }
+                                        else {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-lock-fill"></i> @SharedLocalizer["Reserved"]
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Pagination Controls - matches Spring Boot original *@
+        @if (ViewBag.TotalPages > 1) {
+            <nav aria-label="Navegación de páginas" class="mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-0">
+                            @{
+                                var startItem = (ViewBag.CurrentPage - 1) * ViewBag.Size + 1;
+                                var endItem = Math.Min((int)(ViewBag.CurrentPage * ViewBag.Size), (int)ViewBag.TotalElements);
+                            }
+                            Mostrando @startItem a @endItem de @ViewBag.TotalElements productos
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="pagination justify-content-end mb-0">
+                            @* Previous page *@
+                            @if (ViewBag.HasPrevious) {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
+                                        <i class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]
+                                    </a>
+                                </li>
+                            }
+                            else {
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i
+                                            class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]</span>
+                                </li>
+                            }
+
+                            @* Page numbers *@
+                            @for (var i = 1; i <= ViewBag.TotalPages; i++) {
+                                @if (i == ViewBag.CurrentPage) {
+                                    <li class="page-item active">
+                                        <span class="page-link">@i</span>
+                                    </li>
+                                }
+                                else if (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2) {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+                            @* Next page *@
+                            @if (ViewBag.HasNext) {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
+                                        @SharedLocalizer["Pag.Next"] <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                            else {
+                                <li class="page-item disabled">
+                                    <span class="page-link">@SharedLocalizer["Pag.Next"] <i
+                                            class="bi bi-chevron-right"></i></span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        }
+    }
+</div>
