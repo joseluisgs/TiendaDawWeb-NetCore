@@ -444,6 +444,160 @@ public class PurchaseServiceTests
     }
 
     #endregion
+
+    /// <summary>
+    /// PRUEBA: GetAllAsync retorna todas las compras (para admin).
+    /// </summary>
+    [Test]
+    public async Task GetAllAsync_ShouldReturnAllPurchases()
+    {
+        // Arrange
+        var user = new User { Id = 1L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        Context.Purchases.Add(new Purchase { Id = 500L, CompradorId = 1L, Total = 100m });
+        Context.Purchases.Add(new Purchase { Id = 501L, CompradorId = 1L, Total = 200m });
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await PurchaseService.GetAllAsync();
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Count(), Is.EqualTo(2));
+    }
+
+    /// <summary>
+    /// PRUEBA: GetAllAsync con paginación.
+    /// </summary>
+    [Test]
+    public async Task GetAllAsync_ShouldReturnPaginatedResults()
+    {
+        // Arrange
+        var user = new User { Id = 1L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        for (int i = 600; i < 610; i++)
+        {
+            Context.Purchases.Add(new Purchase { Id = i, CompradorId = 1L, Total = 10m });
+        }
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await PurchaseService.GetAllAsync(page: 1, pageSize: 5);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Count(), Is.EqualTo(5));
+    }
+
+    /// <summary>
+    /// PRUEBA: GetByIdAsync retorna error cuando no existe.
+    /// </summary>
+    [Test]
+    public async Task GetByIdAsync_ShouldReturnError_WhenNotFound()
+    {
+        // Act
+        var result = await PurchaseService.GetByIdAsync(999L);
+
+        // Assert
+        Assert.That(result.IsFailure, Is.True);
+        Assert.That(result.Error, Is.TypeOf<NotFoundError>());
+    }
+
+    /// <summary>
+    /// PRUEBA: GetByUserAsync con paginación.
+    /// </summary>
+    [Test]
+    public async Task GetByUserAsync_ShouldReturnPaginatedResults()
+    {
+        // Arrange
+        var user = new User { Id = 700L, Nombre = "User", Email = "u@t.com" };
+        Context.Users.Add(user);
+        for (int i = 700; i < 710; i++)
+        {
+            Context.Purchases.Add(new Purchase { Id = i, CompradorId = 700L, Total = 10m });
+        }
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await PurchaseService.GetByUserAsync(700L, page: 1, pageSize: 3);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Count(), Is.EqualTo(3));
+    }
+
+    /// <summary>
+    /// PRUEBA: GetByUserAsync retorna lista vacía si no hay compras.
+    /// </summary>
+    [Test]
+    public async Task GetByUserAsync_ShouldReturnEmptyList_WhenNoPurchases()
+    {
+        // Act
+        var result = await PurchaseService.GetByUserAsync(999L);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(result.Value.Count(), Is.EqualTo(0));
+    }
+
+    /// <summary>
+    /// PRUEBA: GeneratePdfAsync falla si compra no existe.
+    /// </summary>
+    [Test]
+    public async Task GeneratePdfAsync_ShouldFail_WhenPurchaseNotFound()
+    {
+        // Act
+        var result = await PurchaseService.GeneratePdfAsync(999L);
+
+        // Assert
+        Assert.That(result.IsFailure, Is.True);
+    }
+
+    /// <summary>
+    /// PRUEBA: CreatePurchaseFromCarritoAsync falla si carritoService falla.
+    /// </summary>
+    [Test]
+    public async Task CreatePurchaseFromCarritoAsync_ShouldFail_WhenCarritoServiceFails()
+    {
+        // Arrange
+        var usuarioId = 1L;
+        _carritoServiceMock!.Setup(s => s.GetCarritoByUsuarioIdAsync(usuarioId))
+            .ReturnsAsync(Result.Failure<IEnumerable<CarritoItem>, DomainError>(PurchaseError.EmptyCarrito()));
+
+        // Act
+        var result = await PurchaseService.CreatePurchaseFromCarritoAsync(usuarioId);
+
+        // Assert
+        Assert.That(result.IsFailure, Is.True);
+    }
+
+    /// <summary>
+    /// PRUEBA: CreatePurchaseFromCarritoAsync falla si producto no existe.
+    /// </summary>
+    [Test]
+    public async Task CreatePurchaseFromCarritoAsync_ShouldFail_WhenProductNotFound()
+    {
+        // Arrange
+        var usuarioId = 1L;
+        var usuario = new User { Id = usuarioId, Nombre = "Test", Email = "test@test.com" };
+        Context.Users.Add(usuario);
+        await Context.SaveChangesAsync();
+
+        var carritoItems = new List<CarritoItem>
+        {
+            new() { ProductoId = 999L, Precio = 100m, UsuarioId = usuarioId }
+        };
+
+        _carritoServiceMock!.Setup(s => s.GetCarritoByUsuarioIdAsync(usuarioId))
+            .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(carritoItems));
+
+        // Act
+        var result = await PurchaseService.CreatePurchaseFromCarritoAsync(usuarioId);
+
+        // Assert
+        Assert.That(result.IsFailure, Is.True);
+        Assert.That(result.Error.Message, Does.Contain("no encontrado"));
+    }
 }
 
 /// <summary>

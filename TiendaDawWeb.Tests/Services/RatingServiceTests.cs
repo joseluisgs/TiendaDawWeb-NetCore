@@ -224,4 +224,223 @@ public class RatingServiceTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeTrue();
     }
+
+    /// <summary>
+    /// PRUEBA: GetByIdAsync retorna rating cuando existe.
+    /// </summary>
+    [Test]
+    public async Task GetByIdAsync_ShouldReturnRating_WhenExists()
+    {
+        // Arrange
+        var user = new User { Id = 1, Nombre = "U1", Email = "u1@t.com" };
+        _context.Users.Add(user);
+        var p = new Product { Id = 10, Nombre = "P10", PropietarioId = 1 };
+        _context.Products.Add(p);
+        await _context.SaveChangesAsync();
+
+        var r1 = new Rating { Id = 1, ProductoId = 10, UsuarioId = 1, Puntuacion = 5 };
+        _context.Ratings.Add(r1);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetByIdAsync(1);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Id.Should().Be(1);
+        result.Value.Puntuacion.Should().Be(5);
+    }
+
+    /// <summary>
+    /// PRUEBA: GetByIdAsync retorna error cuando no existe.
+    /// </summary>
+    [Test]
+    public async Task GetByIdAsync_ShouldReturnError_WhenNotFound()
+    {
+        // Act
+        var result = await _service.GetByIdAsync(999);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<NotFoundError>();
+    }
+
+    /// <summary>
+    /// PRUEBA: GetAverageRatingAsync retorna 0 sin ratings.
+    /// </summary>
+    [Test]
+    public async Task GetAverageRatingAsync_ShouldReturnZero_WhenNoRatings()
+    {
+        // Act
+        var result = await _service.GetAverageRatingAsync(999);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(0.0);
+    }
+
+    /// <summary>
+    /// PRUEBA: DeleteRatingAsync falla si no es propietario ni admin.
+    /// </summary>
+    [Test]
+    public async Task DeleteRatingAsync_ShouldFail_WhenNotOwnerNorAdmin()
+    {
+        // Arrange
+        var usuario = new User { Id = 1, Nombre = "U1", UserName = "u1", Email = "u1@t.com" };
+        var otroUsuario = new User { Id = 2, Nombre = "U2", UserName = "u2", Email = "u2@t.com" };
+        _context.Users.AddRange(usuario, otroUsuario);
+
+        var producto = new Product { Id = 1, Nombre = "P1", PropietarioId = 1 };
+        _context.Products.Add(producto);
+
+        var rating = new Rating { Id = 1, ProductoId = 1, UsuarioId = 1, Puntuacion = 5 };
+        _context.Ratings.Add(rating);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.DeleteRatingAsync(1, 2, false);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ForbiddenError>();
+    }
+
+    /// <summary>
+    /// PRUEBA: DeleteRatingAsync elimina como admin.
+    /// </summary>
+    [Test]
+    public async Task DeleteRatingAsync_ShouldSucceed_WhenAdmin()
+    {
+        // Arrange
+        var usuario = new User { Id = 1, Nombre = "U1", UserName = "u1", Email = "u1@t.com" };
+        _context.Users.Add(usuario);
+        var producto = new Product { Id = 1, Nombre = "P1", PropietarioId = 1 };
+        _context.Products.Add(producto);
+        var rating = new Rating { Id = 1, ProductoId = 1, UsuarioId = 1, Puntuacion = 5 };
+        _context.Ratings.Add(rating);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.DeleteRatingAsync(1, 999, true);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// PRUEBA: CanUserRateProductAsync retorna false sin compra.
+    /// </summary>
+    [Test]
+    public async Task CanUserRateProductAsync_ShouldReturnFalse_WhenNotPurchased()
+    {
+        // Act
+        var result = await _service.CanUserRateProductAsync(1, 1);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// PRUEBA: AddRatingAsync falla si producto no existe.
+    /// </summary>
+    [Test]
+    public async Task AddRatingAsync_ShouldFail_WhenProductNotFound()
+    {
+        // Act
+        var result = await _service.AddRatingAsync(1, 999, 5, "Test");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<NotFoundError>();
+    }
+
+    /// <summary>
+    /// PRUEBA: AddRatingAsync falla si ya valorado.
+    /// </summary>
+    [Test]
+    public async Task AddRatingAsync_ShouldFail_WhenAlreadyRated()
+    {
+        // Arrange
+        var usuario = new User { Id = 1, Nombre = "U1", Email = "u1@t.com" };
+        _context.Users.Add(usuario);
+        var producto = new Product { Id = 1, Nombre = "P1", PropietarioId = 1 };
+        _context.Products.Add(producto);
+        await _context.SaveChangesAsync();
+
+        var rating = new Rating { ProductoId = 1, UsuarioId = 1, Puntuacion = 5 };
+        _context.Ratings.Add(rating);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.AddRatingAsync(1, 1, 4, "Second rating");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<BusinessRuleError>();
+    }
+
+    /// <summary>
+    /// PRUEBA: UpdateRatingAsync falla con puntuación inválida.
+    /// </summary>
+    [Test]
+    public async Task UpdateRatingAsync_ShouldFail_WithInvalidRating()
+    {
+        // Arrange
+        var user = new User { Id = 1, Nombre = "U1", Email = "u1@t.com" };
+        _context.Users.Add(user);
+        var p = new Product { Id = 10, Nombre = "P10", PropietarioId = 1 };
+        _context.Products.Add(p);
+        await _context.SaveChangesAsync();
+
+        var r1 = new Rating { Id = 1, ProductoId = 10, UsuarioId = 1, Puntuacion = 3 };
+        _context.Ratings.Add(r1);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.UpdateRatingAsync(1, 1, 0, "Invalid");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ValidationError>();
+    }
+
+    /// <summary>
+    /// PRUEBA: UpdateRatingAsync falla si rating no existe.
+    /// </summary>
+    [Test]
+    public async Task UpdateRatingAsync_ShouldFail_WhenRatingNotFound()
+    {
+        // Act
+        var result = await _service.UpdateRatingAsync(999, 1, 5, "Test");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<NotFoundError>();
+    }
+
+    /// <summary>
+    /// PRUEBA: UpdateRatingAsync falla si no es propietario.
+    /// </summary>
+    [Test]
+    public async Task UpdateRatingAsync_ShouldFail_WhenNotOwner()
+    {
+        // Arrange
+        var user = new User { Id = 1, Nombre = "U1", Email = "u1@t.com" };
+        _context.Users.Add(user);
+        var p = new Product { Id = 10, Nombre = "P10", PropietarioId = 1 };
+        _context.Products.Add(p);
+        await _context.SaveChangesAsync();
+
+        var r1 = new Rating { Id = 1, ProductoId = 10, UsuarioId = 1, Puntuacion = 3 };
+        _context.Ratings.Add(r1);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.UpdateRatingAsync(1, 2, 5, "Not owner");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ForbiddenError>();
+    }
 }
