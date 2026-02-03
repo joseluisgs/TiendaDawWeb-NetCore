@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using TiendaDawWeb.ViewModels;
+using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Controllers;
 

@@ -1,0 +1,75 @@
+@namespace TiendaDawWeb.Shared.Components.Ratings
+@using TiendaDawWeb.Shared.Services.Rating
+@using TiendaDawWeb.Shared.Models
+@using Microsoft.AspNetCore.Identity
+@inject IRatingService RatingService
+@inject RatingStateContainer StateContainer
+@inject ILogger<RatingSummary> Logger
+@implements IDisposable
+
+@if (StateContainer.Ratings != null)
+{
+    @if (StateContainer.Count > 0)
+    {
+        <div class="mb-2 d-flex align-items-center">
+            <span class="me-2">@RenderStars(StateContainer.Average, 2)</span>
+            <span class="fw-bold fs-5">@StateContainer.Average.ToString("F1")</span>
+            <span class="text-muted ms-2">(@StateContainer.Count valoraciones)</span>
+        </div>
+    }
+    else
+    {
+        <span class="text-muted"><i class="bi bi-star"></i> Sin valoraciones aún</span>
+    }
+}
+
+@code {
+    [Parameter] public long ProductId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("RatingSummary inicializado para Producto {ProductId}", ProductId);
+        StateContainer.OnChange += HandleStateChange;
+        await StateContainer.EnsureLoadedAsync(ProductId);
+    }
+
+    private void HandleStateChange()
+    {
+        Logger.LogDebug("RatingSummary detecto cambio de estado para Producto {ProductId}. Actualizando UI...", ProductId);
+        StateHasChanged();
+    }
+
+    private RenderFragment RenderStars(double val, double size) => builder =>
+    {
+        val = Math.Round(val * 2) / 2;
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i <= val)
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "bi bi-star-fill text-warning");
+                builder.AddAttribute(2, "style", $"font-size:{size}rem");
+                builder.CloseElement();
+            }
+            else if (i - val == 0.5)
+            {
+                builder.OpenElement(3, "i");
+                builder.AddAttribute(4, "class", "bi bi-star-half text-warning");
+                builder.AddAttribute(5, "style", $"font-size:{size}rem");
+                builder.CloseElement();
+            }
+            else
+            {
+                builder.OpenElement(6, "i");
+                builder.AddAttribute(7, "class", "bi bi-star");
+                builder.AddAttribute(8, "style", $"color:#ccc;font-size:{size}rem");
+                builder.CloseElement();
+            }
+        }
+    };
+
+    public void Dispose()
+    {
+        StateContainer.OnChange -= HandleStateChange;
+    }
+}

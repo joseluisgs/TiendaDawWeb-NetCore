@@ -1,5 +1,5 @@
 using Serilog;
-using TiendaDawWeb.Web.Infrastructures;
+using TiendaDawWeb.Shared.Web.Infrastructures;
 using System.Globalization;
 
 Log.Logger = SerilogConfig.Configure().CreateLogger();

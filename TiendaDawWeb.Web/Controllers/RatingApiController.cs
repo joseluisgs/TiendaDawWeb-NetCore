@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Rating;
+using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.Services.Rating;
 
 namespace TiendaDawWeb.Controllers;
 

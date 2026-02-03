@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using TiendaDawWeb.Models;
-using TiendaDawWeb.Services.Product;
-using TiendaDawWeb.Services.Storage;
-using TiendaDawWeb.Services.Favorite;
-using TiendaDawWeb.ViewModels;
-using TiendaDawWeb.Web.Mappers;
+using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.Services.Product;
+using TiendaDawWeb.Shared.Services.Storage;
+using TiendaDawWeb.Shared.Services.Favorite;
+using TiendaDawWeb.Shared.ViewModels;
+using TiendaDawWeb.Shared.Mappers;
 using Microsoft.AspNetCore.SignalR;
-using TiendaDawWeb.Web.Hubs;
+using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Controllers;
 

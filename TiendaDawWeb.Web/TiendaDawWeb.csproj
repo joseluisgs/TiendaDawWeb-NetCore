@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TiendaDawWeb.Shared\TiendaDawWeb.Shared.csproj" />
+    <ProjectReference Include="..\TiendaDawWeb.Shared.Components\TiendaDawWeb.Shared.Components.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />

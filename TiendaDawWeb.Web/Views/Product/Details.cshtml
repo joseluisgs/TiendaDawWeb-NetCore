@@ -1,5 +1,4 @@
 @using Microsoft.Extensions.Localization
-@using TiendaDawWeb.Components.Ratings
 @model Product
 @inject UserManager<User> UserManager
 @inject IStringLocalizer<SharedResource> SharedLocalizer
@@ -50,7 +49,7 @@
                 @* Código original con AJAX comentado para propósitos didácticos *@
                 @* <script>loadRatings();</script> *@
 
-                <component type="typeof(RatingSummary)" render-mode="ServerPrerendered"
+                <component type="typeof(TiendaDawWeb.Shared.Components.Ratings.RatingSummary)" render-mode="ServerPrerendered"
                            param-ProductId="@Model.Id"/>
             </div>
 
@@ -132,7 +131,7 @@
             <div id="ratingsListAJAX"></div> 
             *@
 
-            <component type="typeof(RatingSection)" render-mode="ServerPrerendered"
+            <component type="typeof(TiendaDawWeb.Shared.Components.Ratings.RatingSection)" render-mode="ServerPrerendered"
                        param-ProductId="@Model.Id"
                        param-CurrentUserId="@currentUser?.Id"
                        param-IsOwner="@isOwner"/>

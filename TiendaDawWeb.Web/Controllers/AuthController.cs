@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using TiendaDawWeb.Models;
-using TiendaDawWeb.ViewModels;
-using TiendaDawWeb.Web.Mappers;
+using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.ViewModels;
+using TiendaDawWeb.Shared.Mappers;
 
 namespace TiendaDawWeb.Controllers;
 

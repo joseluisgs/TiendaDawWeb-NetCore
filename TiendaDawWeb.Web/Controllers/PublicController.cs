@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Identity;
-using TiendaDawWeb.Models;
-using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Product;
+using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.Models.Enums;
+using TiendaDawWeb.Shared.Services.Product;
 
 namespace TiendaDawWeb.Controllers;
 

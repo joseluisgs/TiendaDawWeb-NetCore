@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TiendaDawWeb.Data;
-using TiendaDawWeb.Models;
-using TiendaDawWeb.Models.Enums;
-using TiendaDawWeb.Services.Product;
-using TiendaDawWeb.Services.Purchase;
-using TiendaDawWeb.ViewModels;
+using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.Models.Enums;
+using TiendaDawWeb.Shared.Services.Product;
+using TiendaDawWeb.Shared.Services.Purchase;
+using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Controllers;
 
