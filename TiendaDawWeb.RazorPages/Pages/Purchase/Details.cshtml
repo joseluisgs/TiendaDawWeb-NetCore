@@ -1,5 +1,6 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Purchase.DetailsModel
+@using System.Globalization
 @{
     ViewData["Title"] = $"Detalle de Compra #{Model.Purchase.Id}";
 }
@@ -51,7 +52,7 @@
                         <div class="col-md-6 mb-3">
                             <h6 class="text-muted">Total Pagado</h6>
                             <p class="mb-0 text-success fs-4 fw-bold">
-                                @Model.Purchase.Total.ToString("C")
+                                @Model.Purchase.Total.ToString("C", new CultureInfo("es-ES"))
                             </p>
                         </div>
                     </div>
@@ -87,7 +88,9 @@
                                                      class="rounded me-2"
                                                      style="width: 60px; height: 60px; object-fit: cover;">
                                                 <div>
-                                                    <strong>@producto.Nombre</strong>
+                                                    <a asp-page="/Product/Details" asp-route-id="@producto.Id" class="text-decoration-none">
+                                                        <strong>@producto.Nombre</strong>
+                                                    </a>
                                                     <br>
                                                     <small class="text-muted">@producto.Descripcion</small>
                                                 </div>
@@ -101,7 +104,7 @@
                                             <span class="badge bg-secondary">@producto.Categoria</span>
                                         </td>
                                         <td class="text-end">
-                                            <strong class="text-success">@producto.Precio.ToString("C")</strong>
+                                            <strong class="text-success">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
                                         </td>
                                     </tr>
                                 }
@@ -110,7 +113,7 @@
                                 <tr>
                                     <td colspan="3" class="text-end"><strong>Total:</strong></td>
                                     <td class="text-end">
-                                        <strong class="text-success fs-5">@Model.Purchase.Total.ToString("C")</strong>
+                                        <strong class="text-success fs-5" style="white-space: nowrap;">@Model.Purchase.Total.ToString("C", new CultureInfo("es-ES"))</strong>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -151,7 +154,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-success mb-0">
+                    <div class="alert alert-success alert-permanent mb-0">
                         <h6><i class="bi bi-check-circle"></i> Envío Completado</h6>
                         <p class="small mb-2">
                             Los productos han sido entregados al comprador.
@@ -171,11 +174,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span>@Model.Purchase.Total.ToString("C")</span>
+                        <span>@Model.Purchase.Total.ToString("C", new CultureInfo("es-ES"))</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>IVA (incluido):</span>
-                        <span>@((Model.Purchase.Total * 0.21m).ToString("C"))</span>
+                        <span>@((Model.Purchase.Total * 0.21m).ToString("C", new CultureInfo("es-ES")))</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Envío:</span>
@@ -184,7 +187,7 @@
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>Total:</strong>
-                        <strong class="text-success">@Model.Purchase.Total.ToString("C")</strong>
+                        <strong class="text-success">@Model.Purchase.Total.ToString("C", new CultureInfo("es-ES"))</strong>
                     </div>
                 </div>
             </div>
