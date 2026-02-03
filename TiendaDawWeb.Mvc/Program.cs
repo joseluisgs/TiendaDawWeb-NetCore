@@ -1,6 +1,9 @@
 using Serilog;
 using TiendaDawWeb.Shared.Web.Infrastructures;
 using System.Globalization;
+using System.Text;
+
+Console.OutputEncoding = Encoding.UTF8;
 
 Log.Logger = SerilogConfig.Configure().CreateLogger();
 
