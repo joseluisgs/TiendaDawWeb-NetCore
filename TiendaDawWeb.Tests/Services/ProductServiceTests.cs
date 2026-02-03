@@ -371,4 +371,218 @@ public class ProductServiceTests
         // Assert
         result.IsSuccess.Should().BeTrue();
     }
+
+    #region SearchAsync Tests
+
+    /// <summary>
+    /// PRUEBA: SearchAsync retorna productos disponibles.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldReturnAvailableProducts()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync filtra por nombre.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldFilterByName()
+    {
+        // Act
+        var result = await _productService.SearchAsync("Producto", null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync filtra por nombre específico.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldFilterBySpecificName()
+    {
+        // Act
+        var result = await _productService.SearchAsync("Producto Test 1", null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().ContainSingle();
+        result.Value.First().Id.Should().Be(1);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync filtra por nombre (búsqueda parcial).
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldFilterByPartialName()
+    {
+        // Act
+        var result = await _productService.SearchAsync("Test", null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync filtra por descripción.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldFilterByDescription()
+    {
+        // Act
+        var result = await _productService.SearchAsync("Desc", null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync filtra por categoría.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldFilterByCategory()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, "SMARTPHONES");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().AllSatisfy(p => p.Categoria.Should().Be(ProductCategory.SMARTPHONES));
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync combina filtros de nombre y categoría.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldCombineNameAndCategoryFilters()
+    {
+        // Act
+        var result = await _productService.SearchAsync("Producto Test 1", "SMARTPHONES");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().ContainSingle();
+        result.Value.First().Id.Should().Be(1);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync retorna lista vacía sin coincidencias.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldReturnEmptyList_WhenNoMatch()
+    {
+        // Act
+        var result = await _productService.SearchAsync("NonExistentProduct12345", null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync ignora categoría inválida.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldIgnoreInvalidCategory()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, "INVALID_CATEGORY");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2); // Todos los productos
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync excluye productos vendidos.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldExcludeSoldProducts()
+    {
+        // Arrange
+        var product = await _context.Products.FindAsync(1L);
+        product!.CompraId = 999L; // Marcar como vendido
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _productService.SearchAsync(null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().ContainSingle();
+        result.Value.First().Id.Should().Be(2L);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync excluye productos eliminados (soft delete).
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldExcludeDeletedProducts()
+    {
+        // Arrange
+        var product = await _context.Products.FindAsync(1L);
+        product!.Deleted = true;
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _productService.SearchAsync(null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync ordena por fecha de creación descendente.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldOrderByCreatedAtDescending()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        var products = result.Value.ToList();
+        products.Should().BeInDescendingOrder(p => p.CreatedAt);
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync incluye propietario en resultados.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldIncludePropietario()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().AllSatisfy(p => p.Propietario.Should().NotBeNull());
+    }
+
+    /// <summary>
+    /// PRUEBA: SearchAsync incluye ratings en resultados.
+    /// </summary>
+    [Test]
+    public async Task SearchAsync_ShouldIncludeRatings()
+    {
+        // Act
+        var result = await _productService.SearchAsync(null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().AllSatisfy(p => p.Ratings.Should().NotBeNull());
+    }
+
+    #endregion
 }

@@ -211,4 +211,27 @@ public class AdminControllerTests
         redirectResult.ActionName.Should().Be("Productos");
         _tempDataMock.VerifySet(t => t["Error"] = "Producto no encontrado", Times.Once);
     }
+
+    /// <summary>
+    /// PRUEBA: EliminarProducto muestra error si producto no encontrado.
+    /// </summary>
+    [Test]
+    public async Task EliminarProducto_ShouldShowError_WhenProductNotFound()
+    {
+        // Arrange
+        var adminUser = new User { Id = 1, UserName = "admin" };
+        _userManagerMock.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(adminUser);
+        _productServiceMock.Setup(s => s.DeleteAsync(999, adminUser.Id, true))
+            .ReturnsAsync(Result.Failure<bool, TiendaDawWeb.Errors.DomainError>(
+                new TiendaDawWeb.Errors.NotFoundError("Producto no encontrado")));
+
+        // Act
+        var result = await _controller.EliminarProducto(999);
+
+        // Assert
+        var redirectResult = result.Should().BeOfType<RedirectToActionResult>().Subject;
+        redirectResult.ActionName.Should().Be("Productos");
+        _tempDataMock.VerifySet(t => t["Error"] = "Producto no encontrado", Times.Once);
+    }
 }
