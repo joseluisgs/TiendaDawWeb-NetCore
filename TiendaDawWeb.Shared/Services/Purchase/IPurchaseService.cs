@@ -15,4 +15,12 @@ public interface IPurchaseService
     Task<Result<byte[], DomainError>> GeneratePdfAsync(long purchaseId);
     Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetAllAsync(int page = 1, int pageSize = 10);
     Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetByDateRangeAsync(DateTime desde, DateTime hasta, int page = 1, int pageSize = 10);
+
+    /// <summary>
+    /// Envía un email de confirmación de compra con la factura adjunta.
+    /// No falla si el email no puede enviarse (por ejemplo, si SMTP no está configurado).
+    /// </summary>
+    /// <param name="purchaseId">ID de la compra</param>
+    /// <returns>True si se envió o success incluso si falló el envío</returns>
+    Task<Result<bool, DomainError>> SendConfirmationEmailAsync(long purchaseId);
 }

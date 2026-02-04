@@ -112,12 +112,42 @@ public class PurchaseController(
 
         var purchase = result.Value;
 
-        // Verificar que el usuario sea el comprador
         if (purchase.CompradorId != user.Id) {
             TempData["Error"] = "No tienes permiso para ver esta compra";
             return RedirectToAction(nameof(Index));
         }
 
+        _ = purchaseService.SendConfirmationEmailAsync(id);
+
         return View(purchase);
+    }
+
+    /// <summary>
+    ///     POST /app/compras/{id}/reenviaremail - Reenvía email de confirmación
+    /// </summary>
+    [HttpPost("{id}/reenviaremail")]
+    public async Task<IActionResult> ReenviarEmail(long id) {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Json(new { success = false, message = "Usuario no autenticado" });
+        }
+
+        var purchaseResult = await purchaseService.GetByIdAsync(id);
+        if (purchaseResult.IsFailure) {
+            return Json(new { success = false, message = "Compra no encontrada" });
+        }
+
+        var purchase = purchaseResult.Value;
+        if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
+            return Json(new { success = false, message = "No tienes permiso" });
+        }
+
+        var result = await purchaseService.SendConfirmationEmailAsync(id);
+
+        if (result.IsFailure) {
+            return Json(new { success = false, message = result.Error.Message });
+        }
+
+        return Json(new { success = true, message = "Email reenviado correctamente" });
     }
 }

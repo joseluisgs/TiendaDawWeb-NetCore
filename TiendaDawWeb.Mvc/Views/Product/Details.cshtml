@@ -103,8 +103,9 @@
                     </button>
                 }
                 else {
-                    <form asp-action="AddToCart" asp-controller="Carrito" asp-route-productId="@Model.Id"
+                    <form asp-controller="Carrito" asp-action="Add" asp-route-productoId="@Model.Id"
                           method="post" class="flex-grow-1">
+                        @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-success w-100" data-testid="add-to-cart-button">
                             <i class="bi bi-cart-plus"></i> Añadir al Carrito
                         </button>

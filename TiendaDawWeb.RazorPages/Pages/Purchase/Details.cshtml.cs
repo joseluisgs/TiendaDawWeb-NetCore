@@ -9,6 +9,7 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 namespace TiendaDawWeb.RazorPages.Pages.Purchase;
 
 [Authorize]
+[IgnoreAntiforgeryToken]
 public class DetailsModel(
     IPurchaseService purchaseService,
     UserManager<User> userManager
@@ -35,6 +36,31 @@ public class DetailsModel(
 
         Purchase = purchase;
         return Page();
+    }
+
+    public async Task<IActionResult> OnPostReenviarEmailAsync(long id) {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return new JsonResult(new { success = false, message = "Usuario no autenticado" }) { StatusCode = 401 };
+        }
+
+        var purchaseResult = await purchaseService.GetByIdAsync(id);
+        if (purchaseResult.IsFailure) {
+            return new JsonResult(new { success = false, message = "Compra no encontrada" });
+        }
+
+        var purchase = purchaseResult.Value;
+        if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
+            return new JsonResult(new { success = false, message = "No tienes permiso" });
+        }
+
+        var result = await purchaseService.SendConfirmationEmailAsync(id);
+
+        if (result.IsFailure) {
+            return new JsonResult(new { success = false, message = result.Error.Message });
+        }
+
+        return new JsonResult(new { success = true, message = "Email reenviado correctamente" });
     }
 
     public async Task<IActionResult> OnGetDownloadPdfAsync(long id) {

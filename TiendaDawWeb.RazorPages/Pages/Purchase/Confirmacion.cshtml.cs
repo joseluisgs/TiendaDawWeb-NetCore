@@ -33,6 +33,8 @@ public class ConfirmacionModel(
             return RedirectToPage("/Purchase/Index");
         }
 
+        _ = purchaseService.SendConfirmationEmailAsync(id);
+
         Purchase = purchase;
         return Page();
     }

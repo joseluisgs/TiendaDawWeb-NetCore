@@ -6,6 +6,7 @@ using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
+using TiendaDawWeb.Shared.Services.Email;
 using TiendaDawWeb.Shared.Services.Pdf;
 using TiendaDawWeb.Shared.Services.Purchase;
 
@@ -18,6 +19,7 @@ public class PurchaseService(
     ApplicationDbContext context,
     ICarritoService carritoService,
     IPdfService pdfService,
+    IEmailService emailService,
     IMemoryCache cache,
     ILogger<PurchaseService> logger
 ) : IPurchaseService
@@ -295,6 +297,58 @@ public class PurchaseService(
         {
             logger.LogError(ex, "Error al generar PDF");
             return Result.Failure<byte[], DomainError>(PurchaseError.PdfGenerationFailed(ex.Message));
+        }
+    }
+
+    /// <summary>
+    ///     Envía un email de confirmación de compra con la factura adjunta.
+    ///     No falla si el email no puede enviarse (por ejemplo, si SMTP no está configurado).
+    /// </summary>
+    /// <param name="purchaseId">ID de la compra</param>
+    /// <returns>True si se emitió o success incluso si falló el envío</returns>
+    public async Task<Result<bool, DomainError>> SendConfirmationEmailAsync(long purchaseId)
+    {
+        try
+        {
+            var purchaseResult = await GetByIdAsync(purchaseId);
+            if (purchaseResult.IsFailure)
+                return Result.Failure<bool, DomainError>(purchaseResult.Error);
+
+            var purchase = purchaseResult.Value;
+
+            if (string.IsNullOrEmpty(purchase.Comprador?.Email))
+            {
+                logger.LogWarning("Compra {PurchaseId}: No se puede enviar email, el comprador no tiene email", purchaseId);
+                return Result.Success<bool, DomainError>(true);
+            }
+
+            logger.LogInformation("Compra {PurchaseId}: Generando PDF para enviar a {Email}", purchaseId, purchase.Comprador.Email);
+
+            var pdfResult = await GeneratePdfAsync(purchaseId);
+            var pdfAttachment = pdfResult.IsSuccess ? pdfResult.Value : null;
+
+            logger.LogInformation("Compra {PurchaseId}: Enviando email de confirmación a {Email}", purchaseId, purchase.Comprador.Email);
+
+            var emailResult = await emailService.SendPurchaseConfirmationEmailAsync(
+                purchase.Comprador.Email,
+                purchase,
+                pdfAttachment);
+
+            if (emailResult.IsFailure)
+            {
+                logger.LogWarning("Compra {PurchaseId}: Error al enviar email: {Error}", purchaseId, emailResult.Error.Message);
+            }
+            else
+            {
+                logger.LogInformation("Compra {PurchaseId}: Email de confirmación enviado exitosamente a {Email}", purchaseId, purchase.Comprador.Email);
+            }
+
+            return Result.Success<bool, DomainError>(true);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Compra {PurchaseId}: Excepción al enviar email de confirmación", purchaseId);
+            return Result.Success<bool, DomainError>(true);
         }
     }
 }

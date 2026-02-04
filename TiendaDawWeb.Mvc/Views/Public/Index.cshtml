@@ -110,11 +110,9 @@
                                 @if (SignInManager.IsSignedIn(User) && currentUser != null && currentUser.Email != producto.Propietario?.Email) {
                                     <div class="col-md-6 text-end">
                                         @if (!producto.Reservado) {
-                                            <form asp-controller="Carrito"
-                                                  asp-action="Add"
-                                                  asp-route-productoId="@producto.Id"
-                                                  method="post"
-                                                  style="display: inline-block;">
+                                            <form asp-controller="Carrito" asp-action="Add" asp-route-productoId="@producto.Id"
+                                                  method="post" style="display: inline-block;">
+                                                @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-success btn-sm">
                                                     <i class="bi bi-cart-plus"></i> @SharedLocalizer["AddToCart"]
                                                 </button>

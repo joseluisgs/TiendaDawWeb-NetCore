@@ -54,7 +54,6 @@ public class CarritoController(
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Auth");
 
-        // Verificar si el producto está reservado
         var productResult = await productService.GetByIdAsync(productoId);
         if (productResult.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
@@ -63,7 +62,7 @@ public class CarritoController(
 
         var product = productResult.Value;
         if (product.Reservado) {
-            TempData["Error"] = "Este producto está reservado y no se puede añadir al carrito";
+            TempData["Error"] = "Este producto está reservado";
             return RedirectToAction("Details", "Product", new { id = productoId });
         }
 
@@ -74,11 +73,11 @@ public class CarritoController(
         else
             TempData["Success"] = "Producto añadido al carrito";
 
-        return RedirectToAction("Details", "Product", new { id = productoId });
+        return RedirectToAction("Index");
     }
 
     /// <summary>
-    ///     POST /app/carrito/add - Añadir producto (ruta alternativa, sin cantidad)
+    ///     POST /app/carrito/add - Añadir producto (ruta alternativa)
     /// </summary>
     [HttpPost("add")]
     [ValidateAntiForgeryToken]
@@ -93,7 +92,7 @@ public class CarritoController(
         else
             TempData["Success"] = "Producto añadido al carrito";
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index");
     }
 
     /// <summary>

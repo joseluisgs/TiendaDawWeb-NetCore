@@ -39,9 +39,11 @@ async function addToCart(productId, button = null) {
         const text = await response.text();
         
         if (response.ok) {
-            // Success - show notification and update cart badge
+            // Success - redirect to cart
             showToast('Producto añadido al carrito', 'success');
-            updateCartBadge();
+            setTimeout(() => {
+                window.location.href = '/app/carrito';
+            }, 500);
             
             // Re-enable button
             if (button) {
@@ -117,10 +119,29 @@ async function removeFromCart(itemId, element = null) {
  */
 async function updateCartBadge() {
     try {
-        // The badge updates on page reload or via server-side rendering
-        // For SPA-like behavior, we could add an API endpoint here
-        // For now, we'll just assume server-side updates
-        console.log('Cart updated - badge will update on next page load');
+        console.log('Updating cart badge...');
+        const response = await fetch('/Api/CartCount', {
+            method: 'GET'
+        });
+
+        console.log('Response status:', response.status);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Cart count:', data.count);
+            const badge = document.querySelector('[data-testid="cart-count"]');
+            
+            if (badge) {
+                badge.textContent = data.count;
+                if (data.count > 0) {
+                    badge.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                }
+            }
+        } else {
+            console.error('Failed to fetch cart count:', response.status);
+        }
     } catch (error) {
         console.error('Error updating cart badge:', error);
     }

@@ -137,9 +137,9 @@
                         <button class="btn btn-outline-primary" onclick="window.print()">
                             <i class="bi bi-printer"></i> Imprimir
                         </button>
-                        <a href="#" class="btn btn-outline-secondary">
+                        <button class="btn btn-outline-secondary" onclick="reenviarEmail(@Model.Id)">
                             <i class="bi bi-envelope"></i> Reenviar Email
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -199,4 +199,30 @@
             .btn, .card-header, nav { display: none !important; }
         }
     </style>
+    <script>
+        async function reenviarEmail(purchaseId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            try {
+                const response = await fetch(`/app/compras/${purchaseId}/reenviaremail`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Email de confirmación reenviado', 'success');
+                } else {
+                    showToast(data.message || 'Error al reenviar el email', 'error');
+                }
+            } catch (error) {
+                console.error('Error al reenviar email:', error);
+                showToast('Error de conexión', 'error');
+            }
+        }
+    </script>
 }

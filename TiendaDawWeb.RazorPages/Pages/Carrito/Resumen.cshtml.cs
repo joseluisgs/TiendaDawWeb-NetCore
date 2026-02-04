@@ -59,6 +59,6 @@ public class ResumenModel(
             purchase.Id, user.Id);
 
         TempData["Success"] = "¡Compra realizada con éxito!";
-        return RedirectToPage("/Purchase/Details", new { id = purchase.Id });
+        return RedirectToPage("/Purchase/Confirmacion", new { id = purchase.Id });
     }
 }
