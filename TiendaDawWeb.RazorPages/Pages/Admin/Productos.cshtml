@@ -244,18 +244,21 @@
 </div>
 
 <!-- Modal de confirmación de eliminación -->
-<form id="deleteForm" method="post" style="display: none;">
+<form id="deleteForm" method="post" asp-page-handler="Eliminar">
     @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="deleteProductId" />
 </form>
 
 @section Scripts {
     <script>
         function confirmarEliminacion(productId, productName) {
-            if (confirm(`¿Estás seguro de que deseas eliminar el producto "${productName}"?\n\nEsta acción realizará una eliminación lógica (soft delete).`)) {
-                const form = document.getElementById('deleteForm');
-                form.action = `/admin/productos/${productId}/eliminar`;
-                form.submit();
+            if (confirm(`¿Estás seguro de deseas eliminar el producto "${productName}"?\n\nEsta acción realizará una eliminación lógica (soft delete).`)) {
+                document.getElementById('deleteProductId').value = productId;
+                document.getElementById('deleteForm').submit();
             }
+        }
+    </script>
+}
         }
     </script>
 }

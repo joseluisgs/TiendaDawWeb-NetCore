@@ -1,15 +1,22 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
+using TiendaDawWeb.Shared.Services.Product;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.RazorPages.Pages.Admin;
 
 [Authorize(Roles = "ADMIN")]
-public class ProductosModel(ApplicationDbContext context) : PageModel {
+public class ProductosModel(
+    ApplicationDbContext context,
+    IProductService productService,
+    UserManager<User> userManager
+) : PageModel {
     public List<ProductModel> Productos { get; set; } = new();
 
     public async Task OnGetAsync(int page = 1, int pageSize = 20, string? categoria = null) {
@@ -33,5 +40,22 @@ public class ProductosModel(ApplicationDbContext context) : PageModel {
         ViewData["PageSize"] = pageSize;
         ViewData["TotalProductos"] = await query.CountAsync();
         ViewData["CategoriaSeleccionada"] = categoria;
+    }
+
+    public async Task<IActionResult> OnPostEliminarAsync(long id) {
+        var adminUser = await userManager.GetUserAsync(User);
+        if (adminUser == null) {
+            TempData["Error"] = "Usuario no encontrado";
+            return RedirectToPage("/Admin/Productos");
+        }
+
+        var result = await productService.DeleteAsync(id, adminUser.Id, true);
+
+        if (result.IsFailure)
+            TempData["Error"] = result.Error.Message;
+        else
+            TempData["Success"] = "Producto eliminado correctamente";
+
+        return RedirectToPage("/Admin/Productos");
     }
 }

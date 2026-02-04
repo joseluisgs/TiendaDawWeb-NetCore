@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Favorite;
 
 namespace TiendaDawWeb.RazorPages.Pages.Api;
 
 [Authorize]
+[IgnoreAntiforgeryToken]
 public class FavoritesModel(
     IFavoriteService favoriteService,
     UserManager<User> userManager
 ) : PageModel {
-    public async Task<IActionResult> OnGetToggleAsync([FromQuery] long productoId) {
+    public async Task<IActionResult> OnGetToggleAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
             return new JsonResult(new { success = false, message = "Debes iniciar sesión" });
@@ -50,7 +50,7 @@ public class FavoritesModel(
         }
     }
 
-    public async Task<IActionResult> OnGetDeleteAsync([FromQuery] long productoId) {
+    public async Task<IActionResult> OnGetDeleteAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
             return new JsonResult(new { success = false, message = "Debes iniciar sesión" });
@@ -68,8 +68,16 @@ public class FavoritesModel(
         });
     }
 
-    // Handler para compatibilidad con DELETE HTTP
-    public async Task<IActionResult> OnDeleteAsync([FromQuery] long productoId) {
-        return await OnGetDeleteAsync(productoId);
+    public async Task<IActionResult> OnGetCheckAsync(long productoId) {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return new JsonResult(new { success = false, message = "Usuario no autenticado" }) { StatusCode = 401 };
+        }
+
+        var result = await favoriteService.IsFavoriteAsync(user.Id, productoId);
+
+        if (result.IsFailure) return new JsonResult(new { success = false, message = result.Error.Message }) { StatusCode = 400 };
+
+        return new JsonResult(new { success = true, isFavorite = result.Value });
     }
 }

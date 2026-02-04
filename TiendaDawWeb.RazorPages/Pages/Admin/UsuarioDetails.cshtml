@@ -90,7 +90,7 @@
                         }
                     </div>
 
-                    <form method="post">
+                    <form method="post" asp-page-handler="CambiarRol">
                         @Html.AntiForgeryToken()
                         <div class="mb-3">
                             <label for="nuevoRol" class="form-label">Cambiar Rol</label>
@@ -260,7 +260,7 @@
                 </div>
                 <div class="card-body">
                     <p>La eliminación de usuario es una operación de <strong>soft delete</strong>. El usuario será marcado como eliminado pero sus datos permanecerán en el sistema.</p>
-                    <form method="post" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
+                    <form method="post" asp-page-handler="Eliminar" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-danger">
                             <i class="bi bi-trash"></i> Eliminar Usuario

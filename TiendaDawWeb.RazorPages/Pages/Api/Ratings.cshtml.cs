@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Rating;
 
 namespace TiendaDawWeb.RazorPages.Pages.Api;
 
 [Authorize]
+[IgnoreAntiforgeryToken]
 public class RatingsModel(
     IRatingService ratingService,
     UserManager<User> userManager

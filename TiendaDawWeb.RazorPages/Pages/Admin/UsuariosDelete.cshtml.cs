@@ -9,61 +9,12 @@ using TiendaDawWeb.Shared.Models;
 namespace TiendaDawWeb.RazorPages.Pages.Admin;
 
 [Authorize(Roles = "ADMIN")]
-public class UsuarioDetailsModel(
+public class UsuariosDeleteModel(
     ApplicationDbContext context,
     UserManager<User> userManager,
-    RoleManager<IdentityRole<long>> roleManager,
-    ILogger<UsuarioDetailsModel> logger
+    ILogger<UsuariosDeleteModel> logger
 ) : PageModel {
-    public User Usuario { get; set; } = default!;
-
-    public async Task<IActionResult> OnGetAsync(long id) {
-        var usuario = await context.Users
-            .Include(u => u.Products)
-            .Include(u => u.Purchases)
-            .FirstOrDefaultAsync(u => u.Id == id);
-
-        if (usuario == null) {
-            TempData["Error"] = "Usuario no encontrado";
-            return RedirectToPage("/Admin/Usuarios");
-        }
-
-        var roles = await userManager.GetRolesAsync(usuario);
-        ViewData["Roles"] = roles.ToList();
-
-        Usuario = usuario;
-        return Page();
-    }
-
-    public async Task<IActionResult> OnPostCambiarRolAsync(long id, string nuevoRol) {
-        var usuario = await userManager.FindByIdAsync(id.ToString());
-        if (usuario == null) {
-            TempData["Error"] = "Usuario no encontrado";
-            return RedirectToPage("/Admin/Usuarios");
-        }
-
-        if (!await roleManager.RoleExistsAsync(nuevoRol)) {
-            TempData["Error"] = "Rol no válido";
-            return RedirectToPage("/Admin/UsuarioDetails", new { id });
-        }
-
-        var rolesActuales = await userManager.GetRolesAsync(usuario);
-        await userManager.RemoveFromRolesAsync(usuario, rolesActuales);
-
-        var result = await userManager.AddToRoleAsync(usuario, nuevoRol);
-
-        if (result.Succeeded) {
-            logger.LogInformation("Rol de usuario {UserId} cambiado a {Role}", id, nuevoRol);
-            TempData["Success"] = $"Rol cambiado a {nuevoRol}";
-        }
-        else {
-            TempData["Error"] = "Error al cambiar el rol";
-        }
-
-        return RedirectToPage("/Admin/UsuarioDetails", new { id });
-    }
-
-    public async Task<IActionResult> OnPostEliminarAsync(long id) {
+    public async Task<IActionResult> OnPostAsync(long id) {
         var usuario = await context.Users.FindAsync(id);
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
