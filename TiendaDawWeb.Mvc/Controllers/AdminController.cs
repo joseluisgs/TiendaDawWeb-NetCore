@@ -164,6 +164,18 @@ public class AdminController(
     [HttpPost("usuarios/{id}/eliminar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarUsuario(long id) {
+        var adminUser = await userManager.GetUserAsync(User);
+        if (adminUser == null) {
+            TempData["Error"] = "Usuario no autenticado";
+            return RedirectToAction(nameof(Usuarios));
+        }
+
+        if (id == adminUser.Id) {
+            logger.LogWarning("Admin {AdminId} intentó eliminarse a sí mismo", adminUser.Id);
+            TempData["Error"] = "No puedes eliminarte a ti mismo";
+            return RedirectToAction(nameof(Usuarios));
+        }
+
         var usuario = await context.Users.FindAsync(id);
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
@@ -208,7 +220,6 @@ public class AdminController(
         usuario.Deleted = true;
         usuario.DeletedAt = DateTime.UtcNow;
 
-        var adminUser = await userManager.GetUserAsync(User);
         usuario.DeletedBy = adminUser?.Id.ToString();
 
         await context.SaveChangesAsync();
