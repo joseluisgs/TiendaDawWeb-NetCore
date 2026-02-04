@@ -15,6 +15,18 @@ public class UsuariosDeleteModel(
     ILogger<UsuariosDeleteModel> logger
 ) : PageModel {
     public async Task<IActionResult> OnPostAsync(long id) {
+        var adminUser = await userManager.GetUserAsync(User);
+        if (adminUser == null) {
+            TempData["Error"] = "Usuario no autenticado";
+            return RedirectToPage("/Admin/Usuarios");
+        }
+
+        if (id == adminUser.Id) {
+            logger.LogWarning("Admin {AdminId} intentó eliminarse a sí mismo", adminUser.Id);
+            TempData["Error"] = "No puedes eliminarte a ti mismo";
+            return RedirectToPage("/Admin/Usuarios");
+        }
+
         var usuario = await context.Users.FindAsync(id);
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
@@ -55,7 +67,6 @@ public class UsuariosDeleteModel(
         usuario.Deleted = true;
         usuario.DeletedAt = DateTime.UtcNow;
 
-        var adminUser = await userManager.GetUserAsync(User);
         usuario.DeletedBy = adminUser?.Id.ToString();
 
         await context.SaveChangesAsync();
