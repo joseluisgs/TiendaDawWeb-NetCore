@@ -11,6 +11,9 @@ using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.RazorPages.Pages.Product;
 
+/// <summary>
+///     Modelo de página para mostrar los detalles de un producto
+/// </summary>
 [AllowAnonymous]
 public class DetailsModel(
     IProductService productService,
@@ -20,6 +23,12 @@ public class DetailsModel(
 ) : PageModel {
     public ProductModel Product { get; set; } = default!;
 
+    /// <summary>
+    ///     GET /Product/Details/{id} - Muestra los detalles de un producto
+    /// </summary>
+    /// <param name="id">ID del producto a mostrar</param>
+    /// <param name="lang">Código de idioma para cambiar la cultura</param>
+    /// <returns>Vista con los detalles del producto</returns>
     public async Task<IActionResult> OnGetAsync(long id, string? lang) {
         if (!string.IsNullOrEmpty(lang)) {
             var culture = lang.ToLowerInvariant() switch {
@@ -65,6 +74,11 @@ public class DetailsModel(
         return Page();
     }
 
+    /// <summary>
+    ///     POST /Product/Details/Add - Añade un producto al carrito desde la página de detalles
+    /// </summary>
+    /// <param name="productoId">ID del producto a añadir</param>
+    /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostAddAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");
@@ -91,6 +105,11 @@ public class DetailsModel(
         return RedirectToPage("/Carrito/Index");
     }
 
+    /// <summary>
+    ///     POST /Product/Details/Delete - Elimina un producto (solo propietario)
+    /// </summary>
+    /// <param name="id">ID del producto a eliminar</param>
+    /// <returns>Redirect a Mis Productos</returns>
     public async Task<IActionResult> OnPostDeleteAsync(long id) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {

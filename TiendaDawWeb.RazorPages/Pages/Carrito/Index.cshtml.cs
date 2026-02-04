@@ -8,6 +8,9 @@ using TiendaDawWeb.Shared.Services.Product;
 
 namespace TiendaDawWeb.RazorPages.Pages.Carrito;
 
+/// <summary>
+///     Modelo de página para la gestión del carrito de compras
+/// </summary>
 [Authorize]
 public class IndexModel(
     ICarritoService carritoService,
@@ -17,6 +20,9 @@ public class IndexModel(
     public List<CarritoItem> CarritoItems { get; set; } = new();
     public IEnumerable<CarritoItem> Items => CarritoItems;
 
+    /// <summary>
+    ///     GET /app/carrito - Muestra el contenido del carrito
+    /// </summary>
     public async Task<IActionResult> OnGetAsync() {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");
@@ -37,6 +43,11 @@ public class IndexModel(
         return Page();
     }
 
+    /// <summary>
+    ///     POST /app/carrito/add - Añade un producto al carrito y redirige al carrito
+    /// </summary>
+    /// <param name="productoId">ID del producto a añadir</param>
+    /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostAddAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");
@@ -63,6 +74,11 @@ public class IndexModel(
         return RedirectToPage("./Index");
     }
 
+    /// <summary>
+    ///     POST /app/carrito/remove - Elimina un item del carrito
+    /// </summary>
+    /// <param name="itemId">ID del item a eliminar</param>
+    /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostRemoveAsync(long itemId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");
@@ -78,6 +94,10 @@ public class IndexModel(
         return RedirectToPage();
     }
 
+    /// <summary>
+    ///     POST /app/carrito/clear - Vacia completamente el carrito
+    /// </summary>
+    /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostClearAsync() {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");

@@ -8,6 +8,9 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
 namespace TiendaDawWeb.RazorPages.Pages.Purchase;
 
+/// <summary>
+///     Modelo de página para mostrar los detalles de una compra
+/// </summary>
 [Authorize]
 [IgnoreAntiforgeryToken]
 public class DetailsModel(
@@ -16,6 +19,11 @@ public class DetailsModel(
 ) : PageModel {
     public PurchaseModel Purchase { get; set; } = default!;
 
+    /// <summary>
+    ///     GET /Purchase/Details/{id} - Muestra los detalles de una compra
+    /// </summary>
+    /// <param name="id">ID de la compra</param>
+    /// <returns>Vista con los detalles de la compra</returns>
     public async Task<IActionResult> OnGetAsync(long id) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");
@@ -38,6 +46,11 @@ public class DetailsModel(
         return Page();
     }
 
+    /// <summary>
+    ///     POST /Purchase/Details/ReenviarEmail - Reenvía el email de confirmación
+    /// </summary>
+    /// <param name="id">ID de la compra</param>
+    /// <returns>JSON con el resultado</returns>
     public async Task<IActionResult> OnPostReenviarEmailAsync(long id) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -63,6 +76,11 @@ public class DetailsModel(
         return new JsonResult(new { success = true, message = "Email reenviado correctamente" });
     }
 
+    /// <summary>
+    ///     GET /Purchase/DownloadPdf/{id} - Descarga la factura en PDF
+    /// </summary>
+    /// <param name="id">ID de la compra</param>
+    /// <returns>Archivo PDF</returns>
     public async Task<IActionResult> OnGetDownloadPdfAsync(long id) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");

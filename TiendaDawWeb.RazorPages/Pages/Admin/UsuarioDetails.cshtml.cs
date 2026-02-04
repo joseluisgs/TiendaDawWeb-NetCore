@@ -8,6 +8,9 @@ using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.RazorPages.Pages.Admin;
 
+/// <summary>
+///     Modelo de página para ver los detalles de un usuario (admin)
+/// </summary>
 [Authorize(Roles = "ADMIN")]
 public class UsuarioDetailsModel(
     ApplicationDbContext context,
@@ -17,6 +20,11 @@ public class UsuarioDetailsModel(
 ) : PageModel {
     public User Usuario { get; set; } = default!;
 
+    /// <summary>
+    ///     GET /Admin/UsuarioDetails/{id} - Muestra los detalles de un usuario
+    /// </summary>
+    /// <param name="id">ID del usuario</param>
+    /// <returns>Vista con los detalles del usuario</returns>
     public async Task<IActionResult> OnGetAsync(long id) {
         var usuario = await context.Users
             .Include(u => u.Products)
@@ -35,6 +43,12 @@ public class UsuarioDetailsModel(
         return Page();
     }
 
+    /// <summary>
+    ///     POST /Admin/UsuarioDetails/CambiarRol - Cambia el rol de un usuario
+    /// </summary>
+    /// <param name="id">ID del usuario</param>
+    /// <param name="nuevoRol">Nuevo rol a asignar</param>
+    /// <returns>Redirect a los detalles del usuario</returns>
     public async Task<IActionResult> OnPostCambiarRolAsync(long id, string nuevoRol) {
         var usuario = await userManager.FindByIdAsync(id.ToString());
         if (usuario == null) {
@@ -63,6 +77,11 @@ public class UsuarioDetailsModel(
         return RedirectToPage("/Admin/UsuarioDetails", new { id });
     }
 
+    /// <summary>
+    ///     POST /Admin/UsuarioDetails/Eliminar - Elimina un usuario (soft delete)
+    /// </summary>
+    /// <param name="id">ID del usuario a eliminar</param>
+    /// <returns>Redirect a la lista de usuarios</returns>
     public async Task<IActionResult> OnPostEliminarAsync(long id) {
         var usuario = await context.Users.FindAsync(id);
         if (usuario == null) {

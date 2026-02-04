@@ -8,12 +8,20 @@ using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.RazorPages.Pages.Admin;
 
+/// <summary>
+///     Modelo de página para eliminar un usuario (admin)
+/// </summary>
 [Authorize(Roles = "ADMIN")]
 public class UsuariosDeleteModel(
     ApplicationDbContext context,
     UserManager<User> userManager,
     ILogger<UsuariosDeleteModel> logger
 ) : PageModel {
+    /// <summary>
+    ///     POST /Admin/Usuarios/{id}/Eliminar - Elimina un usuario (soft delete)
+    /// </summary>
+    /// <param name="id">ID del usuario a eliminar</param>
+    /// <returns>Redirect a la lista de usuarios</returns>
     public async Task<IActionResult> OnPostAsync(long id) {
         var adminUser = await userManager.GetUserAsync(User);
         if (adminUser == null) {

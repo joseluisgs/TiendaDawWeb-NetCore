@@ -8,12 +8,20 @@ using TiendaDawWeb.Shared.Services.Rating;
 
 namespace TiendaDawWeb.RazorPages.Pages.Api;
 
+/// <summary>
+///     API para gestión de valoraciones de productos
+/// </summary>
 [Authorize]
 [IgnoreAntiforgeryToken]
 public class RatingsModel(
     IRatingService ratingService,
     UserManager<User> userManager
 ) : PageModel {
+    /// <summary>
+    ///     GET /Api/Ratings?productId={id} - Obtiene rating promedio del producto
+    /// </summary>
+    /// <param name="productId">ID del producto</param>
+    /// <returns>JSON con los ratings</returns>
     public async Task<IActionResult> OnGetProductRatingAsync([FromQuery] long productId) {
         var averageResult = await ratingService.GetAverageRatingAsync(productId);
         var ratingsResult = await ratingService.GetByProductoIdAsync(productId);
@@ -36,6 +44,11 @@ public class RatingsModel(
         });
     }
 
+    /// <summary>
+    ///     GET /Api/Ratings?handler=UserRating&productId={id} - Obtiene rating del usuario actual
+    /// </summary>
+    /// <param name="productId">ID del producto</param>
+    /// <returns>JSON con el rating del usuario</returns>
     public async Task<IActionResult> OnGetUserRatingAsync([FromQuery] long productId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -56,6 +69,11 @@ public class RatingsModel(
         });
     }
 
+    /// <summary>
+    ///     POST /Api/Ratings - Añade una valoración
+    /// </summary>
+    /// <param name="request">Datos de la valoración</param>
+    /// <returns>JSON con el resultado</returns>
     public async Task<IActionResult> OnPostAsync([FromBody] RatingRequest request) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -79,6 +97,11 @@ public class RatingsModel(
         });
     }
 
+    /// <summary>
+    ///     PUT /Api/Ratings - Actualiza una valoración
+    /// </summary>
+    /// <param name="request">Datos de la valoración</param>
+    /// <returns>JSON con el resultado</returns>
     public async Task<IActionResult> OnPutAsync([FromBody] RatingRequest request) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -112,6 +135,11 @@ public class RatingsModel(
         });
     }
 
+    /// <summary>
+    ///     DELETE /Api/Ratings?productId={id} - Elimina una valoración
+    /// </summary>
+    /// <param name="productId">ID del producto</param>
+    /// <returns>JSON con el resultado</returns>
     public async Task<IActionResult> OnDeleteAsync([FromQuery] long productId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -138,6 +166,9 @@ public class RatingsModel(
     }
 }
 
+/// <summary>
+///     Request para operaciones de rating
+/// </summary>
 public class RatingRequest {
     public long ProductId { get; set; }
     public int Rating { get; set; }

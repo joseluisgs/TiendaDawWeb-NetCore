@@ -8,6 +8,9 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
 namespace TiendaDawWeb.RazorPages.Pages.Purchase;
 
+/// <summary>
+///     Modelo de página para mostrar la confirmación de una compra
+/// </summary>
 [Authorize]
 public class ConfirmacionModel(
     IPurchaseService purchaseService,
@@ -15,6 +18,11 @@ public class ConfirmacionModel(
 ) : PageModel {
     public PurchaseModel Purchase { get; set; } = default!;
 
+    /// <summary>
+    ///     GET /Purchase/Confirmacion/{id} - Muestra la confirmación de compra y envía email
+    /// </summary>
+    /// <param name="id">ID de la compra</param>
+    /// <returns>Vista de confirmación</returns>
     public async Task<IActionResult> OnGetAsync(long id) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) return RedirectToPage("/Auth/Login");

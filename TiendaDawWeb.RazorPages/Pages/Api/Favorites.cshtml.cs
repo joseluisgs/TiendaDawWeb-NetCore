@@ -8,12 +8,20 @@ using TiendaDawWeb.Shared.Services.Favorite;
 
 namespace TiendaDawWeb.RazorPages.Pages.Api;
 
+/// <summary>
+///     API para gestión de favoritos
+/// </summary>
 [Authorize]
 [IgnoreAntiforgeryToken]
 public class FavoritesModel(
     IFavoriteService favoriteService,
     UserManager<User> userManager
 ) : PageModel {
+    /// <summary>
+    ///     GET /Api/Favorites?handler=Toggle&productoId={id} - Alterna favorito
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>JSON con el estado del favorito</returns>
     public async Task<IActionResult> OnGetToggleAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -50,6 +58,11 @@ public class FavoritesModel(
         }
     }
 
+    /// <summary>
+    ///     GET /Api/Favorites?handler=Delete&productoId={id} - Elimina de favoritos
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>JSON con el resultado</returns>
     public async Task<IActionResult> OnGetDeleteAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {
@@ -68,6 +81,11 @@ public class FavoritesModel(
         });
     }
 
+    /// <summary>
+    ///     GET /Api/Favorites?handler=Check&productoId={id} - Verifica si es favorito
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>JSON con el estado de favorito</returns>
     public async Task<IActionResult> OnGetCheckAsync(long productoId) {
         var user = await userManager.GetUserAsync(User);
         if (user == null) {

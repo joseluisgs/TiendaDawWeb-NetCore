@@ -11,6 +11,9 @@ using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.RazorPages.Pages.Admin;
 
+/// <summary>
+///     Modelo de página para listar productos (admin)
+/// </summary>
 [Authorize(Roles = "ADMIN")]
 public class ProductosModel(
     ApplicationDbContext context,
@@ -19,6 +22,13 @@ public class ProductosModel(
 ) : PageModel {
     public List<ProductModel> Productos { get; set; } = new();
 
+    /// <summary>
+    ///     GET /Admin/Productos - Lista productos con paginación
+    /// </summary>
+    /// <param name="page">Número de página</param>
+    /// <param name="pageSize">Elementos por página</param>
+    /// <param name="categoria">Filtro por categoría</param>
+    /// <returns>Vista con lista de productos</returns>
     public async Task OnGetAsync(int page = 1, int pageSize = 20, string? categoria = null) {
         var skip = (page - 1) * pageSize;
 
@@ -42,6 +52,11 @@ public class ProductosModel(
         ViewData["CategoriaSeleccionada"] = categoria;
     }
 
+    /// <summary>
+    ///     POST /Admin/Productos/Eliminar - Elimina un producto (soft delete)
+    /// </summary>
+    /// <param name="id">ID del producto</param>
+    /// <returns>Redirect a la lista de productos</returns>
     public async Task<IActionResult> OnPostEliminarAsync(long id) {
         var adminUser = await userManager.GetUserAsync(User);
         if (adminUser == null) {
