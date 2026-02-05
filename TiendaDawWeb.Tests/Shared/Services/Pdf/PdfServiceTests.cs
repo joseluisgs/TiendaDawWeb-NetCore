@@ -1,12 +1,13 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Pdf;
 using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
-namespace TiendaDawWeb.Tests.Shared.Services.Pdf;
+namespace TiendaDawWeb.Tests.Shared.Services;
 
 public class PdfServiceTests
 {
@@ -21,27 +22,18 @@ public class PdfServiceTests
     }
 
     [Test]
-    public async Task GenerateInvoicePdfAsync_ReturnsPdfBytes_WhenPurchaseExists()
+    public async Task GenerateInvoicePdfAsync_GeneratesPdf_Success()
     {
-        var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User" };
         var purchase = new PurchaseModel
         {
             Id = 1,
-            CompradorId = 1,
             Total = 100,
             FechaCompra = DateTime.UtcNow,
-            Comprador = user,
+            CompradorId = 1,
+            Comprador = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test User" },
             Products = new List<Product>
             {
-                new Product
-                {
-                    Id = 1,
-                    Nombre = "Test Product",
-                    Descripcion = "Description",
-                    Precio = 100,
-                    Categoria = ProductCategory.SMARTPHONES,
-                    PropietarioId = 2
-                }
+                new Product { Id = 1, Nombre = "Product1", Categoria = ProductCategory.SMARTPHONES, Precio = 100 }
             }
         };
 
@@ -50,24 +42,6 @@ public class PdfServiceTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value.Length.Should().BeGreaterThan(0);
-    }
-
-    [Test]
-    public async Task GenerateInvoicePdfAsync_ReturnsPdf_WithEmptyProducts()
-    {
-        var purchase = new PurchaseModel
-        {
-            Id = 1,
-            CompradorId = 1,
-            Total = 0,
-            FechaCompra = DateTime.UtcNow,
-            Products = new List<Product>()
-        };
-
-        var result = await _service.GenerateInvoicePdfAsync(purchase);
-
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().NotBeNull();
     }
 
     [Test]
@@ -76,14 +50,14 @@ public class PdfServiceTests
         var purchase = new PurchaseModel
         {
             Id = 1,
-            CompradorId = 1,
             Total = 300,
             FechaCompra = DateTime.UtcNow,
+            CompradorId = 1,
+            Comprador = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test User" },
             Products = new List<Product>
             {
-                new Product { Id = 1, Nombre = "Product 1", Precio = 100, Categoria = ProductCategory.SMARTPHONES },
-                new Product { Id = 2, Nombre = "Product 2", Precio = 100, Categoria = ProductCategory.LAPTOPS },
-                new Product { Id = 3, Nombre = "Product 3", Precio = 100, Categoria = ProductCategory.AUDIO }
+                new Product { Id = 1, Nombre = "Product1", Categoria = ProductCategory.SMARTPHONES, Precio = 100 },
+                new Product { Id = 2, Nombre = "Product2", Categoria = ProductCategory.LAPTOPS, Precio = 200 }
             }
         };
 
@@ -95,23 +69,42 @@ public class PdfServiceTests
     }
 
     [Test]
-    public async Task GenerateInvoicePdfAsync_ReturnsPdf_WithDecimalTotal()
+    public async Task GenerateInvoicePdfAsync_ReturnsPdf_WithNullComprador()
     {
         var purchase = new PurchaseModel
         {
             Id = 1,
-            CompradorId = 1,
-            Total = 99.99m,
+            Total = 100,
             FechaCompra = DateTime.UtcNow,
+            CompradorId = 1,
             Products = new List<Product>
             {
-                new Product { Id = 1, Nombre = "Test", Precio = 99.99m, Categoria = ProductCategory.GAMING }
+                new Product { Id = 1, Nombre = "Product1", Categoria = ProductCategory.SMARTPHONES, Precio = 100 }
             }
         };
 
         var result = await _service.GenerateInvoicePdfAsync(purchase);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().NotBeNull();
+        result.Value.Should().NotBeNullOrEmpty();
+    }
+
+    [Test]
+    public async Task GenerateInvoicePdfAsync_ReturnsPdf_WithEmptyProducts()
+    {
+        var purchase = new PurchaseModel
+        {
+            Id = 1,
+            Total = 0,
+            FechaCompra = DateTime.UtcNow,
+            CompradorId = 1,
+            Comprador = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test User" },
+            Products = new List<Product>()
+        };
+
+        var result = await _service.GenerateInvoicePdfAsync(purchase);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNullOrEmpty();
     }
 }
