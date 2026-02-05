@@ -74,14 +74,14 @@ Write-Header "🧪 E2E Test Runner"
 
 # 1. Compilar
 Write-Header "Compilando..."
-dotnet build "$SolutionRoot\TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -nologo -v q
-dotnet build "$SolutionRoot\TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -nologo -v q
-dotnet build "$SolutionRoot\TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" -nologo -v q
+dotnet build "TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -nologo -v q
+dotnet build "TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -nologo -v q
+dotnet build "TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" -nologo -v q
 
 # 2. Arrancar servidores
 Write-Header "Iniciando servidores..."
-$MvcProcess = Start-Server -ProjectPath "$SolutionRoot\TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -Port $MvcPort -Name "MVC"
-$RazorPagesProcess = Start-Server -ProjectPath "$SolutionRoot\TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -Port $RazorPagesPort -Name "Razor Pages"
+$MvcProcess = Start-Server -ProjectPath "TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -Port $MvcPort -Name "MVC"
+$RazorPagesProcess = Start-Server -ProjectPath "TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -Port $RazorPagesPort -Name "Razor Pages"
 
 # 3. Esperar
 if (-not (Wait-ForUrl -Url $MvcUrl)) { exit 1 }
@@ -90,13 +90,13 @@ if (-not (Wait-ForUrl -Url $RazorPagesUrl)) { exit 1 }
 # 4. Tests MVC
 Write-Header "Tests MVC ($MvcUrl)"
 $env:E2E_BASE_URL = $MvcUrl
-dotnet test "$SolutionRoot\TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
+dotnet test "TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
 $MvcResult = $LASTEXITCODE
 
 # 5. Tests Razor Pages
 Write-Header "Tests Razor Pages ($RazorPagesUrl)"
 $env:E2E_BASE_URL = $RazorPagesUrl
-dotnet test "$SolutionRoot\TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
+dotnet test "TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
 $RazorPagesResult = $LASTEXITCODE
 
 # 6. Resumen

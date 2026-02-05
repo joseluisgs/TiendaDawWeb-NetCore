@@ -6,10 +6,10 @@ using TiendaDawWeb.Tests.E2E.Extensions;
 namespace TiendaDawWeb.Tests.E2E.Products;
 
 /**
- * MÓDULO DE FLUJO DE CATÁLOGO (E2E)
+ * MÓDULO DE FLUJO DE CATÁLOGO (E2E) - Framework Agnóstico
  * 
  * OBJETIVO: Asegurar que el usuario puede encontrar productos mediante el buscador.
- * TECNOLOGÍAS TESTEADAS: Motores de búsqueda (q), Vistas Razor, Rutas MVC.
+ * FUNCIONA CON: MVC y Razor Pages indistintamente.
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
@@ -31,9 +31,10 @@ public class ProductFlowTests : E2ETestBase
         await firstProductTitle.ClickAsync();
         await CaptureScreenshotAsync("03-product-details");
 
-        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/Product/Details/.*"));
+        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*Product/Details.*id=1|.*Product/Details/1.*", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
+
         var h1 = Page.Locator("h1");
-        await Expect(h1).ToBeVisibleAsync();
+        await Expect(h1).ToBeVisibleAsync(new() { Timeout = 10000 });
         await Expect(h1).ToContainTextAsync(new System.Text.RegularExpressions.Regex("iPhone", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
     }
 }
