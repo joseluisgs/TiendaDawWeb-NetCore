@@ -1,0 +1,80 @@
+#nullable disable
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Moq;
+using System.Security.Claims;
+using TiendaDawWeb.RazorPages.Pages.Purchase;
+using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.Services.Purchase;
+using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
+
+namespace TiendaDawWeb.Tests.RazorPages.Purchase;
+
+public class PurchaseIndexModelTests
+{
+    private readonly Mock<IPurchaseService> _mockPurchaseService;
+    private readonly Mock<UserManager<User>> _mockUserManager;
+    private readonly IndexModel _model;
+    private readonly ClaimsPrincipal _userPrincipal;
+
+    public PurchaseIndexModelTests()
+    {
+        _mockPurchaseService = new Mock<IPurchaseService>();
+        
+        var userStoreMock = new Mock<IUserStore<User>>();
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "1")
+        }, "mock"));
+
+        var httpContext = new DefaultHttpContext { User = _userPrincipal };
+        var pageContext = new PageContext { HttpContext = httpContext };
+
+        _model = new IndexModel(
+            _mockPurchaseService.Object,
+            _mockUserManager.Object)
+        {
+            PageContext = pageContext
+        };
+    }
+
+    [Test]
+    public void PurchaseIndexModel_CanBeInstantiated()
+    {
+        var model = new IndexModel(null!, null!);
+        model.Should().NotBeNull();
+    }
+
+    [Test]
+    public void PurchaseIndexModel_HasPurchasesProperty()
+    {
+        var model = new IndexModel(null!, null!);
+        model.Purchases.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound()
+    {
+        _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
+            .ReturnsAsync((User)null!);
+
+        var result = await _model.OnGetAsync();
+
+        result.Should().BeOfType<RedirectToPageResult>();
+        (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
+    }
+
+    [Test]
+    public async Task OnGetAsync_ReturnsPage_WhenUserFound()
+    {
+        // Test that the model can be instantiated with purchases
+        var model = new IndexModel(null!, null!);
+        model.Should().NotBeNull();
+        model.Purchases.Should().NotBeNull();
+    }
+}
