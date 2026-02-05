@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>TiendaDawWeb.Shared.Blazor</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Generate XML documentation file for API docs -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/TiendaDawWeb.Shared.Blazor.xml</DocumentationFile>
   </PropertyGroup>
 
 

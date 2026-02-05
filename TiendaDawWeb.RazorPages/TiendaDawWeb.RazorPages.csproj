@@ -6,8 +6,10 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>TiendaDawWeb.RazorPages</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Suppress known vulnerabilities that we'll monitor -->
-    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
+    <NoWarn>$(NoWarn);NU1902;NU1903;CS1591;CS1570;CS1587</NoWarn>
+    <!-- Generate XML documentation file for API docs -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/TiendaDawWeb.RazorPages.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

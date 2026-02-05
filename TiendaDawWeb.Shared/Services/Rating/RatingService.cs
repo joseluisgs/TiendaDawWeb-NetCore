@@ -21,7 +21,7 @@ public class RatingService(
     /// <param name="usuarioId">ID del usuario que valora</param>
     /// <param name="productoId">ID del producto valorado</param>
     /// <param name="puntuacion">Puntuación del 1 al 5</param>
-    /// <param name="Comentario">Comentario opcional de la valoración</param>
+    /// <param name="comentario">Comentario opcional de la valoración</param>
     /// <returns>La valoración creada o un error</returns>
     public async Task<Result<Models.Rating, DomainError>> AddRatingAsync(
         long usuarioId, long productoId, int puntuacion, string? comentario)

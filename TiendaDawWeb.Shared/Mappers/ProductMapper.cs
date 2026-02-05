@@ -33,6 +33,7 @@ public static class ProductMapper
     /// <param name="model">El viewmodel de origen.</param>
     /// <param name="propietarioId">ID del usuario que realiza la acción.</param>
     /// <param name="imagenUrl">URL de la imagen ya procesada por el storage.</param>
+    /// <param name="includeId">Si true, incluye el ID del modelo en la entidad.</param>
     public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl, bool includeId = false)
     {
         var product = new Product

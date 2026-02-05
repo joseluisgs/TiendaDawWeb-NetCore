@@ -60,8 +60,8 @@ jobs:
           name: build-output
           path: TiendaDawWeb.Web/bin/Release/net10.0/
 
-      - name: Run unit tests (parallel)
-        run: dotnet test --configuration Release --no-build --filter "FullyQualifiedName~Unit" --verbosity minimal --collect:"XPlat Code Coverage" --results-directory ./TestResults
+      - name: Run unit tests
+        run: dotnet test TiendaDawWeb.Tests/TiendaDawWeb.Tests.csproj --configuration Release --no-build --verbosity minimal --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
       - name: Install ReportGenerator
         run: dotnet tool install --global dotnet-reportgenerator-globaltool
@@ -133,14 +133,57 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Build all projects (generates XML docs)
+        run: dotnet build --configuration Release
+
       - name: Install DocFX
         run: dotnet tool install --global docfx
 
-      - name: Create fallback docfx.json
+      - name: Create DocFX config with XML comments
         run: |
-          if [ ! -f docfx.json ]; then
-            printf '%s\n' '{' '  "metadata": [' '    {' '      "src": [' '        {' '          "files": ["TiendaDawWeb.Web/TiendaDawWeb.csproj"],' '          "properties": {' '            "TargetFramework": "net10.0"' '          }' '        }' '      ],' '      "dest": "api"' '    }' '  ],' '  "build": {' '    "content": [' '      {' '        "files": ["api/*.yml", "doc/*.md", "*.md"]' '      },' '      {' '        "files": ["api/**.yml"],' '        "src": "api"' '      }' '    ],' '    "dest": "_site",' '    "template": ["default"],' '    "globalMetadataFiles": [],' '    "fileMetadataFiles": []' '  }' '}' > docfx.json
-          fi
+          cat > docfx.json << 'EOF'
+          {
+            "metadata": [
+              {
+                "src": [
+                  {
+                    "files": [
+                      "TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj",
+                      "TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj",
+                      "TiendaDawWeb.Shared/TiendaDawWeb.Shared.csproj",
+                      "TiendaDawWeb.Shared.Blazor/TiendaDawWeb.Shared.Blazor.csproj"
+                    ],
+                    "properties": {
+                      "TargetFramework": "net10.0",
+                      "NoRestore": "true"
+                    }
+                  }
+                ],
+                "dest": "api",
+                "properties": {
+                  "TargetFramework": "net10.0"
+                }
+              }
+            ],
+            "build": {
+              "content": [
+                {
+                  "files": ["api/*.yml", "doc/*.md", "*.md"]
+                },
+                {
+                  "files": ["api/**.yml"],
+                  "src": "api"
+                }
+              ],
+              "dest": "_site",
+              "globalMetadataFiles": [],
+              "fileMetadataFiles": [],
+              "properties": {
+                "TargetFramework": "net10.0"
+              }
+            }
+          }
+          EOF
 
       - name: Build Documentation (HTML)
         run: docfx docfx.json
