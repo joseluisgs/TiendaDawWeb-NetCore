@@ -15,12 +15,10 @@ namespace TiendaDawWeb.Tests.E2E.ErrorHandling;
 [TestFixture]
 public class ErrorHandlingTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     [Test]
     public async Task AccessNonExistentProduct_ShouldRedirectToPublicWithError()
     {
-        await Page.GotoAsync($"{BaseUrl}/Product/Details/999999");
+        await Page.GotoAsync($"{BaseTestUrl}/Product/Details/999999");
         await CaptureScreenshotAsync("01-not-found-product");
 
         await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/Public$"));
@@ -31,7 +29,7 @@ public class ErrorHandlingTests : E2ETestBase
     [Test]
     public async Task AccessInvalidRoute_ShouldShowUnifiedErrorPage()
     {
-        await Page.GotoAsync($"{BaseUrl}/caca");
+        await Page.GotoAsync($"{BaseTestUrl}/caca");
         await CaptureScreenshotAsync("02-invalid-route");
 
         var errorCode = Page.Locator(".error-code");
@@ -44,7 +42,7 @@ public class ErrorHandlingTests : E2ETestBase
     [Test]
     public async Task AccessIncompleteRoute_ShouldShowUnifiedErrorPage()
     {
-        await Page.GotoAsync($"{BaseUrl}/Product/42");
+        await Page.GotoAsync($"{BaseTestUrl}/Product/42");
         await CaptureScreenshotAsync("03-incomplete-route");
 
         await Expect(Page.Locator(".error-code")).ToContainTextAsync("404");

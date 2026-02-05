@@ -1,12 +1,16 @@
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
+using System;
 
 namespace TiendaDawWeb.Tests.E2E;
 
 public abstract class E2ETestBase : PageTest
 {
-    private const string BaseUrl = "http://localhost:5000";
-    protected string BaseTestUrl => BaseUrl;
+    private const string DefaultBaseUrl = "http://localhost:5000";
+
+    protected string BaseTestUrl => Environment.GetEnvironmentVariable("E2E_BASE_URL")
+        ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
+        ?? DefaultBaseUrl;
 
     public override BrowserNewContextOptions ContextOptions()
     {

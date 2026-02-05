@@ -15,8 +15,6 @@ namespace TiendaDawWeb.Tests.E2E.Localization;
 [TestFixture]
 public class LocalizationTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
@@ -30,7 +28,7 @@ public class LocalizationTests : E2ETestBase
     [Test]
     public async Task ChangeLanguage_ShouldSwitchBetweenEsAndEn()
     {
-        await Page.GotoAsync($"{BaseUrl}/Public");
+        await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public-spanish");
 
         var searchLabel = Page.Locator("label.form-label").First;

@@ -15,8 +15,6 @@ namespace TiendaDawWeb.Tests.E2E.Ratings;
 [TestFixture]
 public class RatingTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
@@ -32,7 +30,7 @@ public class RatingTests : E2ETestBase
     {
         try
         {
-            await Page.GotoAsync($"{BaseUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
             await CaptureScreenshotAsync("01-login-page");
             
             await Page.TestId("email-input").FillAsync("carlos@email.com");
@@ -44,7 +42,7 @@ public class RatingTests : E2ETestBase
             await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*"), new() { Timeout = 10000 });
             await Expect(Page.TestId("user-name")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Carlos", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
 
-            await Page.GotoAsync($"{BaseUrl}/Product/Details/1", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await Page.GotoAsync($"{BaseTestUrl}/Product/Details/1", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
             await CaptureScreenshotAsync("03-product-details");
 
             await Expect(Page.TestId("product-title")).ToBeVisibleAsync(new() { Timeout = 10000 });

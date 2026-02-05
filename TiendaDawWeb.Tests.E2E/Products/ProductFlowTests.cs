@@ -15,12 +15,10 @@ namespace TiendaDawWeb.Tests.E2E.Products;
 [TestFixture]
 public class ProductFlowTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     [Test]
     public async Task Search_ShouldFindIphoneAndNavigateToDetails()
     {
-        await Page.GotoAsync($"{BaseUrl}/Public");
+        await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public-page");
 
         await Page.TestId("search-input").FillAsync("iPhone");

@@ -15,8 +15,6 @@ namespace TiendaDawWeb.Tests.E2E.Purchase;
 [TestFixture]
 public class PurchaseIntentTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
@@ -31,7 +29,7 @@ public class PurchaseIntentTests : E2ETestBase
     public async Task SearchSpecificProduct_AndVerifySeller_ShouldShowPurchaseOption()
     {
         string id = System.Guid.NewGuid().ToString().Substring(0, 8);
-        await Page.GotoAsync($"{BaseUrl}/Auth/Register");
+        await Page.GotoAsync($"{BaseTestUrl}/Auth/Register");
         await CaptureScreenshotAsync("01-register-page");
 
         await Page.TestId("nombre-input").FillAsync("Comprador");
@@ -44,7 +42,7 @@ public class PurchaseIntentTests : E2ETestBase
 
         await Expect(Page.TestId("user-name")).ToContainTextAsync("Comprador");
 
-        await Page.GotoAsync($"{BaseUrl}/Public");
+        await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("03-public-catalog");
         
         await Page.TestId("search-input").FillAsync("iPhone 17 Pro Max");

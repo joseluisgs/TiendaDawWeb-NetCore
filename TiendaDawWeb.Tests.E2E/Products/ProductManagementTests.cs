@@ -16,8 +16,6 @@ namespace TiendaDawWeb.Tests.E2E.Products;
 [TestFixture]
 public class ProductManagementTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
@@ -33,7 +31,7 @@ public class ProductManagementTests : E2ETestBase
     {
         try
         {
-            await Page.GotoAsync($"{BaseUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+            await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
             await CaptureScreenshotAsync("01-login-page");
             
             await Page.TestId("email-input").FillAsync("prueba@prueba.com");
@@ -58,7 +56,7 @@ public class ProductManagementTests : E2ETestBase
     {
         try
         {
-            await Page.GotoAsync($"{BaseUrl}/Product/MyProducts", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await Page.GotoAsync($"{BaseTestUrl}/Product/MyProducts", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
             await CaptureScreenshotAsync("04-my-products");
 
             await Expect(Page.Locator("main")).ToBeVisibleAsync(new() { Timeout = 10000 });

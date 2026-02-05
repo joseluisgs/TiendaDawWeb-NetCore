@@ -20,12 +20,10 @@ namespace TiendaDawWeb.Tests.E2E.Auth;
 [TestFixture]
 public class AuthTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     [SetUp]
     public async Task Setup()
     {
-        await Page.GotoAsync($"{BaseUrl}/Auth/Login");
+        await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await CaptureScreenshotAsync("01-login-page-loaded");
     }
 

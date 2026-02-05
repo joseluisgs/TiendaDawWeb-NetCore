@@ -15,14 +15,12 @@ namespace TiendaDawWeb.Tests.E2E.Profile;
 [TestFixture]
 public class ProfileTests : E2ETestBase
 {
-    private const string BaseUrl = "http://localhost:5000";
-
     [SetUp]
     public async Task Setup()
     {
         try
         {
-            await Page.GotoAsync($"{BaseUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+            await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
             await CaptureScreenshotAsync("01-login-page");
             
             await Page.TestId("email-input").FillAsync("prueba@prueba.com");
@@ -47,7 +45,7 @@ public class ProfileTests : E2ETestBase
     {
         try
         {
-            await Page.GotoAsync($"{BaseUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await Page.GotoAsync($"{BaseTestUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
             await CaptureScreenshotAsync("04-profile-page");
 
             var mainContent = Page.Locator("main");
@@ -68,7 +66,7 @@ public class ProfileTests : E2ETestBase
     {
         try
         {
-            await Page.GotoAsync($"{BaseUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+            await Page.GotoAsync($"{BaseTestUrl}/app/perfil", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
             await CaptureScreenshotAsync("05-profile-page");
 
             var editLink = Page.Locator("a:has-text('Editar')");
