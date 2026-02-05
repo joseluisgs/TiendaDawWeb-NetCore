@@ -72,4 +72,17 @@ public class RatingSummaryTests
 
         cut.Instance.ProductId.Should().Be(0);
     }
+
+    [Test]
+    public void RatingSummary_ImplementsIDisposable()
+    {
+        typeof(RatingSummary).Should().Implement<IDisposable>();
+    }
+
+    [Test]
+    public void RatingSummary_HasProductIdProperty()
+    {
+        var propertyInfo = typeof(RatingSummary).GetProperty("ProductId");
+        propertyInfo.Should().NotBeNull();
+    }
 }
