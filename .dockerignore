@@ -1,0 +1,44 @@
+# Dependencies
+**/obj/
+**/bin/
+**/.nuget/
+**/packages.lock.json
+
+# IDE
+**/.vs/
+**/.vscode/
+**/*.suo
+**/*.user
+**/*.userosscache
+**/*.htpasswd
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Logs
+**/*.log
+**/TestResults/
+**/TestScreenshots/
+
+# Test
+**/TiendaDawWeb.Tests/
+**/TiendaDawWeb.Tests.E2E/
+
+# Documentation
+**/doc/
+**/*.md
+**/docfx.json
+
+# Build outputs
+**/publish/
+**/TestResults/CoverageReport/
+
+# Docker
+**/.dockerignore
+**/Dockerfile*
+**/docker-compose*
+
+# Misc
+**/*.zip
+**/*.bak

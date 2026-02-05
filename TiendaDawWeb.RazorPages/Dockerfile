@@ -1,23 +1,23 @@
-# Multi-stage build for TiendaDawWeb MVC
+# Multi-stage build for TiendaDawWeb Razor Pages
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project files
-COPY ["TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj", "TiendaDawWeb.Mvc/"]
+COPY ["TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj", "TiendaDawWeb.RazorPages/"]
 COPY ["TiendaDawWeb.Shared/TiendaDawWeb.Shared.csproj", "TiendaDawWeb.Shared/"]
 COPY ["TiendaDawWeb.Shared.Blazor/TiendaDawWeb.Shared.Blazor.csproj", "TiendaDawWeb.Shared.Blazor/"]
 
 # Restore dependencies
-RUN dotnet restore "TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj"
+RUN dotnet restore "TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj"
 
 # Copy everything else and build
 COPY . .
-WORKDIR "/src/TiendaDawWeb.Mvc"
-RUN dotnet build "TiendaDawWeb.Mvc.csproj" -c Release -o /app/build
+WORKDIR "/src/TiendaDawWeb.RazorPages"
+RUN dotnet build "TiendaDawWeb.RazorPages.csproj" -c Release -o /app/build
 
 # Publish the application
 FROM build AS publish
-RUN dotnet publish "TiendaDawWeb.Mvc.csproj" -c Release -o /app/publish
+RUN dotnet publish "TiendaDawWeb.RazorPages.csproj" -c Release -o /app/publish
 
 # Final stage
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
@@ -34,18 +34,18 @@ RUN groupadd -r appgroup && useradd -r -g appgroup appuser && chown -R appuser:a
 USER appuser
 
 # Expose port
-EXPOSE 5000
+EXPOSE 5002
 
 # Copy published files
 COPY --from=publish --chown=appuser:appgroup /app/publish .
 
 # Environment variables
-ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_URLS=http://+:5002
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:5002/health || exit 1
 
-ENTRYPOINT ["dotnet", "TiendaDawWeb.Mvc.dll"]
+ENTRYPOINT ["dotnet", "TiendaDawWeb.RazorPages.dll"]

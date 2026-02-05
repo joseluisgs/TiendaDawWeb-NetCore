@@ -1,36 +1,81 @@
+# Docker Compose para TiendaDawWeb
+# Lanza MVC (puerto 5000) y Razor Pages (puerto 5002)
+
 services:
-  waladaw:
+  # Aplicación MVC
+  mvc:
     build:
       context: .
-      dockerfile: TiendaDawWeb.Web/Dockerfile
-    container_name: waladaw-app
+      dockerfile: TiendaDawWeb.Mvc/Dockerfile
+    container_name: tiendadaw-mvc
     ports:
-      - "8080:8080"
+      - "5000:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      # Email Configuration (configure with your SMTP settings)
+      - ASPNETCORE_URLS=http://+:5000
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      # Configuración de Email (configurar con tus valores)
       - Email__SmtpHost=
       - Email__SmtpPort=587
       - Email__SmtpUser=
       - Email__SmtpPass=
       - Email__FromEmail=noreply@waladaw.com
       - Email__FromName=WalaDaw
-      # Application Settings
+      # Configuración de Carrito
       - Carrito__ExpirationMinutes=1440
       - Carrito__CleanupIntervalMinutes=60
-      - Reservas__DurationMinutes=15
-      - Reservas__CleanupIntervalMinutes=5
     volumes:
-      - waladaw-uploads:/app/wwwroot/uploads
+      - mvc-uploads:/app/wwwroot/uploads
     restart: unless-stopped
     networks:
-      - waladaw-network
+      - tiendadaw-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Aplicación Razor Pages
+  razor-pages:
+    build:
+      context: .
+      dockerfile: TiendaDawWeb.RazorPages/Dockerfile
+    container_name: tiendadaw-razorpages
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5002
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      # Configuración de Email (configurar con tus valores)
+      - Email__SmtpHost=
+      - Email__SmtpPort=587
+      - Email__SmtpUser=
+      - Email__SmtpPass=
+      - Email__FromEmail=noreply@waladaw.com
+      - Email__FromName=WalaDaw
+      # Configuración de Carrito
+      - Carrito__ExpirationMinutes=1440
+      - Carrito__CleanupIntervalMinutes=60
+    volumes:
+      - razor-uploads:/app/wwwroot/uploads
+    restart: unless-stopped
+    networks:
+      - tiendadaw-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
-  waladaw-uploads:
+  mvc-uploads:
+    driver: local
+  razor-uploads:
     driver: local
 
 networks:
-  waladaw-network:
+  tiendadaw-network:
     driver: bridge
