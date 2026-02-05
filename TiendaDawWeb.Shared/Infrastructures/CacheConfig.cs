@@ -17,7 +17,6 @@ public static class CacheConfig
     public static IServiceCollection AddCaching(this IServiceCollection services)
     {
         Log.Information("🧠 Configurando OutputCache...");
-
         services.AddOutputCache();
 
         Log.Information("🧠 Configurando MemoryCache...");
@@ -35,5 +34,17 @@ public static class CacheConfig
         Log.Information("🧠 Caché y sesión configurados");
 
         return services;
+    }
+
+    /// <summary>
+    /// Aplica el middleware de OutputCache al pipeline.
+    /// </summary>
+    /// <param name="app">Application builder.</param>
+    /// <returns>IApplicationBuilder.</returns>
+    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)
+    {
+        Log.Information("🧠 Aplicando middleware de OutputCache...");
+        app.UseOutputCache();
+        return app;
     }
 }

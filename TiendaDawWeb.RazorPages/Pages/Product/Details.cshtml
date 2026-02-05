@@ -1,5 +1,7 @@
 @page "{id:long}"
+@attribute [OutputCache(Duration = 600)]
 @using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.OutputCaching
 @using TiendaDawWeb.Resources
 @using TiendaDawWeb.Shared.Helpers
 @model TiendaDawWeb.RazorPages.Pages.Product.DetailsModel

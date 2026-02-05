@@ -1,5 +1,7 @@
 @page
+@attribute [OutputCache(Duration = 300, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
 @using System.Globalization
+@using Microsoft.AspNetCore.OutputCaching
 @using Microsoft.Extensions.Localization
 @using TiendaDawWeb.Resources
 @using TiendaDawWeb.Shared.Helpers

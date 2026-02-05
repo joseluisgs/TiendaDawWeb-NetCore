@@ -100,6 +100,8 @@ else
 
 app.UseStatusCodePagesWithReExecute("/Error?statusCode={0}");
 
+app.UseOutputCaching();
+
 app.MapStaticAssets();
 app.ConfigureStaticFiles();
 app.UseRouting();

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Storage;
@@ -55,6 +56,7 @@ public class ProductController(
     ///     Detalle de un producto
     /// </summary>
     [AllowAnonymous]
+    [OutputCache(Duration = 600)]
     public async Task<IActionResult> Details(long id) {
         var result = await productService.GetByIdAsync(id);
 

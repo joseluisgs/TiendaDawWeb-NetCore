@@ -57,22 +57,22 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" asp-page="/Admin/Index">
+                                    <a class="dropdown-item" asp-page="/Admin/Index" data-testid="admin-dashboard-link">
                                         <i class="bi bi-speedometer2"></i> @Localizer["Dashboard"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-page="/Admin/Usuarios">
+                                    <a class="dropdown-item" asp-page="/Admin/Usuarios" data-testid="admin-users-link">
                                         <i class="bi bi-people"></i> @Localizer["Users"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-page="/Admin/Productos">
+                                    <a class="dropdown-item" asp-page="/Admin/Productos" data-testid="admin-products-link">
                                         <i class="bi bi-box-seam"></i> @Localizer["Products"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-page="/Admin/Ventas">
+                                    <a class="dropdown-item" asp-page="/Admin/Ventas" data-testid="admin-sales-link">
                                         <i class="bi bi-cash-stack"></i> @Localizer["Sales"]
                                     </a>
                                 </li>
@@ -143,7 +143,7 @@
                             <li><h6 class="dropdown-header">@(currentUser.Rol ?? "USER")</h6></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" asp-page="/Profile/Index">
+                                <a class="dropdown-item" asp-page="/Profile/Index" data-testid="profile-link">
                                     <i class="bi bi-person"></i> @Localizer["Nav.Profile"]
                                 </a>
                             </li>

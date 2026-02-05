@@ -58,22 +58,22 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard" data-testid="admin-dashboard-link">
                                         <i class="bi bi-speedometer2"></i> @Localizer["Dashboard"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Usuarios">
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Usuarios" data-testid="admin-users-link">
                                         <i class="bi bi-people"></i> @Localizer["Users"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Productos">
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Productos" data-testid="admin-products-link">
                                         <i class="bi bi-box-seam"></i> @Localizer["Products"]
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Ventas">
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Ventas" data-testid="admin-sales-link">
                                         <i class="bi bi-cash-stack"></i> @Localizer["Sales"]
                                     </a>
                                 </li>
@@ -147,7 +147,7 @@
                             <li><h6 class="dropdown-header">@(currentUser.Rol ?? "USER")</h6></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                <a class="dropdown-item" asp-controller="Profile" asp-action="Index" data-testid="profile-link">
                                     <i class="bi bi-person"></i> @Localizer["Nav.Profile"]
                                 </a>
                             </li>

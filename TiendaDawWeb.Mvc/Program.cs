@@ -104,6 +104,8 @@ else
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
+app.UseOutputCaching();
+
 app.MapStaticAssets();
 app.ConfigureStaticFiles();
 app.UseRouting();
