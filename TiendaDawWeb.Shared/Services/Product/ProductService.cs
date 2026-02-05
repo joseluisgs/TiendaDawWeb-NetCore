@@ -128,18 +128,26 @@ public class ProductService(
         if (product.Precio <= 0)
             return Result.Failure<Models.Product, DomainError>(ProductError.InvalidPrice());
 
-        return await Task.Run(() =>
+        try
         {
-            context.Products.Add(product);
-            context.SaveChanges();
-            return Result.Success<Models.Product, DomainError>(product);
-        })
-        .Tap(p =>
+            return await Task.Run(() =>
+            {
+                context.Products.Add(product);
+                context.SaveChanges();
+                return Result.Success<Models.Product, DomainError>(product);
+            })
+            .Tap(p =>
+            {
+                cache.Remove(ProductsCacheKey);
+                logger.LogInformation("Producto creado: {ProductId}", p.Id);
+                NotifyNewProduct(p);
+            });
+        }
+        catch (Exception ex)
         {
-            cache.Remove(ProductsCacheKey);
-            logger.LogInformation("Producto creado: {ProductId}", p.Id);
-            NotifyNewProduct(p);
-        });
+            logger.LogError(ex, "Error creando producto: {Message}", ex.Message);
+            return Result.Failure<Models.Product, DomainError>(ProductError.InvalidData($"Error al crear producto: {ex.Message}"));
+        }
     }
 
     /// <summary>
