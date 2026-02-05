@@ -12,19 +12,19 @@
                     <i class="bi bi-plus-circle"></i> Publicar Nuevo Producto
                 </h2>
                 
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" data-testid="create-product-form">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     
                     <div class="mb-3">
                         <label asp-for="Input.Nombre" class="form-label"></label>
-                        <input asp-for="Input.Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max" />
+                        <input asp-for="Input.Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max" data-testid="nombre-input" />
                         <span asp-validation-for="Input.Nombre" class="text-danger"></span>
                     </div>
                     
                     <div class="mb-3">
                         <label asp-for="Input.Descripcion" class="form-label"></label>
                         <textarea asp-for="Input.Descripcion" class="form-control" rows="4" 
-                                  placeholder="Describe tu producto con detalle..."></textarea>
+                                  placeholder="Describe tu producto con detalle..." data-testid="descripcion-input"></textarea>
                         <span asp-validation-for="Input.Descripcion" class="text-danger"></span>
                     </div>
                     
@@ -37,7 +37,7 @@
                                        type="number" 
                                        step="0.01" 
                                        min="0.01"
-                                       placeholder="19.99" />
+                                       placeholder="19.99" data-testid="precio-input" />
                                 <span class="input-group-text">€</span>
                             </div>
                             <span asp-validation-for="Input.Precio" class="text-danger"></span>
@@ -45,7 +45,7 @@
                         
                         <div class="col-md-6 mb-3">
                             <label asp-for="Input.Categoria" class="form-label"></label>
-                            <select asp-for="Input.Categoria" class="form-select" asp-items="Html.GetEnumSelectList<ProductCategory>()">
+                            <select asp-for="Input.Categoria" class="form-select" asp-items="Html.GetEnumSelectList<ProductCategory>()" data-testid="categoria-select">
                                 <option value="">-- Selecciona una categoría --</option>
                             </select>
                             <span asp-validation-for="Input.Categoria" class="text-danger"></span>
@@ -54,7 +54,7 @@
                     
                     <div class="mb-3">
                         <label asp-for="Input.ImagenFile" class="form-label"></label>
-                        <input asp-for="Input.ImagenFile" class="form-control" type="file" accept="image/*" />
+                        <input asp-for="Input.ImagenFile" class="form-control" type="file" accept="image/*" data-testid="imagen-input" />
                         <span asp-validation-for="Input.ImagenFile" class="text-danger"></span>
                         <small class="form-text text-muted">
                             Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
@@ -62,7 +62,7 @@
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success" data-testid="submit-button">
                             <i class="bi bi-check-circle"></i> Publicar Producto
                         </button>
                         <a asp-page="/Product/Index" class="btn btn-outline-secondary">

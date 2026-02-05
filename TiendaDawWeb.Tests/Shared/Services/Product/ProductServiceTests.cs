@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -7,6 +8,7 @@ using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Product;
+using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Tests.Shared.Services;
 
@@ -15,6 +17,7 @@ public class ProductServiceTests
     private ApplicationDbContext _context = null!;
     private ProductService _service = null!;
     private Mock<ILogger<ProductService>> _loggerMock = null!;
+    private Mock<IHubContext<NotificationHub>> _hubContextMock = null!;
     private MemoryCache _memoryCache = null!;
 
     [SetUp]
@@ -25,8 +28,9 @@ public class ProductServiceTests
             .Options;
         _context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<ProductService>>();
+        _hubContextMock = new Mock<IHubContext<NotificationHub>>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
-        _service = new ProductService(_context, _memoryCache, _loggerMock.Object);
+        _service = new ProductService(_context, _memoryCache, _hubContextMock.Object, _loggerMock.Object);
     }
 
     [TearDown]
@@ -272,6 +276,17 @@ public class ProductServiceTests
         result.Value.CreatedAt.Should().BeAfter(before);
     }
 
+    [Test]
+    public async Task CreateAsync_InvalidPrice_ReturnsFailure()
+    {
+        var product = new Product { Nombre = "Invalid", Descripcion = "Desc", Precio = -10, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+
+        var result = await _service.CreateAsync(product);
+
+        result.IsSuccess.Should().BeFalse();
+        _context.Products.Should().BeEmpty();
+    }
+
     #endregion
 
     #region UpdateAsync Tests
@@ -369,6 +384,63 @@ public class ProductServiceTests
         var deletedProduct = await _context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
         deletedProduct.Should().NotBeNull();
         deletedProduct!.Deleted.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Cache Invalidation Tests
+
+    [Test]
+    public async Task CreateAsync_InvalidatesCache()
+    {
+        var product1 = new Product { Nombre = "First", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        await _service.CreateAsync(product1);
+
+        var result1 = await _service.GetAllAsync();
+        result1.Value.Should().HaveCount(1);
+
+        var product2 = new Product { Nombre = "Second", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        await _service.CreateAsync(product2);
+
+        var result2 = await _service.GetAllAsync();
+        result2.Value.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task UpdateAsync_InvalidatesCache()
+    {
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        _context.Users.Add(user);
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        var result1 = await _service.GetByIdAsync(1);
+        result1.Value.Nombre.Should().Be("Original");
+
+        var update = new Product { Id = 1, Nombre = "Updated", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        await _service.UpdateAsync(1, update, 1);
+
+        var result2 = await _service.GetByIdAsync(1);
+        result2.Value.Nombre.Should().Be("Updated");
+    }
+
+    [Test]
+    public async Task DeleteAsync_InvalidatesCache()
+    {
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        var product = new Product { Id = 1, Nombre = "ToDelete", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        _context.Users.Add(user);
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        var result1 = await _service.GetAllAsync();
+        result1.Value.Should().HaveCount(1);
+
+        await _service.DeleteAsync(1, 1, false);
+
+        var result2 = await _service.GetAllAsync();
+        result2.Value.Should().HaveCount(0);
     }
 
     #endregion
