@@ -1,4 +1,6 @@
 @using Microsoft.Extensions.Localization
+@using TiendaDawWeb.Resources
+@using TiendaDawWeb.Shared.Helpers
 @model Product
 @inject UserManager<User> UserManager
 @inject IStringLocalizer<SharedResource> SharedLocalizer
@@ -54,7 +56,7 @@
                            param-ProductId="@Model.Id"/>
             </div>
 
-            <h2 class="text-primary mb-4" data-testid="product-price">@Model.Precio.ToString("N2", new System.Globalization.CultureInfo("es-ES")) €</h2>
+            <h2 class="text-primary mb-4" data-testid="product-price">@PriceFormatter.FormatPrice(Model.Precio)</h2>
 
             <div class="mb-4">
                 <h5>Descripción</h5>
