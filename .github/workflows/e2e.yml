@@ -1,0 +1,95 @@
+# GitHub Actions E2E Test Pipeline for TiendaDawWeb
+# Requiere: Servidor web + Playwright browsers
+
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Domingos a medianoche
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Playwright
+        run: |
+          echo "Installing Playwright browsers..."
+          npx playwright install --with-deps chromium 2>&1 | tail -5
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build projects
+        run: |
+          dotnet build TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj -c Release
+          dotnet build TiendaDawWeb.Tests.E2E/TiendaDawWeb.Tests.E2E.csproj -c Release
+
+      - name: Start MVC server (background)
+        run: |
+          echo "Starting MVC server on port 5000..."
+          dotnet run --project TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj \
+            --urls "http://localhost:5000" \
+            --no-build &
+          SERVER_PID=$!
+          echo "Server PID: $SERVER_PID"
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+      - name: Wait for server
+        run: |
+          echo "Waiting for server to be ready..."
+          for i in {1..30}; do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200\|302"; then
+              echo "Server is ready!"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run E2E Tests (MVC)
+        run: |
+          echo "Running E2E tests against MVC..."
+          export E2E_BASE_URL=http://localhost:5000
+          dotnet test TiendaDawWeb.Tests.E2E/TiendaDawWeb.Tests.E2E.csproj \
+            -c Release \
+            --no-build \
+            --filter "FullyQualifiedName~Tests" \
+            --verbosity normal \
+            --results-directory ./TestResults/E2E
+
+      - name: Upload E2E screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: TiendaDawWeb.Tests.E2E/TestScreenshots/
+          retention-days: 7
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -n "${{ env.SERVER_PID }}" ]; then
+            echo "Stopping server (PID: ${{ env.SERVER_PID }})..."
+            kill ${{ env.SERVER_PID }} 2>/dev/null || true
+          fi
+
+      - name: Publish E2E Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: TestResults/E2E/
+          retention-days: 7
