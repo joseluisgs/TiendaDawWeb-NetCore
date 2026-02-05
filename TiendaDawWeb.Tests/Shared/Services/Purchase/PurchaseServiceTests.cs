@@ -1,9 +1,11 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Carrito;
@@ -76,6 +78,24 @@ public class PurchaseServiceTests
         result.IsSuccess.Should().BeFalse();
     }
 
+    [Test]
+    public async Task GetByIdAsync_IncludesProducts()
+    {
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        var product = new Product { Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, Deleted = false };
+        var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
+        purchase.Products.Add(product);
+        _context.Users.Add(user);
+        _context.Products.Add(product);
+        _context.Purchases.Add(purchase);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByIdAsync(1);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Products.Should().HaveCount(1);
+    }
+
     #endregion
 
     #region GetByUserAsync Tests
@@ -122,6 +142,25 @@ public class PurchaseServiceTests
         result.Value.Should().HaveCount(5);
     }
 
+    [Test]
+    public async Task GetByUserAsync_ReturnsDifferentUsersPurchases()
+    {
+        var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
+        var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
+        _context.Users.AddRange(user1, user2);
+        _context.Purchases.AddRange(
+            new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow },
+            new PurchaseModel { Id = 2, CompradorId = 2, Total = 200, FechaCompra = DateTime.UtcNow }
+        );
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByUserAsync(1);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().CompradorId.Should().Be(1);
+    }
+
     #endregion
 
     #region GetAllAsync Tests
@@ -142,6 +181,15 @@ public class PurchaseServiceTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task GetAllAsync_ReturnsEmpty_WhenNoPurchases()
+    {
+        var result = await _service.GetAllAsync();
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
     }
 
     [Test]
@@ -182,6 +230,94 @@ public class PurchaseServiceTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task GetByDateRangeAsync_ReturnsEmpty_WhenNoMatch()
+    {
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        _context.Users.Add(user);
+        _context.Purchases.Add(new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow });
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByDateRangeAsync(DateTime.UtcNow.AddYears(-1), DateTime.UtcNow.AddYears(-2));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetByDateRangeAsync_PaginatesResults()
+    {
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        var now = DateTime.UtcNow;
+        _context.Users.Add(user);
+        for (int i = 1; i <= 15; i++)
+        {
+            _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = now.AddDays(-i) });
+        }
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByDateRangeAsync(now.AddDays(-20), now, page: 1, pageSize: 5);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(5);
+    }
+
+    #endregion
+
+    #region CreatePurchaseFromCarritoAsync Tests
+
+    [Test]
+    public async Task CreatePurchaseFromCarritoAsync_ReturnsFailure_WhenEmptyCart()
+    {
+        _carritoServiceMock.Setup(c => c.GetCarritoByUsuarioIdAsync(It.IsAny<long>()))
+            .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(Enumerable.Empty<CarritoItem>()));
+
+        var result = await _service.CreatePurchaseFromCarritoAsync(1);
+
+        result.IsSuccess.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task CreatePurchaseFromCarritoAsync_ReturnsFailure_WhenUserNotExists()
+    {
+        _carritoServiceMock.Setup(c => c.GetCarritoByUsuarioIdAsync(It.IsAny<long>()))
+            .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(Enumerable.Empty<CarritoItem>()));
+
+        var result = await _service.CreatePurchaseFromCarritoAsync(999);
+
+        result.IsSuccess.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region GeneratePdfAsync Tests
+
+    [Test]
+    public async Task GeneratePdfAsync_ReturnsPdf()
+    {
+        _pdfServiceMock.Setup(p => p.GenerateInvoicePdfAsync(It.IsAny<PurchaseModel>()))
+            .ReturnsAsync(Result.Success<byte[], DomainError>(new byte[] { 1, 2, 3 }));
+
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
+        _context.Users.Add(user);
+        _context.Purchases.Add(purchase);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GeneratePdfAsync(1);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task GeneratePdfAsync_ReturnsFailure_WhenNotExists()
+    {
+        var result = await _service.GeneratePdfAsync(999);
+
+        result.IsSuccess.Should().BeFalse();
     }
 
     #endregion
