@@ -2,13 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.SignalR;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Storage;
 using TiendaDawWeb.Shared.ViewModels;
 using TiendaDawWeb.Shared.Mappers;
-using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.RazorPages.Pages.Product;
 
@@ -16,12 +14,11 @@ namespace TiendaDawWeb.RazorPages.Pages.Product;
 public class CreateModel(
     IProductService productService,
     IStorageService storageService,
-    UserManager<User> userManager,
-    IHubContext<NotificationHub> hubContext
+    UserManager<User> userManager
 ) : PageModel {
     [BindProperty]
     public ProductViewModel Input { get; set; } = default!;
-    public ProductViewModel ProductViewModel { get { return Input; } }
+    public ProductViewModel ProductViewModel => Input;
 
     public void OnGet() {
     }
@@ -47,11 +44,6 @@ public class CreateModel(
             TempData["Error"] = result.Error.Message;
             return Page();
         }
-
-        await hubContext.Clients.All.SendAsync("ReceiveNotification", 
-            "¡Nuevo Producto!", 
-            $"Se ha publicado: {product.Nombre}",
-            result.Value.Id);
 
         TempData["Success"] = "Producto creado exitosamente";
         return RedirectToPage("/Product/Details", new { id = result.Value.Id });

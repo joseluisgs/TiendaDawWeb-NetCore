@@ -8,8 +8,6 @@ using TiendaDawWeb.Shared.Services.Storage;
 using TiendaDawWeb.Shared.Services.Favorite;
 using TiendaDawWeb.Shared.ViewModels;
 using TiendaDawWeb.Shared.Mappers;
-using Microsoft.AspNetCore.SignalR;
-using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -22,7 +20,6 @@ public class ProductController(
     IStorageService storageService,
     IFavoriteService favoriteService,
     UserManager<User> userManager,
-    IHubContext<NotificationHub> hubContext,
     ILogger<ProductController> logger
 ) : Controller {
     private readonly ILogger<ProductController> _logger = logger;
@@ -114,12 +111,6 @@ public class ProductController(
             TempData["Error"] = result.Error.Message;
             return View(model);
         }
-
-        // 🔔 NOTIFICACIÓN EN TIEMPO REAL: Informamos a todos los usuarios del nuevo producto
-        await hubContext.Clients.All.SendAsync("ReceiveNotification", 
-            "¡Nuevo Producto!", 
-            $"Se ha publicado: {product.Nombre}",
-            result.Value.Id); // <--- Enviamos el ID para poder generar el enlace
 
         TempData["Success"] = "Producto creado exitosamente";
         return RedirectToAction(nameof(Details), new { id = result.Value.Id });

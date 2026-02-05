@@ -1,8 +1,10 @@
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
+using TiendaDawWeb.Shared.Web.Hubs;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 
@@ -15,6 +17,7 @@ namespace TiendaDawWeb.Shared.Services.Product;
 public class ProductService(
     ApplicationDbContext context,
     IMemoryCache cache,
+    IHubContext<NotificationHub> hubContext,
     ILogger<ProductService> logger
 ) : IProductService
 {
@@ -135,6 +138,7 @@ public class ProductService(
         {
             cache.Remove(ProductsCacheKey);
             logger.LogInformation("Producto creado: {ProductId}", p.Id);
+            NotifyNewProduct(p);
         });
     }
 
@@ -210,4 +214,23 @@ public class ProductService(
     }
 
     private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
+
+    private void NotifyNewProduct(Models.Product product)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await hubContext.Clients.All.SendAsync("ReceiveNotification",
+                    "¡Nuevo Producto!",
+                    $"Se ha publicado: {product.Nombre}",
+                    product.Id);
+                logger.LogDebug("Notificación SignalR enviada tras crear producto: {ProductId}", product.Id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Error en notificación SignalR al crear producto: {ProductId}", product.Id);
+            }
+        });
+    }
 }
