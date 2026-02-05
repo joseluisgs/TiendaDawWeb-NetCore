@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -34,7 +34,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TiendaDawWeb.Web\TiendaDawWeb.csproj" />
+    <ProjectReference Include="..\TiendaDawWeb.Shared\TiendaDawWeb.Shared.csproj" />
+    <ProjectReference Include="..\TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" />
+    <ProjectReference Include="..\TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" />
+    <ProjectReference Include="..\TiendaDawWeb.Shared.Blazor\TiendaDawWeb.Shared.Blazor.csproj" />
   </ItemGroup>
 
 </Project>
