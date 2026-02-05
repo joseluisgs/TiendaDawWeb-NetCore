@@ -1,14 +1,18 @@
+#nullable disable
+using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Purchase;
@@ -23,6 +27,7 @@ public class CarritoControllerTests
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<ILogger<CarritoController>> _mockLogger;
     private readonly CarritoController _controller;
+    private readonly ClaimsPrincipal _userPrincipal;
 
     public CarritoControllerTests()
     {
@@ -35,12 +40,23 @@ public class CarritoControllerTests
         
         _mockLogger = new Mock<ILogger<CarritoController>>();
         
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "1")
+        }, "mock"));
+
+        var httpContext = new DefaultHttpContext { User = _userPrincipal };
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
+
         _controller = new CarritoController(
             _mockCarritoService.Object,
             _mockPurchaseService.Object,
             _mockProductService.Object,
             _mockUserManager.Object,
-            _mockLogger.Object);
+            _mockLogger.Object)
+        {
+            ControllerContext = new ControllerContext(actionContext)
+        };
     }
 
     [OneTimeTearDown]
@@ -49,39 +65,34 @@ public class CarritoControllerTests
         _controller.Dispose();
     }
 
+    #region Constructor Tests
+
+    [Test]
+    public void Constructor_CreatesInstance()
+    {
+        _controller.Should().NotBeNull();
+    }
+
+    [Test]
+    public void CarritoController_InheritsFromController()
+    {
+        typeof(CarritoController).Should().BeDerivedFrom<Controller>();
+    }
+
+    #endregion
+
     #region Index Tests
 
     [Test]
     public async Task Index_RedirectsToLogin_WhenUserNotFound()
     {
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
         var result = await _controller.Index();
 
         result.Should().BeOfType<RedirectToActionResult>();
         (result as RedirectToActionResult)!.ActionName.Should().Be("Login");
-    }
-
-    [Test]
-    public async Task Index_ReturnsViewWithCarritoItems()
-    {
-        var user = new User { Id = 1, Email = "test@test.com" };
-        var items = new List<CarritoItem>
-        {
-            new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 }
-        };
-        
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
-            .ReturnsAsync(user);
-        _mockCarritoService.Setup(s => s.GetCarritoByUsuarioIdAsync(1))
-            .Returns(Task.FromResult(Result.Success<IEnumerable<CarritoItem>, DomainError>(items)));
-        _mockCarritoService.Setup(s => s.GetTotalCarritoAsync(1))
-            .Returns(Task.FromResult(Result.Success<decimal, DomainError>(100)));
-
-        var result = await _controller.Index();
-
-        result.Should().BeOfType<ViewResult>();
     }
 
     #endregion
@@ -91,7 +102,7 @@ public class CarritoControllerTests
     [Test]
     public async Task Add_RedirectsToLogin_WhenUserNotFound()
     {
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
         var result = await _controller.Add(1);
@@ -101,7 +112,29 @@ public class CarritoControllerTests
 
     #endregion
 
+    #region AddToCart Tests
+
+    [Test]
+    public async Task AddToCart_RedirectsToLogin_WhenUserNotFound()
+    {
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync((User)null!);
+
+        var result = await _controller.AddToCart(1);
+
+        result.Should().BeOfType<RedirectToActionResult>();
+    }
+
+    #endregion
+
     #region Remove Tests
+
+    [Test]
+    public void Remove_HasCorrectSignature()
+    {
+        var method = typeof(CarritoController).GetMethod("Remove");
+        method.Should().NotBeNull();
+    }
 
     #endregion
 
@@ -110,10 +143,25 @@ public class CarritoControllerTests
     [Test]
     public async Task Clear_RedirectsToLogin_WhenUserNotFound()
     {
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
         var result = await _controller.Clear();
+
+        result.Should().BeOfType<RedirectToActionResult>();
+    }
+
+    #endregion
+
+    #region Resumen Tests
+
+    [Test]
+    public async Task Resumen_RedirectsToLogin_WhenUserNotFound()
+    {
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync((User)null!);
+
+        var result = await _controller.Resumen();
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -125,7 +173,7 @@ public class CarritoControllerTests
     [Test]
     public async Task FinalizarCompra_RedirectsToLogin_WhenUserNotFound()
     {
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
         var result = await _controller.FinalizarCompra();

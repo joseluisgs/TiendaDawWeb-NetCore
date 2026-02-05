@@ -1,4 +1,5 @@
 #nullable disable
+using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.ViewModels;
@@ -48,7 +48,23 @@ public class AuthControllerTests
         _controller.Dispose();
     }
 
-    #region Login Tests
+    #region Constructor Tests
+
+    [Test]
+    public void Constructor_CreatesInstance()
+    {
+        _controller.Should().NotBeNull();
+    }
+
+    [Test]
+    public void AuthController_InheritsFromController()
+    {
+        typeof(AuthController).Should().BeDerivedFrom<Controller>();
+    }
+
+    #endregion
+
+    #region Login GET Tests
 
     [Test]
     public void Login_GET_ReturnsView_WithReturnUrl()
@@ -81,6 +97,21 @@ public class AuthControllerTests
 
     #endregion
 
+    #region Login POST Tests
+
+    [Test]
+    public async Task Login_POST_ReturnsView_WhenModelStateInvalid()
+    {
+        var model = new LoginViewModel { Email = "test@test.com", Password = "password" };
+        _controller.ModelState.AddModelError("Error", "Invalid");
+
+        var result = await _controller.Login(model);
+
+        result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
+
     #region Register Tests
 
     [Test]
@@ -89,6 +120,33 @@ public class AuthControllerTests
         var result = _controller.Register();
 
         result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
+
+    #region Logout Tests
+
+    [Test]
+    public async Task Logout_RedirectsToPublic()
+    {
+        _mockSignInManager.Setup(s => s.SignOutAsync())
+            .Returns(Task.CompletedTask);
+
+        var httpContext = new DefaultHttpContext();
+        var controller = new AuthController(
+            _mockUserManager.Object,
+            _mockSignInManager.Object,
+            _mockLogger.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            }
+        };
+
+        var result = await controller.Logout();
+
+        result.Should().BeOfType<RedirectToActionResult>();
     }
 
     #endregion
