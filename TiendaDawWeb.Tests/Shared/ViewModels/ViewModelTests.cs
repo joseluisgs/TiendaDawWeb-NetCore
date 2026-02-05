@@ -289,3 +289,97 @@ public class AdminDashboardViewModelTests
         model.TotalVentas.Should().Be(decimal.MaxValue);
     }
 }
+
+public class RegisterViewModelTests
+{
+    [Test]
+    public void RegisterViewModel_CanSetNombre()
+    {
+        var model = new RegisterViewModel { Nombre = "John" };
+        model.Nombre.Should().Be("John");
+    }
+
+    [Test]
+    public void RegisterViewModel_CanSetApellidos()
+    {
+        var model = new RegisterViewModel { Apellidos = "Doe" };
+        model.Apellidos.Should().Be("Doe");
+    }
+
+    [Test]
+    public void RegisterViewModel_CanSetEmail()
+    {
+        var model = new RegisterViewModel { Email = "john@example.com" };
+        model.Email.Should().Be("john@example.com");
+    }
+
+    [Test]
+    public void RegisterViewModel_CanSetPassword()
+    {
+        var model = new RegisterViewModel { Password = "password123" };
+        model.Password.Should().Be("password123");
+    }
+
+    [Test]
+    public void RegisterViewModel_CanSetConfirmPassword()
+    {
+        var model = new RegisterViewModel { ConfirmPassword = "password123" };
+        model.ConfirmPassword.Should().Be("password123");
+    }
+
+    [Test]
+    public void RegisterViewModel_CanSetAvatar()
+    {
+        var model = new RegisterViewModel { Avatar = "https://example.com/avatar.jpg" };
+        model.Avatar.Should().Be("https://example.com/avatar.jpg");
+    }
+
+    [Test]
+    public void RegisterViewModel_CanHaveNullAvatar()
+    {
+        var model = new RegisterViewModel { Avatar = null };
+        model.Avatar.Should().BeNull();
+    }
+
+    [Test]
+    public void RegisterViewModel_DefaultNombre_IsEmpty()
+    {
+        var model = new RegisterViewModel();
+        model.Nombre.Should().Be(string.Empty);
+    }
+
+    [Test]
+    public void RegisterViewModel_DefaultEmail_IsEmpty()
+    {
+        var model = new RegisterViewModel();
+        model.Email.Should().Be(string.Empty);
+    }
+
+    [Test]
+    public void RegisterViewModel_DefaultPassword_IsEmpty()
+    {
+        var model = new RegisterViewModel();
+        model.Password.Should().Be(string.Empty);
+    }
+
+    [Test]
+    public void RegisterViewModel_CanSetAllProperties()
+    {
+        var model = new RegisterViewModel
+        {
+            Nombre = "John",
+            Apellidos = "Doe",
+            Email = "john@example.com",
+            Password = "password123",
+            ConfirmPassword = "password123",
+            Avatar = "https://example.com/avatar.jpg"
+        };
+
+        model.Nombre.Should().Be("John");
+        model.Apellidos.Should().Be("Doe");
+        model.Email.Should().Be("john@example.com");
+        model.Password.Should().Be("password123");
+        model.ConfirmPassword.Should().Be("password123");
+        model.Avatar.Should().Be("https://example.com/avatar.jpg");
+    }
+}

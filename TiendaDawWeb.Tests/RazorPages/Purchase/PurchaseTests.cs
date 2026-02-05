@@ -68,13 +68,51 @@ public class PurchaseIndexModelTests
         result.Should().BeOfType<RedirectToPageResult>();
         (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
     }
+}
+
+public class PurchaseConfirmacionModelTests
+{
+    private readonly Mock<IPurchaseService> _mockPurchaseService;
+    private readonly Mock<UserManager<User>> _mockUserManager;
+    private readonly ClaimsPrincipal _authenticatedUser;
+
+    public PurchaseConfirmacionModelTests()
+    {
+        var userStoreMock = new Mock<IUserStore<User>>();
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockPurchaseService = new Mock<IPurchaseService>();
+
+        _authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "1"),
+            new Claim(ClaimTypes.Name, "testuser")
+        }, "TestAuthType"));
+    }
 
     [Test]
-    public async Task OnGetAsync_ReturnsPage_WhenUserFound()
+    public void ConfirmacionModel_CanBeInstantiated()
     {
-        // Test that the model can be instantiated with purchases
-        var model = new IndexModel(null!, null!);
+        var model = new ConfirmacionModel(null!, null!);
         model.Should().NotBeNull();
-        model.Purchases.Should().NotBeNull();
+    }
+
+    [Test]
+    public void ConfirmacionModel_HasPurchaseProperty()
+    {
+        var model = new ConfirmacionModel(null!, null!);
+        model.Purchase.Should().Be(default(PurchaseModel));
+    }
+
+    [Test]
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotAuthenticated()
+    {
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync((User)null!);
+
+        var model = new ConfirmacionModel(_mockPurchaseService.Object, _mockUserManager.Object);
+        var result = await model.OnGetAsync(1);
+
+        result.Should().BeOfType<RedirectToPageResult>();
+        (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
     }
 }
