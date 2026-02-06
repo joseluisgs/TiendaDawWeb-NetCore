@@ -30,20 +30,31 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Build MVC
+        run: dotnet build TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj --no-restore --configuration Release
 
-      - name: Upload build artifacts
+      - name: Build RazorPages
+        run: dotnet build TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj --no-restore --configuration Release
+
+      - name: Upload MVC build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-output
-          path: TiendaDawWeb.Web/bin/Release/net10.0/
+          name: build-output-mvc
+          path: TiendaDawWeb.Mvc/bin/Release/net10.0/
+          retention-days: 1
+
+      - name: Upload RazorPages build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output-razor
+          path: TiendaDawWeb.RazorPages/bin/Release/net10.0/
           retention-days: 1
 
   test:
     name: Test (Unit - Parallel)
     needs: build
     runs-on: ubuntu-latest
+    if: needs.build.result == 'success'
 
     steps:
       - name: Checkout code
@@ -54,11 +65,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Download build artifacts
+      - name: Download MVC build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
-          path: TiendaDawWeb.Web/bin/Release/net10.0/
+          name: build-output-mvc
+          path: TiendaDawWeb.Mvc/bin/Release/net10.0/
 
       - name: Run unit tests
         run: dotnet test TiendaDawWeb.Tests/TiendaDawWeb.Tests.csproj --configuration Release --no-build --verbosity minimal --collect:"XPlat Code Coverage" --results-directory ./TestResults
@@ -91,6 +102,7 @@ jobs:
     name: Publish
     needs: [build, test]
     runs-on: ubuntu-latest
+    if: needs.build.result == 'success' && needs.test.result == 'success'
 
     steps:
       - name: Checkout code
@@ -101,23 +113,39 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Download build artifacts
+      - name: Download MVC build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
-          path: TiendaDawWeb.Web/bin/Release/net10.0/
+          name: build-output-mvc
+          path: TiendaDawWeb.Mvc/bin/Release/net10.0/
+
+      - name: Download RazorPages build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output-razor
+          path: TiendaDawWeb.RazorPages/bin/Release/net10.0/
 
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Publish
-        run: dotnet publish TiendaDawWeb.Web/TiendaDawWeb.csproj --configuration Release --output ./publish
+      - name: Publish MVC
+        run: dotnet publish TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj --configuration Release --output ./publish-mvc
 
-      - name: Upload artifacts
+      - name: Publish RazorPages
+        run: dotnet publish TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj --configuration Release --output ./publish-razor
+
+      - name: Upload MVC artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tiendadawweb-build
-          path: ./publish
+          name: tiendadawweb-mvc-build
+          path: ./publish-mvc
+          retention-days: 5
+
+      - name: Upload RazorPages artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiendadawweb-razor-build
+          path: ./publish-razor
           retention-days: 5
 
   validate-docs:
