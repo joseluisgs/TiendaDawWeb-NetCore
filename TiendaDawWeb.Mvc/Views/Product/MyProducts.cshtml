@@ -88,13 +88,12 @@
     }
     else
     {
-        <div class="col-12">
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> No has publicado ningún producto todavía.
-                <a asp-action="Create" class="alert-link">
-                    ¡Publica tu primer producto ahora!
-                </a>
-            </div>
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="bi bi-box-seam fs-1"></i>
+            <p class="mt-2 mb-2">No has publicado ningún producto todavía.</p>
+            <a asp-action="Create" class="text-decoration-none">
+                <i class="bi bi-plus-circle"></i> ¡Publica tu primer producto ahora!
+            </a>
         </div>
     }
 </div>

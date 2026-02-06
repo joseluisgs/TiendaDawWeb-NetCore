@@ -12,12 +12,15 @@
 
     @if (!Model.Purchases.Any())
     {
-        <div class="alert alert-info">
-            <h4><i class="bi bi-cart-x"></i> No has realizado compras aún</h4>
-            <p>Explora nuestro catálogo y realiza tu primera compra.</p>
-            <a asp-page="/Product/Index" class="btn btn-primary">
-                <i class="bi bi-shop"></i> Ver Productos
-            </a>
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-bag-x fs-1 text-muted"></i>
+                <h4 class="mt-3">No has realizado compras aún</h4>
+                <p class="text-muted">Explora nuestro catálogo y realiza tu primera compra.</p>
+                <a asp-page="/Product/Index" class="btn btn-primary">
+                    <i class="bi bi-shop"></i> Ver Productos
+                </a>
+            </div>
         </div>
     }
     else

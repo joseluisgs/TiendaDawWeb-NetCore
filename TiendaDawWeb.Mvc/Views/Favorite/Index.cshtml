@@ -70,13 +70,12 @@
         }
     }
     else {
-        <div class="col-12">
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> No tienes productos favoritos todavía.
-                <a asp-controller="Product" asp-action="Index" class="alert-link">
-                    Explora el catálogo para añadir tus primeros favoritos
-                </a>
-            </div>
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="bi bi-heart fs-1"></i>
+            <p class="mt-2 mb-2">No tienes productos favoritos todavía.</p>
+            <a asp-controller="Product" asp-action="Index" class="text-decoration-none">
+                <i class="bi bi-search"></i> Explora el catálogo para añadir tus primeros favoritos
+            </a>
         </div>
     }
 </div>
