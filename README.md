@@ -1,6 +1,6 @@
 # WalaDaw 🛒
 
-![banner](./banner.png)
+![banner](./logo.svg)
 
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
@@ -51,7 +51,9 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
     - [Fundamentos y Configuración](#fundamentos-y-configuración)
     - [Controllers y Pages](#controllers-y-pages)
     - [Datos y Persistencia](#datos-y-persistencia)
-    - [Interfaz de Usuario (Razor & Blazor)](#interfaz-de-usuario-razor--blazor)
+    - [Interfaz de Usuario (Razor \& Blazor)](#interfaz-de-usuario-razor--blazor)
+    - [Tiempo Real](#tiempo-real)
+    - [Validación y Manejo de Errores](#validación-y-manejo-de-errores)
     - [Seguridad y Autorización](#seguridad-y-autorización)
     - [Testing y Calidad](#testing-y-calidad)
     - [Optimización y Rendimiento](#optimización-y-rendimiento)
@@ -65,7 +67,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
     - [Estructura de Dependencias](#estructura-de-dependencias)
       - [Ventajas de Esta Arquitectura](#ventajas-de-esta-arquitectura)
   - [🛤️ Railway Oriented Programming (ROP)](#️-railway-oriented-programming-rop)
-    - [Conceptos Fundamentales](#conceptos-fundamentales-1)
+    - [Conceptos Fundamentales](#conceptos-fundamentales)
     - [Anatomía del Patrón (Two-Track Model)](#anatomía-del-patrón-two-track-model)
     - [Beneficios de ROP](#beneficios-de-rop)
     - [Ejemplos de Uso](#ejemplos-de-uso)
@@ -74,8 +76,10 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
   - [🔐 Seguridad](#-seguridad)
   - [📡 Endpoints y Rutas](#-endpoints-y-rutas)
     - [MVC Controllers](#mvc-controllers)
-    - [Razor Pages](#razor-pages)
-    - [SignalR Hubs](#signalr-hubs)
+      - [Account Controller](#account-controller)
+      - [Products Controller](#products-controller)
+      - [Cart Controller](#cart-controller)
+      - [Componentes Blazor Server](#componentes-blazor-server-signalr-integrado)
   - [👥 Usuarios Demo](#-usuarios-demo)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
@@ -735,12 +739,16 @@ return result.Match(
 | `/Cart/Remove/{itemId}`   | POST   | Sí   | Eliminar item                    |
 | `/Cart/Checkout`         | POST   | Sí   | Finalizar compra                 |
 
-#### SignalR Hubs
+#### Componentes Blazor Server (SignalR integrado)
 
-| Endpoint          | Auth | Descripción                              | Eventos                    |
-| ----------------- | ---- | --------------------------------------- | -------------------------- |
-| `/adminHub`       | ADMIN| Dashboard en tiempo real              | StatsUpdated               |
-| `/ratingsHub`     | Sí   | Notificaciones de valoraciones          | RatingAdded                |
+Blazor Server usa SignalR internamente para la comunicación bidireccional en tiempo real entre el cliente y el servidor. No hay Hubs explícitos, sino componentes interactivos:
+
+| Componente                    | Auth | Descripción                              |
+| ---------------------------- | ---- | --------------------------------------- |
+| `<RatingSummary />`          | No   | Muestra promedio de valoraciones          |
+| `<RatingSection />`         | Sí   | Formulario para añadir valoraciones      |
+| `<CartSummary />`           | Sí   | Resumen del carrito en tiempo real       |
+| `<AdminDashboard />`         | ADMIN| Panel de administración con estadísticas |
 
 ## 👥 Usuarios Demo
 
