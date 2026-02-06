@@ -1,9 +1,12 @@
 using FluentAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
+using TiendaDawWeb.Shared.Services.Favorite;
 
 namespace TiendaDawWeb.Tests.Integration;
 
@@ -161,6 +164,33 @@ public class ProductIntegrationTests
     }
 
     [Test]
+    public async Task GetUserFavoritesAsync_ReturnsProducts()
+    {
+        await using var fixture = new IntegrationTestFixture();
+
+        var user = new User { Id = 100, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
+        var owner1 = new User { Id = 101, Email = "owner1@test.com", UserName = "owner1", Nombre = "Owner1", Apellidos = "Test", Rol = "USER" };
+        var owner2 = new User { Id = 102, Email = "owner2@test.com", UserName = "owner2", Nombre = "Owner2", Apellidos = "Test", Rol = "USER" };
+
+        var product1 = new Product { Id = 200, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 101, Deleted = false };
+        var product2 = new Product { Id = 201, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 102, Deleted = false };
+
+        fixture.Context.Users.AddRange(user, owner1, owner2);
+        fixture.Context.Products.AddRange(product1, product2);
+        await fixture.Context.SaveChangesAsync();
+
+        var fav1 = new Favorite { UsuarioId = 100, ProductoId = 200 };
+        var fav2 = new Favorite { UsuarioId = 100, ProductoId = 201 };
+        fixture.Context.Favorites.AddRange(fav1, fav2);
+        await fixture.Context.SaveChangesAsync();
+
+        var result = await fixture.FavoriteService.GetUserFavoritesAsync(100);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    [Test]
     public async Task Carrito_AddItem_Works()
     {
         await using var fixture = new IntegrationTestFixture();
@@ -306,6 +336,7 @@ public class IntegrationTestFixture : IDisposable, IAsyncDisposable
 {
     private readonly SqliteConnection _connection;
     public readonly ApplicationDbContext Context;
+    public readonly FavoriteService FavoriteService;
     private bool _disposed;
 
     public IntegrationTestFixture()
@@ -320,6 +351,8 @@ public class IntegrationTestFixture : IDisposable, IAsyncDisposable
 
         Context = new ApplicationDbContext(options);
         Context.Database.EnsureCreated();
+
+        FavoriteService = new FavoriteService(Context, new Mock<ILogger<FavoriteService>>().Object);
     }
 
     public async ValueTask DisposeAsync()

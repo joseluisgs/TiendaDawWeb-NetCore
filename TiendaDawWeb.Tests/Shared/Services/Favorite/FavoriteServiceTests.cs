@@ -191,25 +191,6 @@ public class FavoriteServiceTests
 
     #region GetUserFavoritesAsync Tests
 
-    [Test, Explicit("Skip: EF Core in-memory database limitation with Include on navigation properties")]
-    public async Task GetUserFavoritesAsync_ReturnsFavorites()
-    {
-        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product1 = new Product { Id = 1, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 2, Deleted = false };
-        var product2 = new Product { Id = 2, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 3, Deleted = false };
-        var fav1 = new Favorite { UsuarioId = 1, ProductoId = 1 };
-        var fav2 = new Favorite { UsuarioId = 1, ProductoId = 2 };
-        _context.Users.Add(user);
-        _context.Products.AddRange(product1, product2);
-        _context.Favorites.AddRange(fav1, fav2);
-        await _context.SaveChangesAsync();
-
-        var result = await _service.GetUserFavoritesAsync(1);
-
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(2);
-    }
-
     [Test]
     public async Task GetUserFavoritesAsync_ReturnsEmpty_WhenNoFavorites()
     {
