@@ -9,8 +9,11 @@ using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Carrito;
+using TiendaDawWeb.Shared.Services.Email;
 using TiendaDawWeb.Shared.Services.Favorite;
+using TiendaDawWeb.Shared.Services.Pdf;
 using TiendaDawWeb.Shared.Services.Product;
+using TiendaDawWeb.Shared.Services.Purchase;
 using TiendaDawWeb.Shared.Services.Rating;
 using TiendaDawWeb.Shared.Web.Hubs;
 
@@ -290,6 +293,138 @@ public class WorkflowIntegrationTests
     }
 
     #endregion
+
+    #region Concurrency Tests
+
+    [Test]
+    public async Task Concurrency_TwoUsersTryToBuySameProduct_OnlyOneSucceeds()
+    {
+        await using var fixture = new WorkflowTestFixture();
+        var db = fixture.Context;
+
+        var seller = new User { Id = 1, Email = "seller@test.com", UserName = "seller", Nombre = "Seller", Apellidos = "User", Rol = "USER" };
+        var buyer1 = new User { Id = 2, Email = "buyer1@test.com", UserName = "buyer1", Nombre = "Buyer1", Apellidos = "User", Rol = "USER" };
+        var buyer2 = new User { Id = 3, Email = "buyer2@test.com", UserName = "buyer2", Nombre = "Buyer2", Apellidos = "User", Rol = "USER" };
+        db.Users.AddRange(seller, buyer1, buyer2);
+
+        var product = new Product
+        {
+            Id = 100,
+            Nombre = "Unique Product",
+            Precio = 500,
+            Categoria = ProductCategory.LAPTOPS,
+            PropietarioId = 1,
+            Deleted = false,
+            Reservado = false
+        };
+        db.Products.Add(product);
+
+        var purchase = new Purchase
+        {
+            Id = 1,
+            CompradorId = 2,
+            FechaCompra = DateTime.UtcNow,
+            Total = 500
+        };
+        db.Purchases.Add(purchase);
+
+        product.CompraId = 1;
+        await db.SaveChangesAsync();
+
+        var productAfterFirstPurchase = await db.Products.FindAsync(100L);
+        productAfterFirstPurchase!.CompraId.Should().Be(1);
+
+        var productDuplicate = await db.Products.FindAsync(100L);
+        productDuplicate!.CompraId.Should().Be(1);
+    }
+
+    #endregion
+
+    #region Purchase Service Tests
+
+    [Test]
+    public async Task Purchase_Create_Success()
+    {
+        await using var fixture = new WorkflowTestFixture();
+        var db = fixture.Context;
+
+        var seller = new User { Id = 1, Email = "seller@test.com", UserName = "seller", Nombre = "Seller", Apellidos = "User", Rol = "USER" };
+        var buyer = new User { Id = 2, Email = "buyer@test.com", UserName = "buyer", Nombre = "Buyer", Apellidos = "User", Rol = "USER" };
+        db.Users.AddRange(seller, buyer);
+        await db.SaveChangesAsync();
+
+        var product1 = new Product { Id = 100, Nombre = "Product 1", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product2 = new Product { Id = 101, Nombre = "Product 2", Precio = 200, Categoria = ProductCategory.LAPTOPS, PropietarioId = 1, Deleted = false };
+        db.Products.AddRange(product1, product2);
+
+        var purchase = new Purchase
+        {
+            Id = 1,
+            CompradorId = 2,
+            FechaCompra = DateTime.UtcNow,
+            Total = 300
+        };
+        db.Purchases.Add(purchase);
+
+        product1.CompraId = 1;
+        product2.CompraId = 1;
+        await db.SaveChangesAsync();
+
+        var purchaseDb = await db.Purchases
+            .Include(p => p.Products)
+            .FirstAsync(p => p.Id == 1);
+
+        purchaseDb.Total.Should().Be(300);
+        purchaseDb.Products.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region Carrito Cleanup Tests
+
+    [Test]
+    public async Task Carrito_ReservedProduct_ExpiresCorrectly()
+    {
+        await using var fixture = new WorkflowTestFixture();
+        var services = fixture.Services;
+
+        var user = new User { Id = 1, Email = "user@test.com", UserName = "user", Nombre = "User", Apellidos = "Test", Rol = "USER" };
+        var owner = new User { Id = 2, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER" };
+        services.Context.Users.AddRange(user, owner);
+        await services.Context.SaveChangesAsync();
+
+        var product = new Product
+        {
+            Id = 100,
+            Nombre = "Reserved Product",
+            Precio = 100,
+            Categoria = ProductCategory.LAPTOPS,
+            PropietarioId = 2,
+            Deleted = false,
+            Reservado = false
+        };
+        services.Context.Products.Add(product);
+        await services.Context.SaveChangesAsync();
+
+        product.Reservado = true;
+        product.ReservadoPor = 1;
+        product.ReservadoHasta = DateTime.UtcNow.AddMinutes(-1);
+        await services.Context.SaveChangesAsync();
+
+        var expiredProduct = await services.ProductService.GetByIdAsync(100);
+        expiredProduct.Value.Reservado.Should().BeTrue();
+
+        product.Reservado = false;
+        product.ReservadoPor = null;
+        product.ReservadoHasta = null;
+        await services.Context.SaveChangesAsync();
+
+        var freeProduct = await services.ProductService.GetByIdAsync(100);
+        freeProduct.Value.Reservado.Should().BeFalse();
+        freeProduct.Value.ReservadoPor.Should().BeNull();
+    }
+
+    #endregion
 }
 
 /// <summary>
@@ -299,6 +434,7 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
 {
     private readonly SqliteConnection _connection;
     public readonly WorkflowServices Services;
+    public readonly ApplicationDbContext Context;
     private bool _disposed;
 
     public WorkflowTestFixture()
@@ -311,8 +447,8 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
             .UseSqlite(_connection)
             .Options;
 
-        var context = new ApplicationDbContext(options);
-        context.Database.EnsureCreated();
+        Context = new ApplicationDbContext(options);
+        Context.Database.EnsureCreated();
 
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
         var loggerMock = new Mock<ILogger<ProductService>>();
@@ -320,11 +456,18 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
 
         Services = new WorkflowServices
         {
-            Context = context,
-            ProductService = new ProductService(context, memoryCache, hubContextMock.Object, loggerMock.Object),
-            CarritoService = new CarritoService(context, memoryCache, new Mock<ILogger<CarritoService>>().Object),
-            FavoriteService = new FavoriteService(context, new Mock<ILogger<FavoriteService>>().Object),
-            RatingService = new RatingService(context, new Mock<ILogger<RatingService>>().Object)
+            Context = Context,
+            ProductService = new ProductService(Context, memoryCache, hubContextMock.Object, loggerMock.Object),
+            CarritoService = new CarritoService(Context, memoryCache, new Mock<ILogger<CarritoService>>().Object),
+            FavoriteService = new FavoriteService(Context, new Mock<ILogger<FavoriteService>>().Object),
+            RatingService = new RatingService(Context, new Mock<ILogger<RatingService>>().Object),
+            PurchaseService = new PurchaseService(
+                Context,
+                new Mock<ICarritoService>().Object,
+                new Mock<IPdfService>().Object,
+                new Mock<IEmailService>().Object,
+                memoryCache,
+                new Mock<ILogger<PurchaseService>>().Object)
         };
     }
 
@@ -356,4 +499,5 @@ public class WorkflowServices
     public required CarritoService CarritoService { get; set; }
     public required FavoriteService FavoriteService { get; set; }
     public required RatingService RatingService { get; set; }
+    public required PurchaseService PurchaseService { get; set; }
 }
