@@ -300,6 +300,7 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 | 24  | [Docker](doc/24-Docker.md)                         | Contenedores y configuración de producción             |
 | 25  | [Logging](doc/25-Logging.md)                       | Logging estructurado, correlación de peticiones        |
 | 26  | [Infrastructure](doc/26-Infrastructure.md)         | Clean Architecture, DI, Extension Methods             |
+| 27  | [CI/CD con GitHub Actions](doc/27-CI-CD.md)        | Pipelines, automatización, GitHub CLI                |
 
 ## ⚒️ Diagrama de Clases del Dominio
 
