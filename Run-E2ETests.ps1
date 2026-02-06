@@ -100,8 +100,8 @@ $RazorPagesResult = $LASTEXITCODE
 
 # 6. Resumen
 Write-Header "Resumen"
-Write-Host "MVC:        $(if ($MvcResult -eq 0) { '✅' } else { '❌' })" -ForegroundColor $(if ($MvcResult -eq 0) { 'Green' } else { 'Red' })
-Write-Host "RazorPages: $(if ($RazorPagesResult -eq 0) { '✅' } else { '❌' })" -ForegroundColor $(if ($RazorPagesResult -eq 0) { 'Green' } else { 'Red' })
+Write-Host "MVC:        $(if ($MvcResult -eq 0) { 'OK' } else { 'FAIL' })" -ForegroundColor $(if ($MvcResult -eq 0) { 'Green' } else { 'Red' })
+Write-Host "RazorPages: $(if ($RazorPagesResult -eq 0) { 'OK' } else { 'FAIL' })" -ForegroundColor $(if ($RazorPagesResult -eq 0) { 'Green' } else { 'Red' })
 
 Stop-Servers
 
