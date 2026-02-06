@@ -1,6 +1,6 @@
 # WalaDaw 🛒
 
-![logo](./logo.svg)
+![banner](./banner.png)
 
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
@@ -12,20 +12,24 @@
 [![Playwright](https://img.shields.io/badge/Playwright-E2E-green)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC.**
 
-Una aplicación web de comercio electrónico de segunda mano con características avanzadas de seguridad, Railway Oriented
-Programming y gestión de usuarios con ASP.NET Core Identity.
+**Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC y Razor Pages.**
+
+Una aplicación web de comercio electrónico de segunda mano con características avanzadas de seguridad, Railway Oriented Programming y gestión de usuarios con ASP.NET Core Identity.
 
 ## 🎯 Descripción
 
-WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usuarios:
+WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que implementa una aplicación web completa para una tienda en línea, usando tanto Razor Pages como Blazor Server. El proyecto está diseñado con una arquitectura en capas con una aproximación híbrida de presentación que permite la coexistencia de renderizado tradicional (SSR) con componentes reactivos en tiempo real.
 
-- Comprar y vender productos de segunda mano
-- Gestionar perfiles de usuario con avatares
-- Sistema de valoraciones y comentarios
-- Panel de administración completo
-- Subida de archivos e imágenes
+- 🏪 **Gestión de Productos y Categorías**: CRUD completo con validaciones
+- 🛒 **Carrito de Compras**: Persistencia SQLite con control de concurrencia
+- 👥 **Gestión de Usuarios**: Autenticación con ASP.NET Core Identity (Cookies)
+- 💾 **Persistencia con SQLite In-Memory**: Base de datos volátil para testing rápido
+- 🔐 **Seguridad**: Claims, roles, CSRF y protección de rutas
+- 📡 **Blazor Server + SignalR**: Componentes interactivos y notificaciones en tiempo real
+- 📊 **Panel de Administración**: Dashboard con estadísticas en tiempo real
+- 🧪 **Testing**: Unit tests con NUnit, bUnit para Blazor, y E2E con Playwright
+- 🎨 **Interfaz Híbrida**: Razor Pages + Blazor Server + AJAX (共存 de tres enfoques)
 
 ## 📑 Tabla de Contenidos
 
@@ -33,89 +37,84 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 que permite a los usu
   - [🎯 Descripción](#-descripción)
   - [📑 Tabla de Contenidos](#-tabla-de-contenidos)
   - [✨ Características](#-características)
-    - [Funcionalidades Principales](#funcionalidades-principales)
-    - [Productos 2024-2025](#productos-2024-2025)
   - [🚀 Tecnologías](#-tecnologías)
   - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
     - [Desarrollo Local](#desarrollo-local)
-    - [🚀 Desarrollo Ágil (Hot Reload)](#-desarrollo-ágil-hot-reload)
+    - [Desarrollo con Docker](#desarrollo-con-docker)
   - [🧪 Estrategia de Testing Total](#-estrategia-de-testing-total)
     - [Ejecución de Tests](#ejecución-de-tests)
+      - [Tests Unitarios y de Componentes](#tests-unitarios-y-de-componentes)
+      - [Tests E2E con Playwright](#tests-e2e-con-playwright)
+      - [Con Coverage](#con-coverage)
+      - [Configuración de Tests](#configuración-de-tests)
   - [📚 Documentación](#-documentación)
-    - [Build y Tests](#build-y-tests)
-  - [⚒️ Diagrama](#️-diagrama)
+    - [Fundamentos y Configuración](#fundamentos-y-configuración)
+    - [Controllers y Pages](#controllers-y-pages)
+    - [Datos y Persistencia](#datos-y-persistencia)
+    - [Interfaz de Usuario (Razor & Blazor)](#interfaz-de-usuario-razor--blazor)
+    - [Seguridad y Autorización](#seguridad-y-autorización)
+    - [Testing y Calidad](#testing-y-calidad)
+    - [Optimización y Rendimiento](#optimización-y-rendimiento)
+    - [Operaciones y Producción](#operaciones-y-producción)
+  - [⚒️ Diagrama de Clases del Dominio](#️-diagrama-de-clases-del-dominio)
   - [📂 Estructura del Proyecto](#-estructura-del-proyecto)
-  - [🏗️ Arquitectura](#️-arquitectura)
-    - [Railway Oriented Programming (ROP)](#railway-oriented-programming-rop)
-    - [ASP.NET Core Identity](#aspnet-core-identity)
-  - [💡 Estrategias de Interfaz: El Triple Camino](#-estrategias-de-interfaz-el-triple-camino)
-    - [1. SSR Tradicional (Razor Pages/Views)](#1-ssr-tradicional-razor-pagesviews)
-    - [2. SPA dinámica con AJAX (Legacy Support)](#2-spa-dinámica-con-ajax-legacy-support)
-    - [3. Componentes Reactivos (Blazor Server) 🚀](#3-componentes-reactivos-blazor-server-)
+    - [Descripción de Carpetas Principales](#descripción-de-carpetas-principales)
+  - [🏗️ Arquitectura Híbrida MVC/Razor/Blazor](#️-arquitectura-híbrida-mvcrazorblazor)
+    - [Principios Fundamentales](#principios-fundamentales)
+    - [Capas de la Arquitectura](#capas-de-la-arquitectura)
+    - [Estructura de Dependencias](#estructura-de-dependencias)
+      - [Ventajas de Esta Arquitectura](#ventajas-de-esta-arquitectura)
+  - [🛤️ Railway Oriented Programming (ROP)](#️-railway-oriented-programming-rop)
+    - [Conceptos Fundamentales](#conceptos-fundamentales-1)
+    - [Anatomía del Patrón (Two-Track Model)](#anatomía-del-patrón-two-track-model)
+    - [Beneficios de ROP](#beneficios-de-rop)
+    - [Ejemplos de Uso](#ejemplos-de-uso)
+    - [Comparación: ROP vs Try-Catch](#comparación-rop-vs-try-catch)
+  - [🗄️ Persistencia con SQLite](#️-persistencia-con-sqlite)
+  - [🔐 Seguridad](#-seguridad)
+  - [📡 Endpoints y Rutas](#-endpoints-y-rutas)
+    - [MVC Controllers](#mvc-controllers)
+    - [Razor Pages](#razor-pages)
+    - [SignalR Hubs](#signalr-hubs)
   - [👥 Usuarios Demo](#-usuarios-demo)
-  - [🔒 Seguridad](#-seguridad)
-  - [🌐 Características](#-características-1)
-    - [Para Usuarios](#para-usuarios)
-    - [Para Administradores](#para-administradores)
-  - [📚 Documentación](#-documentación-1)
-    - [🏗️ Fundamentos y Arquitectura](#️-fundamentos-y-arquitectura)
-    - [💾 Datos y Persistencia](#-datos-y-persistencia)
-    - [🎨 Interfaz de Usuario (Razor \& Blazor)](#-interfaz-de-usuario-razor--blazor)
-    - [⚡ Interactividad y Tiempo Real](#-interactividad-y-tiempo-real)
-    - [🛡️ Validación y Manejo de Errores](#️-validación-y-manejo-de-errores)
-    - [🧪 Testing y Calidad](#-testing-y-calidad)
-    - [⚡ Optimización y Rendimiento](#-optimización-y-rendimiento)
-    - [🐳 Operaciones y Producción](#-operaciones-y-producción)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
     - [Contacto](#contacto)
   - [Licencia de uso](#licencia-de-uso)
 
+
 ## ✨ Características
 
-### Funcionalidades Principales
-
-- 🛍️ **Marketplace de Segunda Mano**: Compra y vende productos usados
-- 🔐 **Sistema de Roles**: ADMIN, USER, MODERADOR con permisos diferenciados
-- 📧 **Notificaciones por Email**: Confirmación automática asíncrona de compras con templates HTML
-- 📊 **Panel de Administración Completo**: Dashboard con estadísticas en tiempo real, gestión de usuarios, productos y compras gracias a Blazor Server y SignalR
-- 🔍 **Búsqueda Avanzada**: Filtros por nombre, categoría y precio
-- 🖼️ **Gestión de Imágenes**: Subida, validación y redimensionado automático con ImageSharp
-- 📱 **Responsive Design**: Bootstrap 5.3 optimizado para todos los dispositivos
-- 📄 **Generación de PDFs**: Facturas automáticas con iText7 y diseño profesional
-- ❤️ **Sistema de Favoritos**: Gestión asíncrona con AJAX
-- ⭐ **Valoraciones y Ratings**: Sistema completo de reviews con estrellas interactivo y en tiempo real con Blazor
-- 🆕 **Notificaciones en Tiempo Real**: Actualizaciones instantáneas con SignalR
-- 🛒 **Carrito de Compras**: Control de concurrencia con transacciones SERIALIZABLE
-- 🛡️ **Seguridad CSRF**: Protección completa contra ataques Cross-Site Request Forgery
-- 👤 **Gestión de Perfil**: Edición de perfil con avatar y cambio de contraseña
-- 🔄 **Control de Concurrencia**: Manejo de race conditions con Optimistic Concurrency Control
-
-### Productos 2024-2025
-
-La aplicación incluye productos actuales y relevantes:
-
-- 📱 **Smartphones**: iPhone 15 Pro Max, Samsung Galaxy S24 Ultra, Google Pixel 8 Pro
-- 💻 **Laptops**: MacBook Pro M3
-- 🎧 **Audio**: AirPods Pro 2ª Generación
-- 🎮 **Gaming**: Steam Deck OLED
+| Categoría            | Funcionalidades                                                                 |
+| -------------------- | -------------------------------------------------------------------------------- |
+| **Gestión**          | Productos (CRUD), Categorías, Usuarios, Valoraciones, Favoritos                 |
+| **Compras**          | Carrito persistente, Checkout, Facturas PDF, Historial de pedidos               |
+| **Autenticación**    | Registro, Login, Roles (ADMIN, USER, MODERADOR), Claims, Password hashing        |
+| **Tiempo Real**      | SignalR, Notificaciones live, Dashboard admin con estadísticas en vivo         |
+| **Testing**          | Unit tests (NUnit), Componentes (bUnit), E2E (Playwright)                   |
+| **UI/UX**            | Razor Pages, Blazor Server, AJAX, Bootstrap 5.3, I18n/L10n                       |
 
 ## 🚀 Tecnologías
 
-- **.NET 10 con C# 14** - Plataforma principal
-- **ASP.NET Core MVC** - Framework web con patrón MVC
-- **Razor Views** - Motor de vistas del lado servidor
-- **Blazor Server** - Componentes interactivos en tiempo real con C#
-- **SignalR** - Comunicación bidireccional para reactividad Blazor
-- **EF Core con SQLite In-Memory** - Motor SQL real en RAM con soporte de transacciones
-- **ASP.NET Core Identity** - Sistema completo de autenticación y autorización
-- **InMemoryCache** - Caché de objetos en RAM para reducir consultas a BD
-- **OutputCache** - Caché de respuestas HTML en servidor para escalabilidad
-- **CSharpFunctionalExtensions** - Railway Oriented Programming (ROP)
-- **Bootstrap 5.3** - Framework CSS responsive
-- **Bootstrap Icons** - Iconografía moderna
-- **Localization (I18n/L10n)** - Soporte multilenguaje
-- **Playwright** - Pruebas E2E automatizadas en navegador con C#
+| Tecnología               | Versión    | Propósito                                      |
+| ------------------------ | ---------- | ---------------------------------------------- |
+| **.NET**                 | 10         | Plataforma principal y runtime                |
+| **C#**                   | 14         | Lenguaje de programación                      |
+| **ASP.NET Core MVC**     | 10         | Framework web con patrón MVC                   |
+| **Razor Pages**          | 10         | Motor de vistas del lado servidor              |
+| **Blazor Server**        | 10         | Componentes interactivos en tiempo real        |
+| **SignalR**              | 10         | Comunicación bidireccional para reactividad    |
+| **EF Core**              | 10         | ORM con SQLite In-Memory                       |
+| **SQLite In-Memory**     | -          | Base de datos volátil para desarrollo/testing  |
+| **ASP.NET Core Identity**| 10         | Sistema de autenticación y autorización        |
+| **NUnit**                | 4.x        | Framework de testing unitario                  |
+| **bUnit**                | 2.x        | Testing de componentes Blazor                  |
+| **Playwright**           | 1.x        | Testing E2E en navegador                       |
+| **Bootstrap**            | 5.3        | Framework CSS responsive                       |
+| **CSharpFunctionalExtensions**| 2.x   | Railway Oriented Programming (ROP)             |
+| **OutputCache**          | 10         | Caché de respuestas HTML                       |
+| **InMemoryCache**        | 10         | Caché de objetos en memoria                    |
+| **Serilog**              | 8.x        | Logging estructurado                           |
 
 ## 🏃‍♂️ Inicio Rápido
 
@@ -130,55 +129,181 @@ cd TiendaDawWeb-NetCore
 dotnet restore
 
 # Ejecutar aplicación (Normal)
-dotnet run --project TiendaDawWeb.Web
+dotnet run --project TiendaDawWeb.Mvc
 
 # Ejecutar con Hot Reload (Recomendado para desarrollo)
-dotnet watch --project TiendaDawWeb.Web
+dotnet watch --project TiendaDawWeb.Mvc
 ```
 
-### 🚀 Desarrollo Ágil (Hot Reload)
+> **Nota:** La aplicación usa SQLite In-Memory, por lo que los datos se pierden al detener la aplicación. Para desarrollo, usa `dotnet watch` para mantener los datos mientras editas.
 
-Este proyecto está optimizado para **Hot Reload**. Si usas `dotnet watch`, podrás ver los cambios en la UI al instante sin perder los datos de la base de datos SQLite en memoria.
+### Desarrollo con Docker
 
-- **JetBrains Rider**: Activa "Apply hot reload changes on save" en los ajustes.
-- **Visual Studio**: Usa el icono de la llama naranja o inicia con `Ctrl + F5`.
+Para ejecutar la aplicación en contenedores Docker:
+
+```bash
+# Construir y ejecutar todos los servicios
+docker-compose up -d --build
+
+# Ver logs de la aplicación
+docker-compose logs -f
+
+# Detener servicios
+docker-compose down
+
+# Detener y eliminar volúmenes
+docker-compose down -v
+```
+
+**Servicios incluidos:**
+- **TiendaDawWeb.Mvc** (puerto 5000): Aplicación MVC tradicional
+- **TiendaDawWeb.RazorPages** (puerto 5002): Aplicación Razor Pages
+
+> **Ver más:** [Docker y Contenedores](doc/24-Docker.md)
 
 ## 🧪 Estrategia de Testing Total
 
 WalaDaw implementa una pirámide de pruebas profesional para garantizar la máxima calidad:
 
--   **Nivel 1: Pruebas Unitarias y de Integración (.NET)**: Validación de servicios, transacciones SQLite y lógica de negocio pura. Ubicadas en `TiendaDawWeb.Tests`.
--   **Nivel 2: Pruebas de Componentes (bUnit)**: Testeo reactivo de los componentes Blazor, simulando eventos de usuario en C#.
--   **Nivel 3: Pruebas de Extremo a Extremo (Playwright)**: Simulación de navegación real en el navegador con C#, validando la integración total de todos los módulos. Ubicadas en `TiendaDawWeb.Tests.E2E`.
+| Nivel | Tipo                    | Propósito                                      | Herramienta        |
+| ----- | ---------------------- | ---------------------------------------------- | ------------------ |
+| **1** | Unit Tests             | Validación de servicios, lógica de negocio      | NUnit              |
+| **2** | Integration Tests      | Transacciones SQLite, Repositories              | NUnit + SQLite     |
+| **3** | Component Tests        | Testeo reactivo de componentes Blazor          | bUnit v2.x         |
+| **4** | E2E Tests              | Simulación de navegación real en navegador      | Playwright + C#    |
 
 ### Ejecución de Tests
--   **Tests .NET**: `dotnet test`
--   **Tests E2E (Playwright)**: `cd TiendaDawWeb.Tests.E2E && dotnet test`
-
-## 📚 Documentación
-
-### Build y Tests
 
 ```bash
-# 🛠️ Compilación y Ejecución .NET
-dotnet build                                  # Compilar solución
-dotnet run --project TiendaDawWeb.Web         # Ejecutar aplicación
-dotnet watch --project TiendaDawWeb.Web       # Modo desarrollo (Hot Reload)
+# 🚀 Ejecutar TODOS los tests
+dotnet test
 
-# 🧪 Pruebas Unitarias y de Componentes (.NET)
-dotnet test                                   # Ejecutar todos los tests de C#
+# Solo tests unitarios y de integración (.NET)
+dotnet test --filter "FullyQualifiedName!~E2E"
 
-# 🤖 Pruebas de Extremo a Extremo (Playwright)
+# Solo tests E2E (requiere aplicación corriendo)
 cd TiendaDawWeb.Tests.E2E && dotnet test
 ```
 
-## ⚒️ Diagrama
+#### Tests Unitarios y de Componentes
+
+| Escenario                                     | Comando                              |
+| --------------------------------------------- | ------------------------------------ |
+| **Todos los tests**                           | `dotnet test`                       |
+| **Solo unitarios**                            | `dotnet test --filter "Category=Unit"` |
+| **Solo integración**                          | `dotnet test --filter "Category=Integration"` |
+| **Solo componentes Blazor**                   | `dotnet test --filter "Category=Component"` |
+
+#### Tests E2E con Playwright
+
+```bash
+# Ejecutar tests E2E
+cd TiendaDawWeb.Tests.E2E && dotnet test
+
+# Con video y screenshots
+dotnet test --project TiendaDawWeb.Tests.E2E -v normal
+```
+
+> **Ver más:** [Unit Testing con NUnit y bUnit](doc/19-Unit-Testing.md), [E2E Testing con Playwright](doc/21-E2E-Testing.md)
+
+#### Con Coverage
+
+```bash
+# Ejecutar todos los tests con coverage
+dotnet test --collect:"XPlat Code Coverage"
+
+# Ver reporte de coverage
+open coverage/index.html
+```
+
+> **Ver más:** [Code Coverage](doc/20-Code-Coverage.md)
+
+#### Configuración de Tests
+
+| Tipo de Test    | Parallelización | Base de Datos           |
+| --------------- | --------------- | ------------------------ |
+| **Unit Tests**  | ✅ Paralelo     | Sin dependencia          |
+| **Integration** | ✅ Paralelo     | SQLite In-Memory        |
+| **Components**  | ✅ Paralelo     | Sin dependencia          |
+| **E2E Tests**   | ❌ No paralelo  | Requiere app corriendo   |
+
+## 📚 Documentación
+
+Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta los documentos en la carpeta [`doc/`](doc/):
+
+### Fundamentos y Configuración
+| #   | Documento                                                         | Descripción                                        |
+| --- | ----------------------------------------------------------------- | -------------------------------------------------- |
+| 01  | [Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md) | Middlewares, inyección de dependencias y host       |
+| 02  | [Guía de Productividad](doc/02-Development-Tips.md)              | Hot Reload, tricks y productividad en .NET 10       |
+| 03  | [Controladores Basics](doc/03-Controllers-Basics.md)            | Orquestación, Model Binding, Result<T,E>            |
+
+### Controllers y Pages
+| #   | Documento                                                   | Descripción                                        |
+| --- | ----------------------------------------------------------- | -------------------------------------------------- |
+| 04  | [MVC Controllers](doc/04-MVC-Controllers.md)               | Enfoque tradicional MVC, routing, binding          |
+| 05  | [Razor Pages](doc/05-Razor-Pages.md)                       | Desarrollo web con Razor Pages y Tag Helpers        |
+
+### Datos y Persistencia
+| #   | Documento                                                   | Descripción                                        |
+| --- | ----------------------------------------------------------- | -------------------------------------------------- |
+| 06  | [SQLite Persistencia](doc/06-Persistence.md)               | Base de datos SQLite, EF Core                      |
+| 07  | [Auditoría Automática](doc/07-Auditing.md)               | Tracking automático de quién/cuándo modifica datos |
+| 08  | [Object Mapping](doc/08-Object-Mapping.md)                | Clean Controllers con mapeo de entidades a DTOs    |
+
+### Interfaz de Usuario (Razor & Blazor)
+| #   | Documento                                                   | Descripción                                        |
+| --- | ----------------------------------------------------------- | -------------------------------------------------- |
+| 09  | [Sintaxis Razor](doc/09-Razor-Syntax.md)                  | Razor syntax, Tag Helpers y patrones de UI         |
+| 10  | [I18n Localización](doc/10-I18n.md)                     | Múltiples idiomas, formatos decimales y culturales|
+| 11  | [JavaScript y AJAX](doc/11-JS-AJAX.md)                   | Fetch API, favoritos AJAX y seguridad CSRF          |
+| 12  | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazor.md)        | Comparativa de los tres enfoques de interfaz        |
+| 13  | [Blazor Server](doc/13-Blazor-Server.md)                   | Componentes interactivos con C#                    |
+| 14  | [Blazor Communication](doc/14-Blazor-Comm.md)              | Comunicación entre componentes Blazor              |
+
+### Tiempo Real
+| #   | Documento                                           | Descripción                                |
+| --- | --------------------------------------------------- | ------------------------------------------ |
+| 15  | [SignalR Tiempo Real](doc/15-SignalR.md)         | Notificaciones en tiempo real              |
+
+### Validación y Manejo de Errores
+| #   | Documento                                           | Descripción                                   |
+| --- | --------------------------------------------------- | --------------------------------------------- |
+| 16  | [Exception Handling](doc/16-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
+
+### Seguridad y Autorización
+| #   | Documento                                           | Descripción                                   |
+| --- | --------------------------------------------------- | --------------------------------------------- |
+| 17  | [Authentication Identity](doc/17-Auth-Identity.md) | ASP.NET Core Identity, Roles, Claims          |
+| 18  | [Authentication Cookies](doc/18-Auth-Cookies.md)  | Cookies vs JWT, Identity, Claims              |
+
+### Testing y Calidad
+| #   | Documento                                           | Descripción                                       |
+| --- | --------------------------------------------------- | ------------------------------------------------- |
+| 19  | [Unit Testing](doc/19-Unit-Testing.md)           | Tests unitarios con NUnit y bUnit               |
+| 20  | [Code Coverage](doc/20-Code-Coverage.md)         | Métricas de cobertura con Coverlet               |
+| 21  | [E2E Testing](doc/21-E2E-Testing.md)             | Tests automatizados con Playwright               |
+
+### Optimización y Rendimiento
+| #   | Documento                                           | Descripción                           |
+| --- | --------------------------------------------------- | ------------------------------------- |
+| 22  | [InMemory Cache](doc/22-InMemory-Cache.md)       | Caché de objetos en memoria          |
+| 23  | [Output Cache](doc/23-Output-Cache.md)           | Caché de respuestas HTML renderizadas|
+
+### Operaciones y Producción
+| #   | Documento                                           | Descripción                                           |
+| --- | --------------------------------------------------- | ----------------------------------------------------- |
+| 24  | [Docker](doc/24-Docker.md)                         | Contenedores y configuración de producción             |
+| 25  | [Logging](doc/25-Logging.md)                       | Logging estructurado, correlación de peticiones        |
+| 26  | [Infrastructure](doc/26-Infrastructure.md)         | Clean Architecture, DI, Extension Methods             |
+
+## ⚒️ Diagrama de Clases del Dominio
 
 ```mermaid
 classDiagram
   direction TB
 
-%% ENUMS
+  %% ENUMS
   class ProductCategory {
     <<enumeration>>
     SMARTPHONES
@@ -195,19 +320,20 @@ classDiagram
     MODERATOR
   }
 
-%% CLASES PRINCIPALES
-
+  %% CLASES PRINCIPALES
   class User {
     +long Id
     +string Nombre
     +string Apellidos
     +string Email
+    +string PasswordHash
     +string Rol
     +string? Avatar
     +DateTime FechaAlta
-    +bool Deleted
+    +bool IsDeleted
     +DateTime? DeletedAt
     +string? DeletedBy
+    +byte[]? RowVersion
   }
 
   class Product {
@@ -216,216 +342,405 @@ classDiagram
     +string Descripcion
     +decimal Precio
     +string? Imagen
-    +ProductCategory Categoria
+    +long? CategoriaId
+    +long UserId
     +bool Reservado
-    +bool Deleted
+    +bool IsDeleted
     +DateTime? DeletedAt
     +string? DeletedBy
     +DateTime CreatedAt
+    +DateTime UpdatedAt
     +double RatingPromedio
     +string ImagenOrDefault
   }
 
   class Purchase {
     +long Id
+    +long UserId
     +DateTime FechaCompra
     +decimal Total
+    +PurchaseEstado Estado
+    +bool IsDeleted
+    +DateTime? DeletedAt
+    +byte[]? RowVersion
+  }
+
+  class PurchaseItem {
+    +long Id
+    +long PurchaseId
+    +long ProductId
+    +string ProductNombre
+    +decimal ProductPrecio
+    +int Cantidad
+    +decimal Subtotal
   }
 
   class CarritoItem {
     +long Id
-    +DateTime CreatedAt
+    +long UserId
+    +long ProductId
     +decimal Precio
+    +int Cantidad
+    +DateTime CreatedAt
     +byte[]? RowVersion
   }
 
   class Favorite {
     +long Id
+    +long UserId
+    +long ProductId
     +DateTime CreatedAt
   }
 
   class Rating {
     +long Id
+    +long UserId
+    +long ProductId
     +int Puntuacion
     +string? Comentario
     +DateTime CreatedAt
   }
 
-%% RELACIONES
-
+  %% RELACIONES
+  User "1" --> "1" UserRole : Rol
   User "1" -- "*" Product : Propietario
-  User "1" -- "*" Purchase : Purchases
-  User "1" -- "*" CarritoItem : CarritoItems
-  User "1" -- "*" Favorite : Favorites
-  User "1" -- "*" Rating : Ratings
-  User "1" -- "1" UserRole : Rol
+  User "1" -- "*" Purchase : Compras
+  User "1" -- "*" CarritoItem : Carrito
+  User "1" -- "*" Favorite : Favoritos
+  User "1" -- "*" Rating : Valoraciones
 
-  Product "*" -- "1" ProductCategory : Categoria
-  Product "1" -- "0..1" Purchase : Compra
-  Product "1" -- "*" CarritoItem : CarritoItems
-  Product "1" -- "*" Favorite : Favoritos
+  Product "*" --> "1" ProductCategory : Categoria
+  Product "1" -- "*" CarritoItem : EnCarrito
+  Product "1" -- "*" Favorite : Favorito
   Product "1" -- "*" Rating : Valoraciones
+  Product "*" --> "1" User : Vendedor
 
-  Purchase "1" -- "*" Product : Products
+  Purchase "1" -- "*" PurchaseItem : Items
+  Purchase "1" --> "1" User : Comprador
+  Purchase "*" --> "1" PurchaseEstado : Estado
 
-  Favorite "*" -- "1" User : Usuario
-  Favorite "*" -- "1" Product : Producto
+  CarritoItem "*" --> "1" User : Usuario
+  CarritoItem "*" --> "1" Product : Producto
 
-  Rating "*" -- "1" User : Usuario
-  Rating "*" -- "1" Product : Producto
+  Favorite "*" --> "1" User : Usuario
+  Favorite "*" --> "1" Product : Producto
 
-  CarritoItem "*" -- "1" User : Usuario
-  CarritoItem "*" -- "1" Product : Producto
+  Rating "*" --> "1" User : Usuario
+  Rating "*" --> "1" Product : Producto
 ```
 
 ## 📂 Estructura del Proyecto
 
 ```
 TiendaDawWeb-NetCore/
-├── TiendaDawWeb.slnx                # Solución global de .NET (formato moderno)
+├── TiendaDawWeb.slnx                      # Solución global de .NET
+├── docker-compose.yml                     # Orquestación por defecto
+├── docker-compose.local.yml               # Desarrollo local
+├── docker-compose.prod.yml                # Producción
+├── .env.example                          # Variables de entorno de ejemplo
 │
-├── TiendaDawWeb.Web/                # Proyecto Principal (ASP.NET Core 10)
-│   ├── Program.cs                   # Configuración de Pipeline, DI, Cachés y SQLite In-Memory.
-│   ├── _Imports.razor               # Usings globales para Blazor.
-│   ├── Components/                  # Componentes Blazor Server (Reactividad)
-│   │   ├── Admin/                   # Componentes administrativos (StatsWidget).
-│   │   └── Ratings/                 # Dominio de valoraciones interactivo.
-│   ├── Data/                        # Persistencia y SeedData profesional.
-│   ├── Services/                    # Lógica de negocio y State Container.
-│   ├── Implementations/              # Implementaciones con InMemoryCache y OutputCache.
-│   ├── Controllers/                 # Controladores MVC y API Rest.
-│   ├── Views/                       # Vistas Razor y configuración global (_ViewStart).
-│   └── wwwroot/                     # Recursos estáticos (CSS, JS Legacy, Images).
+├── TiendaDawWeb.Mvc/                     # Proyecto Principal MVC
+│   ├── Program.cs                         # Configuración de Pipeline, DI
+│   ├── Controllers/                      # Controladores MVC
+│   │   ├── AccountController.cs         # Auth (Login, Register)
+│   │   ├── ProductsController.cs        # Gestión de productos
+│   │   ├── CartController.cs            # Carrito de compras
+│   │   └── Admin/                       # Panel de administración
+│   ├── Views/                            # Vistas Razor
+│   ├── wwwroot/                         # Recursos estáticos
+│   ├── appsettings.json                  # Configuración
+│   └── Dockerfile                       # Contenedor MVC
 │
-├── TiendaDawWeb.Tests/              # Pruebas Unitarias y de Componentes
-│   ├── Services/                    # Tests de lógica con SQLite In-Memory.
-│   ├── Components/                  # Tests de UI Blazor con bUnit v2.x.
-│   └── Infrastructure/              # Tests de auditoría automática.
+├── TiendaDawWeb.RazorPages/              # Proyecto Razor Pages
+│   ├── Pages/                            # Páginas Razor
+│   └── Program.cs                        # Configuración específica
 │
-└── TiendaDawWeb.Tests.E2E/         # Pruebas de Extremo a Extremo (Playwright)
-    ├── Auth/                        # Tests de autenticación y registro.
-    ├── Products/                    # Tests de búsqueda y gestión de productos.
-    ├── Purchase/                    # Tests de flujo de compra y carrito.
-    ├── Profile/                     # Tests de perfil y edición de usuario.
-    ├── Favorites/                   # Tests de sistema de favoritos (AJAX).
-    ├── Ratings/                     # Tests de valoraciones y ratings (Blazor).
-    ├── Localization/                # Tests de localización y separadores decimales.
-    ├── ErrorHandling/               # Tests de páginas de error personalizadas.
-    ├── E2ETestBase.cs               # Clase base con soporte de video y screenshots.
-    ├── Extensions/                  # Extensiones Playwright (TestId helper).
-    └── Fixtures/                    # Archivos de prueba (SVG de test).
+├── TiendaDawWeb.Shared/                  # Lógica Compartida
+│   ├── Models/                           # Modelos de dominio
+│   │   ├── User.cs                      # Entidad Usuario
+│   │   └── Product.cs                   # Entidad Producto
+│   ├── Services/                        # Interfaces de Servicios
+│   │   └── IProductService.cs          # Contrato productos
+│   ├── Mappers/                         # Mapeadores
+│   └── Extensions/                      # Extensiones DI
+│
+├── TiendaDawWeb.Shared.Blazor/         # Componentes Blazor
+│   ├── Components/                      # Componentes reutilizables
+│   │   ├── Admin/                      # Dashboard admin
+│   │   └── Ratings/                    # Sistema de valoraciones
+│   └── Services/                        # State Container
+│
+├── TiendaDawWeb.Tests/                 # Pruebas Unitarias
+│   ├── Unit/                            # Tests unitarios
+│   ├── Integration/                    # Tests de integración
+│   └── Components/                     # Tests Blazor (bUnit)
+│
+├── TiendaDawWeb.Tests.E2E/             # Pruebas E2E (Playwright)
+│   ├── Auth/                           # Tests de login/registro
+│   ├── Products/                       # Tests de productos
+│   └── E2ETestBase.cs                 # Clase base con video
+│
+├── doc/                                # Documentación técnica
+└── README.md                           # Este archivo
 ```
 
-## 🏗️ Arquitectura
+### Descripción de Carpetas Principales
 
-El proyecto sigue una arquitectura en capas con un enfoque híbrido de presentación, permitiendo una transición suave entre el renderizado tradicional y la reactividad moderna.
+| Carpeta              | Propósito                                          | Contenido                                              |
+| -------------------- | -------------------------------------------------- | ------------------------------------------------------ |
+| **Controllers**      | Entry points HTTP MVC                              | Account, Products, Cart, Ratings, Admin              |
+| **Views**            | Vistas Razor Pages                                 | Shared, Account, Products, Cart                        |
+| **Components**       | Componentes Blazor Server                          | Admin/StatsWidget, Ratings/*                        |
+| **Services**         | Lógica de negocio (Contratos)                     | IProductService, IUserService, ICartService           |
+| **Models**           | Modelos de dominio                                | User, Product, Purchase, CarritoItem, Rating         |
+| **Shared**           | Lógica compartida entre proyectos                  | Models, Services, Mappers                            |
+| **Tests**            | Unit, Integration, Components                     | NUnit, bUnit                                           |
+| **Tests.E2E**        | End-to-End                                        | Playwright con C#                                      |
+
+## 🏗️ Arquitectura Híbrida MVC/Razor/Blazor
+
+El proyecto implementa una arquitectura híbrida que combina el enfoque tradicional de MVC/Razor Pages con la reactividad moderna de Blazor Server.
+
+### Principios Fundamentales
+
+| Principio                           | Implementación                                                    |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| **Core en el centro**               | Modelos (User, Product) sin dependencias externas                 |
+| **Inversión de dependencias**       | Interfaces en Shared, implementaciones en el proyecto principal   |
+| **Separación de responsabilidades** | Controllers → Services → Repositories → Data                      |
+| **Interfaz híbrida**               | MVC + Razor Pages + Blazor Server coexisten                      |
+| **Single Language Stack**           | C# en backend y frontend (Blazor Server)                        |
+
+### Capas de la Arquitectura
 
 ```mermaid
-graph TD
-    subgraph Cliente["Navegador (Cliente)"]
-        UI_MVC["Razor Views (HTML/CSS)"]
-        UI_BLZ["Blazor Components (C#)"]
-        JS_AJAX["JS/AJAX (Legacy)"]
+graph TB
+    subgraph "🌍 Capa de Presentación - Web"
+        MVC["ASP.NET Core MVC<br/>Controladores + Vistas"]
+        RP["Razor Pages<br/>Modelo de Páginas"]
+        BLZR["Blazor Server<br/>Componentes Reactivos"]
     end
 
-    subgraph CapaPresentacion["Capa de Presentación (ASP.NET Core 10)"]
-        CTRL["MVC Controllers"]
-        HUB["Blazor Hub (SignalR)"]
-        VM["ViewModels"]
-        OUT["OutputCache (HTML)"]
+    subgraph "🔵 Capa de Controladores"
+        CTRL["Controllers<br/>Account, Products<br/>Cart, Ratings"]
+        FILT["Filters<br/>Auth, Validation<br/>Exception"]
     end
 
-    subgraph CapaNegocio["Capa de Negocio (Servicios)"]
-        SRV["Business Services (Interfaces/Impl)"]
-        ROP["Railway Oriented Programming (Result)"]
-        SC["State Container (Component Sync)"]
-        IMC["InMemoryCache (RAM)"]
+    subgraph "🟠 Capa de Negocio - Servicios"
+        SVC["Services<br/>Product, User, Cart"]
+        ROP["Result~T,E&gt;<br/>Railway Oriented"]
+        CCC["Cross-Cutting<br/>Cache, Validation"]
     end
 
-    subgraph CapaDatos["Capa de Datos (Persistencia)"]
-        EF["Entity Framework Core"]
-        ID["ASP.NET Core Identity"]
-        DB[("SQLite (In-Memory SQL)")]
+    subgraph "🔷 Capa Shared - Core"
+        MOD["Models<br/>User, Product"]
+        INT["Interfaces<br/>IServices"]
     end
 
-    %% Flujos de interacción
-    UI_MVC --- CTRL
-    JS_AJAX -.-> CTRL
-    UI_BLZ <==> HUB
+    subgraph "🔴 Capa de Datos - Persistencia"
+        EF["EF Core<br/>SQLite"]
+        ID["Identity<br/>Cookies"]
+        DB[("SQLite<br/>tienda.db")]
+    end
 
-    CTRL --> SRV
-    HUB --> SRV
-    HUB <--> SC
+    MVC & RP & BLZR ==> CTRL
+    CTRL ==> FILT
+    CTRL ==> SVC
+    SVC ==> ROP
+    SVC ==> CCC
+    SVC ==> MOD
+    SVC ==> EF
+    SVC ==> ID
+    EF & ID ==> DB
 
-    CTRL --> IMC
-    CTRL --> OUT
-    
-    SRV --> ROP
-    SRV --> IMC
-    SRV --> OUT
-    SRV --> SC
-
-    SRV --> EF
-    SC --> EF
-    SRV --> ID
-
-    EF --> DB
-    ID --> DB
-
-    %% Estilos
-    style CapaNegocio fill:#f9f,stroke:#333,stroke-width:2px
-    style UI_BLZ fill:#512bd4,color:#fff
-    style HUB fill:#512bd4,color:#fff
-    style ROP fill:#fff4dd,stroke:#d4a017
-    style IMC fill:#90ee90,stroke:#28a745
-    style OUT fill:#87ceeb,stroke:#007bff
+    style BLZR fill:#512bd4,color:#fff
+    style ROP fill:#e91e63,color:#fff
 ```
 
-### Railway Oriented Programming (ROP)
+### Estructura de Dependencias
 
-El proyecto implementa el patrón ROP usando `CSharpFunctionalExtensions`:
+```mermaid
+graph TB
+    subgraph "🌍 Presentación"
+        MVC["MVC + Views"]
+        RP["Razor Pages"]
+        BLZR["Blazor Server"]
+    end
+
+    subgraph "🔵 Controllers"
+        CTRL["Controllers"]
+        FILT["Filters"]
+    end
+
+    subgraph "🟠 Servicios"
+        SVC["Services"]
+    end
+
+    subgraph "🟡 Shared Core"
+        MOD["Models"]
+        INT["Interfaces"]
+    end
+
+    subgraph "🔴 Infraestructura"
+        EF["EF Core SQLite"]
+        ID["Identity"]
+        CACHE["InMemory"]
+        LOG["Serilog"]
+    end
+
+    MVC & RP & BLZR ==> CTRL
+    CTRL ==> FILT
+    FILT ==> SVC
+    SVC ==> INT
+    SVC ==> MOD
+    SVC ==> EF & ID & CACHE & LOG
+```
+
+#### Ventajas de Esta Arquitectura
+
+| Ventaja            | Descripción                                |
+| ------------------ | ------------------------------------------ |
+| **Flexibilidad**   | Tres enfoques de UI coexisten              |
+| **Testabilidad**   | Core sin dependencias → fácil mocking      |
+| **Mantenibilidad** | Cambios en UI no afectan lógica de negocio |
+
+## 🛤️ Railway Oriented Programming (ROP)
+
+El proyecto implementa **Railway Oriented Programming (ROP)** usando `CSharpFunctionalExtensions`.
+
+### Conceptos Fundamentales
+
+| Concepto    | Descripción                                         | Ejemplo                              |
+| ----------- | --------------------------------------------------- | ------------------------------------ |
+| **Result**  | Wrapper que encapsula éxito o fallo                 | `Result<T, TError>`                  |
+| **Success** | Camino happy path con valor                         | `Result.Success(value)`              |
+| **Failure** | Camino de error con mensaje                         | `Result.Failure(error)`              |
+| **Bind**    | Encadena operaciones que retornan Result            | `result.Bind()`                      |
+| **Map**     | Transforma el valor en éxito                        | `result.Map(value => newValue)`      |
+| **Match**   | Maneja ambos casos                                 | `result.Match(onSuccess, onFailure)` |
+
+### Anatomía del Patrón (Two-Track Model)
+
+```mermaid
+flowchart TB
+    subgraph ROP["RAILWAY ORIENTED PROGRAMMING"]
+        INP["INPUT"]
+        R1["RAIL 1 (SUCCESS)"]
+        OUT_H["OUTPUT (Happy)"]
+        R2["RAIL 2 (FAILURE)"]
+        OUT_E["OUTPUT (Error)"]
+        
+        INP --> R1
+        R1 --> OUT_H
+        R1 -.->|"SWITCH"| R2
+        R2 --> OUT_E
+    end
+
+    style INP fill:#27ae60,color:#fff
+    style R1 fill:#27ae60,color:#fff
+    style OUT_H fill:#27ae60,color:#fff
+    style R2 fill:#e74c3c,color:#fff
+    style OUT_E fill:#e74c3c,color:#fff
+```
+
+### Beneficios de ROP
+
+| Beneficio          | Descripción                                  |
+| ------------------ | -------------------------------------------- |
+| **Sin Exceptions** | Los errores son valores                      |
+| **Composabilidad** | Encadenar operaciones de forma segura        |
+| **Tipado Seguro**  | El tipo de error está en la firma            |
+| **Legibilidad**    | Flujo lineal en lugar de if-else anidados    |
+
+### Ejemplos de Uso
 
 ```csharp
-public async Task<Result<Product, DomainError>> GetByIdAsync(long id)
+public async Task<Result<Product, DomainError>> CreateAsync(CreateProductDto dto)
 {
-    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-    
-    return product != null
-        ? Result.Success<Product, DomainError>(product)
-        : Result.Failure<Product, DomainError>(ProductError.NotFound(id));
+    return await Validate(dto)
+        .Bind(ValidateStockAsync)
+        .Bind(CreateProductAsync)
+        .Map(p => _mapper.Map<Product>(p));
 }
+
+// Controller usage
+var result = await _productService.CreateAsync(dto);
+return result.Match(
+    onSuccess: product => RedirectToAction("Index"),
+    onFailure: error => View("Error", error));
 ```
 
+### Comparación: ROP vs Try-Catch
 
-### ASP.NET Core Identity
+| Aspecto         | Try-Catch tradicional     | ROP                     |
+| --------------- | ------------------------ | ----------------------- |
+| **Errores**     | Exceptions               | Valores                 |
+| **Flujo**       | Saltos inesperados        | Lineal                  |
+| **Tipado**      | Exception genérica       | Error tipado específico |
+| **Composición** | Difícil                  | natural con Bind/Map    |
 
-Sistema completo de autenticación y autorización:
+## 🗄️ Persistencia con SQLite
 
-- Roles personalizados (ADMIN, USER, MODERADOR)
-- Password hashing seguro
-- Cookie authentication
-- Claims-based authorization
+| Aspecto         | Descripción                                           |
+| --------------- | ---------------------------------------------------- |
+| **Base de Datos** | SQLite (relacional)                                  |
+| **ORM**         | Entity Framework Core 10                             |
+| **Patrón**      | Code First con migraciones                           |
+| **Testing**     | SQLite In-Memory para tests rápidos                   |
+| **Concurrencia** | Optimistic Concurrency (RowVersion)                   |
 
-## 💡 Estrategias de Interfaz: El Triple Camino
+## 🔐 Seguridad
 
-WalaDaw es un laboratorio docente donde conviven tres enfoques para la construcción de interfaces, permitiendo al alumno comparar su implementación y beneficios:
+- ✅ **Cookies Authentication**: ASP.NET Core Identity con cookies
+- ✅ **Role-Based Authorization**: ADMIN, USER, MODERADOR roles
+- ✅ **Claims-Based**: Información adicional en tokens
+- ✅ **CSRF Protection**: Anti-Forgery Tokens
+- ✅ **Password Hashing**: BCrypt con salt aleatorio
+- ✅ **Soft Delete**: Eliminación lógica (IsDeleted)
+- ✅ **Concurrency Control**: RowVersion
+- ✅ **Rate Limiting**: Protección contra DDoS
+- ✅ **Security Headers**: X-Content-Type-Options
 
-### 1. SSR Tradicional (Razor Pages/Views)
-Utilizado en el 90% de la web (Login, Registro, Listados estáticos).
-- **Fortaleza:** Simplicidad, SEO nativo y seguridad robusta.
-- **Debilidad:** Requiere recarga completa de página para cualquier cambio de estado.
+## 📡 Endpoints y Rutas
 
-### 2. SPA dinámica con AJAX (Legacy Support)
-Implementado en el sistema original de Favoritos (ver `wwwroot/js/`).
-- **Fortaleza:** UX fluida sin recargas.
-- **Debilidad:** Fragmentación de código (C# en backend, JS en frontend), gestión manual de tokens CSRF y dificultad para sincronizar componentes.
+### MVC Controllers
 
-### 3. Componentes Reactivos (Blazor Server) 🚀
-Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema de Valoraciones.
-- **Fortaleza:** **Single Language Stack (C# everywhere)**. Permite usar servicios inyectados directamente en la UI, comunicación en tiempo real mediante SignalR y un modelo de estado compartido (`StateContainer`) que sincroniza múltiples componentes instantáneamente.
-- **Comunicación:** Implementa el patrón **State Container**, permitiendo que componentes desacoplados se sincronicen mediante eventos C# sin necesidad de JavaScript.
-- **Caso de éxito:** El `AdminStatsWidget` actualiza datos en vivo sin que el administrador tenga que refrescar manualmente la vista.
+#### Account Controller
 
+| Endpoint                       | Método | Auth | Descripción                     |
+| ------------------------------ | ------ | ---- | ------------------------------ |
+| `/Account/Register`            | GET    | No   | Formulario de registro         |
+| `/Account/Register`            | POST   | No   | Registrar nuevo usuario        |
+| `/Account/Login`              | GET    | No   | Formulario de login           |
+| `/Account/Login`              | POST   | No   | Iniciar sesión (Cookie)        |
+| `/Account/Logout`             | POST   | Sí   | Cerrar sesión                 |
+| `/Account/Profile`             | GET    | Sí   | Ver perfil propio              |
+
+#### Products Controller
+
+| Endpoint                      | Método | Auth | Descripción                       |
+| ----------------------------- | ------ | ---- | -------------------------------- |
+| `/Products`                   | GET    | No   | Listar productos                  |
+| `/Products/{id:long}`         | GET    | No   | Ver producto                      |
+| `/Products/Create`            | GET    | Sí   | Formulario crear producto        |
+| `/Products/Create`            | POST   | Sí   | Crear producto                   |
+| `/Products/{id}/Edit`         | GET    | Sí*  | Formulario editar producto        |
+
+#### Cart Controller
+
+| Endpoint                  | Método | Auth | Descripción                      |
+| ------------------------ | ------ | ---- | -------------------------------- |
+| `/Cart`                  | GET    | Sí   | Ver carrito                      |
+| `/Cart/Add/{productId}`  | POST   | Sí   | Añadir producto al carrito        |
+| `/Cart/Remove/{itemId}`   | POST   | Sí   | Eliminar item                    |
+| `/Cart/Checkout`         | POST   | Sí   | Finalizar compra                 |
+
+#### SignalR Hubs
+
+| Endpoint          | Auth | Descripción                              | Eventos                    |
+| ----------------- | ---- | --------------------------------------- | -------------------------- |
+| `/adminHub`       | ADMIN| Dashboard en tiempo real              | StatsUpdated               |
+| `/ratingsHub`     | Sí   | Notificaciones de valoraciones          | RatingAdded                |
 
 ## 👥 Usuarios Demo
 
@@ -433,121 +748,6 @@ Nuestra apuesta moderna para el Dashboard de Administración y el nuevo sistema 
 | --------- | --------------------- | -------- | --------- |
 | Admin     | admin@waladaw.com     | admin    | ADMIN     |
 | Prueba    | prueba@prueba.com     | user123  | USER      |
-| Moderador | moderador@waladaw.com | user123  | MODERADOR |
-| Otro      | otro@otro.com         | user123  | USER      |
-
-
-## 🔒 Seguridad
-
-- ✅ Autenticación basada en ASP.NET Core Identity
-- ✅ Autorización por roles (`[Authorize(Roles = "ADMIN")]`)
-- ✅ Protección CSRF con Anti-Forgery Tokens
-- ✅ Validación de subida de archivos (tipo y tamaño)
-- ✅ Sanitización de nombres de archivo
-- ✅ Control de concurrencia optimista (RowVersion)
-- ✅ Transacciones SERIALIZABLE para carrito/compras
-- ✅ Soft delete para usuarios y productos
-- ✅ Password hashing seguro (Identity)
-- ✅ Validación de propiedad de recursos
-- ✅ Nullable reference types habilitadas
-- ✅ TreatWarningsAsErrors activo
-
-## 🌐 Características
-
-### Para Usuarios
-
-- ✅ Registro y login seguro
-- ✅ Perfil con avatar personalizable
-- ✅ Publicar productos con imágenes
-- ✅ Editar y eliminar productos propios
-- ✅ Sistema de valoraciones con estrellas
-- ✅ Gestión de favoritos en tiempo real
-- ✅ Carrito de compras con control de concurrencia
-- ✅ Proceso de checkout completo
-- ✅ Historial de compras
-- ✅ Descarga de facturas en PDF
-- ✅ Búsqueda avanzada con filtros
-- ✅ Localización con I18n y L10n
-
-### Para Administradores
-
-- ✅ Panel de control completo (`/admin`)
-- ✅ Dashboard con estadísticas en tiempo real
-- ✅ Gestión de usuarios (ver, editar roles, eliminar)
-- ✅ Gestión de productos (ver, filtrar, eliminar)
-- ✅ Historial de todas las compras
-- ✅ Estadísticas avanzadas:
-    - Categorías más vendidas
-    - Top 10 compradores
-    - Top 10 vendedores
-    - Ventas por mes (últimos 12 meses)
-- ✅ Filtros por fecha y categoría
-
-## 📚 Documentación
-
-Para una comprensión profunda de la arquitectura y las tecnologías utilizadas, consulta nuestra documentación detallada en la carpeta [`doc/`](doc/):
-
-### 🏗️ Fundamentos y Arquitectura
-| #   | Documento                                                         | Descripción                                                     |
-| --- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
-| 01  | [Arquitectura, Pipeline y DI](doc/01-Architecture-Pipeline-DI.md) | Middlewares, inyección de dependencias y configuración del host |
-| 02  | [Guía de Productividad](doc/02-Development-Tips.md)               | Hot Reload, tricks y productividad en .NET 10                   |
-| 03  | [Controladores y Models](doc/03-Controllers-Models-Results.md)    | Orquestación, Model Binding, Result<T,E> y validaciones         |
-
-### 🔐 Autenticación y Autorización
-| #   | Documento                                                                | Descripción                                                         |
-| --- | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| 04  | [Authentication & Authorization](doc/04-Authentication-Authorization.md) | ASP.NET Core Identity, Roles, Claims, Policies y protección de rutas |
-
-### 💾 Datos y Persistencia
-| #   | Documento                                                   | Descripción                                        |
-| --- | ----------------------------------------------------------- | -------------------------------------------------- |
-| 05  | [EF Core y Persistencia](doc/05-EFCore-Persistence-Seed.md) | Configuración, migraciones y datos de prueba       |
-| 06  | [SQLite In-Memory](doc/06-SQLite-InMemory-Persistence.md)   | Base de datos volátil para testing rápido          |
-| 07  | [Auditoría Automática](doc/07-Entity-Auditing-EFCore.md)    | Tracking automático de quién/cuándo modifica datos |
-| 08  | [Object Mapping](doc/08-Object-Mapping-Pattern.md)          | Clean Controllers con mapeo de entidades a DTOs    |
-
-### 🎨 Interfaz de Usuario (Razor & Blazor)
-| #   | Documento                                                   | Descripción                                        |
-| --- | ----------------------------------------------------------- | -------------------------------------------------- |
-| 09  | [Razor Masterclass](doc/09-Razor-Syntax-UI.md)              | Sintaxis Razor, Tag Helpers y patrones de UI       |
-| 10  | [I18n y Localización](doc/10-I18n-Localization-Decimal.md)  | Múltiples idiomas, formatos decimales y culturales |
-| 11  | [JavaScript & AJAX](doc/11-JS-AJAX-Security.md)             | Fetch API, favoritos AJAX y seguridad CSRF         |
-| 12  | [Razor vs AJAX vs Blazor](doc/12-BlazorVsRazorVsAjax.md)    | Comparativa de los tres enfoques de interfaz       |
-| 13  | [Blazor Server Basics](doc/13-Blazor-Server-Basics.md)      | Componentes interactivos con C#                    |
-| 14  | [State Container](doc/14-Blazor-Component-Communication.md) | Comunicación entre componentes Blazor              |
-
-### ⚡ Interactividad y Tiempo Real
-| #   | Documento                                           | Descripción                                |
-| --- | --------------------------------------------------- | ------------------------------------------ |
-| 15  | [SignalR](doc/15-SignalR-RealTime-Notifications.md) | Notificaciones en tiempo real              |
-
-### 🛡️ Validación y Manejo de Errores
-| #   | Documento                                                        | Descripción                                   |
-| --- | ---------------------------------------------------------------- | --------------------------------------------- |
-| 16  | [Global Exception Handling](doc/16-Global-Exception-Handling.md) | Middleware de seguridad, ModelState vs Result |
-
-### 🧪 Testing y Calidad
-| #   | Documento                                                            | Descripción                                       |
-| --- | -------------------------------------------------------------------- | ------------------------------------------------- |
-| 17  | [Unit Testing con NUnit y bUnit](doc/17-Unit-Testing-NUnit-bUnit.md) | Tests unitarios, integración y componentes Blazor |
-| 18  | [Code Coverage](doc/18-Code-Coverage.md)                             | Métricas de cobertura con Coverlet                |
-| 19  | [E2E Testing con Playwright](doc/19-E2E-Testing-Playwright.md)       | Tests automatizados de extremo a extremo          |
-
-### ⚡ Optimización y Rendimiento
-| #   | Documento                                              | Descripción                           |
-| --- | ------------------------------------------------------ | ------------------------------------- |
-| 20  | [InMemory Cache](doc/20-Optimizacion-InMemoryCache.md) | Caché de objetos en memoria           |
-| 21  | [Output Cache](doc/21-OutputCache-Performance.md)      | Caché de respuestas HTML renderizadas |
-
-### 🐳 Operaciones y Producción
-| #   | Documento                                       | Descripción                                           |
-| --- | ----------------------------------------------- | ----------------------------------------------------- |
-| 22  | [Docker y Ficheros](doc/22-Ops-Docker-Files.md) | Contenedores, volúmenes y configuración de producción |
-
----
-
-- Repositorio de apuntes de curso: [Desarrollo Web en Entornos Servidor](https://github.com/joseluisgs/DesarrolloWebEntornosServidor-05-2025-2026)
 
 ## 📝 Licencia
 
@@ -557,51 +757,27 @@ Este proyecto es un ejemplo educativo con fines didácticos.
 
 Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twitter.com/JoseLuisGS_)
 
-[![Twitter](https://img.shields.io/twitter/follow/JoseLuisGS_?style=social)](https://twitter.com/JoseLuisGS_)
 [![GitHub](https://img.shields.io/github/followers/joseluisgs?style=social)](https://github.com/joseluisgs)
-[![GitHub](https://img.shields.io/github/stars/joseluisgs?style=social)](https://github.com/joseluisgs)
 
 ### Contacto
 
 <p>
-   Cualquier cosa que necesites házmelo saber por si puedo ayudarte 💬.
-</p>
-<p>
    <a href="https://joseluisgs.dev" target="_blank">
-        <img src="https://joseluisgs.github.io/img/favicon.png"
-     height="30">
-     </a> &nbsp;&nbsp;
-     <a href="https://github.com/joseluisgs" target="_blank">
-        <img src="https://distreau.com/github.svg"
-     height="30">
-     </a> &nbsp;&nbsp;
-     <a href="https://twitter.com/JoseLuisGS_" target="_blank">
-        <img src="https://i.imgur.com/U4Uiaef.png"
-     height="30">
-     </a> &nbsp;&nbsp;
-     <a href="https://www.linkedin.com/in/joseluisgonsan" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png"
-     height="30">
-     </a> &nbsp;&nbsp;
-     <a href="https://g.dev/joseluisgs" target="_blank">
-        <img loading="lazy" src="https://googlediscovery.com/wp-content/uploads/google-developers.png"
-     height="30">
-     </a>
-     <a href="https://www.youtube.com/@joseluisgs" target="_blank">
-        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png"
-     height="30">
-     </a>
+        <img src="https://joseluisgs.github.io/img/favicon.png" height="30">
+   </a> &nbsp;&nbsp;
+   <a href="https://github.com/joseluisgs" target="_blank">
+        <img src="https://distreau.com/github.svg" height="30">
+   </a> &nbsp;&nbsp;
+   <a href="https://twitter.com/JoseLuisGS_" target="_blank">
+        <img src="https://i.imgur.com/U4Uiaef.png" height="30">
+   </a> &nbsp;&nbsp;
+   <a href="https://www.linkedin.com/in/joseluisgonsan" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png" height="30">
+   </a>
 </p>
 
 ## Licencia de uso
 
-Este repositorio y todo su contenido está licenciado bajo licencia **Creative Commons**, si desea saber más, vea
-la [LICENSE](https://joseluisgs.dev/docs/license/). Por favor si compartes, usas o modificas este proyecto cita a su
-autor, y usa las mismas condiciones para su uso docente, formativo o educativo y no comercial.
+Este repositorio está licenciado bajo **Creative Commons**. Por favor si compartes, usas o modificas este proyecto cita a su autor.
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">JoseLuisGS</span>
-by <a xmlns:cc="http://creativecommons.org/ns#" href="https://joseluisgs.dev/" property="cc:attributionName" rel="cc:attributionURL">
-    José Luis González Sánchez</a> is licensed under
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons
-Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional License</a>.<br />Creado a partir de la obra
-en <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/joseluisgs" rel="dct:source">https://github.com/joseluisgs</a>.
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>

@@ -1,41 +1,23 @@
-- [1. La Forja de .NET: Arquitectura, Middlewares y DI](#1-la-forja-de-net-arquitectura-middlewares-y-di)
-  - [1. El Viaje de una Petición (Middleware Pipeline)](#1-el-viaje-de-una-petición-middleware-pipeline)
-    - [1.1. Pipeline Visual](#11-pipeline-visual)
-    - [1.1. Middlewares Clave en WalaDaw](#11-middlewares-clave-en-waladaw)
-  - [2. Inyección de Dependencias (DI)](#2-inyección-de-dependencias-di)
-    - [2.1. ¿Por qué usar DI?](#21-por-qué-usar-di)
-    - [2.2. Los 3 Tiempos de Vida](#22-los-3-tiempos-de-vida)
-    - [2.3. Peligro del Singleton](#23-peligro-del-singleton)
-  - [3. Constructores Primarios C# 14](#3-constructores-primarios-c-14)
-    - [3.1. Sintaxis Antigua vs Nueva](#31-sintaxis-antigua-vs-nueva)
-    - [3.2. Beneficio](#32-beneficio)
-  - [4. ViewModels: Seguridad y Flexibilidad](#4-viewmodels-seguridad-y-flexibilidad)
-    - [4.1. ¿Por qué ViewModels?](#41-por-qué-viewmodels)
-    - [4.2. Ejemplo de ViewModel](#42-ejemplo-de-viewmodel)
-    - [4.3. Seguridad: Overposting](#43-seguridad-overposting)
-  - [5. Patrón Result](#5-patrón-result)
-    - [5.1. Definición en Servicio](#51-definición-en-servicio)
-    - [5.2. Uso en Controlador](#52-uso-en-controlador)
-    - [5.3. Ventajas del Patrón Result](#53-ventajas-del-patrón-result)
-  - [6. TempData y Flash Messages](#6-tempdata-y-flash-messages)
-    - [6.1. Flujo de TempData](#61-flujo-de-tempdata)
-    - [6.2. Mostrar en Vista](#62-mostrar-en-vista)
-    - [6.3. Característica Especial](#63-característica-especial)
-  - [7. ContentRoot y WebRoot](#7-contentroot-y-webroot)
-    - [7.1. Diferencias Clave](#71-diferencias-clave)
-    - [7.2. Problema Común](#72-problema-común)
-    - [7.3. Solución en Program.cs](#73-solución-en-programcs)
-    - [7.4. Troubleshooting](#74-troubleshooting)
-
 # 1. La Forja de .NET: Arquitectura, Middlewares y DI
-.NET Core es una plataforma modular y flexible. En este capítulo, exploraremos cómo funciona su arquitectura interna, el pipeline de middlewares y la inyección de dependencias (DI).
 
+## Índice
 
-## 1. El Viaje de una Petición (Middleware Pipeline)
+[1. La Forja de .NET: Arquitectura, Middlewares y DI](#1-la-forge-de-net-arquitectura-middlewares-y-di)
+  - [1.1. El Viaje de una Petición (Middleware Pipeline)](#11-el-viaje-de-una-petición-middleware-pipeline)
+  - [1.2. Inyección de Dependencias (DI)](#12-inyección-de-dependencias-di)
+  - [1.3. Constructores Primarios C# 14](#13-constructores-primarios-c-14)
+  - [1.4. ViewModels: Seguridad y Flexibilidad](#14-viewmodels-seguridad-y-flexibilidad)
+  - [1.5. Patrón Result](#15-patrón-result)
+  - [1.6. TempData y Flash Messages](#16-tempdata-y-flash-messages)
+  - [1.7. ContentRoot y WebRoot](#17-contentroot-y-webroot)
+
+---
+
+## 1.1. El Viaje de una Petición (Middleware Pipeline)
 
 Imagina tu aplicación ASP.NET Core como una fábrica. Cada estación (Middleware) realiza una tarea específica en la petición HTTP.
 
-### 1.1. Pipeline Visual
+### Pipeline Visual
 
 ```mermaid
 flowchart LR
@@ -62,9 +44,10 @@ flowchart LR
     
     Client -->|HTTP Request| Kestrel
     Kestrel --> Exception
-    Exception --> Https
+    Exception -->|Si hay error| ErrorPage
+    Exception -->|OK| Https
     Https --> Static
-    Static -->|Si no es static| Routing
+    Static -->|No encontrado| Routing
     Routing --> Localization
     Localization --> Auth
     Auth --> Authorization
@@ -75,266 +58,454 @@ flowchart LR
     style Exception fill:#ff6b6b
     style Auth fill:#4ecdc4
     style Authorization fill:#4ecdc4
-    style End fill:#45b7d1
 ```
 
-**La Regla de Oro**: El orden de `app.Use...` importa MUCHO.
+### Middlewares Clave en WalaDaw
 
-### 1.1. Middlewares Clave en WalaDaw
+```csharp
+// Program.cs - Configuración de Middlewares
+var builder = WebApplication.CreateBuilder(args);
 
-| #   | Middleware               | Función                            |
-| --- | ------------------------ | ---------------------------------- |
-| 1.1 | `UseExceptionHandler`    | Captura excepciones no controladas |
-| 1.2 | `UseHttpsRedirection`    | Redirige HTTP a HTTPS              |
-| 1.3 | `UseStaticFiles`         | Serve CSS, JS, imágenes            |
-| 1.4 | `UseRouting`             | Analiza la URL y determina la ruta |
-| 1.5 | `UseRequestLocalization` | Configura idioma del usuario       |
-| 1.6 | `UseAuthentication`      | Identifica al usuario (cookie)     |
-| 1.7 | `UseAuthorization`       | Verifica permisos de acceso        |
-| 1.8 | `UseSession`             | Datos temporales por usuario       |
-| 1.9 | `MapControllerRoute`     | Ejecuta el controlador             |
+var app = builder.Build();
+
+// 1. Manejo de errores (primero para capturar excepciones)
+app.UseExceptionHandler("/Error");
+
+// 2. Redirección HTTPS (producción)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+    app.UseHsts();
+}
+
+// 3. Archivos estáticos (CSS, JS, imágenes)
+app.UseStaticFiles();
+
+// 4. Routing (decide qué controller/page recibe la petición)
+app.UseRouting();
+
+// 5. Localización (idioma del usuario)
+app.UseRequestLocalization("es-ES");
+
+// 6. Autenticación (identificar usuario)
+app.UseAuthentication();
+
+// 7. Autorización (verificar permisos)
+app.UseAuthorization();
+
+// 8. Session (datos temporales del usuario)
+app.UseSession();
+
+// 9. Endpoints (Controllers, Razor Pages, Blazor)
+app.MapControllers();
+app.MapRazorPages();
+app.MapBlazorHub();
+
+app.Run();
+```
 
 ---
 
-## 2. Inyección de Dependencias (DI)
+## 1.2. Inyección de Dependencias (DI)
 
-La DI es el patrón estrella de .NET Core. En lugar de que tus clases creen sus dependencias (`new MiServicio()`), las piden a un contenedor.
+**DI (Dependency Injection)** es un patrón de diseño que permite eliminar dependencias hardcodeadas, facilitando el testing y el mantenimiento.
 
-### 2.1. ¿Por qué usar DI?
+### ¿Por qué usar DI?
 
-- **Testabilidad**: Puedes simular dependencias (mocks) en pruebas
-- **Mantenibilidad**: Cambiar implementación sin modificar código existente
-- **Extensibilidad**: Añadir funcionalidades sin tocar código (Open/Closed)
+| Problema sin DI                     | Solución con DI                              |
+| ---------------------------------- | ------------------------------------------ |
+| Acoplamiento fuerte entre clases     | Interfaces desacoplan clases                 |
+| Difícil de testear                | Se pueden inyectar mocks                     |
+| Código rígido                      | Componentes reutilizables                  |
+| Cambios requieren modificar código | Solo cambiar la implementación               |
 
-### 2.2. Los 3 Tiempos de Vida
+### Los 3 Tiempos de Vida
+
+| Lifetime    | Descripción                                      | Ejemplo                           |
+| ---------- | ------------------------------------------------ | -------------------------------- |
+| **Singleton** | Una instancia para toda la aplicación             | IConfiguration, ILoggerFactory   |
+| **Scoped**   | Una instancia por petición HTTP                   | DbContext, IUserAccessor        |
+| **Transient** | Nueva instancia cada vez que se solicita          | Servicios ligeros, Helpers        |
+
+```csharp
+// Registro de servicios
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
+```
+
+### Peligro del Singleton
+
+```csharp
+// ❌ PELIGROO: DbContext como Singleton
+builder.Services.AddSingleton<AppDbContext>(new AppDbContext(options));
+
+// ✅ CORRECTO: DbContext como Scoped
+builder.Services.AddDbContext<AppDbContext>(options => 
+    options.UseSqlite(connectionString));
+
+// ⚠️ Singleton solo para servicios SIN estado
+builder.Services.AddSingleton<MetricsService>();
+```
+
+---
+
+## 1.3. Constructores Primarios C# 14
+
+Los **constructores primarios** simplifican la sintaxis de constructores en C# 14.
+
+### Sintaxis Antigua vs Nueva
+
+```csharp
+// ❌ Antigua (C# 1-13)
+public class ProductService
+{
+    private readonly IProductRepository _repository;
+    private readonly ILogger<ProductService> _logger;
+    
+    public ProductService(
+        IProductRepository repository,
+        ILogger<ProductService> logger)
+    {
+        _repository = repository;
+        _logger = logger;
+    }
+}
+
+// ✅ Nueva (C# 14) - Constructor Primario
+public class ProductService(
+    IProductRepository repository,
+    ILogger<ProductService> logger)
+{
+    // repository y logger están disponibles directamente
+    public async Task<Product?> GetByIdAsync(long id)
+    {
+        return await repository.GetByIdAsync(id);
+    }
+}
+```
+
+### Beneficio
+
+| Aspecto       | Antigua              | Nueva (C# 14)         |
+| ------------ | ------------------- | ---------------------- |
+| **Líneas**   | 8-12                | 1                      |
+| **Repetición**| Alta (parámetros repetidos) | Ninguna             |
+| **Lectura**  | Más código boilerplate| Más limpio            |
+| **Propiedades**| Se requiere `init` | Automáticas            |
+
+---
+
+## 1.4. ViewModels: Seguridad y Flexibilidad
+
+Los **ViewModels** son clases específicas para las vistas que contienen solo los datos necesarios.
+
+### ¿Por qué ViewModels?
+
+| Problema con Entity directa | Solución con ViewModel                |
+| ------------------------ | ----------------------------------- |
+| Sobrecarga de datos      | Solo datos necesarios               |
+| Validación conjunta      | Validación específica por vista      |
+| Seguridad (overposting)  | Propiedades controladas             |
+| Formateo específico      | Datos ya formateados               |
+
+### Ejemplo de ViewModel
+
+```csharp
+// ❌ PELIGROSO: Entity como Model de vista
+public class Product
+{
+    public long Id { get; set; }
+    public string Nombre { get; set; }
+    public decimal Precio { get; set; }
+    public decimal CostoInterno { get; set; } // ¡Sensible!
+    public bool IsDeleted { get; set; }
+    public DateTime DeletedAt { get; set; }
+}
+
+// ✅ SEGURO: ViewModel específico
+public class ProductDetailViewModel
+{
+    public long Id { get; set; }
+    public string Nombre { get; set; }
+    public string Descripcion { get; set; }
+    public decimal Precio { get; set; }
+    public string PrecioFormateado => Precio.ToString("C");
+    public string? Imagen { get; set; }
+    public double RatingPromedio { get; set; }
+    public int TotalReviews { get; set; }
+    public string VendedorNombre { get; set; }
+}
+```
+
+### Seguridad: Overposting
+
+```csharp
+// ❌ VULNERABLE A OVERPOSTING
+[HttpPost]
+public IActionResult Create(Product product) // ¡Peligroso!
+{
+    // User puede enviar IsAdmin = true, IsDeleted = true
+}
+
+// ✅ PROTEGIDO CON VIEWMODEL
+[HttpPost]
+public IActionResult Create(CreateProductViewModel vm)
+{
+    // Solo las propiedades del ViewModel se bindean
+}
+```
+
+---
+
+## 1.5. Patrón Result
+
+El **Patrón Result** encapsula el resultado de una operación, evitando excepciones para errores de negocio.
+
+### Definición en Servicio
+
+```csharp
+public class ProductService
+{
+    private readonly AppDbContext _context;
+    private readonly ILogger<ProductService> _logger;
+    
+    public ProductService(AppDbContext context, ILogger<ProductService> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+    
+    public Result<Product, string> GetById(long id)
+    {
+        var product = _context.Products.Find(id);
+        
+        if (product == null)
+            return Result<Product, string>.Failure("Producto no encontrado");
+        
+        return Result<Product, string>.Success(product);
+    }
+    
+    public async Task<Result<Product, string>> CreateAsync(CreateProductDto dto)
+    {
+        try
+        {
+            var product = new Product
+            {
+                Nombre = dto.Nombre,
+                Precio = dto.Precio,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            
+            return Result<Product, string>.Success(product);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creando producto");
+            return Result<Product, string>.Failure("Error al crear producto");
+        }
+    }
+}
+```
+
+### Uso en Controlador
+
+```csharp
+public class ProductsController : Controller
+{
+    private readonly ProductService _productService;
+    
+    public ProductsController(ProductService productService)
+    {
+        _productService = productService;
+    }
+    
+    public IActionResult Details(long id)
+    {
+        var result = _productService.GetById(id);
+        
+        return result.Match(
+            onSuccess: product => View(product),
+            onFailure: error => NotFound(error)
+        );
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> Create(CreateProductDto dto)
+    {
+        var result = await _productService.CreateAsync(dto);
+        
+        return result.Match(
+            onSuccess: product => RedirectToAction("Details", new { id = product.Id }),
+            onFailure: error => View("Error", error)
+        );
+    }
+}
+```
+
+### Ventajas del Patrón Result
+
+| Ventaja                | Descripción                                      |
+| --------------------- | ------------------------------------------------ |
+| **Sin excepciones**    | Errores como valores, no excepciones              |
+| **Tipado seguro**     | Errores específicos en el tipo de retorno        |
+| **Flujo claro**       | Match hace explícito el manejo de éxito/error     |
+| **Testeable**         | Fácil testear ambos casos (éxito y fallo)        |
+
+---
+
+## 1.6. TempData y Flash Messages
+
+**TempData** permite pasar datos entre peticiones HTTP de forma temporal.
+
+### Flujo de TempData
 
 ```mermaid
-flowchart TB
-    subgraph "⏱️ LIFETIMES"
-        direction TB
-        
-        T["Transient<br/>☕ Café desechable"]
-        S["Scoped<br/>🎫 Pulsera de evento"]
-        G["Singleton<br/>🏢 Edificio"]
-        
-        T -->|"Nueva instancia<br/>cada vez"| T2[Request 1: New<br/>Request 2: New<br/>Request 3: New]
-        S -->|"Una por request"| S2[Request 1: Instance<br/>Request 2: Different Instance]
-        G -->|"Una para todos"| G2[Request 1: Same<br/>Request 2: Same<br/>Request 3: Same]
-    end
+flowchart LR
+    A[Petición 1<br/>Controller] -->|TempData["Success"]| B[Redirect]
+    B --> C[Petición 2<br/>Vista]
+    C -->|Mostrar mensaje| D[Usuario ve<br/>Flash Message]
     
-    style T fill:#74b9ff
-    style S fill:#00cec9
-    style G fill:#fdcb6e
-    style T2 fill:#dfe6e9
-    style S2 fill:#dfe6e9
-    style G2 fill:#ffeaa7
+    style A fill:#4ecdc4
+    style B fill:#ffe66d
+    style C fill:#4ecdc4
+    style D fill:#ffe66d
 ```
 
-| Lifetime      | Metáfora                      | Comportamiento                  | Uso Común                        |
-| ------------- | ----------------------------- | ------------------------------- | -------------------------------- |
-| **Transient** | Café desechable               | Nueva instancia cada vez        | Servicios ligeros, sin estado    |
-| **Scoped**    | Pulsera de evento             | Una instancia por petición HTTP | Servicios de negocio, DB Context |
-| **Singleton** | Edificio del centro comercial | Una instancia para toda la app  | Configuración, caché global      |
+### Mostrar en Vista
 
 ```csharp
-// Program.cs
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddSingleton<ITimeService, RealTimeService>();
-builder.Services.AddTransient<IRandomNumberGenerator, GuidRandomNumberGenerator>();
-```
-
-### 2.3. Peligro del Singleton
-
-⚠️ **Atención**: Si guardas datos específicos de un usuario en un Singleton, ¡todos los usuarios verán los mismos datos! Los Singletons deben ser thread-safe.
-
----
-
-## 3. Constructores Primarios C# 14
-
-C# 14 introduce constructores primarios que reducen el ruido visual en tus clases.
-
-### 3.1. Sintaxis Antigua vs Nueva
-
-```csharp
-// Antes (C# antiguo)
-public class MyService
+// Controller
+public IActionResult Create(ProductDto dto)
 {
-    private readonly ILogger<MyService> _logger;
-    private readonly IRepository _repository;
-
-    public MyService(ILogger<MyService> logger, IRepository repository)
-    {
-        _logger = logger;
-        _repository = repository;
-    }
-}
-
-// Ahora (C# 14)
-public class MyService(ILogger<MyService> logger, IRepository repository) : IMyService
-{
-    // 'logger' y 'repository' están disponibles automáticamente
-    public void DoSomething() => logger.LogInformation("Doing something.");
+    if (!ModelState.IsValid)
+        return View(dto);
+    
+    _service.Create(dto);
+    
+    TempData["Success"] = "Producto creado correctamente";
+    
+    return RedirectToAction("Index");
 }
 ```
 
-### 3.2. Beneficio
-
-Código más conciso, legible y menos propenso a errores (ej. olvidar asignar un campo).
-
----
-
-## 4. ViewModels: Seguridad y Flexibilidad
-
-Un ViewModel es un modelo diseñado específicamente para una vista.
-
-### 4.1. ¿Por qué ViewModels?
-
-| Beneficio       | Descripción                                     |
-| --------------- | ----------------------------------------------- |
-| **Seguridad**   | Previene overposting (campos ocultos malicious) |
-| **Abstracción** | La vista recibe solo lo que necesita            |
-| **Validación**  | Reglas específicas de UI separadas de BD        |
-
-### 4.2. Ejemplo de ViewModel
-
-```csharp
-public class RegisterViewModel
+```html
+<!-- Vista (_Layout.cshtml o _Notifications.cshtml) -->
+@if (TempData.TryGetValue("Success", out var success))
 {
-    [Required, EmailAddress]
-    public string Email { get; set; }
+    <div class="alert alert-success alert-dismissible fade show">
+        @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
-    [Required, DataType(DataType.Password)]
-    [StringLength(100, MinimumLength = 4)]
-    public string Password { get; set; }
-
-    [DataType(DataType.Password), Compare("Password")]
-    public string ConfirmPassword { get; set; }
+@if (TempData.TryGetValue("Error", out var error))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 ```
 
-### 4.3. Seguridad: Overposting
+### Característica Especial
 
 ```csharp
-// ❌ PELIGROSO: El usuario podría enviar 'IsAdmin=true' oculto
-public IActionResult Create(Product product) => ...
+// ✅ TempData SE GUARDA entre Redirect (PRG Pattern)
+public IActionResult Create(ProductDto dto)
+{
+    _service.Create(dto);
+    TempData["Message"] = "Guardado!";  // Se preserva
+    return RedirectToAction("Index");     // Redirect
+}
 
-// ✅ SEGURO: Solo recibe campos del ViewModel
-public IActionResult Create(ProductViewModel vm) => ...
+// Segunda petición Lee TempData
+public IActionResult Index()
+{
+    var message = TempData["Message"];  // ✓ Disponible
+}
 ```
 
 ---
 
-## 5. Patrón Result
+## 1.7. ContentRoot y WebRoot
 
-Las excepciones son costosas y rompen el flujo. Para errores de negocio, usamos `Result<T, E>`.
+**ContentRoot** es la carpeta raíz del proyecto (donde está `.csproj`). **WebRoot** es la carpeta de archivos estáticos (por defecto `wwwroot`).
 
-### 5.1. Definición en Servicio
+### Diferencias Clave
+
+| Aspecto              | ContentRoot                              | WebRoot                             |
+| ------------------- | --------------------------------------- | ----------------------------------- |
+| **Propósito**        | Archivos de código, configuración        | Archivos públicos (CSS, JS, imágenes)|
+| **Ubicación**        | Raíz del proyecto                       | `/wwwroot/`                         |
+| **Acceso**           | `IWebHostEnvironment.ContentRootPath`    | `IWebHostEnvironment.WebRootPath`     |
+| **Archivos típicos** | `.csproj`, `appsettings.json`           | `css/`, `js/`, `images/`           |
+
+### Problema Común
 
 ```csharp
-public interface IProductService
-{
-    Task<Result<Product, DomainError>> GetByIdAsync(long id);
-    Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin);
-}
-```
-
-### 5.2. Uso en Controlador
-
-```csharp
-var result = await _productService.GetByIdAsync(id);
-return result.Match(
-    onSuccess: product => View(product),
-    onFailure: error => error.Code switch
-    {
-        ProductError.NotFound.Code => NotFound(),
-        _ => BadRequest(error.Message)
-    }
+// ❌ ERROR: WebRootPath es NULL si wwwroot no existe
+var imagesPath = Path.Combine(
+    _env.WebRootPath, 
+    "images", 
+    "products"
 );
+
+// ✅ CORRECTO: Verificar y crear directorio
+var imagesPath = Path.Combine(
+    _env.ContentRootPath,  // Más seguro
+    "uploads", 
+    "products"
+);
+
+Directory.CreateDirectory(imagesPath);
 ```
 
-### 5.3. Ventajas del Patrón Result
-
-- ✅ El compilador obliga a gestionar éxito y fallo
-- ✅ Código más robusto y predecible
-- ✅ Rendimiento (no usa excepciones para flujo normal)
-
----
-
-## 6. TempData y Flash Messages
-
-`TempData` guarda datos en una cookie cifrada que sobrevive a una redirección.
-
-### 6.1. Flujo de TempData
+### Solución en Program.cs
 
 ```csharp
-// Controlador
-[HttpPost]
-public IActionResult Create(ProductViewModel model)
+var builder = WebApplication.CreateBuilder(args);
+
+// Configurar WebRoot explícitamente
+builder.WebHost.UseWebRoot("wwwroot");
+
+// O crear wwwroot si no existe
+var webRootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(webRootPath))
 {
-    _productService.Create(model);
-    TempData["SuccessMessage"] = "¡Producto creado!";
-    return RedirectToAction("Index");  // La redirección mantiene el mensaje
+    Directory.CreateDirectory(webRootPath);
 }
-```
 
-### 6.2. Mostrar en Vista
+var app = builder.Build();
 
-```razor
-@if (TempData["SuccessMessage"] is string success)
+// Configurar archivos estáticos
+app.UseStaticFiles();  // Usa WebRoot por defecto
+
+// Mapear carpeta uploads como estática
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+app.UseStaticFiles(new StaticFileOptions
 {
-    <div class="alert alert-success">@success</div>
-}
-@if (TempData["ErrorMessage"] is string error)
-{
-    <div class="alert alert-danger">@error</div>
-}
-```
-
-### 6.3. Característica Especial
-
-⚡ Los datos en TempData se eliminan automáticamente después de leerse una vez.
-
----
-
-## 7. ContentRoot y WebRoot
-
-### 7.1. Diferencias Clave
-
-| Concepto            | Descripción                                      |
-| ------------------- | ------------------------------------------------ |
-| **ContentRootPath** | Directorio base (vistas, appsettings.json, DLLs) |
-| **WebRootPath**     | Carpeta `wwwroot` (CSS, JS, imágenes estáticas)  |
-
-### 7.2. Problema Común
-
-Al ejecutar `dotnet run` desde la raíz de la solución, las rutas pueden fallar.
-
-### 7.3. Solución en Program.cs
-
-```csharp
-var currentDir = Directory.GetCurrentDirectory();
-var isRoot = !Directory.Exists(Path.Combine(currentDir, "wwwroot")) && 
-             Directory.Exists(Path.Combine(currentDir, "TiendaDawWeb.Web", "wwwroot"));
-
-var contentRoot = isRoot ? Path.Combine(currentDir, "TiendaDawWeb.Web") : currentDir;
-
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    ContentRootPath = contentRoot,
-    WebRootPath = "wwwroot"
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
 });
-
-if (isRoot)
-{
-    builder.Environment.WebRootPath = Path.Combine(contentRoot, "wwwroot");
-    builder.WebHost.UseStaticWebAssets();
-}
 ```
 
-### 7.4. Troubleshooting
+### Troubleshooting
 
-Cuando veas `View not found` o 404 en archivos estátiços, verifica primero `ContentRootPath` y `WebRootPath`.
+| Problema                            | Solución                                              |
+| ----------------------------------- | ---------------------------------------------------- |
+| CSS/JS no carga                     | Verificar `wwwroot/` existe                           |
+| Imágenes 404                       | Verificar `UseStaticFiles()` está llamado              |
+| Archivos fuera de wwwroot          | Usar `UseStaticFiles()` con `FileProvider`              |
+| Ruta incorrecta                   | Usar `_env.ContentRootPath` (más seguro)              |
 
 ---
 
-**Próximo Volumen**: [02. Guía de Productividad](../02-Development-Tips.md)
+**Anterior**: [README](../README.md)  
+**Próximo**: [02. Guía de Productividad](../02-Development-Tips.md)

@@ -1,34 +1,22 @@
-- [3. Controladores, Model Binding y Patrón Result](#3-controladores-model-binding-y-patrón-result)
-  - [1. Rol del Controlador: Orquestador](#1-rol-del-controlador-orquestador)
-    - [1.1. Lo que SÍ debe hacer un Controlador](#11-lo-que-sí-debe-hacer-un-controlador)
-    - [1.2. Lo que NO debe hacer un Controlador](#12-lo-que-no-debe-hacer-un-controlador)
-    - [1.3. Ejemplo de Controlador Limpio](#13-ejemplo-de-controlador-limpio)
-  - [2. Model Binding](#2-model-binding)
-    - [2.1. ¿Cómo funciona?](#21-cómo-funciona)
-    - [2.2. Fuentes del Model Binding (Orden de Prioridad)](#22-fuentes-del-model-binding-orden-de-prioridad)
-    - [2.3. Validación Automática con ModelState](#23-validación-automática-con-modelstate)
-  - [3. Patrón Result](#3-patrón-result)
-    - [3.1. ¿Por qué Result?](#31-por-qué-result)
-    - [3.2. Implementación en Servicios](#32-implementación-en-servicios)
-    - [3.3. Consumo con Match](#33-consumo-con-match)
-  - [4. Trío de Hierro: ModelState vs Result vs Middleware](#4-trío-de-hierro-modelstate-vs-result-vs-middleware)
-    - [4.1. ¿Cuándo usar cada uno?](#41-cuándo-usar-cada-uno)
-    - [4.2. Ejemplo Completo de Controlador Robusto](#42-ejemplo-completo-de-controlador-robusto)
-  - [5. Errores Comunes](#5-errores-comunes)
-    - [5.1. Confundir Validación con Lógica de Negocio](#51-confundir-validación-con-lógica-de-negocio)
-    - [5.2. Usar Excepciones para Errores de Negocio](#52-usar-excepciones-para-errores-de-negocio)
-    - [5.3. No Validar ModelState](#53-no-validar-modelstate)
-  - [6. Buenas Prácticas](#6-buenas-prácticas)
-
-
 # 3. Controladores, Model Binding y Patrón Result
-En esta sección, desglosaremos las responsabilidades de los controladores, el proceso de model binding y cómo implementar el patrón Result para manejar errores de negocio de manera elegante.
 
-## 1. Rol del Controlador: Orquestador
+## Índice
+
+[3. Controladores, Model Binding y Patrón Result](#3-controladores-model-binding-y-patrón-result)
+  - [3.1. Rol del Controlador: Orquestador](#31-rol-del-controlador-orquestador)
+  - [3.2. Model Binding](#32-model-binding)
+  - [3.3. Patrón Result](#33-patrón-result)
+  - [3.4. Trío de Hierro: ModelState vs Result vs Middleware](#34-trío-de-hierro-modelstate-vs-result-vs-middleware)
+  - [3.5. Errores Comunes](#35-errores-comunes)
+  - [3.6. Buenas Prácticas](#36-buenas-prácticas)
+
+---
+
+## 3.1. Rol del Controlador: Orquestador
 
 Los controladores son los directores de orquesta. Reciben peticiones, coordinan servicios y deciden resultados.
 
-### 1.1. Lo que SÍ debe hacer un Controlador
+### Lo que SÍ debe hacer un Controlador
 
 | Responsabilidad         | Descripción                             |
 | ----------------------- | --------------------------------------- |
@@ -37,7 +25,7 @@ Los controladores son los directores de orquesta. Reciben peticiones, coordinan 
 | **Delegar a Servicios** | Llamar a la capa de negocio             |
 | **Gestionar Resultado** | Decidir vista, redirect, JSON o error   |
 
-### 1.2. Lo que NO debe hacer un Controlador
+### Lo que NO debe hacer un Controlador
 
 | ❌ Evitar                   | ✅ En su lugar            |
 | -------------------------- | ------------------------ |
@@ -45,7 +33,7 @@ Los controladores son los directores de orquesta. Reciben peticiones, coordinan 
 | Lógica de negocio compleja | Servicios especializados |
 | Validación de negocio      | Result<T,E> en servicios |
 
-### 1.3. Ejemplo de Controlador Limpio
+### Ejemplo de Controlador Limpio
 
 ```csharp
 public class ProductController(
@@ -69,26 +57,26 @@ public class ProductController(
 
 ---
 
-## 2. Model Binding
+## 3.2. Model Binding
 
 El proceso por el cual ASP.NET Core convierte datos HTTP en objetos C#.
 
-### 2.1. ¿Cómo funciona?
+### ¿Cómo funciona?
 
 1. Examina los parámetros del método
 2. Busca datos en la petición (ruta, query, formulario, JSON)
 3. Convierte al tipo C# del parámetro
 
-### 2.2. Fuentes del Model Binding (Orden de Prioridad)
+### Fuentes del Model Binding (Orden de Prioridad)
 
 | #   | Fuente       | Ejemplo                  |
 | --- | ------------ | ------------------------ |
-| 2.1 | Route Data   | `/products/{id}`         |
-| 2.2 | Query String | `/products?name=abc`     |
-| 2.3 | Form Data    | `<input name="email">`   |
-| 2.4 | JSON Body    | `{ "email": "x@x.com" }` |
+| 1   | Route Data   | `/products/{id}`         |
+| 2   | Query String | `/products?name=abc`     |
+| 3   | Form Data    | `<input name="email">`   |
+| 4   | JSON Body    | `{ "email": "x@x.com" }` |
 
-### 2.3. Validación Automática con ModelState
+### Validación Automática con ModelState
 
 ```csharp
 [HttpPost]
@@ -110,11 +98,11 @@ public async Task<IActionResult> Create(ProductViewModel model)
 
 ---
 
-## 3. Patrón Result
+## 3.3. Patrón Result
 
 Para errores de negocio previsibles, usamos `Result<T, E>` en lugar de excepciones.
 
-### 3.1. ¿Por qué Result?
+### ¿Por qué Result?
 
 | Beneficio              | Descripción                             |
 | ---------------------- | --------------------------------------- |
@@ -123,7 +111,7 @@ Para errores de negocio previsibles, usamos `Result<T, E>` en lugar de excepcion
 | **Rendimiento**        | Exceptions son costosas                 |
 | **Obliga a Gestionar** | Compilador fuerza manejo de ambos casos |
 
-### 3.2. Implementación en Servicios
+### Implementación en Servicios
 
 ```csharp
 public async Task<Result<Product, ProductError>> GetByIdAsync(long id)
@@ -153,7 +141,7 @@ public async Task<Result<bool, ProductError>> DeleteAsync(long id, long userId, 
 }
 ```
 
-### 3.3. Consumo con Match
+### Consumo con Match
 
 ```csharp
 var result = await _productService.DeleteAsync(id, userId, isAdmin);
@@ -173,7 +161,7 @@ return result.Match(
 
 ---
 
-## 4. Trío de Hierro: ModelState vs Result vs Middleware
+## 3.4. Trío de Hierro: ModelState vs Result vs Middleware
 
 ```mermaid
 flowchart TD
@@ -201,7 +189,7 @@ flowchart TD
     style G fill:#ffebee
 ```
 
-### 4.1. ¿Cuándo usar cada uno?
+### ¿Cuándo usar cada uno?
 
 | Escenario              | Mecanismo                 | ¿Por qué?                |
 | ---------------------- | ------------------------- | ------------------------ |
@@ -212,7 +200,7 @@ flowchart TD
 | NullReferenceException | GlobalExceptionMiddleware | Bug inesperado           |
 | Timeout BD             | GlobalExceptionMiddleware | Fallo técnico            |
 
-### 4.2. Ejemplo Completo de Controlador Robusto
+### Ejemplo Completo de Controlador Robusto
 
 ```csharp
 [HttpPost]
@@ -241,9 +229,9 @@ public async Task<IActionResult> Create(CreateProductVM model)
 
 ---
 
-## 5. Errores Comunes
+## 3.5. Errores Comunes
 
-### 5.1. Confundir Validación con Lógica de Negocio
+### Confundir Validación con Lógica de Negocio
 
 ```csharp
 // ❌ MAL: Regla de negocio en DataAnnotations
@@ -265,7 +253,7 @@ if (vm.Precio > promedio * 10)
     return Result.Failure(ProductError.PriceTooHigh);
 ```
 
-### 5.2. Usar Excepciones para Errores de Negocio
+### Usar Excepciones para Errores de Negocio
 
 ```csharp
 // ❌ MAL
@@ -275,7 +263,7 @@ throw new ProductNotFoundException($"Producto {id} no encontrado");
 return Result.Failure(ProductError.NotFound(id));
 ```
 
-### 5.3. No Validar ModelState
+### No Validar ModelState
 
 ```csharp
 // ❌ MAL
@@ -288,18 +276,18 @@ var result = await _service.CreateAsync(model);
 
 ---
 
-## 6. Buenas Prácticas
+## 3.6. Buenas Prácticas
 
 | #   | Práctica                                      |
 | --- | --------------------------------------------- |
-| 6.1 | Usa DataAnnotations para **formato** de datos |
-| 6.2 | Usa Result<T,E> para **reglas de negocio**    |
-| 6.3 | Usa GlobalExceptionMiddleware para **bugs**   |
-| 6.4 | SIEMPRE verifica `ModelState.IsValid`         |
-| 6.5 | SIEMPRE usa `Match()` para Result             |
-| 6.6 | NUNCA uses `throw` para errores de negocio    |
+| 1   | Usa DataAnnotations para **formato** de datos |
+| 2   | Usa Result<T,E> para **reglas de negocio**    |
+| 3   | Usa GlobalExceptionMiddleware para **bugs**   |
+| 4   | SIEMPRE verifica `ModelState.IsValid`         |
+| 5   | SIEMPRE usa `Match()` para Result             |
+| 6   | NUNCA uses `throw` para errores de negocio    |
 
 ---
 
-**Anterior Volumen**: [02. Guía de Productividad](../02-Development-Tips.md)  
-**Próximo Volumen**: [04. Autenticación y Autorización](../04-Authentication-Authorization.md)
+**Anterior**: [02. Guía de Productividad](../02-Development-Tips.md)  
+**Próximo**: [04. MVC Controllers](../04-MVC-Controllers.md)
