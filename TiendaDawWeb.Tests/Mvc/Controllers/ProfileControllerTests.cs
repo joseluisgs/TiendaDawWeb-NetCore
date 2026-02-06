@@ -1,3 +1,4 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +11,7 @@ using Moq;
 using System.Security.Claims;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Storage;
 
@@ -111,6 +113,22 @@ public class ProfileControllerTests
         var result = _controller.ChangePassword();
 
         result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
+
+    #region Edit (POST) Tests
+
+    [Test]
+    public async Task EditPost_RedirectsToLogin_WhenUserNotFound()
+    {
+        _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
+            .ReturnsAsync((User)null!);
+
+        var result = await _controller.Edit("John", "Doe", null);
+
+        result.Should().BeOfType<RedirectToActionResult>();
+        (result as RedirectToActionResult)!.ActionName.Should().Be("Login");
     }
 
     #endregion

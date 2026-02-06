@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 using TiendaDawWeb.Controllers;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Rating;
 using TiendaDawWeb.Shared.ViewModels;
