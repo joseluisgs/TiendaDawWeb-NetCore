@@ -91,24 +91,17 @@ public class CarritoService(
                 CreatedAt = DateTime.UtcNow
             };
 
-            return await Task.Run(() =>
-            {
-                context.CarritoItems.Add(nuevoItem);
-                context.SaveChanges();
-                return Result.Success<CarritoItem, DomainError>(nuevoItem);
-            })
-            .Tap(async item =>
-            {
-                cache.Remove(ProductsCacheKey);
-                cache.Remove(ProductDetailsCacheKey(productoId));
-                await context.Entry(item).Reference(c => c.Producto).LoadAsync();
-            })
-            .Tap(item =>
-            {
-                logger.LogInformation(
-                    "Agregado producto {ProductoId} al carrito del usuario {UsuarioId} (reservado hasta {ReservadoHasta})",
-                    productoId, usuarioId, producto.ReservadoHasta);
-            });
+            context.CarritoItems.Add(nuevoItem);
+            await context.SaveChangesAsync();
+
+            cache.Remove(ProductsCacheKey);
+            cache.Remove(ProductDetailsCacheKey(productoId));
+
+            logger.LogInformation(
+                "Agregado producto {ProductoId} al carrito del usuario {UsuarioId} (reservado hasta {ReservadoHasta})",
+                productoId, usuarioId, producto.ReservadoHasta);
+
+            return Result.Success<CarritoItem, DomainError>(nuevoItem);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -135,27 +128,24 @@ public class CarritoService(
             if (item == null)
                 return Result.Failure<bool, DomainError>(CarritoError.ItemNotFound(itemId));
 
-            return await Task.Run(() =>
+            if (item.Producto != null)
             {
-                if (item.Producto != null)
-                {
-                    item.Producto.Reservado = false;
-                    item.Producto.ReservadoHasta = null;
-                    item.Producto.ReservadoPor = null;
-                    logger.LogInformation("Liberada reserva del producto {ProductoId}", item.Producto.Id);
-                }
+                item.Producto.Reservado = false;
+                item.Producto.ReservadoHasta = null;
+                item.Producto.ReservadoPor = null;
+                logger.LogInformation("Liberada reserva del producto {ProductoId}", item.Producto.Id);
+            }
 
-                context.CarritoItems.Remove(item);
-                context.SaveChanges();
-                return Result.Success<bool, DomainError>(true);
-            })
-            .Tap(_ =>
-            {
-                cache.Remove(ProductsCacheKey);
-                if (item.Producto != null)
-                    cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
-            })
-            .Tap(_ => logger.LogInformation("Eliminado item {ItemId} del carrito", itemId));
+            context.CarritoItems.Remove(item);
+            await context.SaveChangesAsync();
+
+            cache.Remove(ProductsCacheKey);
+            if (item.Producto != null)
+                cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
+
+            logger.LogInformation("Eliminado item {ItemId} del carrito", itemId);
+
+            return Result.Success<bool, DomainError>(true);
         }
         catch (Exception ex)
         {
@@ -177,30 +167,25 @@ public class CarritoService(
             if (items.Count == 0)
                 return Result.Success<bool, DomainError>(true);
 
-            return await Task.Run(() =>
-            {
-                foreach (var item in items)
-                    if (item.Producto != null)
-                    {
-                        item.Producto.Reservado = false;
-                        item.Producto.ReservadoHasta = null;
-                        item.Producto.ReservadoPor = null;
-                    }
+            foreach (var item in items)
+                if (item.Producto != null)
+                {
+                    item.Producto.Reservado = false;
+                    item.Producto.ReservadoHasta = null;
+                    item.Producto.ReservadoPor = null;
+                }
 
-                context.CarritoItems.RemoveRange(items);
-                context.SaveChanges();
-                return Result.Success<bool, DomainError>(true);
-            })
-            .Tap(_ =>
-            {
-                cache.Remove(ProductsCacheKey);
-                foreach (var item in items)
-                    if (item.Producto != null)
-                        cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
-            })
-            .Tap(_ =>
-                logger.LogInformation("Vaciado carrito del usuario {UsuarioId} y liberadas {Count} reservas", usuarioId,
-                    items.Count));
+            context.CarritoItems.RemoveRange(items);
+            await context.SaveChangesAsync();
+
+            cache.Remove(ProductsCacheKey);
+            foreach (var item in items)
+                if (item.Producto != null)
+                    cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
+
+            logger.LogInformation("Vaciado carrito del usuario {UsuarioId} y liberadas {Count} reservas", usuarioId, items.Count);
+
+            return Result.Success<bool, DomainError>(true);
         }
         catch (Exception ex)
         {

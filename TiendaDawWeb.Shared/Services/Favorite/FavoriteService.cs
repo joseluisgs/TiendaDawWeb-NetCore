@@ -43,16 +43,12 @@ public class FavoriteService(
             ProductoId = productId
         };
 
-        return await Task.Run(() =>
-        {
-            context.Favorites.Add(favorite);
-            context.SaveChanges();
-            return Result.Success<Models.Favorite, DomainError>(favorite);
-        })
-        .Tap(_ =>
-        {
-            logger.LogInformation("Favorito añadido: Usuario {UserId}, Producto {ProductId}", userId, productId);
-        });
+        context.Favorites.Add(favorite);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation("Favorito añadido: Usuario {UserId}, Producto {ProductId}", userId, productId);
+
+        return Result.Success<Models.Favorite, DomainError>(favorite);
     }
 
     public async Task<Result<bool, DomainError>> RemoveFavoriteAsync(long userId, long productId)
@@ -63,16 +59,12 @@ public class FavoriteService(
         if (favorite == null)
             return Result.Failure<bool, DomainError>(FavoriteError.NotFound());
 
-        return await Task.Run(() =>
-        {
-            context.Favorites.Remove(favorite);
-            context.SaveChanges();
-            return Result.Success<bool, DomainError>(true);
-        })
-        .Tap(_ =>
-        {
-            logger.LogInformation("Favorito eliminado: Usuario {UserId}, Producto {ProductId}", userId, productId);
-        });
+        context.Favorites.Remove(favorite);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation("Favorito eliminado: Usuario {UserId}, Producto {ProductId}", userId, productId);
+
+        return Result.Success<bool, DomainError>(true);
     }
 
     public async Task<Result<IEnumerable<Models.Product>, DomainError>> GetUserFavoritesAsync(long userId)

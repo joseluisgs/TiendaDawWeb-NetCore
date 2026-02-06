@@ -14,11 +14,11 @@ namespace TiendaDawWeb.Tests.Shared.Services;
 
 public class ProductServiceTests
 {
-    private ApplicationDbContext _context = null!;
+    private ApplicationDbContext Context = null!;
     private ProductService _service = null!;
     private Mock<ILogger<ProductService>> _loggerMock = null!;
     private Mock<IHubContext<NotificationHub>> _hubContextMock = null!;
-    private MemoryCache _memoryCache = null!;
+    private MemoryCache MemoryCache = null!;
 
     [SetUp]
     public void Setup()
@@ -26,18 +26,18 @@ public class ProductServiceTests
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        _context = new ApplicationDbContext(options);
+        Context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<ProductService>>();
         _hubContextMock = new Mock<IHubContext<NotificationHub>>();
-        _memoryCache = new MemoryCache(new MemoryCacheOptions());
-        _service = new ProductService(_context, _memoryCache, _hubContextMock.Object, _loggerMock.Object);
+        MemoryCache = new MemoryCache(new MemoryCacheOptions());
+        _service = new ProductService(Context, MemoryCache, _hubContextMock.Object, _loggerMock.Object);
     }
 
     [TearDown]
     public void TearDown()
     {
-        _context.Dispose();
-        _memoryCache.Dispose();
+        Context.Dispose();
+        MemoryCache.Dispose();
     }
 
     #region GetByIdAsync Tests
@@ -47,9 +47,9 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.GetByIdAsync(1);
 
@@ -70,9 +70,9 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Deleted", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user, Deleted = true };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.GetByIdAsync(1);
 
@@ -88,12 +88,12 @@ public class ProductServiceTests
     {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
-        _context.Products.AddRange(
+        Context.Products.AddRange(
             new Product { Id = 1, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user1, Deleted = false, CompraId = null },
             new Product { Id = 2, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 2, Propietario = user2, Deleted = false, CompraId = null }
         );
-        _context.Users.AddRange(user1, user2);
-        await _context.SaveChangesAsync();
+        Context.Users.AddRange(user1, user2);
+        await Context.SaveChangesAsync();
 
         var result = await _service.GetAllAsync();
 
@@ -114,12 +114,12 @@ public class ProductServiceTests
     public async Task GetAllAsync_ExcludesDeletedProducts()
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        _context.Products.AddRange(
+        Context.Products.AddRange(
             new Product { Id = 1, Nombre = "Active", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false },
             new Product { Id = 2, Nombre = "Deleted", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = true }
         );
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
 
         var result = await _service.GetAllAsync();
 
@@ -132,12 +132,12 @@ public class ProductServiceTests
     public async Task GetAllAsync_ExcludesSoldProducts()
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        _context.Products.AddRange(
+        Context.Products.AddRange(
             new Product { Id = 1, Nombre = "Available", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
             new Product { Id = 2, Nombre = "Sold", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = 1 }
         );
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
 
         var result = await _service.GetAllAsync();
 
@@ -155,12 +155,12 @@ public class ProductServiceTests
     {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
-        _context.Products.AddRange(
+        Context.Products.AddRange(
             new Product { Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user1, Deleted = false, CompraId = null },
             new Product { Id = 2, Nombre = "Samsung", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 2, Propietario = user2, Deleted = false, CompraId = null }
         );
-        _context.Users.AddRange(user1, user2);
-        await _context.SaveChangesAsync();
+        Context.Users.AddRange(user1, user2);
+        await Context.SaveChangesAsync();
 
         var result = await _service.SearchAsync("iPhone", null);
 
@@ -173,12 +173,12 @@ public class ProductServiceTests
     public async Task SearchAsync_FiltersByCategory()
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        _context.Products.AddRange(
+        Context.Products.AddRange(
             new Product { Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
             new Product { Id = 2, Nombre = "Cable", Descripcion = "Desc", Precio = 50, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false, CompraId = null }
         );
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
 
         var result = await _service.SearchAsync(null, "SMARTPHONES");
 
@@ -191,12 +191,12 @@ public class ProductServiceTests
     public async Task SearchAsync_FiltersByNameAndCategory()
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        _context.Products.AddRange(
+        Context.Products.AddRange(
             new Product { Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
             new Product { Id = 2, Nombre = "iPhone Case", Descripcion = "Desc", Precio = 50, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false, CompraId = null }
         );
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
 
         var result = await _service.SearchAsync("iPhone", "SMARTPHONES");
 
@@ -209,11 +209,11 @@ public class ProductServiceTests
     public async Task SearchAsync_ReturnsEmpty_WhenNoMatch()
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        _context.Products.Add(
+        Context.Products.Add(
             new Product { Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null }
         );
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
 
         var result = await _service.SearchAsync("NonExistent", "SMARTPHONES");
 
@@ -225,11 +225,11 @@ public class ProductServiceTests
     public async Task SearchAsync_CaseInsensitive()
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        _context.Products.Add(
+        Context.Products.Add(
             new Product { Id = 1, Nombre = "IPHONE", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null }
         );
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
 
         var result = await _service.SearchAsync("IPHONE", null);
 
@@ -250,7 +250,7 @@ public class ProductServiceTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Nombre.Should().Be("New");
-        _context.Products.Should().HaveCount(1);
+        Context.Products.Should().HaveCount(1);
     }
 
     [Test]
@@ -284,7 +284,7 @@ public class ProductServiceTests
         var result = await _service.CreateAsync(product);
 
         result.IsSuccess.Should().BeFalse();
-        _context.Products.Should().BeEmpty();
+        Context.Products.Should().BeEmpty();
     }
 
     #endregion
@@ -296,16 +296,16 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Old Name", Descripcion = "Old Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var update = new Product { Id = 1, Nombre = "New Name", Descripcion = "New Desc", Precio = 150, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false };
 
         var result = await _service.UpdateAsync(1, update, 1);
 
         result.IsSuccess.Should().BeTrue();
-        var updated = await _context.Products.FindAsync(1L);
+        var updated = await Context.Products.FindAsync(1L);
         updated!.Nombre.Should().Be("New Name");
         updated.Precio.Should().Be(150);
     }
@@ -325,9 +325,9 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var beforeCreatedAt = product.CreatedAt;
         var update = new Product { Id = 1, Nombre = "Updated", Descripcion = "Updated Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false };
@@ -348,14 +348,14 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.DeleteAsync(1, 1, false);
 
         result.IsSuccess.Should().BeTrue();
-        var deletedProduct = await _context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
+        var deletedProduct = await Context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
         deletedProduct.Should().NotBeNull();
         deletedProduct!.Deleted.Should().BeTrue();
     }
@@ -374,14 +374,14 @@ public class ProductServiceTests
         var owner = new User { Id = 1, Email = "owner@test.com", UserName = "owner" };
         var admin = new User { Id = 2, Email = "admin@test.com", UserName = "admin" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
-        _context.Users.AddRange(owner, admin);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.AddRange(owner, admin);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.DeleteAsync(1, 2, true);
 
         result.IsSuccess.Should().BeTrue();
-        var deletedProduct = await _context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
+        var deletedProduct = await Context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
         deletedProduct.Should().NotBeNull();
         deletedProduct!.Deleted.Should().BeTrue();
     }
@@ -393,6 +393,10 @@ public class ProductServiceTests
     [Test]
     public async Task CreateAsync_InvalidatesCache()
     {
+        var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
+
         var product1 = new Product { Nombre = "First", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
         await _service.CreateAsync(product1);
 
@@ -411,9 +415,9 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result1 = await _service.GetByIdAsync(1);
         result1.Value.Nombre.Should().Be("Original");
@@ -430,9 +434,9 @@ public class ProductServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "ToDelete", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result1 = await _service.GetAllAsync();
         result1.Value.Should().HaveCount(1);

@@ -12,7 +12,7 @@ namespace TiendaDawWeb.Tests.Shared.Services.Carrito;
 
 public class CarritoServiceTests
 {
-    private ApplicationDbContext _context = null!;
+    private ApplicationDbContext Context = null!;
     private CarritoService _service = null!;
     private Mock<ILogger<CarritoService>> _loggerMock = null!;
     private MemoryCache _memoryCache = null!;
@@ -23,16 +23,16 @@ public class CarritoServiceTests
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        _context = new ApplicationDbContext(options);
+        Context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<CarritoService>>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
-        _service = new CarritoService(_context, _memoryCache, _loggerMock.Object);
+        _service = new CarritoService(Context, _memoryCache, _loggerMock.Object);
     }
 
     [TearDown]
     public void TearDown()
     {
-        _context.Dispose();
+        Context.Dispose();
         _memoryCache.Dispose();
     }
 
@@ -56,14 +56,14 @@ public class CarritoServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.AddToCarritoAsync(1, 1);
 
         result.IsSuccess.Should().BeTrue();
-        _context.CarritoItems.Should().HaveCount(1);
+        Context.CarritoItems.Should().HaveCount(1);
     }
 
     [Test]
@@ -77,8 +77,8 @@ public class CarritoServiceTests
     public async Task AddToCarritoAsync_ReturnsFailure_ProductDeleted()
     {
         var product = new Product { Id = 1, Nombre = "Product", Deleted = true };
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.AddToCarritoAsync(1, 1);
         result.IsSuccess.Should().BeFalse();
@@ -88,8 +88,8 @@ public class CarritoServiceTests
     public async Task AddToCarritoAsync_ReturnsFailure_ProductAlreadySold()
     {
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false, CompraId = 1 };
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.AddToCarritoAsync(1, 1);
         result.IsSuccess.Should().BeFalse();
@@ -101,10 +101,10 @@ public class CarritoServiceTests
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false };
         var existingItem = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        _context.CarritoItems.Add(existingItem);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        Context.CarritoItems.Add(existingItem);
+        await Context.SaveChangesAsync();
 
         var result = await _service.AddToCarritoAsync(1, 1);
         result.IsSuccess.Should().BeFalse();
@@ -115,14 +115,14 @@ public class CarritoServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        await Context.SaveChangesAsync();
 
         var result = await _service.AddToCarritoAsync(1, 1);
 
         result.IsSuccess.Should().BeTrue();
-        var updatedProduct = await _context.Products.FindAsync(1L);
+        var updatedProduct = await Context.Products.FindAsync(1L);
         updatedProduct!.Reservado.Should().BeTrue();
     }
 
@@ -136,15 +136,15 @@ public class CarritoServiceTests
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false };
         var item = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
-        _context.Users.Add(user);
-        _context.Products.Add(product);
-        _context.CarritoItems.Add(item);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.Products.Add(product);
+        Context.CarritoItems.Add(item);
+        await Context.SaveChangesAsync();
 
         var result = await _service.RemoveFromCarritoAsync(1);
 
         result.IsSuccess.Should().BeTrue();
-        _context.CarritoItems.Should().BeEmpty();
+        Context.CarritoItems.Should().BeEmpty();
     }
 
     [Test]
@@ -160,14 +160,14 @@ public class CarritoServiceTests
             ReservadoHasta = DateTime.UtcNow.AddMinutes(5)
         };
         var item = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
-        _context.Products.Add(product);
-        _context.CarritoItems.Add(item);
-        await _context.SaveChangesAsync();
+        Context.Products.Add(product);
+        Context.CarritoItems.Add(item);
+        await Context.SaveChangesAsync();
 
         var result = await _service.RemoveFromCarritoAsync(1);
 
         result.IsSuccess.Should().BeTrue();
-        var updatedProduct = await _context.Products.FindAsync(1L);
+        var updatedProduct = await Context.Products.FindAsync(1L);
         updatedProduct!.Reservado.Should().BeFalse();
     }
 
@@ -188,14 +188,14 @@ public class CarritoServiceTests
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var item1 = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
         var item2 = new CarritoItem { Id = 2, UsuarioId = 1, ProductoId = 2, Precio = 200 };
-        _context.Users.Add(user);
-        _context.CarritoItems.AddRange(item1, item2);
-        await _context.SaveChangesAsync();
+        Context.Users.Add(user);
+        Context.CarritoItems.AddRange(item1, item2);
+        await Context.SaveChangesAsync();
 
         var result = await _service.ClearCarritoAsync(1);
 
         result.IsSuccess.Should().BeTrue();
-        _context.CarritoItems.Should().BeEmpty();
+        Context.CarritoItems.Should().BeEmpty();
     }
 
     [Test]

@@ -1,0 +1,6 @@
+{
+  "NUnit": {
+    "ParallelizeChildren": false,
+    "MaxAgents": 1
+  }
+}

@@ -48,17 +48,10 @@ public class RatingService(
             CreatedAt = DateTime.UtcNow
         };
 
-        return await Task.Run(() =>
-        {
-            context.Ratings.Add(rating);
-            context.SaveChanges();
-            return Result.Success<Models.Rating, DomainError>(rating);
-        })
-        .Tap(async r =>
-        {
-            await context.Entry(r).Reference(x => x.Usuario).LoadAsync();
-            await context.Entry(r).Reference(x => x.Producto).LoadAsync();
-        });
+        context.Ratings.Add(rating);
+        await context.SaveChangesAsync();
+
+        return Result.Success<Models.Rating, DomainError>(rating);
     }
 
     /// <summary>
@@ -139,11 +132,9 @@ public class RatingService(
         rating.Puntuacion = puntuacion;
         rating.Comentario = comentario;
 
-        return await Task.Run(() =>
-        {
-            context.SaveChanges();
-            return Result.Success<Models.Rating, DomainError>(rating);
-        });
+        await context.SaveChangesAsync();
+
+        return Result.Success<Models.Rating, DomainError>(rating);
     }
 
     /// <summary>
@@ -166,12 +157,9 @@ public class RatingService(
                 return Result.Failure<bool, DomainError>(RatingError.Unauthorized());
 
             context.Ratings.Remove(rating);
+            await context.SaveChangesAsync();
 
-            return await Task.Run(() =>
-            {
-                context.SaveChanges();
-                return Result.Success<bool, DomainError>(true);
-            });
+            return Result.Success<bool, DomainError>(true);
         }
         catch (Exception ex)
         {

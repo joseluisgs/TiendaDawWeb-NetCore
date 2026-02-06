@@ -130,18 +130,16 @@ public class ProductService(
 
         try
         {
-            return await Task.Run(() =>
-            {
-                context.Products.Add(product);
-                context.SaveChanges();
-                return Result.Success<Models.Product, DomainError>(product);
-            })
-            .Tap(p =>
-            {
-                cache.Remove(ProductsCacheKey);
-                logger.LogInformation("Producto creado: {ProductId}", p.Id);
-                NotifyNewProduct(p);
-            });
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+
+            return Result.Success<Models.Product, DomainError>(product)
+                .Tap(p =>
+                {
+                    cache.Remove(ProductsCacheKey);
+                    logger.LogInformation("Producto creado: {ProductId}", p.Id);
+                    NotifyNewProduct(p);
+                });
         }
         catch (Exception ex)
         {
@@ -173,17 +171,15 @@ public class ProductService(
         product.Categoria = updatedProduct.Categoria;
         if (!string.IsNullOrEmpty(updatedProduct.Imagen)) product.Imagen = updatedProduct.Imagen;
 
-        return await Task.Run(() =>
-        {
-            context.SaveChanges();
-            return Result.Success<Models.Product, DomainError>(product);
-        })
-        .Tap(p =>
-        {
-            cache.Remove(ProductsCacheKey);
-            cache.Remove(ProductDetailsCacheKey(id));
-            logger.LogInformation("Producto actualizado: {ProductId}", id);
-        });
+        await context.SaveChangesAsync();
+
+        return Result.Success<Models.Product, DomainError>(product)
+            .Tap(p =>
+            {
+                cache.Remove(ProductsCacheKey);
+                cache.Remove(ProductDetailsCacheKey(id));
+                logger.LogInformation("Producto actualizado: {ProductId}", id);
+            });
     }
 
     /// <summary>
@@ -208,17 +204,13 @@ public class ProductService(
 
         producto.SoftDelete($"User-{userId}");
 
-        return await Task.Run(() =>
-        {
-            context.SaveChanges();
-            return Result.Success<bool, DomainError>(true);
-        })
-        .Tap(_ =>
-        {
-            cache.Remove(ProductsCacheKey);
-            cache.Remove(ProductDetailsCacheKey(id));
-            logger.LogInformation("Producto {ProductId} eliminado", id);
-        });
+        await context.SaveChangesAsync();
+
+        cache.Remove(ProductsCacheKey);
+        cache.Remove(ProductDetailsCacheKey(id));
+        logger.LogInformation("Producto {ProductId} eliminado", id);
+
+        return Result.Success<bool, DomainError>(true);
     }
 
     private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";

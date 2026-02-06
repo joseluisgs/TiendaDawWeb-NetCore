@@ -24,7 +24,6 @@ public class ProductControllerTests
     private readonly Mock<IStorageService> _mockStorageService;
     private readonly Mock<IFavoriteService> _mockFavoriteService;
     private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
     private readonly Mock<ILogger<ProductController>> _mockLogger;
     private readonly ProductController _controller;
 
@@ -37,7 +36,6 @@ public class ProductControllerTests
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         
-        _mockHubContext = new Mock<IHubContext<NotificationHub>>();
         _mockLogger = new Mock<ILogger<ProductController>>();
         
         _controller = new ProductController(
@@ -45,7 +43,6 @@ public class ProductControllerTests
             _mockStorageService.Object,
             _mockFavoriteService.Object,
             _mockUserManager.Object,
-            _mockHubContext.Object,
             _mockLogger.Object);
     }
 
