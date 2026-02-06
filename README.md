@@ -741,14 +741,15 @@ return result.Match(
 
 #### Componentes Blazor Server (SignalR integrado)
 
-Blazor Server usa SignalR internamente para la comunicación bidireccional en tiempo real entre el cliente y el servidor. No hay Hubs explícitos, sino componentes interactivos:
+Blazor Server usa SignalR internamente para comunicación bidireccional. Solo existen 3 componentes Blazor en el proyecto:
 
 | Componente                    | Auth | Descripción                              |
 | ---------------------------- | ---- | --------------------------------------- |
 | `<RatingSummary />`          | No   | Muestra promedio de valoraciones          |
 | `<RatingSection />`         | Sí   | Formulario para añadir valoraciones      |
-| `<CartSummary />`           | Sí   | Resumen del carrito en tiempo real       |
-| `<AdminDashboard />`         | ADMIN| Panel de administración con estadísticas |
+| `<AdminStatsWidget />`       | ADMIN| Panel de admin con auto-refresh (15s)   |
+
+> **Nota**: El carrito es **MVC tradicional** (`CartController`), no Blazor.
 
 ## 👥 Usuarios Demo
 
