@@ -7,19 +7,36 @@ using TiendaDawWeb.Shared.Data;
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Configuración de base de datos SQLite en memoria.
+/// Configuración de base de datos SQLite.
 /// </summary>
 public static class DatabaseConfig
 {
     /// <summary>
-    /// Configura SQLite con conexión persistente en memoria.
+    /// Configura SQLite con conexión persistente.
+    /// Para tests E2E usa archivo temporal en disco para evitar conflictos de concurrencia.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
-    /// <param name="connectionString">String de conexión SQLite.</param>
+    /// <param name="connectionString">String de conexión SQLite (opcional).</param>
     /// <returns>IServiceCollection.</returns>
-    public static IServiceCollection AddDatabases(this IServiceCollection services, string connectionString = "DataSource=:memory:")
+    public static IServiceCollection AddDatabases(this IServiceCollection services, string connectionString = "")
     {
-        Log.Information("🗄️ Configurando SQLite In-Memory...");
+        var isE2ETest = Environment.GetEnvironmentVariable("E2E_TEST") == "true";
+        var port = Environment.GetEnvironmentVariable("SERVER_PORT") ?? "5000";
+
+        if (isE2ETest)
+        {
+            var dbPath = Path.Combine(Path.GetTempPath(), $"tiendadb_{port}.db");
+            if (File.Exists(dbPath)) File.Delete(dbPath);
+
+            connectionString = $"Data Source={dbPath}";
+            Log.Information("🗄️ Configurando SQLite en archivo temporal: {DbPath}", dbPath);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(connectionString))
+                connectionString = "DataSource=:memory:";
+            Log.Information("🗄️ Configurando SQLite In-Memory...");
+        }
 
         var keepAliveConnection = new SqliteConnection(connectionString);
         keepAliveConnection.Open();

@@ -4,8 +4,7 @@
 #>
 
 $ErrorActionPreference = "Stop"
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$SolutionRoot = Split-Path -Parent $ScriptDir
+$SolutionRoot = (Get-Location).Path
 
 $MvcPort = 5000
 $RazorPagesPort = 5002
@@ -70,18 +69,18 @@ function Start-Server {
 }
 
 # ============================================
-Write-Header "🧪 E2E Test Runner"
+Write-Header "E2E Test Runner"
 
 # 1. Compilar
 Write-Header "Compilando..."
-dotnet build "TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -nologo -v q
-dotnet build "TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -nologo -v q
-dotnet build "TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" -nologo -v q
+dotnet build ".\TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -nologo -v q
+dotnet build ".\TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -nologo -v q
+dotnet build ".\TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" -nologo -v q
 
 # 2. Arrancar servidores
 Write-Header "Iniciando servidores..."
-$MvcProcess = Start-Server -ProjectPath "TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -Port $MvcPort -Name "MVC"
-$RazorPagesProcess = Start-Server -ProjectPath "TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -Port $RazorPagesPort -Name "Razor Pages"
+$MvcProcess = Start-Server -ProjectPath ".\TiendaDawWeb.Mvc\TiendaDawWeb.Mvc.csproj" -Port $MvcPort -Name "MVC"
+$RazorPagesProcess = Start-Server -ProjectPath ".\TiendaDawWeb.RazorPages\TiendaDawWeb.RazorPages.csproj" -Port $RazorPagesPort -Name "Razor Pages"
 
 # 3. Esperar
 if (-not (Wait-ForUrl -Url $MvcUrl)) { exit 1 }
@@ -90,13 +89,13 @@ if (-not (Wait-ForUrl -Url $RazorPagesUrl)) { exit 1 }
 # 4. Tests MVC
 Write-Header "Tests MVC ($MvcUrl)"
 $env:E2E_BASE_URL = $MvcUrl
-dotnet test "TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
+dotnet test ".\TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
 $MvcResult = $LASTEXITCODE
 
 # 5. Tests Razor Pages
 Write-Header "Tests Razor Pages ($RazorPagesUrl)"
 $env:E2E_BASE_URL = $RazorPagesUrl
-dotnet test "TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
+dotnet test ".\TiendaDawWeb.Tests.E2E\TiendaDawWeb.Tests.E2E.csproj" --filter "FullyQualifiedName~Tests" --no-build -v n
 $RazorPagesResult = $LASTEXITCODE
 
 # 6. Resumen
@@ -109,5 +108,6 @@ Stop-Servers
 if ($MvcResult -ne 0 -or $RazorPagesResult -ne 0) {
     exit 1
 }
-Write-Host "`n🎉 Todos los tests pasaron!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Todos los tests pasaron!" -ForegroundColor Green
 exit 0
