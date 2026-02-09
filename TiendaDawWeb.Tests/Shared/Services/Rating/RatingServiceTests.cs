@@ -41,8 +41,11 @@ public class RatingServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 2, Deleted = false };
+        var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
+        purchase.Products.Add(product);
         _context.Users.Add(user);
         _context.Products.Add(product);
+        _context.Purchases.Add(purchase);
         await _context.SaveChangesAsync();
 
         var result = await _service.AddRatingAsync(1, 1, 5, "Great product!");
@@ -93,8 +96,11 @@ public class RatingServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 2, Deleted = false };
+        var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
+        purchase.Products.Add(product);
         _context.Users.Add(user);
         _context.Products.Add(product);
+        _context.Purchases.Add(purchase);
         await _context.SaveChangesAsync();
 
         var result = await _service.AddRatingAsync(1, 1, 3, null);
@@ -108,8 +114,11 @@ public class RatingServiceTests
     {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 2, Deleted = false };
+        var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
+        purchase.Products.Add(product);
         _context.Users.Add(user);
         _context.Products.Add(product);
+        _context.Purchases.Add(purchase);
         await _context.SaveChangesAsync();
 
         var resultMin = await _service.AddRatingAsync(1, 1, 1, "Min rating");
