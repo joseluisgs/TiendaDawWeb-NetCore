@@ -1,15 +1,14 @@
 @namespace TiendaDawWeb.Shared.Blazor.Ratings
 @using TiendaDawWeb.Shared.Services.Rating
 @using TiendaDawWeb.Shared.Models
-@inject IRatingService RatingService
-@inject RatingStateContainer StateContainer
+@inject IRatingStore RatingStore
 @inject ILogger<RatingSection> Logger
 @implements IDisposable
 
 @{
-    var userRating = StateContainer.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
-    var canRate = _isAuthenticated && !_isOwner && _canRate;
-    var otherRatings = StateContainer.Ratings?.Where(r => r.UsuarioId != CurrentUserId).ToList();
+    var userRating = State?.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
+    var canRate = _isAuthenticated && !_isOwner && userRating == null;
+    var otherRatings = State?.Ratings?.Where(r => r.UsuarioId != CurrentUserId).ToList();
     var totalRatings = otherRatings?.Count ?? 0;
 }
 
@@ -127,9 +126,9 @@ else if (!canRate && _loading == false)
     [Parameter] public bool IsAuthenticated { get; set; }
     [Parameter] public string? ProductUrl { get; set; }
 
+    private RatingState? State { get; set; }
     private bool _isAuthenticated;
     private bool _isOwner;
-    private bool _canRate;
     private bool _loading = true;
     private bool _submitting = false;
     private int _selectedPuntuacion = 0;
@@ -138,25 +137,23 @@ else if (!canRate && _loading == false)
     private string _errorMessage = "";
     private bool _showStarError = false;
 
+    private readonly List<IDisposable> subscriptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("RatingSection inicializado para Producto {ProductId}", ProductId);
-        StateContainer.OnChange += HandleStateChange;
+        
+        subscriptions.Add(RatingStore.State.Subscribe(state => {
+            State = state;
+            InvokeAsync(StateHasChanged);
+        }));
         
         _isAuthenticated = IsAuthenticated;
         _isOwner = IsOwner;
         
-        if (_isAuthenticated && CurrentUserId.HasValue)
-        {
-            var canRateResult = await RatingService.CanUserRateProductAsync(CurrentUserId.Value, ProductId);
-            _canRate = canRateResult.IsSuccess && canRateResult.Value;
-        }
-
-        await StateContainer.EnsureLoadedAsync(ProductId);
+        await RatingStore.EnsureLoadedAsync(ProductId);
         _loading = false;
     }
-
-    private void HandleStateChange() => StateHasChanged();
 
     private void SelectStar(int val)
     {
@@ -186,22 +183,15 @@ else if (!canRate && _loading == false)
         _submitting = true;
         _errorMessage = "";
 
-        var result = await RatingService.AddRatingAsync(CurrentUserId.Value, ProductId, _selectedPuntuacion, _comentario);
-
-        if (result.IsSuccess)
-        {
-            Logger.LogInformation("RatingSection: Valoración guardada");
-            await StateContainer.RefreshAsync(ProductId);
-        }
-        else
-        {
-            _errorMessage = result.Error.Message;
-        }
-
+        await RatingStore.AddRatingAsync(CurrentUserId.Value, ProductId, _selectedPuntuacion, _comentario);
         _submitting = false;
     }
 
-    public void Dispose() => StateContainer.OnChange -= HandleStateChange;
+    public void Dispose()
+    {
+        foreach (var sub in subscriptions) sub.Dispose();
+        subscriptions.Clear();
+    }
 
     private RenderFragment RenderStars(double val, double size) => builder =>
     {

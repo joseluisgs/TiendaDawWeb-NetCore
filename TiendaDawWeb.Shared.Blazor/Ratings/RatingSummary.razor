@@ -1,13 +1,11 @@
 @namespace TiendaDawWeb.Shared.Blazor.Ratings
 @using TiendaDawWeb.Shared.Services.Rating
 @using TiendaDawWeb.Shared.Models
-@using Microsoft.AspNetCore.Identity
-@inject IRatingService RatingService
-@inject RatingStateContainer StateContainer
+@inject IRatingStore RatingStore
 @inject ILogger<RatingSummary> Logger
 @implements IDisposable
 
-@if (StateContainer.Ratings != null)
+@if (StateContainer?.Ratings != null)
 {
     @if (StateContainer.Count > 0)
     {
@@ -26,17 +24,19 @@
 @code {
     [Parameter] public long ProductId { get; set; }
 
+    private RatingState? StateContainer { get; set; }
+    private readonly List<IDisposable> subscriptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         Logger.LogInformation("RatingSummary inicializado para Producto {ProductId}", ProductId);
-        StateContainer.OnChange += HandleStateChange;
-        await StateContainer.EnsureLoadedAsync(ProductId);
-    }
-
-    private void HandleStateChange()
-    {
-        Logger.LogDebug("RatingSummary detecto cambio de estado para Producto {ProductId}. Actualizando UI...", ProductId);
-        StateHasChanged();
+        
+        subscriptions.Add(RatingStore.State.Subscribe(state => {
+            StateContainer = state;
+            InvokeAsync(StateHasChanged);
+        }));
+        
+        await RatingStore.EnsureLoadedAsync(ProductId);
     }
 
     private RenderFragment RenderStars(double val, double size) => builder =>
@@ -70,6 +70,7 @@
 
     public void Dispose()
     {
-        StateContainer.OnChange -= HandleStateChange;
+        foreach (var sub in subscriptions) sub.Dispose();
+        subscriptions.Clear();
     }
 }

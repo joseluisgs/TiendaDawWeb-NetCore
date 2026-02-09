@@ -9,6 +9,7 @@ using TiendaDawWeb.Shared.Services.Purchase;
 using TiendaDawWeb.Shared.Services.Rating;
 using TiendaDawWeb.Shared.Services.Storage;
 using TiendaDawWeb.Shared.Services.BackgroundServices;
+using TiendaDawWeb.Shared.Infrastructure;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
@@ -32,7 +33,7 @@ public static class ServicesConfig
             .AddScoped<IRatingService, RatingService>()
             .AddScoped<IEmailService, EmailService>()
             .AddScoped<IPdfService, PdfService>()
-            .AddScoped<RatingStateContainer>();
+            .AddStateStores();
     }
 
     /// <summary>
