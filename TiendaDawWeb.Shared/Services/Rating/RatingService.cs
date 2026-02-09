@@ -39,6 +39,14 @@ public class RatingService(
         if (existingRating != null)
             return Result.Failure<Models.Rating, DomainError>(RatingError.AlreadyRated());
 
+        var hasPurchased = await context.Purchases
+            .Where(p => p.CompradorId == usuarioId)
+            .SelectMany(p => p.Products)
+            .AnyAsync(prod => prod.Id == productoId);
+
+        if (!hasPurchased)
+            return Result.Failure<Models.Rating, DomainError>(RatingError.ProductNotPurchased());
+
         var rating = new Models.Rating
         {
             UsuarioId = usuarioId,

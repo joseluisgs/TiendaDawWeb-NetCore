@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Microsoft.Extensions.DependencyInjection;
 using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.Shared.Services.Rating;
@@ -43,11 +44,16 @@ public class RatingStore : IRatingStore
 
     /// <summary>
     /// Constructor que inicializa el estado vacío.
+    /// 
+    /// NOTA: RatingStore es un Singleton, pero IRatingService es Scoped.
+    /// Para resolver un servicio Scoped desde un Singleton, necesitamos IServiceScopeFactory.
+    /// Un "Scope" crea un contenedor temporal de dependencias con instancias frescas.
+    /// El scope se dispose al final del método, liberando los recursos correctamente.
     /// </summary>
-    /// <param name="ratingService">Servicio de valoraciones.</param>
-    public RatingStore(IRatingService ratingService)
+    /// <param name="serviceScopeFactory">Fábrica de alcances para resolver servicios scoped.</param>
+    public RatingStore(IServiceScopeFactory serviceScopeFactory)
     {
-        _ratingService = ratingService;
+        _serviceScopeFactory = serviceScopeFactory;
         _state = new BehaviorSubject<RatingState>(new RatingState());
     }
     
@@ -66,17 +72,31 @@ public class RatingStore : IRatingStore
         return RefreshAsync(productId);
     }
     
+    /// <summary>
+    /// Refresca las valoraciones de un producto.
+    /// 
+    /// PATRÓN: Creamos un scope temporal con "using" para resolver IRatingService.
+    /// Al salir del bloque "using", el scope se dispose y libera los recursos.
+    /// Esto permite que un Singleton (RatingStore) use servicios Scoped (IRatingService).
+    /// </summary>
     /// <inheritdoc />
     public Task RefreshAsync(long productId)
     {
         return Task.Run(async () =>
         {
-            var result = await _ratingService.GetByProductoIdAsync(productId);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var ratingService = scope.ServiceProvider.GetRequiredService<IRatingService>();
+            var result = await ratingService.GetByProductoIdAsync(productId);
             if (result.IsSuccess)
                 _state.OnNext(new RatingState(result.Value.ToList(), productId));
         });
     }
     
+    /// <summary>
+    /// Añade una nueva valoración.
+    /// 
+    /// Cada llamada crea su propio scope para obtener una instancia fresca de IRatingService.
+    /// </summary>
     /// <inheritdoc />
     public async Task<Models.Rating?> AddRatingAsync(
         long userId, 
@@ -84,7 +104,9 @@ public class RatingStore : IRatingStore
         int puntuacion, 
         string? comentario)
     {
-        var result = await _ratingService.AddRatingAsync(userId, productId, puntuacion, comentario);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var ratingService = scope.ServiceProvider.GetRequiredService<IRatingService>();
+        var result = await ratingService.AddRatingAsync(userId, productId, puntuacion, comentario);
         if (result.IsSuccess && result.Value != null)
         {
             var ratings = _state.Value.Ratings.ToList();
@@ -98,5 +120,5 @@ public class RatingStore : IRatingStore
     public IObservable<T> Select<T>(Func<RatingState, T> selector) 
         => _state.Select(selector).DistinctUntilChanged();
 
-    private readonly IRatingService _ratingService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 }

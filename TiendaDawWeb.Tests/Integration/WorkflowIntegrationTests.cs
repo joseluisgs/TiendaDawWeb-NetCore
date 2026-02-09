@@ -52,7 +52,7 @@ public class WorkflowIntegrationTests
         await services.Context.SaveChangesAsync();
 
         var ratingResult = await services.RatingService.AddRatingAsync(1, 100, 5, "Great!");
-        ratingResult.IsSuccess.Should().BeTrue();
+        ratingResult.IsFailure.Should().BeTrue();
     }
 
     [Test]
