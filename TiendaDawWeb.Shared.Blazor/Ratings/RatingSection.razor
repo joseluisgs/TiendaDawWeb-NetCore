@@ -10,6 +10,7 @@
     var canRate = _isAuthenticated && !_isOwner && userRating == null && _hasPurchased;
     var otherRatings = State?.Ratings?.Where(r => r.UsuarioId != CurrentUserId).ToList();
     var totalRatings = otherRatings?.Count ?? 0;
+    var hasOtherRatings = otherRatings != null && otherRatings.Any();
 }
 
 <div class="mb-4">
@@ -111,13 +112,7 @@
         }
     </div>
 }
-else if (_isAuthenticated && !_hasPurchased && _loading == false)
-{
-    <div class="alert alert-info border">
-        <i class="bi bi-info-circle"></i> Solo puedes valorar productos que hayas comprado.
-    </div>
-}
-else if (!canRate && _loading == false)
+else if (!canRate && userRating == null && _loading == false)
 {
     <div class="alert alert-light border">
         <i class="bi bi-info-circle"></i> No hay valoraciones todavía. 
