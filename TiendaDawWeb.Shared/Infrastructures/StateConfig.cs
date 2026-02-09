@@ -1,6 +1,6 @@
 using TiendaDawWeb.Shared.Services.Rating;
 
-namespace TiendaDawWeb.Shared.Infrastructure;
+namespace TiendaDawWeb.Shared.Infrastructures;
 
 /// <summary>
 /// Define métodos de extensión para el registro de los almacenes de estado reactivo.

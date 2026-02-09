@@ -9,7 +9,7 @@ using TiendaDawWeb.Shared.Services.Purchase;
 using TiendaDawWeb.Shared.Services.Rating;
 using TiendaDawWeb.Shared.Services.Storage;
 using TiendaDawWeb.Shared.Services.BackgroundServices;
-using TiendaDawWeb.Shared.Infrastructure;
+using TiendaDawWeb.Shared.Infrastructures;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
