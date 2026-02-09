@@ -66,6 +66,11 @@ public interface IRatingStore
     Task<Models.Rating?> AddRatingAsync(long userId, long productId, int puntuacion, string? comentario);
     
     /// <summary>
+    /// Verifica si un usuario puede valorar un producto (debe haberlo comprado).
+    /// </summary>
+    Task<bool> CanUserRateAsync(long userId, long productId);
+    
+    /// <summary>
     /// Selector personalizado para observar una parte específica del estado.
     /// </summary>
     IObservable<T> Select<T>(Func<RatingState, T> selector);

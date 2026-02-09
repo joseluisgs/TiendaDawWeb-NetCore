@@ -115,6 +115,20 @@ public class RatingStore : IRatingStore
         }
         return result.Value;
     }
+
+    /// <summary>
+    /// Verifica si un usuario puede valorar un producto.
+    /// </summary>
+    public Task<bool> CanUserRateAsync(long userId, long productId)
+    {
+        return Task.Run(async () =>
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var ratingService = scope.ServiceProvider.GetRequiredService<IRatingService>();
+            var result = await ratingService.CanUserRateProductAsync(userId, productId);
+            return result.IsSuccess && result.Value;
+        });
+    }
     
     /// <inheritdoc />
     public IObservable<T> Select<T>(Func<RatingState, T> selector) 

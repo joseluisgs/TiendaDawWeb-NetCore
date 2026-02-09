@@ -7,7 +7,7 @@
 
 @{
     var userRating = State?.Ratings?.FirstOrDefault(r => r.UsuarioId == CurrentUserId);
-    var canRate = _isAuthenticated && !_isOwner && userRating == null;
+    var canRate = _isAuthenticated && !_isOwner && userRating == null && _hasPurchased;
     var otherRatings = State?.Ratings?.Where(r => r.UsuarioId != CurrentUserId).ToList();
     var totalRatings = otherRatings?.Count ?? 0;
 }
@@ -111,6 +111,12 @@
         }
     </div>
 }
+else if (_isAuthenticated && !_hasPurchased && _loading == false)
+{
+    <div class="alert alert-info border">
+        <i class="bi bi-info-circle"></i> Solo puedes valorar productos que hayas comprado.
+    </div>
+}
 else if (!canRate && _loading == false)
 {
     <div class="alert alert-light border">
@@ -129,6 +135,7 @@ else if (!canRate && _loading == false)
     private RatingState? State { get; set; }
     private bool _isAuthenticated;
     private bool _isOwner;
+    private bool _hasPurchased;
     private bool _loading = true;
     private bool _submitting = false;
     private int _selectedPuntuacion = 0;
@@ -152,6 +159,11 @@ else if (!canRate && _loading == false)
         _isOwner = IsOwner;
         
         await RatingStore.EnsureLoadedAsync(ProductId);
+        
+        // Verificar si el usuario ha comprado el producto
+        if (CurrentUserId.HasValue)
+            _hasPurchased = await RatingStore.CanUserRateAsync(CurrentUserId.Value, ProductId);
+        
         _loading = false;
     }
 
