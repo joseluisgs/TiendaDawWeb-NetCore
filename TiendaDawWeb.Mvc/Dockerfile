@@ -39,6 +39,9 @@ EXPOSE 5000
 # Copy published files
 COPY --from=publish --chown=appuser:appgroup /app/publish .
 
+# Create uploads directory
+RUN mkdir -p /app/wwwroot/uploads && chown -R appuser:appgroup /app/wwwroot
+
 # Environment variables
 ENV ASPNETCORE_URLS=http://+:5000
 ENV ASPNETCORE_ENVIRONMENT=Production
