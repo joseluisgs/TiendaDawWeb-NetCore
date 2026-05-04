@@ -29,7 +29,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Logger.LogInformation("RatingSummary inicializado para Producto {ProductId}", ProductId);
+        Logger.LogInformation("Blazor: RatingSummary inicializado para Producto {ProductId}", ProductId);
         
         subscriptions.Add(RatingStore.State.Subscribe(state => {
             StateContainer = state;

@@ -29,7 +29,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 - 📡 **Blazor Server + SignalR**: Componentes interactivos y notificaciones en tiempo real
 - 📊 **Panel de Administración**: Dashboard con estadísticas en tiempo real
 - 🧪 **Testing**: Unit tests con NUnit, bUnit para Blazor, y E2E con Playwright
-- 🎨 **Interfaz Híbrida**: Razor Pages + Blazor Server + AJAX (共存 de tres enfoques)
+- 🎨 **Interfaz Híbrida**: Razor Pages + Blazor Server + AJAX (coexistencia de tres enfoques)
 
 ## 📑 Tabla de Contenidos
 

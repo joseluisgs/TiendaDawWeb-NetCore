@@ -185,7 +185,7 @@ public class AuditLog
 | **Centralización**     | Un solo lugar para toda la lógica de auditoría    |
 | **Testabilidad**       | Easy de testear con mocks                        |
 | **Rendimiento**        | Solo afecta a entidades que heredan de Auditable |
-| **Trazabilidad**       | CreatedBy/UpdatedBy para追究 (accountability)     |
+| **Trazabilidad**       | CreatedBy/UpdatedBy para responsabilidad (accountability)     |
 
 ### Flujo Completo
 

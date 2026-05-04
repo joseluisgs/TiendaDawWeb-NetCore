@@ -27,6 +27,22 @@
         </div>
     </div>
 
+    <!-- Gráficas Interactivas Blazor -->
+    <div class="row mb-5">
+        <div class="col-md-7 mb-4">
+            <component type="typeof(TiendaDawWeb.Shared.Blazor.Admin.Charts.VentasMensualesChart)" render-mode="ServerPrerendered" />
+        </div>
+        <div class="col-md-5 mb-4">
+            <component type="typeof(TiendaDawWeb.Shared.Blazor.Admin.Charts.VentasCategoriasChart)" render-mode="ServerPrerendered" />
+        </div>
+        <div class="col-12 mb-4">
+            <component type="typeof(TiendaDawWeb.Shared.Blazor.Admin.Charts.TopParticipantesChart)" render-mode="ServerPrerendered" />
+        </div>
+    </div>
+
+    <hr class="my-5" />
+    <h3 class="mb-4 text-muted"><i class="bi bi-table"></i> Detalle de Datos</h3>
+
     <!-- Productos Más Vendidos por Categoría -->
     <div class="row mb-4">
         <div class="col-md-6">
