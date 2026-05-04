@@ -465,8 +465,17 @@ TiendaDawWeb-NetCore/
 │   ├── Models/                           # Modelos de dominio
 │   │   ├── User.cs                      # Entidad Usuario
 │   │   └── Product.cs                   # Entidad Producto
+│   ├── Dto/                              # Data Transfer Objects
+│   │   └── Stats/                       # DTOs de estadísticas
+│   │       ├── CategorySalesDto.cs
+│   │       ├── MonthlySalesDto.cs
+│   │       ├── TopBuyerDto.cs
+│   │       └── TopSellerDto.cs
 │   ├── Services/                        # Interfaces de Servicios
-│   │   └── IProductService.cs          # Contrato productos
+│   │   ├── Product/                    # Servicio de productos
+│   │   └── Stats/                       # Servicio de estadísticas
+│   │       ├── IStatisticsService.cs
+│   │       └── StatisticsService.cs
 │   ├── Mappers/                         # Mapeadores
 │   └── Extensions/                      # Extensiones DI
 │
@@ -496,9 +505,10 @@ TiendaDawWeb-NetCore/
 | -------------------- | -------------------------------------------------- | ------------------------------------------------------ |
 | **Controllers**      | Entry points HTTP MVC                              | Account, Products, Cart, Ratings, Admin              |
 | **Views**            | Vistas Razor Pages                                 | Shared, Account, Products, Cart                        |
-| **Components**       | Componentes Blazor Server                          | Admin/StatsWidget, Ratings/*                        |
-| **Services**         | Lógica de negocio (Contratos)                     | IProductService, IUserService, ICartService           |
+| **Components**       | Componentes Blazor Server                          | Admin/StatsWidget, Admin/Charts/*, Ratings/*         |
+| **Services**         | Lógica de negocio (Contratos)                     | IProductService, IStatisticsService, ICartService     |
 | **Models**           | Modelos de dominio                                | User, Product, Purchase, CarritoItem, Rating         |
+| **Dto**              | Data Transfer Objects                             | Stats/CategorySalesDto, MonthlySalesDto, etc.         |
 | **Shared**           | Lógica compartida entre proyectos                  | Models, Services, Mappers                            |
 | **Tests**            | Unit, Integration, Components                     | NUnit, bUnit                                           |
 | **Tests.E2E**        | End-to-End                                        | Playwright con C#                                      |
@@ -743,13 +753,16 @@ return result.Match(
 
 #### Componentes Blazor Server (SignalR integrado)
 
-Blazor Server usa SignalR internamente para comunicación bidireccional. Solo existen 3 componentes Blazor en el proyecto:
+Blazor Server usa SignalR internamente para comunicación bidireccional. El proyecto incluye 6 componentes Blazor:
 
 | Componente                    | Auth | Descripción                              |
 | ---------------------------- | ---- | --------------------------------------- |
 | `<RatingSummary />`          | No   | Muestra promedio de valoraciones          |
 | `<RatingSection />`         | Sí   | Formulario para añadir valoraciones      |
-| `<AdminStatsWidget />`       | ADMIN| Panel de admin con auto-refresh (15s)   |
+| `<AdminStatsWidget />`       | ADMIN| Panel de admin con auto-refresh (30s)   |
+| `<VentasMensualesChart />`  | ADMIN| Gráfico de evolución de ventas           |
+| `<VentasCategoriasChart />` | ADMIN| Gráfico donut de ventas por categoría   |
+| `<TopParticipantesChart />` | ADMIN| Gráfico top 10 compradores/vendedores   |
 
 > **Nota**: El carrito es **MVC tradicional** (`CartController`), no Blazor.
 
