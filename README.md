@@ -10,7 +10,7 @@
 [![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 [![SignalR](https://img.shields.io/badge/SignalR-orange)](https://dotnet.microsoft.com/en-us/apps/aspnet/signalr)
 [![Playwright](https://img.shields.io/badge/Playwright-E2E-green)](https://playwright.dev/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-CC-yellow.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)
 
 
 **Ejemplo didáctico de web dinámicas con .NET 10 y ASP.NET Core MVC y Razor Pages.**
@@ -811,4 +811,4 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://jos
 
 Este repositorio está licenciado bajo **Creative Commons**. Por favor si compartes, usas o modificas este proyecto cita a su autor.
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
