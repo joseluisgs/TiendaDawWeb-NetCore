@@ -1,0 +1,218 @@
+@namespace TiendaDawWeb.Shared.Blazor.Admin.Charts
+@using TiendaDawWeb.Shared.Services.Stats
+@using TiendaDawWeb.Shared.Models.Stats
+@using System.Timers
+@implements IDisposable
+@inject IStatisticsService StatsService
+@inject ILogger<TopParticipantesChart> Logger
+
+<div class="card h-100 shadow-sm">
+    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi @(IsBuyerMode ? "bi-person-down" : "bi-person-up")"></i> 
+            Top 10 @(IsBuyerMode ? "Compradores" : "Vendedores")
+        </h5>
+        <div class="d-flex align-items-center">
+            <div class="btn-group btn-group-sm me-2">
+                <button class="btn btn-outline-light @(IsBuyerMode ? "active" : "")" @onclick="() => SetMode(true)">Compradores</button>
+                <button class="btn btn-outline-light @(!IsBuyerMode ? "active" : "")" @onclick="() => SetMode(false)">Vendedores</button>
+            </div>
+            <span class="badge bg-light text-info me-2">Auto-refresh: 30s</span>
+            <button class="btn btn-sm btn-light" @onclick="ManualRefresh" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <i class="bi bi-arrow-clockwise"></i>
+                }
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (IsBuyerMode)
+        {
+            @if (isLoading && (BuyersData == null || !BuyersData.Any()))
+            {
+                <div class="d-flex justify-content-center align-items-center" style="height: 350px;">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else if (BuyersData == null || !BuyersData.Any())
+            {
+                <div class="d-flex flex-column justify-content-center align-items-center text-muted" style="height: 350px;">
+                    <i class="bi bi-people display-4"></i>
+                    <p class="mt-2">No hay datos de compradores</p>
+                </div>
+            }
+            else
+            {
+                <ApexChart TItem="TopBuyerDto" 
+                            Title="Volumen de Compras"
+                            Options="BuyerOptions">
+
+                    <ApexPointSeries TItem="TopBuyerDto"
+                                    Items="BuyersData"
+                                    Name="Compras"
+                                    SeriesType="SeriesType.Bar"
+                                    XValue="@(e => e.Nombre)"
+                                    YValue="@(e => (decimal)e.TotalCompras)" />
+                </ApexChart>
+            }
+        }
+        else
+        {
+            @if (isLoading && (SellersData == null || !SellersData.Any()))
+            {
+                <div class="d-flex justify-content-center align-items-center" style="height: 350px;">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else if (SellersData == null || !SellersData.Any())
+            {
+                <div class="d-flex flex-column justify-content-center align-items-center text-muted" style="height: 350px;">
+                    <i class="bi bi-shop display-4"></i>
+                    <p class="mt-2">No hay datos de vendedores</p>
+                </div>
+            }
+            else
+            {
+                <ApexChart TItem="TopSellerDto" 
+                            Title="Productos Vendidos"
+                            Options="SellerOptions">
+
+                    <ApexPointSeries TItem="TopSellerDto"
+                                    Items="SellersData"
+                                    Name="Ventas"
+                                    SeriesType="SeriesType.Bar"
+                                    XValue="@(e => e.Nombre)"
+                                    YValue="@(e => (decimal)e.ProductosVendidos)" />
+                </ApexChart>
+            }
+        }
+        <div class="text-end mt-2">
+            <small class="text-muted fst-italic">Última actualización: @lastUpdate.ToString("HH:mm:ss")</small>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsBuyerMode { get; set; } = true;
+    private List<TopBuyerDto>? BuyersData { get; set; }
+    private List<TopSellerDto>? SellersData { get; set; }
+    
+    private ApexChartOptions<TopBuyerDto> BuyerOptions { get; set; } = new();
+    private ApexChartOptions<TopSellerDto> SellerOptions { get; set; } = new();
+    
+    private DateTime lastUpdate = DateTime.Now;
+    private bool isLoading = true;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ConfigureOptions();
+        await LoadData();
+
+        _timer = new Timer(30000);
+        _timer.Elapsed += async (s, e) => await InvokeAsync(AutoRefresh);
+        _timer.AutoReset = true;
+        _timer.Enabled = true;
+    }
+
+    private void ConfigureOptions()
+    {
+        // Configuración Compradores
+        BuyerOptions.Chart = new Chart 
+        { 
+            Toolbar = new Toolbar { Show = true },
+            Zoom = new Zoom { Enabled = true, Type = AxisType.X, AutoScaleYaxis = true }
+        };
+        BuyerOptions.PlotOptions = new PlotOptions 
+        { 
+            Bar = new PlotOptionsBar 
+            { 
+                Horizontal = true,
+                BarHeight = "35%", 
+                BorderRadius = 4
+            } 
+        };
+        BuyerOptions.Colors = new List<string> { "#0d6efd" };
+        
+        // Configuración Vendedores
+        SellerOptions.Chart = new Chart 
+        { 
+            Toolbar = new Toolbar { Show = true },
+            Zoom = new Zoom { Enabled = true, Type = AxisType.X, AutoScaleYaxis = true }
+        };
+        SellerOptions.PlotOptions = new PlotOptions 
+        { 
+            Bar = new PlotOptionsBar 
+            { 
+                Horizontal = true,
+                BarHeight = "35%", 
+                BorderRadius = 4
+            } 
+        };
+        SellerOptions.Colors = new List<string> { "#198754" };
+    }
+
+    private async Task ManualRefresh()
+    {
+        Logger.LogInformation("🫱 Blazor TopParticipantesChart: Refresco MANUAL solicitado");
+        isLoading = true;
+        await Task.Delay(300); // UI Feedback
+        await LoadData();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task AutoRefresh()
+    {
+        Logger.LogInformation("⏱️ Blazor TopParticipantesChart: Refresco AUTOMÁTICO por Timer");
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task SetMode(bool isBuyer)
+    {
+        IsBuyerMode = isBuyer;
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            if (IsBuyerMode)
+            {
+                var result = await StatsService.GetTopBuyersAsync();
+                BuyersData = result.ToList();
+            }
+            else
+            {
+                var result = await StatsService.GetTopSellersAsync();
+                SellersData = result.ToList();
+            }
+            lastUpdate = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Blazor TopParticipantesChart: Error al cargar datos");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

@@ -1,0 +1,163 @@
+@namespace TiendaDawWeb.Shared.Blazor.Admin.Charts
+@using TiendaDawWeb.Shared.Services.Stats
+@using TiendaDawWeb.Shared.Models.Stats
+@using System.Timers
+@implements IDisposable
+@inject IStatisticsService StatsService
+@inject ILogger<VentasMensualesChart> Logger
+
+<div class="card h-100 shadow-sm">
+    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-calendar3"></i> Evolución Mensual</h5>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-light text-dark me-2">Auto-refresh: 30s</span>
+            <button class="btn btn-sm btn-dark" @onclick="ManualRefresh" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <i class="bi bi-arrow-clockwise"></i>
+                }
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (isLoading && (Data == null || !Data.Any()))
+        {
+            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else if (Data == null || !Data.Any())
+        {
+            <div class="d-flex flex-column justify-content-center align-items-center text-muted" style="height: 400px;">
+                <i class="bi bi-calendar-x display-4"></i>
+                <p class="mt-2">No hay datos históricos disponibles</p>
+            </div>
+        }
+        else
+        {
+            <ApexChart TItem="MonthlySalesDto" 
+                        Title="Ventas y Pedidos"
+                        XAxisType="XAxisType.Category"
+                        Options="Options">
+
+                <ApexPointSeries TItem="MonthlySalesDto"
+                                Items="Data"
+                                Name="Ventas (€)"
+                                SeriesType="SeriesType.Line"
+                                XValue="@(e => $"{e.NombreMes} {e.Año}")"
+                                YValue="@(e => e.TotalVentas)" />
+
+                <ApexPointSeries TItem="MonthlySalesDto"
+                                Items="Data"
+                                Name="Pedidos"
+                                SeriesType="SeriesType.Bar"
+                                XValue="@(e => $"{e.NombreMes} {e.Año}")"
+                                YValue="@(e => (decimal)e.NumeroCompras)" />
+            </ApexChart>
+        }
+        <div class="text-end mt-2">
+            <small class="text-muted fst-italic">Última actualización: @lastUpdate.ToString("HH:mm:ss")</small>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<MonthlySalesDto>? Data { get; set; }
+    private ApexChartOptions<MonthlySalesDto> Options { get; set; } = new();
+    private DateTime lastUpdate = DateTime.Now;
+    private bool isLoading = true;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Blazor VentasMensualesChart: Inicializado");
+        ConfigureOptions();
+        await LoadData();
+
+        _timer = new Timer(30000);
+        _timer.Elapsed += async (s, e) => await InvokeAsync(AutoRefresh);
+        _timer.AutoReset = true;
+        _timer.Enabled = true;
+    }
+
+    private void ConfigureOptions()
+    {
+        Options.Chart = new Chart 
+        { 
+            Toolbar = new Toolbar { Show = true },
+            Zoom = new Zoom { Enabled = true, Type = AxisType.X, AutoScaleYaxis = true }
+        };
+
+        Options.PlotOptions = new PlotOptions
+        {
+            Bar = new PlotOptionsBar
+            {
+                ColumnWidth = "35%", 
+                BorderRadius = 4
+            }
+        };
+        
+        Options.Yaxis = new List<YAxis>
+        {
+            new YAxis { 
+                Title = new AxisTitle { Text = "Ventas (€)" },
+                Labels = new YAxisLabels { Formatter = "function(val) { return val.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }); }" }
+            },
+            new YAxis { 
+                Opposite = true,
+                Title = new AxisTitle { Text = "Nº Pedidos" }
+            }
+        };
+
+        Options.Stroke = new Stroke { Curve = Curve.Smooth, Width = new List<int> { 4, 0 } };
+        Options.Colors = new List<string> { "#ffc107", "#0dcaf0" };
+    }
+
+    private async Task ManualRefresh()
+    {
+        Logger.LogInformation("🫱 Blazor VentasMensualesChart: Refresco MANUAL solicitado");
+        isLoading = true;
+        await Task.Delay(300); 
+        await LoadData();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task AutoRefresh()
+    {
+        Logger.LogInformation("⏱️ Blazor VentasMensualesChart: Refresco AUTOMÁTICO por Timer");
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var result = await StatsService.GetMonthlySalesAsync();
+            Data = result.ToList();
+            lastUpdate = DateTime.Now;
+            Logger.LogDebug("Blazor VentasMensualesChart: Datos cargados correctamente");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Blazor VentasMensualesChart: Error al cargar datos");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        Logger.LogInformation("Blazor VentasMensualesChart: Eliminado (Dispose)");
+        _timer?.Dispose();
+    }
+}
