@@ -15,7 +15,7 @@
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-cpu"></i> Estadísticas en Vivo (Blazor Component)</h5>
         <div>
-            <span class="badge bg-light text-primary me-2">Auto-refresh: 15s</span>
+            <span class="badge bg-light text-primary me-2">Auto-refresh: 30s</span>
             <button class="btn btn-sm btn-light" @onclick="ManualRefresh" disabled="@isLoading">
                 @if (isLoading)
                 {
@@ -25,7 +25,6 @@
                 {
                     <i class="bi bi-arrow-clockwise"></i>
                 }
-                Refrescar
             </button>
         </div>
     </div>
@@ -63,8 +62,8 @@
         Logger.LogInformation("Blazor: AdminStatsWidget inicializado");
         await LoadData();
         
-        // Configurar actualización automática cada 15 segundos
-        _timer = new Timer(15000);
+        // Configurar actualización automática cada 30 segundos
+        _timer = new Timer(30000);
         _timer.Elapsed += async (sender, e) => await InvokeAsync(AutoRefresh);
         _timer.AutoReset = true;
         _timer.Enabled = true;
@@ -72,7 +71,7 @@
 
     private async Task ManualRefresh()
     {
-        Logger.LogInformation("🫱 Blazor: Refresco MANUAL solicitado por el usuario");
+        Logger.LogInformation("🫱 Blazor Admin Stats: Refresco MANUAL solicitado por el usuario");
         isLoading = true;
         await Task.Delay(500); // UI Feedback
         await LoadData();
@@ -81,7 +80,7 @@
 
     private async Task AutoRefresh()
     {
-        Logger.LogInformation("⏱️ Blazor: Refresco AUTOMÁTICO por Timer");
+        Logger.LogInformation("⏱️ Blazor Admin Stats: Refresco AUTOMÁTICO por Timer");
         await LoadData();
         StateHasChanged(); // Forzar renderizado en refresco automático
     }

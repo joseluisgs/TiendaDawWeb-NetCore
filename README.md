@@ -29,7 +29,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 - 📡 **Blazor Server + SignalR**: Componentes interactivos y notificaciones en tiempo real
 - 📊 **Panel de Administración**: Dashboard con estadísticas en tiempo real
 - 🧪 **Testing**: Unit tests con NUnit, bUnit para Blazor, y E2E con Playwright
-- 🎨 **Interfaz Híbrida**: Razor Pages + Blazor Server + AJAX (共存 de tres enfoques)
+- 🎨 **Interfaz Híbrida**: Razor Pages + Blazor Server + AJAX (coexistencia de tres enfoques)
 
 ## 📑 Tabla de Contenidos
 
@@ -79,7 +79,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
       - [Account Controller](#account-controller)
       - [Products Controller](#products-controller)
       - [Cart Controller](#cart-controller)
-      - [Componentes Blazor Server](#componentes-blazor-server-signalr-integrado)
+      - [Componentes Blazor Server (SignalR integrado)](#componentes-blazor-server-signalr-integrado)
   - [👥 Usuarios Demo](#-usuarios-demo)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
@@ -107,6 +107,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | **ASP.NET Core MVC**     | 10         | Framework web con patrón MVC                   |
 | **Razor Pages**          | 10         | Motor de vistas del lado servidor              |
 | **Blazor Server**        | 10         | Componentes interactivos en tiempo real        |
+| **Blazor-ApexCharts**     | 3.x        | Gráficos interactivos en tiempo real          |
 | **SignalR**              | 10         | Comunicación bidireccional para reactividad    |
 | **EF Core**              | 10         | ORM con SQLite In-Memory                       |
 | **SQLite In-Memory**     | -          | Base de datos volátil para desarrollo/testing  |
@@ -464,8 +465,17 @@ TiendaDawWeb-NetCore/
 │   ├── Models/                           # Modelos de dominio
 │   │   ├── User.cs                      # Entidad Usuario
 │   │   └── Product.cs                   # Entidad Producto
+│   ├── Dto/                              # Data Transfer Objects
+│   │   └── Stats/                       # DTOs de estadísticas
+│   │       ├── CategorySalesDto.cs
+│   │       ├── MonthlySalesDto.cs
+│   │       ├── TopBuyerDto.cs
+│   │       └── TopSellerDto.cs
 │   ├── Services/                        # Interfaces de Servicios
-│   │   └── IProductService.cs          # Contrato productos
+│   │   ├── Product/                    # Servicio de productos
+│   │   └── Stats/                       # Servicio de estadísticas
+│   │       ├── IStatisticsService.cs
+│   │       └── StatisticsService.cs
 │   ├── Mappers/                         # Mapeadores
 │   └── Extensions/                      # Extensiones DI
 │
@@ -495,9 +505,10 @@ TiendaDawWeb-NetCore/
 | -------------------- | -------------------------------------------------- | ------------------------------------------------------ |
 | **Controllers**      | Entry points HTTP MVC                              | Account, Products, Cart, Ratings, Admin              |
 | **Views**            | Vistas Razor Pages                                 | Shared, Account, Products, Cart                        |
-| **Components**       | Componentes Blazor Server                          | Admin/StatsWidget, Ratings/*                        |
-| **Services**         | Lógica de negocio (Contratos)                     | IProductService, IUserService, ICartService           |
+| **Components**       | Componentes Blazor Server                          | Admin/StatsWidget, Admin/Charts/*, Ratings/*         |
+| **Services**         | Lógica de negocio (Contratos)                     | IProductService, IStatisticsService, ICartService     |
 | **Models**           | Modelos de dominio                                | User, Product, Purchase, CarritoItem, Rating         |
+| **Dto**              | Data Transfer Objects                             | Stats/CategorySalesDto, MonthlySalesDto, etc.         |
 | **Shared**           | Lógica compartida entre proyectos                  | Models, Services, Mappers                            |
 | **Tests**            | Unit, Integration, Components                     | NUnit, bUnit                                           |
 | **Tests.E2E**        | End-to-End                                        | Playwright con C#                                      |
@@ -742,13 +753,16 @@ return result.Match(
 
 #### Componentes Blazor Server (SignalR integrado)
 
-Blazor Server usa SignalR internamente para comunicación bidireccional. Solo existen 3 componentes Blazor en el proyecto:
+Blazor Server usa SignalR internamente para comunicación bidireccional. El proyecto incluye 6 componentes Blazor:
 
 | Componente                    | Auth | Descripción                              |
 | ---------------------------- | ---- | --------------------------------------- |
 | `<RatingSummary />`          | No   | Muestra promedio de valoraciones          |
 | `<RatingSection />`         | Sí   | Formulario para añadir valoraciones      |
-| `<AdminStatsWidget />`       | ADMIN| Panel de admin con auto-refresh (15s)   |
+| `<AdminStatsWidget />`       | ADMIN| Panel de admin con auto-refresh (30s)   |
+| `<VentasMensualesChart />`  | ADMIN| Gráfico de evolución de ventas           |
+| `<VentasCategoriasChart />` | ADMIN| Gráfico donut de ventas por categoría   |
+| `<TopParticipantesChart />` | ADMIN| Gráfico top 10 compradores/vendedores   |
 
 > **Nota**: El carrito es **MVC tradicional** (`CartController`), no Blazor.
 
@@ -765,25 +779,32 @@ Este proyecto es un ejemplo educativo con fines didácticos.
 
 ## 👨‍💻 Autor
 
-Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twitter.com/JoseLuisGS_)
+Codificado con :sparkling_heart: por [José Luis González Sánchez](https://joseluisgs.dev)
 
 [![GitHub](https://img.shields.io/github/followers/joseluisgs?style=social)](https://github.com/joseluisgs)
+[![GitHub](https://img.shields.io/github/stars/joseluisgs?style=social)](https://github.com/joseluisgs)
 
 ### Contacto
 
 <p>
-   <a href="https://joseluisgs.dev" target="_blank">
-        <img src="https://joseluisgs.github.io/img/favicon.png" height="30">
-   </a> &nbsp;&nbsp;
-   <a href="https://github.com/joseluisgs" target="_blank">
-        <img src="https://distreau.com/github.svg" height="30">
-   </a> &nbsp;&nbsp;
-   <a href="https://twitter.com/JoseLuisGS_" target="_blank">
-        <img src="https://i.imgur.com/U4Uiaef.png" height="30">
-   </a> &nbsp;&nbsp;
-   <a href="https://www.linkedin.com/in/joseluisgonsan" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png" height="30">
-   </a>
+    <a href="https://joseluisgs.dev/" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/favicon.png" height="32">
+    </a>&nbsp;
+    <a href="https://github.com/joseluisgs" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/github.svg" height="32">
+    </a>&nbsp;
+    <a href="https://www.linkedin.com/in/JoseLuisGSDev" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/linkedin.png" height="32">
+    </a>&nbsp;
+    <a href="https://www.youtube.com/@joseluisgs" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/youtube.png" height="32">
+    </a>&nbsp;
+    <a href="https://x.com/JoseLuisGSDev" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/twitter.png" height="32">
+    </a>&nbsp;
+    <a href="https://www.instagram.com/joseluisgs.dev/" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/instagram.png" height="32">
+    </a>
 </p>
 
 ## Licencia de uso

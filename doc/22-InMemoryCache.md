@@ -208,7 +208,7 @@ var options = new MemoryCacheEntryOptions()
     // Expira 10 min después del último acceso
     .SetSlidingExpiration(TimeSpan.FromMinutes(10))
     
-    // Expira无论如何 (always) 1 hora después de creado
+    // Expira siempre (always) 1 hora después de creado
     .SetAbsoluteExpiration(TimeSpan.FromHours(1))
     
     // Prioridad baja (se elimina primero si falta memoria)
