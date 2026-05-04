@@ -1,6 +1,6 @@
 @namespace TiendaDawWeb.Shared.Blazor.Admin.Charts
 @using TiendaDawWeb.Shared.Services.Stats
-@using TiendaDawWeb.Shared.Models.Stats
+@using TiendaDawWeb.Shared.Dto.Stats
 @using System.Timers
 @implements IDisposable
 @inject IStatisticsService StatsService
@@ -11,7 +11,7 @@
         <h5 class="mb-0"><i class="bi bi-calendar3"></i> Evolución Mensual</h5>
         <div class="d-flex align-items-center">
             <span class="badge bg-light text-dark me-2">Auto-refresh: 30s</span>
-            <button class="btn btn-sm btn-dark" @onclick="ManualRefresh" disabled="@isLoading">
+            <button class="btn btn-sm btn-light" @onclick="ManualRefresh" disabled="@isLoading">
                 @if (isLoading)
                 {
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
