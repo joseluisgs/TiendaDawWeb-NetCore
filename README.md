@@ -2,6 +2,7 @@
 
 ![banner](./logo.svg)
 
+
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
 [![C#](https://img.shields.io/badge/C%23-14-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
@@ -37,7 +38,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
   - [🎯 Descripción](#-descripción)
   - [📑 Tabla de Contenidos](#-tabla-de-contenidos)
   - [✨ Características](#-características)
-  - [🚀 Tecnologías](#-tecnologías)
+  - [🚀 Tecnologías principales](#-tecnologías-principales)
   - [🏃‍♂️ Inicio Rápido](#️-inicio-rápido)
     - [Desarrollo Local](#desarrollo-local)
     - [Desarrollo con Docker](#desarrollo-con-docker)
@@ -98,7 +99,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | **Testing**          | Unit tests (NUnit), Componentes (bUnit), E2E (Playwright)                   |
 | **UI/UX**            | Razor Pages, Blazor Server, AJAX, Bootstrap 5.3, I18n/L10n                       |
 
-## 🚀 Tecnologías
+## 🚀 Tecnologías principales
 
 | Tecnología               | Versión    | Propósito                                      |
 | ------------------------ | ---------- | ---------------------------------------------- |
@@ -122,6 +123,8 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | **Serilog**              | 8.x        | Logging estructurado                           |
 
 ## 🏃‍♂️ Inicio Rápido
+
+**🌐 Demo en producción:** [https://tiendadawweb-netcore.onrender.com/](https://tiendadawweb-netcore.onrender.com/)
 
 ### Desarrollo Local
 
