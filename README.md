@@ -779,13 +779,14 @@ Este proyecto es un ejemplo educativo con fines didácticos.
 
 ## 👨‍💻 Autor
 
-Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twitter.com/JoseLuisGS_)
+Codificado con :sparkling_heart: por [José Luis González Sánchez](https://joseluisgs.dev)
 
 [![GitHub](https://img.shields.io/github/followers/joseluisgs?style=social)](https://github.com/joseluisgs)
+[![GitHub](https://img.shields.io/github/stars/joseluisgs?style=social)](https://github.com/joseluisgs)
 
 ### Contacto
 
-<p align="center">
+<p>
     <a href="https://joseluisgs.dev/" target="_blank">
         <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/favicon.png" height="32">
     </a>&nbsp;
