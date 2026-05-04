@@ -146,7 +146,7 @@ async function submitWithCsrf(url, data) {
 public IActionResult Create(ProductDto dto)
 {
     // El token se valida automáticamente
-    // Si es inválido,返回 400 Bad Request
+    // Si es inválido, devuelve 400 Bad Request
 }
 ```
 
