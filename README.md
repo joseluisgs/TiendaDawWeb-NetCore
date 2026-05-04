@@ -79,7 +79,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
       - [Account Controller](#account-controller)
       - [Products Controller](#products-controller)
       - [Cart Controller](#cart-controller)
-      - [Componentes Blazor Server](#componentes-blazor-server-signalr-integrado)
+      - [Componentes Blazor Server (SignalR integrado)](#componentes-blazor-server-signalr-integrado)
   - [👥 Usuarios Demo](#-usuarios-demo)
   - [📝 Licencia](#-licencia)
   - [👨‍💻 Autor](#-autor)
@@ -107,6 +107,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | **ASP.NET Core MVC**     | 10         | Framework web con patrón MVC                   |
 | **Razor Pages**          | 10         | Motor de vistas del lado servidor              |
 | **Blazor Server**        | 10         | Componentes interactivos en tiempo real        |
+| **Blazor-ApexCharts**     | 3.x        | Gráficos interactivos en tiempo real          |
 | **SignalR**              | 10         | Comunicación bidireccional para reactividad    |
 | **EF Core**              | 10         | ORM con SQLite In-Memory                       |
 | **SQLite In-Memory**     | -          | Base de datos volátil para desarrollo/testing  |
@@ -771,19 +772,25 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twi
 
 ### Contacto
 
-<p>
-   <a href="https://joseluisgs.dev" target="_blank">
-        <img src="https://joseluisgs.github.io/img/favicon.png" height="30">
-   </a> &nbsp;&nbsp;
-   <a href="https://github.com/joseluisgs" target="_blank">
-        <img src="https://distreau.com/github.svg" height="30">
-   </a> &nbsp;&nbsp;
-   <a href="https://twitter.com/JoseLuisGS_" target="_blank">
-        <img src="https://i.imgur.com/U4Uiaef.png" height="30">
-   </a> &nbsp;&nbsp;
-   <a href="https://www.linkedin.com/in/joseluisgonsan" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/768px-LinkedIn_logo_initials.png" height="30">
-   </a>
+<p align="center">
+    <a href="https://joseluisgs.dev/" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/favicon.png" height="32">
+    </a>&nbsp;
+    <a href="https://github.com/joseluisgs" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/github.svg" height="32">
+    </a>&nbsp;
+    <a href="https://www.linkedin.com/in/JoseLuisGSDev" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/linkedin.png" height="32">
+    </a>&nbsp;
+    <a href="https://www.youtube.com/@joseluisgs" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/youtube.png" height="32">
+    </a>&nbsp;
+    <a href="https://x.com/JoseLuisGSDev" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/twitter.png" height="32">
+    </a>&nbsp;
+    <a href="https://www.instagram.com/joseluisgs.dev/" target="_blank">
+        <img loading="lazy" src="https://raw.githubusercontent.com/joseluisgs/joseluisgs/master/images/social-icons/instagram.png" height="32">
+    </a>
 </p>
 
 ## Licencia de uso
