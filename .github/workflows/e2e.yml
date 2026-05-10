@@ -1,12 +1,30 @@
 # GitHub Actions E2E Test Pipeline for TiendaDawWeb
 # Requiere: Servidor web + Playwright browsers
+#
+# ⚠️  WORKFLOW ARCHIVADO (solo lectura educativa)
+# ---------------------------------------------------
+# Este workflow está desactivado del schedule automático por los siguientes motivos:
+#   1. Playwright (.NET NuGet v1.57.0) requiere instalar los navegadores con el script
+#      generado por el propio build (`playwright.sh`), NO con `npx playwright install`.
+#      Usar npx instala una versión diferente de Chromium que no es compatible.
+#   2. El arranque del servidor tiene una race condition: `InitializeDatabaseAsync`
+#      realiza el seed (10 usuarios, 42 productos) y puede tardar más de los 30s
+#      del health-check, por lo que los tests arrancan antes de que la app esté lista.
+#   3. `dotnet-version: '10.0.x'` cambia de patch version semanalmente en el runner
+#      ubuntu-latest, provocando fallos intermitentes de restore/build.
+#   4. El Rate Limiting de la app puede bloquear las peticiones rápidas de los tests.
+#   5. El servidor debe arrancar con E2E_TEST=true para usar SQLite en archivo en
+#      lugar de in-memory, evitando conflictos de concurrencia entre conexiones.
+#
+# Se mantiene el fichero para que los alumnos estudien la estructura del pipeline.
+# Se puede lanzar manualmente desde la pestaña Actions → E2E Tests → Run workflow.
 
 name: E2E Tests
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'  # Domingos a medianoche
+  # schedule:
+  #   - cron: '0 0 * * 0'  # Domingos a medianoche (desactivado, ver comentario arriba)
 
 env:
   DOTNET_VERSION: '10.0.x'
