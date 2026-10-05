@@ -25,7 +25,10 @@ public static class CacheConfig
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        if (environment.IsDevelopment())
+        var isExplicitProduction = environment.EnvironmentName == "Production";
+
+        // 🛡️ Solo Production explícito usa Redis. Si no, MemoryCache.
+        if (!isExplicitProduction)
         {
             // 🎓 Desarrollo: MemoryCache (en memoria, sin distribuir)
             Log.Information("💾 Desarrollo: Configurando MemoryCache...");

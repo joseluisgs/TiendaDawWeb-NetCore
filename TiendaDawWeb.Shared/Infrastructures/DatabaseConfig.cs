@@ -27,10 +27,13 @@ public static class DatabaseConfig
         IWebHostEnvironment environment)
     {
         var isE2ETest = Environment.GetEnvironmentVariable("E2E_TEST") == "true";
+        var isExplicitProduction = environment.EnvironmentName == "Production";
 
-        if (environment.IsDevelopment() && !isE2ETest)
+        // 🛡️ Solo Production explícito usa PostgreSQL/Redis.
+        // Si no se especifica entorno (o es Development/Staging), usa SQLite.
+        if (!isExplicitProduction && !isE2ETest)
         {
-            // 🎓 Desarrollo: SQLite In-Memory o archivo temporal
+            // 🎓 Desarrollo: SQLite en archivo temporal
             var dbPath = Path.Combine(Path.GetTempPath(), "tiendadb_dev.db");
             if (File.Exists(dbPath)) File.Delete(dbPath);
 
