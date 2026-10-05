@@ -9,6 +9,13 @@ Console.OutputEncoding = Encoding.UTF8;
 Log.Logger = SerilogConfig.Configure().CreateLogger();
 
 var options = WebRootConfig.CreateOptionsWithArgs(args);
+// 🛡️ Si no se especifica ASPNETCORE_ENVIRONMENT, usar Development por defecto
+// (dotnet run sin launchSettings.json usa Production por defecto)
+if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
+{
+    Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+}
+
 var builder = WebApplication.CreateBuilder(options);
 
 builder.WebHost.UseStaticWebAssets();
