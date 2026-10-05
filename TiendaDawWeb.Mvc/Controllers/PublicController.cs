@@ -11,7 +11,7 @@ namespace TiendaDawWeb.Controllers;
 /// <summary>
 ///     Controlador para páginas públicas (sin autenticación requerida)
 /// </summary>
-[OutputCache(Duration = 300, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
+[OutputCache(Duration = 300, Tags = new[] { "productos" }, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
 public class PublicController(
     IProductService productService,
     ILogger<PublicController> logger
@@ -19,7 +19,7 @@ public class PublicController(
     /// <summary>
     ///     Página principal con listado de productos.
     /// </summary>
-    [OutputCache(Duration = 300, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
+    [OutputCache(Duration = 300, Tags = new[] { "productos" }, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
     public async Task<IActionResult> Index(
         string? q,
         string? categoria,

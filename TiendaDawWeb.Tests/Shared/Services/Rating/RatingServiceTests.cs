@@ -25,7 +25,7 @@ public class RatingServiceTests
             .Options;
         _context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<RatingService>>();
-        _service = new RatingService(_context, _loggerMock.Object);
+        _service = new RatingService(_context, new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), _loggerMock.Object);
     }
 
     [TearDown]

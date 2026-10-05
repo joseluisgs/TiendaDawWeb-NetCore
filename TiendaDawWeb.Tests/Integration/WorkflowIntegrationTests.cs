@@ -460,7 +460,7 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
             ProductService = new ProductService(Context, memoryCache, hubContextMock.Object, loggerMock.Object),
             CarritoService = new CarritoService(Context, memoryCache, new Mock<ILogger<CarritoService>>().Object),
             FavoriteService = new FavoriteService(Context, new Mock<ILogger<FavoriteService>>().Object),
-            RatingService = new RatingService(Context, new Mock<ILogger<RatingService>>().Object),
+            RatingService = new RatingService(Context, new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), new Mock<ILogger<RatingService>>().Object),
             PurchaseService = new PurchaseService(
                 Context,
                 new Mock<ICarritoService>().Object,

@@ -20,6 +20,7 @@ public class ProductController(
     IStorageService storageService,
     IFavoriteService favoriteService,
     UserManager<User> userManager,
+    IOutputCacheStore outputCacheStore,
     ILogger<ProductController> logger
 ) : Controller {
     private readonly ILogger<ProductController> _logger = logger;
@@ -53,7 +54,7 @@ public class ProductController(
     ///     Detalle de un producto
     /// </summary>
     [AllowAnonymous]
-    [OutputCache(Duration = 600)]
+    [OutputCache(Duration = 600, Tags = new[] { "productos" })]
     public async Task<IActionResult> Details(long id) {
         var result = await productService.GetByIdAsync(id);
 
@@ -111,6 +112,9 @@ public class ProductController(
             TempData["Error"] = result.Error.Message;
             return View(model);
         }
+
+        // 🧹 Invalidar OutputCache por tag "productos"
+        await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
 
         TempData["Success"] = "Producto creado exitosamente";
         return RedirectToAction(nameof(Details), new { id = result.Value.Id });
@@ -173,6 +177,9 @@ public class ProductController(
             return View(model);
         }
 
+        // 🧹 Invalidar OutputCache por tag "productos"
+        await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
+
         TempData["Success"] = "Producto actualizado exitosamente";
         return RedirectToAction(nameof(Details), new { id });
     }
@@ -205,10 +212,13 @@ public class ProductController(
 
         var result = await productService.DeleteAsync(id, user.Id, User.IsInRole("ADMIN"));
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
+            // 🧹 Invalidar OutputCache por tag "productos"
+            await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
             TempData["Success"] = "Producto eliminado exitosamente";
+        }
 
         return RedirectToAction(nameof(MyProducts));
     }
