@@ -8,7 +8,7 @@ namespace TiendaDawWeb.Tests.Integration.TestContainers;
 
 /// <summary>
 /// Tests de integración con PostgreSQL real (TestContainers).
-/// Cada test usa una base de datos aislada para evitar interferencias.
+/// Cada test usa un contexto fresh con base de datos única.
 /// </summary>
 [TestFixture]
 public class PostgresIntegrationTests
@@ -29,17 +29,18 @@ public class PostgresIntegrationTests
         await _fixture.StopAsync();
     }
 
-    private ApplicationDbContext CreateContext()
+    private async Task<ApplicationDbContext> CreateFreshContextAsync()
     {
-        var dbName = $"tiendadaw_test_{Interlocked.Increment(ref _dbCounter)}";
-        return _fixture.CreateIsolatedContext(dbName);
+        var dbName = $"tiendadaw_{Interlocked.Increment(ref _dbCounter)}";
+        var context = _fixture.CreateIsolatedContext(dbName);
+        await context.Database.EnsureCreatedAsync();
+        return context;
     }
 
     [Test]
     public async Task Product_Create_SavesToPostgres()
     {
-        await using var context = CreateContext();
-        await context.Database.EnsureCreatedAsync();
+        await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "testuser", Email = "test@test.com" };
         context.Users.Add(user);
@@ -63,11 +64,10 @@ public class PostgresIntegrationTests
         saved.Precio.Should().Be(999.99m);
     }
 
-    [Test]
+                [Test]
     public async Task Product_SoftDelete_MarksAsDeleted()
     {
-        await using var context = CreateContext();
-        await context.Database.EnsureCreatedAsync();
+        await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "user2", Email = "user2@test.com" };
         context.Users.Add(user);
@@ -89,14 +89,16 @@ public class PostgresIntegrationTests
         await context.SaveChangesAsync();
 
         var deleted = await context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
+        deleted.Should().NotBeNull();
         deleted!.Deleted.Should().BeTrue();
+        deleted.DeletedAt.Should().NotBeNull();
+        deleted.DeletedBy.Should().Be("test");
     }
 
     [Test]
     public async Task Purchase_Create_SavesToPostgres()
     {
-        await using var context = CreateContext();
-        await context.Database.EnsureCreatedAsync();
+        await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "buyer", Email = "buyer@test.com" };
         context.Users.Add(user);
@@ -119,8 +121,7 @@ public class PostgresIntegrationTests
     [Test]
     public async Task Rating_Create_SavesToPostgres()
     {
-        await using var context = CreateContext();
-        await context.Database.EnsureCreatedAsync();
+        await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "rater", Email = "rater@test.com" };
         context.Users.Add(user);
@@ -157,8 +158,7 @@ public class PostgresIntegrationTests
     [Test]
     public async Task Favorite_AddAndQuery_Works()
     {
-        await using var context = CreateContext();
-        await context.Database.EnsureCreatedAsync();
+        await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "favuser", Email = "fav@test.com" };
         context.Users.Add(user);
@@ -192,8 +192,7 @@ public class PostgresIntegrationTests
     [Test]
     public async Task Product_QueryWithFilters_Works()
     {
-        await using var context = CreateContext();
-        await context.Database.EnsureCreatedAsync();
+        await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "filter", Email = "filter@test.com" };
         context.Users.Add(user);
