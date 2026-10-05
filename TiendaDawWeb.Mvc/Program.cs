@@ -164,8 +164,8 @@ static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration)
     Log.Information("Panel Admin:            {BaseUrl}/Admin", baseUrl);
     Log.Information("=================================================================");
     Log.Information("CREDENCIALES DE PRUEBA:");
-    Log.Information("  Admin:   admin@waladaw.com / admin (ROLE_ADMIN)");
-    Log.Information("  Usuario: prueba@prueba.com / prueba (ROLE_USER)");
+    Log.Information("  Admin:   admin@waladaw.com / Admin1 (ROLE_ADMIN)");
+    Log.Information("  Usuario: prueba@prueba.com / Prueba1 (ROLE_USER)");
     Log.Information("=================================================================");
     Log.Information("DATOS SEMBRADOS (Seed):");
     Log.Information("  SQLite In-Memory: 10 usuarios, 42 productos");

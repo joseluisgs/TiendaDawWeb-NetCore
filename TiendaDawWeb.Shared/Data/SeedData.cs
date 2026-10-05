@@ -53,7 +53,7 @@ public static class SeedData
                 Rol = "ADMIN",
                 Avatar = "https://robohash.org/admin?size=200x200&bgset=bg1",
                 EmailConfirmed = true
-            }, "admin"),
+            }, "Admin1"),
             
             (new User
             {
@@ -64,7 +64,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://robohash.org/prueba?size=200x200&bgset=bg2",
                 EmailConfirmed = true
-            }, "prueba"),
+            }, "Prueba1"),
             
             (new User
             {
@@ -75,7 +75,7 @@ public static class SeedData
                 Rol = "MODERATOR",
                 Avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=moderador&backgroundColor=b6e3f4",
                 EmailConfirmed = true
-            }, "moderador"),
+            }, "Moderador1"),
             
             (new User
             {
@@ -86,7 +86,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://api.dicebear.com/7.x/personas/svg?seed=otro&backgroundColor=c0aede",
                 EmailConfirmed = true
-            }, "otro"),
+            }, "Otro123"),
             
             (new User
             {
@@ -97,7 +97,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=maria&backgroundColor=ffd5dc",
                 EmailConfirmed = true
-            }, "maria123"),
+            }, "Maria123"),
             
             (new User
             {
@@ -108,7 +108,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://robohash.org/carlos?size=200x200&bgset=any&set=set1",
                 EmailConfirmed = true
-            }, "carlos123"),
+            }, "Carlos123"),
             
             (new User
             {
@@ -119,7 +119,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://api.dicebear.com/7.x/adventurer/svg?seed=ana&backgroundColor=ffdfbf",
                 EmailConfirmed = true
-            }, "ana123"),
+            }, "Ana123"),
             
             (new User
             {
@@ -130,7 +130,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://robohash.org/david?size=200x200&bgset=bg1&set=set4",
                 EmailConfirmed = true
-            }, "david123"),
+            }, "David123"),
             
             (new User
             {
@@ -141,7 +141,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://api.dicebear.com/7.x/big-smile/svg?seed=laura&backgroundColor=d1f2eb",
                 EmailConfirmed = true
-            }, "laura123"),
+            }, "Laura123"),
             
             (new User
             {
@@ -152,7 +152,7 @@ public static class SeedData
                 Rol = "USER",
                 Avatar = "https://robohash.org/javier?size=200x200&bgset=any&set=set3",
                 EmailConfirmed = true
-            }, "javier123")
+            }, "Javier123")
         };
 
         foreach (var (usuario, password) in usuarios)
