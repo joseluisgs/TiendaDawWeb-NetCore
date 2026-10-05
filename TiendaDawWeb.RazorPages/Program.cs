@@ -30,7 +30,7 @@ var configuration = builder.Configuration;
 var environment = builder.Environment;
 
 // Data
-services.AddDatabases();
+services.AddDatabases(builder.Configuration, builder.Environment);
 
 // Auth
 services.AddAuthentication(configuration);
@@ -51,7 +51,7 @@ services.AddAppRazorPages();
 services.AddBlazorServer();
 
 // Cache & Session
-services.AddCaching();
+services.AddCaching(builder.Configuration, builder.Environment);
 
 // Security
 services.AddAppAntiforgery();

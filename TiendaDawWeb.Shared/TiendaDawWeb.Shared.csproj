@@ -44,5 +44,8 @@
     <PackageReference Include="AspNetCoreRateLimit" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="FluentValidation.AspNetCore" />
+    <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
   </ItemGroup>
 </Project>
