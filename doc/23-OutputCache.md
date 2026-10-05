@@ -187,6 +187,33 @@ public async Task<IActionResult> DeleteProduct(long id)
 }
 ```
 
+### Invalidación con IOutputCacheStore (patrón del proyecto)
+
+El proyecto usa `IOutputCacheStore` para invalidar por tag después de cada operación de escritura:
+
+```csharp
+public class ProductController(
+    IProductService productService,
+    IOutputCacheStore outputCacheStore,
+    ...
+) : Controller
+{
+    [HttpPost]
+    public async Task<IActionResult> Create(...)
+    {
+        var result = await productService.CreateAsync(product);
+        if (result.IsSuccess)
+        {
+            // Invalidar OutputCache por tag después de crear
+            await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
+        }
+        ...
+    }
+}
+```
+
+> 🎓 **Patrón:** el tag se asigna en `[OutputCache(Tags = new[] { "productos" })]` al leer, y se invalida con `EvictByTagAsync("productos")` después de cada escritura. Así, al crear/editar/borrar un producto, todas las respuestas cacheadas con ese tag se limpian inmediatamente.
+
 ### Invalidación Manual
 
 ```csharp

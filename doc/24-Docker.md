@@ -233,8 +233,54 @@ public async Task<IActionResult> GenerateInvoicePdf(long id)
 | **Docker**        | Contenedor con todas las dependencias                   |
 | **Dockerfile**    | Receta para construir la imagen                        |
 | **Volumes**       | Persistencia de datos fuera del contenedor              |
-| **ImageSharp**    | Procesamiento de imágenes                               |
-| **QuestPDF**      | Generación de PDFs profesionales                       |
+| **PostgreSQL**    | BD en producción (SQLite en desarrollo)                |
+| **Redis**         | Caché distribuida y sesión en producción               |
+| **ASPNETCORE_ENVIRONMENT** | Variable para cambiar entre Development y Production |
+
+---
+
+## 24.1. Variable de Entorno
+
+El docker-compose usa una variable con default `Development`:
+
+```yaml
+environment:
+  - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+```
+
+| Comando | Entorno |
+|---------|---------|
+| `docker compose up` | **Development** (default) — SQLite + MemoryCache |
+| `ASPNETCORE_ENVIRONMENT=Production docker compose up` | **Production** — PostgreSQL + Redis |
+
+---
+
+## 24.2. Servicios en Producción
+
+El docker-compose incluye PostgreSQL y Redis:
+
+```yaml
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_DB=tiendadaw
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis:7-alpine
+```
+
+Las aplicaciones se conectan mediante variables de entorno:
+
+```yaml
+environment:
+  - ConnectionStrings__PostgreSQL=Host=postgres;Database=tiendadaw;Username=postgres;Password=postgres
+  - ConnectionStrings__Redis=redis:6379
+```
+
+> 🎓 **Fail-fast:** si falta la connection string en producción, la aplicación no arranca — lanza `InvalidOperationException`. En Development se usan SQLite y MemoryCache automáticamente.
 
 ---
 
