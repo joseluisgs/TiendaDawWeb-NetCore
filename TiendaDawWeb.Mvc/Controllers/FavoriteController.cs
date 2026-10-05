@@ -37,6 +37,7 @@ public class FavoriteController(
     /// <summary>
     ///     Añadir producto a favoritos (API endpoint)
     /// </summary>
+    [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> Add(long productId) {
         var user = await userManager.GetUserAsync(User);
@@ -52,6 +53,7 @@ public class FavoriteController(
     /// <summary>
     ///     Quitar producto de favoritos (API endpoint)
     /// </summary>
+    [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> Remove(long productId) {
         var user = await userManager.GetUserAsync(User);
