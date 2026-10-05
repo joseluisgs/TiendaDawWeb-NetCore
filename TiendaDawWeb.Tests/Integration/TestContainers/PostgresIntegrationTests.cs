@@ -88,7 +88,10 @@ public class PostgresIntegrationTests
         product.SoftDelete("test");
         await context.SaveChangesAsync();
 
-        var deleted = await context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
+        // 🎓 HasQueryFilter(p => !p.Deleted) filtra automáticamente los borrados.
+        // IgnoreQueryFilters() es necesario para verificar que el soft-delete funciona.
+        var deleted = await context.Products.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == product.Id);
         deleted.Should().NotBeNull();
         deleted!.Deleted.Should().BeTrue();
         deleted.DeletedAt.Should().NotBeNull();
