@@ -2,6 +2,7 @@ using Serilog;
 using TiendaDawWeb.Shared.Web.Infrastructures;
 using System.Globalization;
 using System.Text;
+using TiendaDawWeb.Shared.Middleware;
 
 Console.OutputEncoding = Encoding.UTF8;
 
@@ -91,14 +92,12 @@ else
     Log.Information("🔓 Modo desarrollo: HTTP permitido (sin redirección HTTPS)");
 }
 
+// 🛡️ GlobalExceptionHandler: captura excepciones y genera respuestas consistentes
+app.UseGlobalExceptionHandler();
+
 if (!isDevelopment)
 {
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
 }
 
 app.UseStatusCodePagesWithReExecute("/Error?statusCode={0}");
