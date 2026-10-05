@@ -109,6 +109,7 @@ if (!isDevelopment)
     app.UseHsts();
 }
 
+app.UseOriginalPath();
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseOutputCaching();

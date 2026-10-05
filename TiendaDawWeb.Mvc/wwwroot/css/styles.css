@@ -263,6 +263,7 @@ footer {
 .pagination .page-item.active .page-link {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     border: none;
+    color: #fff;
 }
 
 /* Invoice styles */
