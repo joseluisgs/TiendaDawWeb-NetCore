@@ -49,7 +49,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:5000
       - DOTNET_RUNNING_IN_CONTAINER=true
       # 🛡️ Fail-fast: PostgreSQL y Redis son obligatorios en producción
@@ -91,7 +91,7 @@ services:
     ports:
       - "5002:5002"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:5002
       - DOTNET_RUNNING_IN_CONTAINER=true
       # 🛡️ Fail-fast: PostgreSQL y Redis son obligatorios en producción
