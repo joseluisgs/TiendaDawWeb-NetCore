@@ -148,6 +148,7 @@ main.container {
     background: rgba(0,0,0,0.6);
     border-radius: 10px;
     padding: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
 .main-text {
