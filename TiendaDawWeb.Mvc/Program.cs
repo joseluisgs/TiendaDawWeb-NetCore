@@ -122,7 +122,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
 app.MapAppEndpoints();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 // ============================================================================
 // 🗄️ INICIALIZACIÓN DE DATOS
