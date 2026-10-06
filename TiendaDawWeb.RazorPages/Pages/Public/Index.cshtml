@@ -82,7 +82,7 @@
                     <div class="card h-100 shadow-sm producto-card" data-testid="product-card">
                         <a href="@Url.Page("/Product/Details", new { id = producto.Id })"
                            class="text-decoration-none text-dark">
-                            <img src="@producto.Imagen"
+                            <img src="@producto.Imagen" loading="lazy"
                                  class="card-img-top"
                                  alt="@producto.Nombre"
                                  style="height: 300px; object-fit: cover; cursor: pointer;" data-testid="product-image">
