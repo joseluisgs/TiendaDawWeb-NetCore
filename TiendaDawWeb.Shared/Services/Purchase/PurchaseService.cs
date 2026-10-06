@@ -92,6 +92,12 @@ public class PurchaseService(
                         return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
                     }
 
+                    if (producto.PropietarioId == usuarioId)
+                    {
+                        await transaction.RollbackAsync();
+                        return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
+                    }
+
                     if (producto.Reservado && producto.ReservadoPor != usuarioId &&
                         producto.ReservadoHasta > DateTime.UtcNow)
                     {
