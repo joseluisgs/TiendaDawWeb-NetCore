@@ -214,6 +214,34 @@ public class ProductController(
 
 > 🎓 **Patrón:** el tag se asigna en `[OutputCache(Tags = new[] { "productos" })]` al leer, y se invalida con `EvictByTagAsync("productos")` después de cada escritura. Así, al crear/editar/borrar un producto, todas las respuestas cacheadas con ese tag se limpian inmediatamente.
 
+> ⚠️ **MVC vs RazorPages:** ambos proyectos deben configurar `Tags` en el OutputCache **y** llamar `EvictByTagAsync` en las operaciones de escritura. Si solo lo tiene uno, el otro mostrará datos stale hasta que expire la caché (5 min por defecto).
+
+**RazorPages — OutputCache con Tags:**
+```razor
+@* En la vista .cshtml *@
+@attribute [OutputCache(Duration = 300, Tags = new[] { "productos" }, 
+    VaryByQueryKeys = new[] { "q", "categoria", "page", "size" })]
+```
+
+**RazorPages — Invalidación en PageModel:**
+```csharp
+public class CreateModel(
+    IProductService productService,
+    IOutputCacheStore outputCacheStore  // ← inyectar
+) : PageModel
+{
+    public async Task<IActionResult> OnPostAsync()
+    {
+        var result = await productService.CreateAsync(product);
+        if (result.IsSuccess)
+        {
+            await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
+        }
+        ...
+    }
+}
+```
+
 ### Invalidación Manual
 
 ```csharp
