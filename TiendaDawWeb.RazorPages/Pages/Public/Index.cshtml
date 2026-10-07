@@ -1,5 +1,5 @@
 @page
-@attribute [OutputCache(Duration = 300, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
+@attribute [OutputCache(Duration = 300, Tags = new[] { "productos" }, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
 @using System.Globalization
 @using Microsoft.AspNetCore.OutputCaching
 @using Microsoft.Extensions.Localization

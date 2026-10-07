@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.OutputCaching;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Storage;
@@ -14,7 +15,8 @@ namespace TiendaDawWeb.RazorPages.Pages.Product;
 public class CreateModel(
     IProductService productService,
     IStorageService storageService,
-    UserManager<User> userManager
+    UserManager<User> userManager,
+    IOutputCacheStore outputCacheStore
 ) : PageModel {
     [BindProperty]
     public ProductViewModel Input { get; set; } = default!;
@@ -45,6 +47,7 @@ public class CreateModel(
             return Page();
         }
 
+        await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
         TempData["Success"] = "Producto creado exitosamente";
         return RedirectToPage("/Product/Details", new { id = result.Value.Id });
     }

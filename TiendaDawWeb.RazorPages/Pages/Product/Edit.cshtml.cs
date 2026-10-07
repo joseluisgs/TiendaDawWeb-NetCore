@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Logging;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
@@ -16,7 +17,8 @@ public class EditModel(
     IProductService productService,
     IStorageService storageService,
     UserManager<User> userManager,
-    ILogger<EditModel> logger
+    ILogger<EditModel> logger,
+    IOutputCacheStore outputCacheStore
 ) : PageModel {
     [BindProperty]
     public ProductViewModel Input { get; set; } = default!;
@@ -89,6 +91,7 @@ public class EditModel(
         }
 
         logger.LogInformation("Producto {Id} actualizado exitosamente", Input.Id);
+        await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
         TempData["Success"] = "Producto actualizado exitosamente";
         return RedirectToPage("/Product/Details", new { id = Input.Id });
     }
