@@ -2,7 +2,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy project files
+# Copy project files + CPM
+COPY ["Directory.Packages.props", "."]
 COPY ["TiendaDawWeb.RazorPages/TiendaDawWeb.RazorPages.csproj", "TiendaDawWeb.RazorPages/"]
 COPY ["TiendaDawWeb.Shared/TiendaDawWeb.Shared.csproj", "TiendaDawWeb.Shared/"]
 COPY ["TiendaDawWeb.Shared.Blazor/TiendaDawWeb.Shared.Blazor.csproj", "TiendaDawWeb.Shared.Blazor/"]
