@@ -84,23 +84,15 @@ public class ProfileController(
                 return View(user);
             }
 
-            try {
-                // Guardar la imagen usando el servicio de storage
-                var result = await storageService.SaveFileAsync(avatar, "avatars");
-                if (result.IsSuccess) {
-                    // Eliminar avatar anterior si existe
-                    if (!string.IsNullOrEmpty(user.Avatar)) await storageService.DeleteFileAsync(user.Avatar);
-
-                    user.Avatar = result.Value;
-                }
-                else {
-                    TempData["Error"] = "Error al guardar el avatar: " + result.Error.Message;
-                    return View(user);
-                }
+            // Guardar la imagen usando el servicio de storage (Result pattern)
+            var result = await storageService.SaveFileAsync(avatar, "avatars");
+            if (result.IsSuccess) {
+                // Eliminar avatar anterior si existe
+                if (!string.IsNullOrEmpty(user.Avatar)) await storageService.DeleteFileAsync(user.Avatar);
+                user.Avatar = result.Value;
             }
-            catch (Exception ex) {
-                logger.LogError(ex, "Error al procesar avatar para usuario {UserId}", user.Id);
-                TempData["Error"] = "Error al procesar la imagen";
+            else {
+                TempData["Error"] = "Error al guardar el avatar: " + result.Error.Message;
                 return View(user);
             }
         }

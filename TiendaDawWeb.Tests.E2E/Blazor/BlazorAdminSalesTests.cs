@@ -54,7 +54,7 @@ public class BlazorAdminSalesTests : E2ETestBase
 
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-        await Page.TestId("password-input").FillAsync("admin");
+        await Page.TestId("password-input").FillAsync("Admin1");
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("06-admin-login");
 
@@ -74,7 +74,7 @@ public class BlazorAdminSalesTests : E2ETestBase
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-        await Page.TestId("password-input").FillAsync("admin");
+        await Page.TestId("password-input").FillAsync("Admin1");
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("01-admin-login");
 

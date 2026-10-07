@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.OutputCaching;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Product;
@@ -19,7 +20,8 @@ public class DetailsModel(
     IProductService productService,
     ICarritoService carritoService,
     IFavoriteService favoriteService,
-    UserManager<User> userManager
+    UserManager<User> userManager,
+    IOutputCacheStore outputCacheStore
 ) : PageModel {
     public ProductModel Product { get; set; } = default!;
 
@@ -124,6 +126,7 @@ public class DetailsModel(
             return Page();
         }
         
+        await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
         TempData["Success"] = "Producto eliminado correctamente";
         return RedirectToPage("/Product/MyProducts");
     }

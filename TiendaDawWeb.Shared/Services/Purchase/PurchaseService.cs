@@ -92,6 +92,12 @@ public class PurchaseService(
                         return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
                     }
 
+                    if (producto.PropietarioId == usuarioId)
+                    {
+                        await transaction.RollbackAsync();
+                        return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
+                    }
+
                     if (producto.Reservado && producto.ReservadoPor != usuarioId &&
                         producto.ReservadoHasta > DateTime.UtcNow)
                     {
@@ -127,20 +133,19 @@ public class PurchaseService(
                     .ThenInclude(prod => prod.Propietario)
                     .FirstOrDefaultAsync(p => p.Id == purchase.Id);
 
-                return await Result.Success<Models.Purchase, DomainError>(purchaseWithDetails!)
-                    .Tap(_ =>
-                    {
-                        cache.Remove(ProductsCacheKey);
-                        foreach (var producto in productos)
-                            cache.Remove($"product_details_{producto.Id}");
-                    })
-                    .Tap(async _ =>
-                    {
-                        var clearResult = await carritoService.ClearCarritoAsync(usuarioId);
-                        if (clearResult.IsFailure)
-                            logger.LogWarning("Error al vaciar carrito: {Error}", clearResult.Error.Message);
-                    })
-                    .Tap(_ => transaction.CommitAsync());
+                // 🎓 Patrón API: invalidación de caché con await directo, no con .Tap(async)
+                // El .Tap(async _ => ...) no espera el Task — es el mismo problema que Task.Run.
+                cache.Remove(ProductsCacheKey);
+                foreach (var producto in productos)
+                    cache.Remove($"product_details_{producto.Id}");
+
+                var clearResult = await carritoService.ClearCarritoAsync(usuarioId);
+                if (clearResult.IsFailure)
+                    logger.LogWarning("Error al vaciar carrito: {Error}", clearResult.Error.Message);
+
+                await transaction.CommitAsync();
+
+                return Result.Success<Models.Purchase, DomainError>(purchaseWithDetails!);
             }
             catch (DbUpdateConcurrencyException ex)
             {

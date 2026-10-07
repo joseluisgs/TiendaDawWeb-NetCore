@@ -21,7 +21,7 @@ public class ReservaCleanupService(
         logger.LogInformation("Servicio de limpieza de reservas iniciado");
         var intervalMinutes = configuration.GetValue("Reservas:CleanupIntervalMinutes", 5);
         var interval = TimeSpan.FromMinutes(intervalMinutes);
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, interval);
+        _timer = new Timer(async _ => await DoWorkAsync(_), null, TimeSpan.Zero, interval);
         return Task.CompletedTask;
     }
 
@@ -31,7 +31,7 @@ public class ReservaCleanupService(
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state) {
+    private async Task DoWorkAsync(object? state) {
         try {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

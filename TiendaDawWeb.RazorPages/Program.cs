@@ -2,12 +2,20 @@ using Serilog;
 using TiendaDawWeb.Shared.Web.Infrastructures;
 using System.Globalization;
 using System.Text;
+using TiendaDawWeb.Shared.Middleware;
 
 Console.OutputEncoding = Encoding.UTF8;
 
 Log.Logger = SerilogConfig.Configure().CreateLogger();
 
 var options = WebRootConfig.CreateOptionsWithArgs(args);
+// 🛡️ Si no se especifica ASPNETCORE_ENVIRONMENT, usar Development por defecto
+// (dotnet run sin launchSettings.json usa Production por defecto)
+if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
+{
+    Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+}
+
 var builder = WebApplication.CreateBuilder(options);
 
 builder.WebHost.UseStaticWebAssets();
@@ -29,7 +37,7 @@ var configuration = builder.Configuration;
 var environment = builder.Environment;
 
 // Data
-services.AddDatabases();
+services.AddDatabases(builder.Configuration, builder.Environment);
 
 // Auth
 services.AddAuthentication(configuration);
@@ -50,7 +58,7 @@ services.AddAppRazorPages();
 services.AddBlazorServer();
 
 // Cache & Session
-services.AddCaching();
+services.AddCaching(builder.Configuration, builder.Environment);
 
 // Security
 services.AddAppAntiforgery();
@@ -91,16 +99,15 @@ else
     Log.Information("🔓 Modo desarrollo: HTTP permitido (sin redirección HTTPS)");
 }
 
+// 🛡️ GlobalExceptionHandler: captura excepciones y genera respuestas consistentes
+app.UseGlobalExceptionHandler();
+
 if (!isDevelopment)
 {
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-else
-{
-    app.UseExceptionHandler("/Error");
-}
 
+app.UseOriginalPath();
 app.UseStatusCodePagesWithReExecute("/Error?statusCode={0}");
 
 app.UseOutputCaching();
@@ -113,7 +120,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
 app.MapAppEndpoints();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 // ============================================================================
 // 🗄️ INICIALIZACIÓN DE DATOS
@@ -163,8 +169,8 @@ static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration)
     Log.Information("Panel Admin:            {BaseUrl}/Admin", baseUrl);
     Log.Information("=================================================================");
     Log.Information("CREDENCIALES DE PRUEBA:");
-    Log.Information("  Admin:   admin@waladaw.com / admin (ROLE_ADMIN)");
-    Log.Information("  Usuario: prueba@prueba.com / prueba (ROLE_USER)");
+    Log.Information("  Admin:   admin@waladaw.com / Admin1 (ROLE_ADMIN)");
+    Log.Information("  Usuario: prueba@prueba.com / Prueba1 (ROLE_USER)");
     Log.Information("=================================================================");
     Log.Information("DATOS SEMBRADOS (Seed):");
     Log.Information("  SQLite In-Memory: 10 usuarios, 42 productos");

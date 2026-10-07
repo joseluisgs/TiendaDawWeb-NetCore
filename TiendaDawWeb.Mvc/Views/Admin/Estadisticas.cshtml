@@ -132,7 +132,7 @@
                                             </td>
                                             <td>
                                                 <a href="@Url.Action("UsuarioDetails", "Admin", new { id = comprador.CompradorId })">
-                                                    Usuario #@comprador.CompradorId
+                                                    @comprador.Nombre
                                                 </a>
                                             </td>
                                             <td>
@@ -203,7 +203,7 @@
                                             </td>
                                             <td>
                                                 <a href="@Url.Action("UsuarioDetails", "Admin", new { id = vendedor.PropietarioId })">
-                                                    Usuario #@vendedor.PropietarioId
+                                                    @vendedor.Nombre
                                                 </a>
                                             </td>
                                             <td>

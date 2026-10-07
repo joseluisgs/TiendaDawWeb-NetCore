@@ -21,7 +21,7 @@ public class CarritoCleanupService(
         logger.LogInformation("Servicio de limpieza de carritos iniciado");
         var intervalMinutes = configuration.GetValue("Carrito:CleanupIntervalMinutes", 60);
         var interval = TimeSpan.FromMinutes(intervalMinutes);
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, interval);
+        _timer = new Timer(async _ => await DoWorkAsync(_), null, TimeSpan.Zero, interval);
         return Task.CompletedTask;
     }
 
@@ -31,7 +31,7 @@ public class CarritoCleanupService(
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state) {
+    private async Task DoWorkAsync(object? state) {
         logger.LogInformation("Ejecutando limpieza de carritos abandonados...");
         try {
             using var scope = serviceProvider.CreateScope();

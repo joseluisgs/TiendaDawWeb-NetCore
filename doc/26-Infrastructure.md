@@ -293,7 +293,35 @@ if (builder.Configuration.GetValue<bool>($"Features:{FeatureManager.BlazorSuppor
 | **Capas**          | Domain, Application, Infrastructure, Presentation        |
 | **Extension Methods**| Organizar registro de servicios                         |
 | **Options Pattern** | Configuración tipada                                    |
+| **CPM**            | Central Package Management — versiones centralizadas    |
 | **IaC**           | Infraestructura configurada como código                 |
+
+---
+
+## 26.7. Central Package Management (CPM)
+
+Las versiones de paquetes NuGet se gestionan en un único archivo `Directory.Packages.props` en la raíz del proyecto:
+
+```xml
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="CSharpFunctionalExtensions" Version="3.7.0" />
+    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    <!-- ... más paquetes -->
+  </ItemGroup>
+</Project>
+```
+
+Los `.csproj` solo declaran el paquete sin versión:
+
+```xml
+<PackageReference Include="CSharpFunctionalExtensions" />
+```
+
+> 🎓 **Ventaja:** una única fuente de verdad para versiones. Actualizar un paquete = cambiar un solo sitio. Alineado con los proyectos API (TiendaDawApi).
 
 ---
 

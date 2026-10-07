@@ -41,7 +41,7 @@ public class AuthTests : E2ETestBase
     public async Task AdminLogin_ShouldSucceed()
     {
         await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-        await Page.TestId("password-input").FillAsync("admin");
+        await Page.TestId("password-input").FillAsync("Admin1");
         await CaptureScreenshotAsync("03-credentials-filled");
         
         await Page.TestId("submit-button").ClickAsync();

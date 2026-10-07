@@ -102,8 +102,8 @@ public class StatisticsServiceTests
     [Test]
     public async Task GetTopBuyersAsync_ReturnsTopBuyers()
     {
-        var user1 = new User { Id = 1, UserName = "buyer1" };
-        var user2 = new User { Id = 2, UserName = "buyer2" };
+        var user1 = new User { Id = 1, Nombre = "Juan", Apellidos = "Pérez" };
+        var user2 = new User { Id = 2, Nombre = "María", Apellidos = "López" };
         var purchase1 = new TiendaDawWeb.Shared.Models.Purchase { Id = 1, CompradorId = 1, Comprador = user1, Total = 100 };
         var purchase2 = new TiendaDawWeb.Shared.Models.Purchase { Id = 2, CompradorId = 1, Comprador = user1, Total = 150 };
         var purchase3 = new TiendaDawWeb.Shared.Models.Purchase { Id = 3, CompradorId = 2, Comprador = user2, Total = 200 };
@@ -114,9 +114,9 @@ public class StatisticsServiceTests
         var result = (await _service.GetTopBuyersAsync(10)).ToList();
 
         result.Should().HaveCount(2);
-        result[0].Nombre.Should().Be("buyer1");
+        result[0].Nombre.Should().Be("Juan Pérez");
         result[0].TotalCompras.Should().Be(2);
-        result[1].Nombre.Should().Be("buyer2");
+        result[1].Nombre.Should().Be("María López");
     }
 
     [Test]
@@ -148,8 +148,8 @@ public class StatisticsServiceTests
     [Test]
     public async Task GetTopSellersAsync_ReturnsTopSellers()
     {
-        var user1 = new User { Id = 1, UserName = "seller1" };
-        var user2 = new User { Id = 2, UserName = "seller2" };
+        var user1 = new User { Id = 1, Nombre = "Carlos", Apellidos = "García" };
+        var user2 = new User { Id = 2, Nombre = "Ana", Apellidos = "Martín" };
         var product1 = new Product { Id = 1, Nombre = "P1", PropietarioId = 1, Propietario = user1, CompraId = 1 };
         var product2 = new Product { Id = 2, Nombre = "P2", PropietarioId = 1, Propietario = user1, CompraId = 2 };
         var product3 = new Product { Id = 3, Nombre = "P3", PropietarioId = 2, Propietario = user2, CompraId = 3 };
@@ -160,15 +160,15 @@ public class StatisticsServiceTests
         var result = (await _service.GetTopSellersAsync(10)).ToList();
 
         result.Should().HaveCount(2);
-        result[0].Nombre.Should().Be("seller1");
+        result[0].Nombre.Should().Be("Carlos García");
         result[0].ProductosVendidos.Should().Be(2);
-        result[1].Nombre.Should().Be("seller2");
+        result[1].Nombre.Should().Be("Ana Martín");
     }
 
     [Test]
     public async Task GetTopSellersAsync_IgnoresUnsoldProducts()
     {
-        var user = new User { Id = 1, UserName = "seller" };
+        var user = new User { Id = 1, Nombre = "Pedro", Apellidos = "Sánchez" };
         var soldProduct = new Product { Id = 1, Nombre = "Sold", PropietarioId = 1, Propietario = user, CompraId = 1 };
         var unsoldProduct = new Product { Id = 2, Nombre = "Unsold", PropietarioId = 1, Propietario = user, CompraId = null };
         _context.Users.Add(user);

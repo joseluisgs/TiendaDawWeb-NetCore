@@ -1,7 +1,45 @@
 # Docker Compose para TiendaDawWeb
-# Lanza MVC (puerto 5000) y Razor Pages (puerto 5002)
+# Lanza PostgreSQL + Redis + MVC (puerto 5000) + Razor Pages (puerto 5002)
 
 services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:17-alpine
+    container_name: tiendadaw-postgres
+    environment:
+      - POSTGRES_DB=tiendadaw
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - tiendadaw-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tiendadaw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para caché y sesión
+  redis:
+    image: redis:7-alpine
+    container_name: tiendadaw-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - tiendadaw-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Aplicación MVC
   mvc:
     build:
@@ -11,9 +49,12 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:5000
       - DOTNET_RUNNING_IN_CONTAINER=true
+      # 🛡️ Fail-fast: PostgreSQL y Redis son obligatorios en producción
+      - ConnectionStrings__PostgreSQL=Host=postgres;Database=tiendadaw;Username=postgres;Password=postgres
+      - ConnectionStrings__Redis=redis:6379
       # Configuración de Email (configurar con tus valores)
       - Email__SmtpHost=
       - Email__SmtpPort=587
@@ -26,6 +67,11 @@ services:
       - Carrito__CleanupIntervalMinutes=60
     volumes:
       - mvc-uploads:/app/wwwroot/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - tiendadaw-network
@@ -45,9 +91,12 @@ services:
     ports:
       - "5002:5002"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:5002
       - DOTNET_RUNNING_IN_CONTAINER=true
+      # 🛡️ Fail-fast: PostgreSQL y Redis son obligatorios en producción
+      - ConnectionStrings__PostgreSQL=Host=postgres;Database=tiendadaw;Username=postgres;Password=postgres
+      - ConnectionStrings__Redis=redis:6379
       # Configuración de Email (configurar con tus valores)
       - Email__SmtpHost=
       - Email__SmtpPort=587
@@ -60,6 +109,11 @@ services:
       - Carrito__CleanupIntervalMinutes=60
     volumes:
       - razor-uploads:/app/wwwroot/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - tiendadaw-network
@@ -71,6 +125,10 @@ services:
       start_period: 10s
 
 volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
   mvc-uploads:
     driver: local
   razor-uploads:

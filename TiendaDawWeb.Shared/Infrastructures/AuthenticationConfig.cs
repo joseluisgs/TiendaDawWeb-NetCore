@@ -25,14 +25,20 @@ public static class AuthenticationConfig
 
         services.AddIdentity<User, IdentityRole<long>>(options =>
         {
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
+            // 🛡️ Password policy: mínimo razonable para proyecto educativo
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireUppercase = true;
             options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 4;
+            options.Password.RequiredLength = 6;
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = false;
             options.SignIn.RequireConfirmedPhoneNumber = false;
+
+            // 🛡️ Lockout por fuerza bruta: 5 intentos fallidos → bloqueo 15 min
+            options.Lockout.AllowedForNewUsers = true;
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();

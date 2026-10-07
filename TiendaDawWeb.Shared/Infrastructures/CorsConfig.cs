@@ -33,11 +33,13 @@ public static class CorsConfig
             }
             else
             {
+                // 🛡️ CORS restrictivo en producción: solo el origen del propio dominio
                 options.AddPolicy("ProductionPolicy", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins("https://localhost:5001", "https://localhost:7001")
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .AllowCredentials();
                 });
                 Log.Information("🌐 CORS: ProductionPolicy");
             }

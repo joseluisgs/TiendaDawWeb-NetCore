@@ -607,5 +607,65 @@ public class CreateProductModel : PageModel
 
 ---
 
+## 5.11. Pitfalls Comunes de Razor Pages
+
+### 5.11.1. El parámetro `page` no vincula desde query string
+
+**Problema:** En un handler como `OnGetAsync(int page = 1)`, si la URL es `?page=3`, el parámetro `page` recibe el valor `1` (el default) en vez de `3`.
+
+**Causa raíz:** En Razor Pages, `PageModel` internamente usa un route value llamado `page` para identificar la página. El model binder da prioridad al route value sobre el query string. Como el route value `page` no tiene valor numérico, se usa el default del parámetro.
+
+**Diagnóstico:**
+```csharp
+// El query string llega correctamente...
+logger.LogInformation("QueryString={QS}", Request.QueryString.Value);
+// → "?page=3&size=12"
+
+// Pero el parámetro recibe el default...
+logger.LogInformation("page={Page}", page);
+// → "page=1" ❌
+```
+
+**Solución:** Usar `[FromQuery]` explícito:
+```csharp
+public async Task<IActionResult> OnGetAsync(
+    [FromQuery] int page = 1,    // ← Obligatorio para page
+    [FromQuery] int size = 12,   // ← Recomendado también
+    string? q = null)
+```
+
+**Regla:** En Razor Pages, **siempre** usa `[FromQuery]` para parámetros de paginación (`page`, `size`, `pagina`, etc.).
+
+### 5.11.2. `<base href="~/" />` rompe URLs relativas con query string
+
+**Problema:** Links con `href="?page=2&size=12"` generan URLs incorrectas al hacer click.
+
+**Causa raíz:** Con `<base href="/" />`, el navegador resuelve `?page=2` contra `/` (la base) en vez de contra `/Public` (la página actual). Resultado: `/?page=2` en vez de `/Public?page=2`.
+
+**Solución:** Usar rutas absolutas en los links:
+```html
+<!-- ❌ Relativo - conflicto con <base> tag -->
+<a href="?page=@i&size=@ViewBag.Size">2</a>
+
+<!-- ✅ Absoluto - funciona correctamente -->
+<a href="/Public?page=@i&size=@ViewBag.Size">2</a>
+
+<!-- ✅ Mejor - usando el helper de Razor Pages -->
+<a asp-page="/Public/Index" asp-route-page="@i" asp-route-size="@ViewBag.Size">2</a>
+```
+
+**Regla:** Con `<base href="~/" />` en el Layout, **todas** las URLs relativas que contengan query string deben ser absolutas (`/ruta?param=valor`).
+
+### 5.11.3. Resumen de Differences MVC vs Razor Pages
+
+| Aspecto | MVC | Razor Pages |
+|---------|-----|-------------|
+| Binding de `page` | ✅ Funciona sin atributo | ❌ Requiere `[FromQuery]` |
+| URLs relativas con `?` | ✅ Funcionan | ❌ Conflicto con `<base>` |
+| OutputCache | En el controller | En la vista (`@attribute`) |
+| Nombres de parámetros | Libres | `page` es reservado internamente |
+
+---
+
 **Anterior**: [04. MVC Controllers](../04-MVC-Controllers.md)  
 **Próximo**: [06. Persistencia de Datos](../06-Persistence.md)
