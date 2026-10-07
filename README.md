@@ -25,8 +25,8 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 - 🏪 **Gestión de Productos y Categorías**: CRUD completo con validaciones
 - 🛒 **Carrito de Compras**: Persistencia SQLite con control de concurrencia
 - 👥 **Gestión de Usuarios**: Autenticación con ASP.NET Core Identity (Cookies)
-- 💾 **Persistencia con SQLite In-Memory**: Base de datos volátil para testing rápido
-- 🔐 **Seguridad**: Claims, roles, CSRF y protección de rutas
+- 💾 **Persistencia**: SQLite (desarrollo) y PostgreSQL (producción)
+- 🔐 **Seguridad**: Claims, roles, CSRF, Rate Limiting, Security Headers y protección de rutas
 - 📡 **Blazor Server + SignalR**: Componentes interactivos y notificaciones en tiempo real
 - 📊 **Panel de Administración**: Dashboard con estadísticas en tiempo real
 - 🧪 **Testing**: Unit tests con NUnit, bUnit para Blazor, y E2E con Playwright
@@ -109,23 +109,24 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | **ASP.NET Core MVC**     | 10         | Framework web con patrón MVC                   |
 | **Razor Pages**          | 10         | Motor de vistas del lado servidor              |
 | **Blazor Server**        | 10         | Componentes interactivos en tiempo real        |
-| **Blazor-ApexCharts**     | 3.x        | Gráficos interactivos en tiempo real          |
+| **Blazor-ApexCharts**     | 6.x        | Gráficos interactivos en tiempo real          |
 | **SignalR**              | 10         | Comunicación bidireccional para reactividad    |
-| **EF Core**              | 10         | ORM con SQLite In-Memory                       |
-| **SQLite In-Memory**     | -          | Base de datos volátil para desarrollo/testing  |
+| **EF Core**              | 10         | ORM con SQLite y PostgreSQL                       |
+| **SQLite**               | -          | Base de datos para desarrollo                    |
+| **PostgreSQL**           | -          | Base de datos para producción                    |
 | **ASP.NET Core Identity**| 10         | Sistema de autenticación y autorización        |
 | **NUnit**                | 4.x        | Framework de testing unitario                  |
 | **bUnit**                | 2.x        | Testing de componentes Blazor                  |
 | **Playwright**           | 1.x        | Testing E2E en navegador                       |
 | **Bootstrap**            | 5.3        | Framework CSS responsive                       |
-| **CSharpFunctionalExtensions**| 2.x   | Railway Oriented Programming (ROP)             |
+| **CSharpFunctionalExtensions**| 3.7    | Railway Oriented Programming (ROP)             |
 | **OutputCache**          | 10         | Caché de respuestas HTML                       |
 | **InMemoryCache**        | 10         | Caché de objetos en memoria                    |
 | **Serilog**              | 8.x        | Logging estructurado                           |
 
 ## 🏃‍♂️ Inicio Rápido
 
-### Deemo en Producción
+### Demo en Producción
 
 🛠️ [https://tiendadawweb-netcore.onrender.com/](https://tiendadawweb-netcore.onrender.com/)
 
@@ -234,7 +235,7 @@ open coverage/index.html
 | Tipo de Test    | Parallelización | Base de Datos           |
 | --------------- | --------------- | ------------------------ |
 | **Unit Tests**  | ✅ Paralelo     | Sin dependencia          |
-| **Integration** | ✅ Paralelo     | SQLite In-Memory        |
+| **Integration** | ✅ Paralelo     | SQLite / TestContainers PostgreSQL |
 | **Components**  | ✅ Paralelo     | Sin dependencia          |
 | **E2E Tests**   | ❌ No paralelo  | Requiere app corriendo   |
 
@@ -308,6 +309,7 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 | 25  | [Logging](doc/25-Logging.md)                       | Logging estructurado, correlación de peticiones        |
 | 26  | [Infrastructure](doc/26-Infrastructure.md)         | Clean Architecture, DI, Extension Methods             |
 | 27  | [CI/CD con GitHub Actions](doc/27-CI-CD.md)        | Pipelines, automatización, GitHub CLI                |
+| 28  | [Blazor-ApexCharts](doc/28-Blazor-ApexCharts.md)  | Integración, configuración y solución de 404          |
 
 ## ⚒️ Diagrama de Clases del Dominio
 
@@ -454,9 +456,9 @@ TiendaDawWeb-NetCore/
 ├── TiendaDawWeb.Mvc/                     # Proyecto Principal MVC
 │   ├── Program.cs                         # Configuración de Pipeline, DI
 │   ├── Controllers/                      # Controladores MVC
-│   │   ├── AccountController.cs         # Auth (Login, Register)
-│   │   ├── ProductsController.cs        # Gestión de productos
-│   │   ├── CartController.cs            # Carrito de compras
+│   │   ├── AuthController.cs           # Auth (Login, Register)
+│   │   ├── ProductController.cs        # Gestión de productos
+│   │   ├── CarritoController.cs        # Carrito de compras
 │   │   └── Admin/                       # Panel de administración
 │   ├── Views/                            # Vistas Razor
 │   ├── wwwroot/                         # Recursos estáticos
@@ -721,7 +723,7 @@ return result.Match(
 - ✅ **Soft Delete**: Eliminación lógica (IsDeleted)
 - ✅ **Concurrency Control**: RowVersion
 - ✅ **Rate Limiting**: Protección contra DDoS
-- ✅ **Security Headers**: X-Content-Type-Options
+- ✅ **Security Headers**: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
 
 ## 📡 Endpoints y Rutas
 
@@ -731,31 +733,31 @@ return result.Match(
 
 | Endpoint                       | Método | Auth | Descripción                     |
 | ------------------------------ | ------ | ---- | ------------------------------ |
-| `/Account/Register`            | GET    | No   | Formulario de registro         |
-| `/Account/Register`            | POST   | No   | Registrar nuevo usuario        |
-| `/Account/Login`              | GET    | No   | Formulario de login           |
-| `/Account/Login`              | POST   | No   | Iniciar sesión (Cookie)        |
-| `/Account/Logout`             | POST   | Sí   | Cerrar sesión                 |
-| `/Account/Profile`             | GET    | Sí   | Ver perfil propio              |
+| `/Auth/Register`            | GET    | No   | Formulario de registro         |
+| `/Auth/Register`            | POST   | No   | Registrar nuevo usuario        |
+| `/Auth/Login`              | GET    | No   | Formulario de login           |
+| `/Auth/Login`              | POST   | No   | Iniciar sesión (Cookie)        |
+| `/Auth/Logout`             | POST   | Sí   | Cerrar sesión                 |
+| `/Profile`                 | GET    | Sí   | Ver perfil propio              |
 
 #### Products Controller
 
 | Endpoint                      | Método | Auth | Descripción                       |
 | ----------------------------- | ------ | ---- | -------------------------------- |
-| `/Products`                   | GET    | No   | Listar productos                  |
-| `/Products/{id:long}`         | GET    | No   | Ver producto                      |
-| `/Products/Create`            | GET    | Sí   | Formulario crear producto        |
-| `/Products/Create`            | POST   | Sí   | Crear producto                   |
-| `/Products/{id}/Edit`         | GET    | Sí*  | Formulario editar producto        |
+| `/Product`                   | GET    | No   | Listar productos                  |
+| `/Product/Details/{id:long}` | GET    | No   | Ver producto                      |
+| `/Product/Create`            | GET    | Sí   | Formulario crear producto        |
+| `/Product/Create`            | POST   | Sí   | Crear producto                   |
+| `/Product/Edit/{id:long}`    | GET    | Sí*  | Formulario editar producto        |
 
 #### Cart Controller
 
 | Endpoint                  | Método | Auth | Descripción                      |
 | ------------------------ | ------ | ---- | -------------------------------- |
-| `/Cart`                  | GET    | Sí   | Ver carrito                      |
-| `/Cart/Add/{productId}`  | POST   | Sí   | Añadir producto al carrito        |
-| `/Cart/Remove/{itemId}`   | POST   | Sí   | Eliminar item                    |
-| `/Cart/Checkout`         | POST   | Sí   | Finalizar compra                 |
+| `/Carrito`                  | GET    | Sí   | Ver carrito                      |
+| `/Carrito/Add/{productId}`  | POST   | Sí   | Añadir producto al carrito        |
+| `/Carrito/Remove/{itemId}`   | POST   | Sí   | Eliminar item                    |
+| `/Carrito/Resumen`         | POST   | Sí   | Finalizar compra                 |
 
 #### Componentes Blazor Server (SignalR integrado)
 
