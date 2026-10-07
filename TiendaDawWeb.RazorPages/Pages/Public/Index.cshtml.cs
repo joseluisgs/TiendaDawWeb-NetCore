@@ -21,8 +21,8 @@ public class IndexModel(
         string? categoria,
         float? minPrecio,
         float? maxPrecio,
-        int page = 1,
-        int size = 12,
+        [FromQuery] int page = 1,
+        [FromQuery] int size = 12,
         string? lang = null) {
         // Manejar cambio de idioma si se proporciona
         if (!string.IsNullOrEmpty(lang)) {

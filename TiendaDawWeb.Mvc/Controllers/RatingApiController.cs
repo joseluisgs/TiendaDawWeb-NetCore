@@ -22,6 +22,7 @@ public class RatingApiController(
     /// <summary>
     ///     POST /api/ratings - Add or update rating
     /// </summary>
+    [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> AddRating([FromBody] AddRatingRequest request) {
         var user = await userManager.GetUserAsync(User);

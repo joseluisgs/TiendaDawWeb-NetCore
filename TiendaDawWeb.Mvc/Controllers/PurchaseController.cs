@@ -125,6 +125,7 @@ public class PurchaseController(
     /// <summary>
     ///     POST /app/compras/{id}/reenviaremail - Reenvía email de confirmación
     /// </summary>
+    [ValidateAntiForgeryToken]
     [HttpPost("{id}/reenviaremail")]
     public async Task<IActionResult> ReenviarEmail(long id) {
         var user = await userManager.GetUserAsync(User);

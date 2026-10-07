@@ -38,11 +38,14 @@ public class ProductControllerTests
         
         _mockLogger = new Mock<ILogger<ProductController>>();
         
+        var outputCacheStoreMock = new Mock<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>();
+        
         _controller = new ProductController(
             _mockProductService.Object,
             _mockStorageService.Object,
             _mockFavoriteService.Object,
             _mockUserManager.Object,
+            outputCacheStoreMock.Object,
             _mockLogger.Object);
     }
 

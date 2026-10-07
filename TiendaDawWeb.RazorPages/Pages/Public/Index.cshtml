@@ -1,5 +1,5 @@
 @page
-@attribute [OutputCache(Duration = 300, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
+@attribute [OutputCache(Duration = 300, Tags = new[] { "productos" }, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
 @using System.Globalization
 @using Microsoft.AspNetCore.OutputCaching
 @using Microsoft.Extensions.Localization
@@ -82,7 +82,7 @@
                     <div class="card h-100 shadow-sm producto-card" data-testid="product-card">
                         <a href="@Url.Page("/Product/Details", new { id = producto.Id })"
                            class="text-decoration-none text-dark">
-                            <img src="@producto.Imagen"
+                            <img src="@producto.Imagen" loading="lazy"
                                  class="card-img-top"
                                  alt="@producto.Nombre"
                                  style="height: 300px; object-fit: cover; cursor: pointer;" data-testid="product-image">
@@ -155,7 +155,7 @@
                             @if (ViewBag.HasPrevious) {
                                 <li class="page-item">
                                     <a class="page-link"
-                                       href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
+                                       href="/Public?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage - 1)&size=@ViewBag.Size">
                                         <i class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]
                                     </a>
                                 </li>
@@ -177,7 +177,7 @@
                                 else if (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2) {
                                     <li class="page-item">
                                         <a class="page-link"
-                                           href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
+                                           href="/Public?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@i&size=@ViewBag.Size">
                                             @i
                                         </a>
                                     </li>
@@ -188,7 +188,7 @@
                             @if (ViewBag.HasNext) {
                                 <li class="page-item">
                                     <a class="page-link"
-                                       href="?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
+                                       href="/Public?@(ViewBag.Search != null ? $"q={ViewBag.Search}&" : "")@(ViewBag.Categoria != null ? $"categoria={ViewBag.Categoria}&" : "")@(ViewBag.MinPrecio != null ? $"minPrecio={ViewBag.MinPrecio}&" : "")@(ViewBag.MaxPrecio != null ? $"maxPrecio={ViewBag.MaxPrecio}&" : "")page=@(ViewBag.CurrentPage + 1)&size=@ViewBag.Size">
                                         @SharedLocalizer["Pag.Next"] <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>

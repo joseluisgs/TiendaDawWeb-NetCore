@@ -54,6 +54,10 @@ public class CarritoService(
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductNotAvailableWithName(producto.Nombre));
 
+            if (producto.PropietarioId == usuarioId)
+                return Result.Failure<CarritoItem, DomainError>(
+                    CarritoError.ProductNotAvailableWithName(producto.Nombre));
+
             if (producto.Reservado)
             {
                 if (producto.ReservadoPor == usuarioId)

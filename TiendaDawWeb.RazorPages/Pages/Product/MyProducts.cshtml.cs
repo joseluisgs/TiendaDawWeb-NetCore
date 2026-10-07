@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.OutputCaching;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
@@ -11,7 +12,8 @@ namespace TiendaDawWeb.RazorPages.Pages.Product;
 [Authorize]
 public class MyProductsModel(
     IProductService productService,
-    UserManager<User> userManager
+    UserManager<User> userManager,
+    IOutputCacheStore outputCacheStore
 ) : PageModel {
     public IEnumerable<ProductModel> Products { get; set; } = Enumerable.Empty<ProductModel>();
 
@@ -39,6 +41,7 @@ public class MyProductsModel(
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
         } else {
+            await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
             TempData["Success"] = "Producto eliminado correctamente";
         }
         

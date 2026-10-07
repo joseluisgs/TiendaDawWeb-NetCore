@@ -344,9 +344,10 @@ public class AdminController(
 
         // Compradores más activos (top 10)
         var compradoresActivos = await context.Purchases
-            .GroupBy(p => p.CompradorId)
+            .GroupBy(p => new { p.CompradorId, p.Comprador.Nombre, p.Comprador.Apellidos })
             .Select(g => new {
-                CompradorId = g.Key,
+                CompradorId = g.Key.CompradorId,
+                Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 TotalCompras = g.Count(),
                 TotalGastado = g.Sum(p => p.Total)
             })
@@ -357,9 +358,10 @@ public class AdminController(
         // Vendedores más activos
         var vendedoresActivos = await context.Products
             .Where(p => p.CompraId != null)
-            .GroupBy(p => p.PropietarioId)
+            .GroupBy(p => new { p.PropietarioId, p.Propietario.Nombre, p.Propietario.Apellidos })
             .Select(g => new {
-                PropietarioId = g.Key,
+                PropietarioId = g.Key.PropietarioId,
+                Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 ProductosVendidos = g.Count()
             })
             .OrderByDescending(x => x.ProductosVendidos)

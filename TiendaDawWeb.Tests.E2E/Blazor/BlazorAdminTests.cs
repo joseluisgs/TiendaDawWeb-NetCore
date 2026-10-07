@@ -27,7 +27,7 @@ public class BlazorAdminTests : E2ETestBase
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
         await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-        await Page.TestId("password-input").FillAsync("admin");
+        await Page.TestId("password-input").FillAsync("Admin1");
         await Page.TestId("submit-button").ClickAsync();
         await Expect(Page.TestId("user-name")).ToContainTextAsync("Admin", new() { Timeout = 15000 });
     }

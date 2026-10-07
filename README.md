@@ -774,10 +774,10 @@ Blazor Server usa SignalR internamente para comunicación bidireccional. El proy
 
 ## 👥 Usuarios Demo
 
-| Usuario   | Email                 | Password | Rol       |
-| --------- | --------------------- | -------- | --------- |
-| Admin     | admin@waladaw.com     | admin    | ADMIN     |
-| Prueba    | prueba@prueba.com     | user123  | USER      |
+| Usuario   | Email                 | Password  | Rol       |
+| --------- | --------------------- | --------- | --------- |
+| Admin     | admin@waladaw.com     | Admin1    | ADMIN     |
+| Prueba    | prueba@prueba.com     | Prueba1   | USER      |
 
 ## 📝 Licencia
 

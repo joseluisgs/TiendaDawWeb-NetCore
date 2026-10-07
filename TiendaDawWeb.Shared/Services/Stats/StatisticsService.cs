@@ -77,11 +77,11 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     public async Task<IEnumerable<TopBuyerDto>> GetTopBuyersAsync(int top = 10)
     {
         return await context.Purchases
-            .GroupBy(p => new { p.CompradorId, p.Comprador.UserName })
+            .GroupBy(p => new { p.CompradorId, p.Comprador.Nombre, p.Comprador.Apellidos })
             .Select(g => new TopBuyerDto
             {
                 CompradorId = g.Key.CompradorId,
-                Nombre = g.Key.UserName ?? $"Usuario #{g.Key.CompradorId}",
+                Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 TotalCompras = g.Count(),
                 TotalGastado = g.Sum(p => p.Total)
             })
@@ -98,11 +98,11 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     {
         return await context.Products
             .Where(p => p.CompraId != null)
-            .GroupBy(p => new { p.PropietarioId, p.Propietario.UserName })
+            .GroupBy(p => new { p.PropietarioId, p.Propietario.Nombre, p.Propietario.Apellidos })
             .Select(g => new TopSellerDto
             {
                 PropietarioId = g.Key.PropietarioId,
-                Nombre = g.Key.UserName ?? $"Usuario #{g.Key.PropietarioId}",
+                Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 ProductosVendidos = g.Count()
             })
             .OrderByDescending(x => x.ProductosVendidos)

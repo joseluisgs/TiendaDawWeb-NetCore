@@ -155,7 +155,7 @@ public class EmailService(
             var smtpPort = int.Parse(smtpPortRaw);
 
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            message.From.Add(new MailboxAddress(fromName ?? string.Empty, fromEmail ?? string.Empty));
             message.To.Add(new MailboxAddress("", toEmail));
             message.Subject = subject;
 

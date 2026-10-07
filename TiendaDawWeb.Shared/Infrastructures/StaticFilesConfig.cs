@@ -17,6 +17,9 @@ public static class StaticFilesConfig
         var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         var uploadPath = Path.Combine(webRootPath, "uploads");
 
+        // 🛡️ Crear directorio si no existe (evita DirectoryNotFoundException en arranque)
+        Directory.CreateDirectory(uploadPath);
+
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(uploadPath),

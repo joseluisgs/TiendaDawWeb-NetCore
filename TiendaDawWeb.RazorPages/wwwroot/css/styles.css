@@ -148,6 +148,7 @@ main.container {
     background: rgba(0,0,0,0.6);
     border-radius: 10px;
     padding: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
 .main-text {
@@ -260,9 +261,14 @@ footer {
     color: var(--gradient-start);
 }
 
+.pagination .page-item.disabled .page-link {
+    cursor: not-allowed;
+}
+
 .pagination .page-item.active .page-link {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     border: none;
+    color: #fff;
 }
 
 /* Invoice styles */

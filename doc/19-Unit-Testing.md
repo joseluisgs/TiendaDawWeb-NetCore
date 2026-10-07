@@ -261,6 +261,41 @@ public async Task RatingComponent_ShowsAverageRating()
 | **Moq**     | Mock<T>, Setup, Verify                          |
 | **bUnit**   | TestContext, Render, Find, Click                 |
 
+### Tests de Integración con TestContainers
+
+Para tests que necesitan una base de datos real (no InMemory), se usa **TestContainers** que levanta PostgreSQL en Docker:
+
+```csharp
+// Fixture que levanta PostgreSQL en Docker
+public sealed class PostgresFixture
+{
+    private PostgreSqlContainer? _container;
+
+    public async Task StartAsync()
+    {
+        _container = new PostgreSqlBuilder("postgres:17-alpine")
+            .WithDatabase("tiendadaw_test")
+            .WithUsername("postgres")
+            .WithPassword("postgres")
+            .Build();
+        await _container.StartAsync();
+    }
+
+    public ApplicationDbContext CreateIsolatedContext(string dbName)
+    {
+        var isolatedCs = ConnectionString.Replace("tiendadaw_test", dbName);
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseNpgsql(isolatedCs)
+            .Options;
+        return new ApplicationDbContext(options);
+    }
+}
+```
+
+> 🎓 **Aislamiento por test:** cada test crea una base de datos única (`tiendadaw_1`, `tiendadaw_2`...) para evitar interferencias entre tests.
+
+> ⚠️ **HasQueryFilter:** si el DbContext tiene `HasQueryFilter(p => !p.Deleted)`, los tests de soft-delete deben usar `IgnoreQueryFilters()` para verificar que el borrado funciona.
+
 ---
 
 **Anterior**: [18. Authentication Cookies](../18-Auth-Cookies.md)  

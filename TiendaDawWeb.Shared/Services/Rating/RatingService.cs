@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
@@ -12,9 +13,13 @@ namespace TiendaDawWeb.Shared.Services.Rating;
 /// </summary>
 public class RatingService(
     ApplicationDbContext context,
+    IMemoryCache cache,
     ILogger<RatingService> logger
 ) : IRatingService
 {
+    // Claves de caché compartidas con ProductService
+    private const string ProductsCacheKey = "all_products";
+    private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
     /// <summary>
     ///     Añade una nueva valoración a un producto.
     /// </summary>
@@ -58,6 +63,10 @@ public class RatingService(
 
         context.Ratings.Add(rating);
         await context.SaveChangesAsync();
+
+        // 🧹 Invalidar caché de productos (el rating promedio cambia)
+        cache.Remove(ProductsCacheKey);
+        cache.Remove(ProductDetailsCacheKey(productoId));
 
         return Result.Success<Models.Rating, DomainError>(rating);
     }
@@ -142,6 +151,10 @@ public class RatingService(
 
         await context.SaveChangesAsync();
 
+        // 🧹 Invalidar caché de productos (el rating promedio cambia)
+        cache.Remove(ProductsCacheKey);
+        cache.Remove(ProductDetailsCacheKey(rating.ProductoId));
+
         return Result.Success<Models.Rating, DomainError>(rating);
     }
 
@@ -166,6 +179,10 @@ public class RatingService(
 
             context.Ratings.Remove(rating);
             await context.SaveChangesAsync();
+
+            // 🧹 Invalidar caché de productos (el rating promedio cambia)
+            cache.Remove(ProductsCacheKey);
+            cache.Remove(ProductDetailsCacheKey(rating.ProductoId));
 
             return Result.Success<bool, DomainError>(true);
         }

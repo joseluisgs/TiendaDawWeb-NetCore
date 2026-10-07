@@ -22,6 +22,7 @@ public class FavoriteApiController(
     /// <summary>
     ///     POST /api/favorites - Add product to favorites
     /// </summary>
+    [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> AddFavorite([FromBody] AddFavoriteRequest request) {
         var user = await userManager.GetUserAsync(User);
@@ -67,6 +68,7 @@ public class FavoriteApiController(
     /// <summary>
     ///     POST /api/favorites/toggle - Toggle favorite status
     /// </summary>
+    [ValidateAntiForgeryToken]
     [HttpPost("toggle")]
     public async Task<IActionResult> ToggleFavorite([FromBody] AddFavoriteRequest request) {
         var user = await userManager.GetUserAsync(User);
