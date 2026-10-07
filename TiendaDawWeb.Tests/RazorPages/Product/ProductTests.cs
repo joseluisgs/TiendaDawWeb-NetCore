@@ -25,14 +25,14 @@ public class ProductDetailsModelTests
     [Test]
     public void ProductDetailsModel_CanBeInstantiated()
     {
-        var model = new DetailsModel(null!, null!, null!, null!);
+        var model = new DetailsModel(null!, null!, null!, null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
     public void ProductDetailsModel_HasProductProperty()
     {
-        var model = new DetailsModel(null!, null!, null!, null!);
+        var model = new DetailsModel(null!, null!, null!, null!, null!);
         model.Product.Should().Be(default(ProductModel));
     }
 }
