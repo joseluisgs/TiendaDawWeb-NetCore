@@ -42,6 +42,19 @@ EXPOSE 5000
 ENTRYPOINT ["dotnet", "TiendaDawWeb.Web.dll"]
 ```
 
+> ⚠️ **CPM (Central Package Management):** Si usas `Directory.Packages.props`, debes copiarlo **antes** de los `.csproj` y antes de `dotnet restore`. Sin él, NuGet falla con error `NU1015` porque los `.csproj` no tienen versiones.
+
+```dockerfile
+# ❌ INCORRECTO: falta Directory.Packages.props
+COPY ["TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj", "TiendaDawWeb.Mvc/"]
+RUN dotnet restore "TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj"
+
+# ✅ CORRECTO: copiar CPM antes de los csproj
+COPY ["Directory.Packages.props", "."]
+COPY ["TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj", "TiendaDawWeb.Mvc/"]
+RUN dotnet restore "TiendaDawWeb.Mvc/TiendaDawWeb.Mvc.csproj"
+```
+
 ### docker-compose.yml
 
 ```yaml
