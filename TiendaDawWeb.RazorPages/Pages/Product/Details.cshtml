@@ -1,5 +1,5 @@
 @page "{id:long}"
-@attribute [OutputCache(Duration = 600)]
+@attribute [OutputCache(Duration = 600, Tags = new[] { "productos" })]
 @using Microsoft.AspNetCore.OutputCaching
 @using TiendaDawWeb.Shared.Blazor.Ratings
 @using TiendaDawWeb.Shared.Helpers

@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
@@ -14,12 +15,22 @@ namespace TiendaDawWeb.Shared.Services.Rating;
 public class RatingService(
     ApplicationDbContext context,
     IMemoryCache cache,
+    IOutputCacheStore outputCacheStore,
     ILogger<RatingService> logger
 ) : IRatingService
 {
     // Claves de caché compartidas con ProductService
     private const string ProductsCacheKey = "all_products";
     private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
+
+    /// <summary>
+    ///     Invalida el OutputCache por tag "productos" después de cada escritura.
+    /// </summary>
+    private async Task InvalidarOutputCacheAsync()
+    {
+        try { await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None); }
+        catch (Exception ex) { logger.LogWarning(ex, "Output cache invalidation error: Tag=productos"); }
+    }
     /// <summary>
     ///     Añade una nueva valoración a un producto.
     /// </summary>
@@ -67,6 +78,7 @@ public class RatingService(
         // 🧹 Invalidar caché de productos (el rating promedio cambia)
         cache.Remove(ProductsCacheKey);
         cache.Remove(ProductDetailsCacheKey(productoId));
+        await InvalidarOutputCacheAsync();
 
         return Result.Success<Models.Rating, DomainError>(rating);
     }
@@ -154,6 +166,7 @@ public class RatingService(
         // 🧹 Invalidar caché de productos (el rating promedio cambia)
         cache.Remove(ProductsCacheKey);
         cache.Remove(ProductDetailsCacheKey(rating.ProductoId));
+        await InvalidarOutputCacheAsync();
 
         return Result.Success<Models.Rating, DomainError>(rating);
     }
@@ -183,6 +196,7 @@ public class RatingService(
             // 🧹 Invalidar caché de productos (el rating promedio cambia)
             cache.Remove(ProductsCacheKey);
             cache.Remove(ProductDetailsCacheKey(rating.ProductoId));
+            await InvalidarOutputCacheAsync();
 
             return Result.Success<bool, DomainError>(true);
         }

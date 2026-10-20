@@ -31,6 +31,7 @@ public class PurchaseServiceTests
             pdfService ?? Mock.Of<IPdfService>(),
             emailService ?? Mock.Of<IEmailService>(),
             cache,
+            Mock.Of<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>(),
             logger);
     }
 
