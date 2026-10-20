@@ -289,7 +289,133 @@ public class CacheService
 
 ---
 
-## Resumen
+### 🎓 Guía de Supervivencia: Cache Multinivel en Web MVC/RazorPages
+
+#### ¿Qué es la cache multinivel en una app web?
+
+Una app web MVC/RazorPages necesita cachear **dos cosas diferentes**: las respuestas HTTP completas (HTML) y los objetos de negocio (DTOs). Cada una tiene su propia capa de caché.
+
+```mermaid
+flowchart TB
+    Client[Cliente Browser] --> L1["Layer 1: OutputCache<br/>Respuesta HTTP renderizada<br/>TTL: 300-600s + tag 'productos'"]
+    L1 -->|miss| Controller[Controller / PageModel]
+    Controller --> L2["Layer 2: IMemoryCache<br/>Objetos DTO en memoria<br/>TTL: configurable"]
+    L2 -->|miss| DB[(SQLite / PostgreSQL)]
+
+    style L1 fill:#3498db,color:#fff
+    style L2 fill:#e74c3c,color:#fff
+    style DB fill:#2ecc71,color:#fff
+```
+
+#### ¿Por qué dos capas en una web?
+
+| Capa | Qué cachea | ¿Por qué? |
+|------|-----------|-----------|
+| **OutputCache** | HTML completo de la vista | Evita re-renderizar Razor + ejecutar Tag Helpers |
+| **IMemoryCache** | Objetos DTO/Entity | Evita ir a la DB cuando varios controllers necesitan los mismos datos |
+
+#### Flujo completo: Petición GET
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant OC as OutputCache
+    participant C as Controller
+    participant MC as IMemoryCache
+    participant DB as Database
+
+    B->>GET /Public?page=1
+    OC->>OC: ¿HTML cacheado con tag 'productos'?
+    alt Cache Hit
+        OC-->>B: 200 OK (HTML, 0ms)
+    else Cache Miss
+        OC->>C: Ejecutar action
+        C->>MC: GetAllAsync()
+        alt Cache Hit
+            MC-->>C: Lista de productos
+        else Cache Miss
+            C->>DB: SELECT * FROM products
+            DB-->>C: Datos
+            C->>MC: Cachear en memoria
+        end
+        C-->>OC: Renderizar vista
+        OC-->>B: 200 OK (HTML)
+    end
+```
+
+#### Flujo completo: Escritura
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant C as Controller
+    participant S as Service
+    participant MC as IMemoryCache
+    participant OC as OutputCache
+
+    U->>POST /Product/Create
+    C->>S: CreateAsync(dto)
+    S->>S: Guardar en DB
+    S->>MC: Remove("all_products")
+    S->>MC: Remove("product_details_{id}")
+    C->>OC: EvictByTagAsync("productos")
+    C-->>U: Redirect (302)
+```
+
+#### Ventajas
+
+| Ventaja | Descripción |
+|---------|-------------|
+| **Hit rate acumulado** | OutputCache absorbe el 70%, IMemoryCache el 80% del resto → 94% total |
+| **Invalidación en dos niveles** | Al escribir, se limpia IMemoryCache (datos) Y OutputCache (respuesta) |
+| **Aislamiento** | Si IMemoryCache falla, OutputCache sigue sirviendo respuestas |
+| **TTL por capa** | OutputCache 300-600s, IMemoryCache configurable — puedes ajustar cada una |
+
+#### ⚠️ Problemas y Cómo Sobrevivir
+
+| Problema | Síntoma | Solución |
+|----------|---------|----------|
+| **Datos stale entre capas** | IMemoryCache tiene datos viejos pero OutputCache ya se invalidó | Invalidar **ambas** capas en cada escritura |
+| **OutputCache sin tag** | Nadie puede invalidarlo → stale hasta TTL | **Siempre** usar `Tags = ["productos"]` |
+| **Servicio no invalida OutputCache** | Rating/Purchase no invalidan → Details muestra datos viejos | Inyectar `IOutputCacheStore` en **todos** los servicios que cambien datos públicos |
+| **Carrito invalidando OutputCache** | El carrito es privado — invalidar desperdicia caché | Solo invalidar OutputCache para datos **públicos** |
+| **MVC vs RazorPages desincronizados** | Uno tiene tag, el otro no | Mantener ambos proyectos con la misma config |
+
+#### Reglas de Oro del Proyecto Web
+
+```
+1. Todo OutputCache DEBE tener Tags:
+   [OutputCache(Duration = 300, Tags = new[] { "productos" })]
+
+2. Toda escritura invalida AMBAS capas:
+   - IMemoryCache: cache.Remove("all_products")
+   - OutputCache: EvictByTagAsync("productos")
+
+3. Solo datos públicos invalidan OutputCache:
+   - Productos: ✅ sí
+   - Ratings: ✅ sí (cambian el rating visible en Details)
+   - Compras: ✅ sí (cambian disponibilidad)
+   - Carrito: ❌ no (datos privados del usuario)
+
+4. MVC y RazorPages deben ser IDÉNTICOS:
+   - Mismos tags, mismos TTLs, misma invalidación
+   - Si uno cambia, el otro también
+
+5. Los servicios en Shared son usados por AMBOS proyectos:
+   - RatingService invalida OutputCache → funciona en MVC y RazorPages
+   - PurchaseService invalida OutputCache → funciona en ambos
+```
+
+#### ¿Cuándo NO usar cache multinivel en Web?
+
+| Escenario | Alternativa |
+|-----------|-------------|
+| Páginas con datos del usuario (perfil, pedidos) | Sin OutputCache, solo IMemoryCache |
+| Formularios POST | Nunca cachear POST |
+| Páginas de admin en tiempo real | Sin OutputCache (datos siempre frescos) |
+| WebSocket/SignalR | Sin cache (streaming) |
+
+### Resumen
 
 | Concepto           | Descripción                                              |
 | ------------------ | -------------------------------------------------------- |
