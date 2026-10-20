@@ -242,6 +242,37 @@ public class CreateModel(
 }
 ```
 
+### Mapa Completo de Invalidación OutputCache
+
+El proyecto tiene **dos capas de caché** que se complementan:
+
+```mermaid
+flowchart LR
+    Client[Cliente] --> OC[OutputCache<br/>300-600s + tag]
+    OC -->|miss| SVC[Service]
+    SVC --> MC[IMemoryCache<br/>all_products, product_details_{id}]
+    MC -->|miss| DB[(SQLite/PostgreSQL)]
+    
+    style OC fill:#3498db,color:#fff
+    style MC fill:#e74c3c,color:#fff
+```
+
+| Capa | Qué cachea | Invalidación | TTL |
+|------|-----------|--------------|-----|
+| **OutputCache** | Respuesta HTTP completa | `EvictByTagAsync("productos")` | 300-600s |
+| **IMemoryCache** | Objetos DTO | `cache.Remove("all_products")` manual | Configurable |
+
+### ¿Quién invalida OutputCache?
+
+| Servicio | Operación | ¿Invalida OutputCache? |
+|----------|-----------|----------------------|
+| `ProductService` | Create/Update/Delete | ✅ Via ProductController / Product CRUD pages |
+| `RatingService` | Add/Update/Delete rating | ✅ `InvalidarOutputCacheAsync()` |
+| `PurchaseService` | Compra | ✅ `EvictByTagAsync` tras commit |
+| `CarritoService` | Add/Remove/Clear | ❌ No — el carrito es datos de usuario, no público |
+
+> 🎓 **Nota:** `RatingService` y `PurchaseService` invalidan OutputCache porque cambian datos visibles públicamente (rating promedio en Details, disponibilidad del producto). `CarritoService` no lo necesita porque el carrito es privado del usuario.
+
 ### Invalidación Manual
 
 ```csharp
