@@ -44,6 +44,7 @@ public class PurchaseServiceTests
             _pdfServiceMock.Object,
             _emailServiceMock.Object,
             _cacheMock.Object,
+            new Mock<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>().Object,
             _loggerMock.Object);
     }
 
