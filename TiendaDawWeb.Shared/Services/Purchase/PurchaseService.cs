@@ -1,5 +1,6 @@
 using System.Data;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
@@ -21,6 +22,7 @@ public class PurchaseService(
     IPdfService pdfService,
     IEmailService emailService,
     IMemoryCache cache,
+    IOutputCacheStore outputCacheStore,
     ILogger<PurchaseService> logger
 ) : IPurchaseService
 {
@@ -138,6 +140,9 @@ public class PurchaseService(
                 cache.Remove(ProductsCacheKey);
                 foreach (var producto in productos)
                     cache.Remove($"product_details_{producto.Id}");
+
+                // Invalidar OutputCache por tag "productos"
+                await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
 
                 var clearResult = await carritoService.ClearCarritoAsync(usuarioId);
                 if (clearResult.IsFailure)
