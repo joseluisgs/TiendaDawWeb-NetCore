@@ -285,6 +285,102 @@ if (builder.Configuration.GetValue<bool>($"Features:{FeatureManager.BlazorSuppor
 
 ---
 
+## 26.7. Cola de Emails con System.Threading.Channels
+
+### El problema
+
+Cuando un usuario completa una compra, se debe enviar un email de confirmación. Pero enviar un email con SMTP puede tardar **1-5 segundos**. Si lo hacemos sincrónicamente dentro del request HTTP, el usuario espera ese tiempo con la pantalla en blanco.
+
+### La solución: Channel + BackgroundService
+
+```mermaid
+flowchart LR
+    Request[Request HTTP] --> Service[PurchaseService]
+    Service -->|TryWrite| Channel["Channel&lt;EmailMessage&gt;<br/>(unbounded)"]
+    Channel --> BG[EmailBackgroundService<br/>BackgroundService]
+    BG --> SMTP[SMTP Server]
+
+    style Channel fill:#e74c3c,color:#fff
+    style BG fill:#3498db,color:#fff
+```
+
+**Patrón:** El service solo **encola** el email en un `Channel`. Un `BackgroundService` separado **lee** la cola y envía el email en segundo plano. El request HTTP responde en milisegundos.
+
+### Implementación en 3 partes
+
+**1. Registro del Channel (`EmailConfig.cs`):**
+```csharp
+// Channel unbounded: sin límite de tamaño. En un marketplace educativo
+// el volumen es bajo y no se debe perder ningún email por atasco.
+services.AddSingleton(Channel.CreateUnbounded<EmailMessage>());
+```
+
+**2. Productor (`EmailService.cs`):**
+```csharp
+public void EnqueueEmail(EmailMessage emailMessage)
+{
+    // TryWrite: no bloquea si la cola está llena (aunque unbounded nunca lo está)
+    _emailChannel.Writer.TryWrite(emailMessage);
+}
+```
+
+**3. Consumidor (`EmailBackgroundService.cs`):**
+```csharp
+public class EmailBackgroundService(
+    Channel<EmailMessage> emailChannel,
+    IServiceProvider serviceProvider,
+    ILogger<EmailBackgroundService> logger
+) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // ReadAllAsync: espera bloqueante hasta que haya un email en la cola
+        await foreach (var emailMessage in _emailChannel.Reader.ReadAllAsync(stoppingToken))
+        {
+            try
+            {
+                // Crear scope porque IEmailService es scoped
+                using var scope = serviceProvider.CreateScope();
+                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                await emailService.SendEmailAsync(emailMessage);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error procesando email para: {To}", emailMessage.To);
+            }
+        }
+    }
+}
+```
+
+### ¿Quién envía emails en este proyecto?
+
+| Servicio | ¿Cuándo? | ¿Cómo? |
+|----------|----------|--------|
+| `ProductoReportTask` | Reporte background diario | `emailService.EnqueueEmail(email)` |
+
+### ¿Por qué `Channel` y no `Task.Run`?
+
+| Aspecto | `Task.Run` | `Channel` |
+|---------|-----------|-----------|
+| **Thread-safety** | No garantizado | Sí, por diseño |
+| **Backpressure** | No existe | Bounded channels lo soportan |
+| **Ordering** | No garantizado | FIFO garantizado |
+| **Graceful shutdown** | Se pierden tareas pendientes | Drenaje con `stoppingToken` |
+| **Testeable** | Difícil | Fácil (consumir la cola) |
+
+### ⚠️ Limitaciones del patrón
+
+| Limitación | Impacto | Mitigación |
+|-----------|---------|-----------|
+| **Sin persistencia** | Si el servidor cae, los emails encolados se pierden | En producción real, usar una cola persistente (RabbitMQ, Azure Service Bus) |
+| **Sin retry** | Si SMTP falla, el email se pierde | Añadir Polly retry en `SendEmailAsync` |
+| **Unbounded** | Si SMTP es lento y hay mucho tráfico, la cola crece sin límite | Usar `Channel.CreateBounded<T>(capacity)` para limitar |
+
+> 🎓 **Nota para el alumno:** Este patrón es el mismo que se usa en los proyectos API (`TiendaDawApi-NetCore` y `TiendaDawApi-Cqrs-MediatR-NetCore`). La diferencia es que en la API el email se envía desde `ProductoService.CreateAsync()` al crear un producto, mientras que aquí se envía desde `ProductoReportTask` (reporte background).
+
+---
+
 ## Resumen
 
 | Concepto           | Descripción                                              |
@@ -295,6 +391,7 @@ if (builder.Configuration.GetValue<bool>($"Features:{FeatureManager.BlazorSuppor
 | **Options Pattern** | Configuración tipada                                    |
 | **CPM**            | Central Package Management — versiones centralizadas    |
 | **IaC**           | Infraestructura configurada como código                 |
+| **Channel**        | Cola thread-safe para emails en segundo plano            |
 
 ---
 
