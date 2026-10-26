@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -10,6 +10,7 @@
     <!-- Generate XML documentation file for API docs -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/TiendaDawWeb.Mvc.xml</DocumentationFile>
+    <UserSecretsId>8869676e-2a30-45e2-b2dd-6a97eae0c0b6</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />

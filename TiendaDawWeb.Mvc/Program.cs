@@ -41,6 +41,7 @@ services.AddDatabases(builder.Configuration, builder.Environment);
 
 // Auth
 services.AddAuthentication(configuration);
+services.AddOAuthDoors(configuration);
 
 // Email
 services.AddEmail();

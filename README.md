@@ -7,6 +7,7 @@
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10-blue)](https://dotnet.microsoft.com/en-us/apps/aspnet)
 [![C#](https://img.shields.io/badge/C%23-14-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![EF Core](https://img.shields.io/badge/EF%20Core-10-blue)](https://docs.microsoft.com/en-us/ef/core/)
+[![OAuth2](https://img.shields.io/badge/OAuth%202.0-Google%20%7C%20GitHub%20%7C%20Microsoft-blue)](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/)
 [![Razor](https://img.shields.io/badge/Razor-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/razor)
 [![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 [![SignalR](https://img.shields.io/badge/SignalR-orange)](https://dotnet.microsoft.com/en-us/apps/aspnet/signalr)
@@ -24,7 +25,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 
 - 🏪 **Gestión de Productos y Categorías**: CRUD completo con validaciones
 - 🛒 **Carrito de Compras**: Persistencia SQLite con control de concurrencia
-- 👥 **Gestión de Usuarios**: Autenticación con ASP.NET Core Identity (Cookies)
+- 👥 **Gestión de Usuarios**: Autenticación con ASP.NET Core Identity (Cookies) + Login externo OAuth 2.0 (Google, GitHub, Microsoft)
 - 💾 **Persistencia**: SQLite (desarrollo) y PostgreSQL (producción)
 - 🔐 **Seguridad**: Claims, roles, CSRF, Rate Limiting, Security Headers y protección de rutas
 - 📡 **Blazor Server + SignalR**: Componentes interactivos y notificaciones en tiempo real
@@ -95,7 +96,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | -------------------- | -------------------------------------------------------------------------------- |
 | **Gestión**          | Productos (CRUD), Categorías, Usuarios, Valoraciones, Favoritos                 |
 | **Compras**          | Carrito persistente, Checkout, Facturas PDF, Historial de pedidos               |
-| **Autenticación**    | Registro, Login, Roles (ADMIN, USER, MODERADOR), Claims, Password hashing        |
+| **Autenticación**    | Registro, Login, Roles (ADMIN, USER, MODERADOR), Claims, Password hashing + Login externo OAuth 2.0 |
 | **Tiempo Real**      | SignalR, Notificaciones live, Dashboard admin con estadísticas en vivo         |
 | **Testing**          | Unit tests (NUnit), Componentes (bUnit), E2E (Playwright)                   |
 | **UI/UX**            | Razor Pages, Blazor Server, AJAX, Bootstrap 5.3, I18n/L10n                       |
@@ -114,7 +115,7 @@ WalaDaw es un marketplace moderno desarrollado con .NET 10 ASP.NET Core que impl
 | **EF Core**              | 10         | ORM con SQLite y PostgreSQL                       |
 | **SQLite**               | -          | Base de datos para desarrollo                    |
 | **PostgreSQL**           | -          | Base de datos para producción                    |
-| **ASP.NET Core Identity**| 10         | Sistema de autenticación y autorización        |
+| **ASP.NET Core Identity**| 10         | Sistema de autenticación y autorización + OAuth 2.0 externo |
 | **NUnit**                | 4.x        | Framework de testing unitario                  |
 | **bUnit**                | 2.x        | Testing de componentes Blazor                  |
 | **Playwright**           | 1.x        | Testing E2E en navegador                       |
@@ -286,7 +287,7 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 ### Seguridad y Autorización
 | #   | Documento                                           | Descripción                                   |
 | --- | --------------------------------------------------- | --------------------------------------------- |
-| 17  | [Authentication Identity](doc/17-Auth-Identity.md) | ASP.NET Core Identity, Roles, Claims          |
+| 17  | [Authentication Identity](doc/17-Auth-Identity.md) | ASP.NET Core Identity, Roles, Claims + OAuth 2.0 Externo |
 | 18  | [Authentication Cookies](doc/18-Auth-Cookies.md)  | Cookies vs JWT, Identity, Claims              |
 
 ### Testing y Calidad
@@ -738,6 +739,8 @@ return result.Match(
 | `/Auth/Login`              | GET    | No   | Formulario de login           |
 | `/Auth/Login`              | POST   | No   | Iniciar sesión (Cookie)        |
 | `/Auth/Logout`             | POST   | Sí   | Cerrar sesión                 |
+| `/Auth/External/{provider}` | GET   | No   | Login externo: Google/GitHub/Microsoft (Challenge) |
+| `/Auth/ExternalCallback`   | GET    | No   | Callback del proveedor → sesión con cookie |
 | `/Profile`                 | GET    | Sí   | Ver perfil propio              |
 
 #### Products Controller
@@ -780,6 +783,8 @@ Blazor Server usa SignalR internamente para comunicación bidireccional. El proy
 | --------- | --------------------- | --------- | --------- |
 | Admin     | admin@waladaw.com     | Admin1    | ADMIN     |
 | Prueba    | prueba@prueba.com     | Prueba1   | USER      |
+
+> 🚪 **Login externo OAuth 2.0:** También puedes iniciar sesión con Google, GitHub o Microsoft desde las páginas de Login/Register. Los proveedores se activan con `Auth:{Provider}:Enabled` en appsettings. Los ClientId/Secret van en user-secrets.
 
 ## 📝 Licencia
 
