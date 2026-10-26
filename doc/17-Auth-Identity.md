@@ -7,6 +7,13 @@
   - [17.2. Claims](#172-claims)
   - [17.3. Autorización](#173-autorización)
   - [17.4. Claims Identity](#174-claims-identity)
+  - [17.5. Login Externo con OAuth 2.0](#175-login-externo-con-oauth-20)
+    - [17.5.1. ¿Qué es OAuth 2.0 y por qué usarlo?](#1751--qués-oauth-20-y-por-qué-usarlo)
+    - [17.5.2. Arquitectura: Puertas Múltiples con Identity](#1752-arquitectura-puertas-múltiples-con-identity)
+    - [17.5.3. Flujo OAuth](#1753-flujo-oauth)
+    - [17.5.4. Implementación en el Proyecto](#1754-implementación-en-el-proyecto)
+    - [17.5.5. Configuración](#1755-configuración)
+    - [17.5.6. Puntos Clave para el Alumno](#1756-puntos-clave-para-el-alumno)
 
 ---
 
@@ -187,6 +194,132 @@ if (User.HasClaim(c => c.Type == "Department" && c.Value == "IT"))
 
 ---
 
+## 17.5. Login Externo con OAuth 2.0
+
+### 17.5.1. ¿Qué es OAuth 2.0 y por qué usarlo?
+
+OAuth 2.0 es un **estándar de autorización** que permite a un usuario autenticarse con un proveedor externo (Google, GitHub, Microsoft) sin crear una contraseña nueva en nuestra aplicación.
+
+**¿Qué aporta?**
+
+| Beneficio | Explicación |
+|-----------|-------------|
+| **UX mejorada** | El usuario no necesita crear ni recordar otra contraseña |
+| **Registro automático** | Primer login crea la cuenta local sin formulario |
+| **Seguridad delegada** | Google/Microsoft gestionan 2FA y detección de phishing |
+| **Educación** | Estándar real usado en producción |
+
+### 17.5.2. Arquitectura: Puertas Múltiples con Identity
+
+A diferencia de las APIs (que usan JWT manual), **ASP.NET Core Identity ya trae soporte OAuth integrado**:
+
+```mermaid
+flowchart TB
+    subgraph "Puertas de Login"
+        Client[Cliente Browser]
+        Client --> Menu{¿Qué puerta?}
+        Menu -->|Email/Password| Cookie[Identity Cookies<br/>POST /Auth/Login]
+        Menu -->|Google| Google[Google OAuth<br/>GET /Auth/External/Google]
+        Menu -->|GitHub| GitHub[GitHub OAuth<br/>GET /Auth/External/GitHub]
+        Menu -->|Microsoft| MS[Microsoft OAuth<br/>GET /Auth/External/Microsoft]
+    end
+
+    subgraph "Identity procesa todo"
+        Cookie --> Session[Cookie de sesión]
+        Google -->|Challenge + Callback| Session
+        GitHub -->|Challenge + Callback| Session
+        MS -->|Challenge + Callback| Session
+    end
+
+    Session --> App[Aplicación protegida]
+
+    style Cookie fill:#2ecc71,color:#fff
+    style Session fill:#3498db,color:#fff
+```
+
+**¿Qué aporta Identity?** (a diferencia de las APIs)
+
+| APIs (custom) | Web (Identity) |
+|--------------|----------------|
+| ❌ Tabla UserLogin manual | ✅ `AspNetUserLogins` automática |
+| ❌ Parsear claims manualmente | ✅ `SignInManager.GetExternalLoginInfoAsync()` |
+| ❌ `LoginExternalAsync` custom | ✅ `ExternalLoginSignInAsync()` |
+| ❌ Dummy hash para PasswordHash | ✅ Identity maneja usuarios sin password |
+
+### 17.5.3. Flujo OAuth
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant Web as Web MVC/RazorPages
+    participant G as Google OAuth
+
+    B->>GET /Auth/External/Google
+    Web->>B: 302 Redirect a accounts.google.com
+    B->>G: Login en Google
+    G->>B: 302 Redirect a /Auth/ExternalCallback?code=xxx
+    B->>GET /Auth/ExternalCallback?code=xxx
+    Web->>G: Intercambiar code por tokens
+    G-->>Web: Email, Nombre, Avatar
+    Web->>Web: GetExternalLoginInfoAsync()
+    Web->>Web: ¿Existe vinculación? → SignInAsync()
+    Web->>Web: ¿Primera vez? → Crear usuario + AddLoginAsync()
+    Web-->>B: 302 Redirect + Cookie de sesión
+```
+
+### 17.5.4. Implementación en el Proyecto
+
+**Configuración condicional (`OAuthConfig.cs`):**
+```csharp
+if (configuration.GetValue<bool>("Auth:Google:Enabled"))
+{
+    var clientId = configuration["Google:ClientId"];
+    var clientSecret = configuration["Google:ClientSecret"];
+    if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+        Log.Warning("🚪 Auth:Google:Enabled=true pero falta credenciales — puerta NO registrada");
+    else
+        auth.AddGoogle(options => { ... });
+}
+```
+
+**Endpoints:**
+
+| Proyecto | Challenge | Callback |
+|----------|-----------|----------|
+| MVC | `GET /Auth/External/{provider}` | `GET /Auth/ExternalCallback` |
+| RazorPages | `GET /Auth/External?provider=X` | `GET /Auth/ExternalCallback` |
+
+**Vistas con botones OAuth:**
+- `Views/Auth/Login.cshtml` / `Pages/Auth/Login.cshtml`
+- `Views/Auth/Register.cshtml` / `Pages/Auth/Register.cshtml`
+
+Los botones aparecen después del `<hr>` y antes del link de cambio de vista.
+
+### 17.5.5. Configuración
+
+**appsettings.json** (Enabled: false por defecto):
+```json
+{ "Auth": { "Google": { "Enabled": false }, "GitHub": { "Enabled": false }, "Microsoft": { "Enabled": false } } }
+```
+
+**user-secrets:**
+```bash
+dotnet user-secrets set "Google:ClientId" "xxxx.apps.googleusercontent.com"
+dotnet user-secrets set "Google:ClientSecret" "GOCSPX-xxxx"
+```
+
+### 17.5.6. Puntos Clave para el Alumno
+
+| Concepto | Explicación |
+|----------|-------------|
+| **No rompe Identity** | OAuth añade esquemas, no modifica Cookies |
+| **AspNetUserLogins** | Tabla automática de Identity para vinculaciones |
+| **Configuración condicional** | Solo se registra si `Auth:{Provider}:Enabled = true` + credenciales |
+| **Mismo patrón en MVC y RazorPages** | 4 vistas con botones + 2 endpoints por proyecto |
+| **Identity hace el trabajo** | No necesitamos parsear claims ni crear tablas manualmente |
+
+---
+
 ## Resumen
 
 | Concepto           | Descripción                                              |
@@ -195,6 +328,7 @@ if (User.HasClaim(c => c.Type == "Department" && c.Value == "IT"))
 | **Claim**         | Declaración sobre el usuario                             |
 | **Principal**     | Contiene la identidad y sus claims                      |
 | **Authorization** | Control de acceso basado en roles/claims                 |
+| **OAuth 2.0**     | Login externo con Google, GitHub, Microsoft (Identity)    |
 
 ---
 

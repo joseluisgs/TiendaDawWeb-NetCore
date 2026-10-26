@@ -39,6 +39,7 @@ public class AuthControllerTests
         _controller = new AuthController(
             _mockUserManager.Object,
             _mockSignInManager.Object,
+            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
             _mockLogger.Object);
     }
 
@@ -73,6 +74,7 @@ public class AuthControllerTests
         var controller = new AuthController(
             _mockUserManager.Object,
             _mockSignInManager.Object,
+            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
             _mockLogger.Object)
         {
             ControllerContext = new ControllerContext
@@ -136,6 +138,7 @@ public class AuthControllerTests
         var controller = new AuthController(
             _mockUserManager.Object,
             _mockSignInManager.Object,
+            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
             _mockLogger.Object)
         {
             ControllerContext = new ControllerContext
