@@ -54,6 +54,10 @@ public static class OAuthConfig
                 Log.Information("🚪 Puerta de login externo activa: Google");
             }
         }
+        else
+        {
+            Log.Information("🚪 Auth:Google:Enabled=false — puerta desactivada");
+        }
 
         if (configuration.GetValue<bool>("Auth:GitHub:Enabled"))
         {
@@ -73,6 +77,10 @@ public static class OAuthConfig
                 Log.Information("🚪 Puerta de login externo activa: GitHub");
             }
         }
+        else
+        {
+            Log.Information("🚪 Auth:GitHub:Enabled=false — puerta desactivada");
+        }
 
         if (configuration.GetValue<bool>("Auth:Microsoft:Enabled"))
         {
@@ -91,6 +99,10 @@ public static class OAuthConfig
                 });
                 Log.Information("🚪 Puerta de login externo activa: Microsoft");
             }
+        }
+        else
+        {
+            Log.Information("🚪 Auth:Microsoft:Enabled=false — puerta desactivada");
         }
 
         return services;
