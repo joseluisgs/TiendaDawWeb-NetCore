@@ -19,9 +19,6 @@ namespace TiendaDawWeb.Tests.E2E.Products;
 [TestFixture]
 public class ProductCreationTests : E2ETestBase
 {
-    private const string AdminEmail = "admin@waladaw.com";
-    private const string AdminPassword = "admin";
-
     [Test]
     public async Task UserCanCreateProductWithImage()
     {

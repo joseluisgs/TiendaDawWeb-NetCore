@@ -80,8 +80,8 @@ public class BlazorRatingFlowTests : E2ETestBase
     public async Task ProductOwner_CannotRateOwnProduct()
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
-        await Page.TestId("email-input").FillAsync("prueba@prueba.com");
-        await Page.TestId("password-input").FillAsync("Prueba1");
+        await Page.TestId("email-input").FillAsync(PruebaEmail);
+        await Page.TestId("password-input").FillAsync(PruebaPassword);
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("01-login-owner");
 

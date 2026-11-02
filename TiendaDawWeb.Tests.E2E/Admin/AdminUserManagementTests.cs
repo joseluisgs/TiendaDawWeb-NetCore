@@ -16,8 +16,8 @@ public class AdminUserManagementTests : E2ETestBase
     public async Task Setup()
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
-        await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-        await Page.TestId("password-input").FillAsync("Admin1");
+        await Page.TestId("email-input").FillAsync(AdminEmail);
+        await Page.TestId("password-input").FillAsync(AdminPassword);
         await Page.TestId("submit-button").ClickAsync();
         await Expect(Page.TestId("user-name")).ToContainTextAsync("Admin", new() { Timeout = 15000 });
     }

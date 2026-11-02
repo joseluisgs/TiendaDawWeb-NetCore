@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using TiendaDawWeb.Shared.Data.Seed;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Email;
 using TiendaDawWeb.Shared.Services.Favorite;
@@ -35,7 +36,20 @@ public static class ServicesConfig
             .AddScoped<IEmailService, EmailService>()
             .AddScoped<IPdfService, PdfService>()
             .AddScoped<IStatisticsService, StatisticsService>()
+            .AddSeeders()
             .AddStateStores();
+    }
+
+    /// <summary>
+    /// Registra los seeders de datos de ejemplo (roles, usuarios y catálogo).
+    /// </summary>
+    public static IServiceCollection AddSeeders(this IServiceCollection services)
+    {
+        Log.Information("🌱 Registrando seeders de datos de ejemplo...");
+        return services
+            .AddScoped<RolesSeeder>()
+            .AddScoped<UsersSeeder>()
+            .AddScoped<ProductsSeeder>();
     }
 
     /// <summary>
