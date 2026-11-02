@@ -13,7 +13,7 @@ namespace TiendaDawWeb.Tests.E2E.Auth;
  * 
  * EJEMPLO DE USO DE TEST IDS:
  * - Page.TestId("login-form") - Busca el formulario por data-testid
- * - Page.TestId("email-input").FillAsync("admin@waladaw.com") - Busca input y escribe
+ * - Page.TestId("email-input").FillAsync(AdminEmail) - Busca input y escribe
  * - Page.TestId("submit-button").ClickAsync() - Busca botón y hace click
  */
 [Parallelizable(ParallelScope.Self)]
@@ -40,8 +40,8 @@ public class AuthTests : E2ETestBase
     [Test]
     public async Task AdminLogin_ShouldSucceed()
     {
-        await Page.TestId("email-input").FillAsync("admin@waladaw.com");
-        await Page.TestId("password-input").FillAsync("Admin1");
+        await Page.TestId("email-input").FillAsync(AdminEmail);
+        await Page.TestId("password-input").FillAsync(AdminPassword);
         await CaptureScreenshotAsync("03-credentials-filled");
         
         await Page.TestId("submit-button").ClickAsync();
