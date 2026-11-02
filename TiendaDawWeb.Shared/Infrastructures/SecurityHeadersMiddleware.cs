@@ -15,11 +15,28 @@ public class SecurityHeadersMiddleware(RequestDelegate next)
     {
         ["X-Content-Type-Options"] = "nosniff",
         ["X-Frame-Options"] = "DENY",
-        ["X-XSS-Protection"] = "1; mode=block",
+        ["Content-Security-Policy"] =
+            "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; " +
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+            "img-src 'self' https: data: blob:; " +
+            "font-src 'self' https://cdn.jsdelivr.net data:; " +
+            "connect-src 'self'; object-src 'none'",
         ["Referrer-Policy"] = "strict-origin-when-cross-origin",
         ["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
     };
 
+    /// <summary>
+    /// Añade los headers de seguridad a la respuesta y continúa con la petición.
+    /// X-XSS-Protection no se envía: es una cabecera obsoleta (los navegadores
+    /// modernos la ignoran y OWASP recomienda no enviarla); la protección
+    /// real contra XSS es Content-Security-Policy.
+    ///
+    /// 📌 La política incluye 'unsafe-inline' en script-src de forma transitoria:
+    /// las vistas aún llevan scripts inline (confirmaciones, favoritos, etc.).
+    /// El paso siguiente es externalizarlos a ficheros .js para poder quitarlo.
+    /// </summary>
+    /// <param name="context">Contexto HTTP de la petición en curso.</param>
     public async Task InvokeAsync(HttpContext context)
     {
         foreach (var header in SecurityHeaders)
