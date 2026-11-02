@@ -43,8 +43,8 @@ public class BlazorRatingTests : E2ETestBase
     public async Task AuthenticatedUser_CanAccessProductDetails()
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
-        await Page.TestId("email-input").FillAsync("carlos@email.com");
-        await Page.TestId("password-input").FillAsync("carlos123");
+        await Page.TestId("email-input").FillAsync(CarlosEmail);
+        await Page.TestId("password-input").FillAsync(CarlosPassword);
         await Page.TestId("submit-button").ClickAsync();
 
         await Expect(Page.TestId("user-name")).ToContainTextAsync("Carlos", new() { Timeout = 15000 });

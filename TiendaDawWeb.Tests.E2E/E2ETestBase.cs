@@ -16,6 +16,8 @@ public abstract class E2ETestBase : PageTest
     protected const string AdminPassword = "Admin123!";
     protected const string PruebaEmail = "prueba@prueba.com";
     protected const string PruebaPassword = "Prueba123!";
+    protected const string CarlosEmail = "carlos@email.com";
+    protected const string CarlosPassword = "Carlos123";
 
     protected string BaseTestUrl => Environment.GetEnvironmentVariable("E2E_BASE_URL")
         ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")

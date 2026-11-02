@@ -26,8 +26,8 @@ public class BlazorUserFlowTests : E2ETestBase
     public async Task LoginAsUser_ShouldShowUserName()
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
-        await Page.TestId("email-input").FillAsync("carlos@email.com");
-        await Page.TestId("password-input").FillAsync("carlos123");
+        await Page.TestId("email-input").FillAsync(CarlosEmail);
+        await Page.TestId("password-input").FillAsync(CarlosPassword);
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("01-login");
 
