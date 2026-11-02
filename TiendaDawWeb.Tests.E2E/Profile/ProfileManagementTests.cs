@@ -16,8 +16,8 @@ public class ProfileManagementTests : E2ETestBase
     public async Task Setup()
     {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
-        await Page.TestId("email-input").FillAsync("prueba@prueba.com");
-        await Page.TestId("password-input").FillAsync("Prueba1");
+        await Page.TestId("email-input").FillAsync(PruebaEmail);
+        await Page.TestId("password-input").FillAsync(PruebaPassword);
         await Page.TestId("submit-button").ClickAsync();
         await Expect(Page.TestId("user-name")).ToContainTextAsync("Prueba", new() { Timeout = 15000 });
     }

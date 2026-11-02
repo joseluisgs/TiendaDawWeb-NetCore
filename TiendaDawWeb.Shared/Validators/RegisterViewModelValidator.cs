@@ -25,7 +25,7 @@ public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("La contraseña es obligatoria")
-            .MinimumLength(4).WithMessage("La contraseña debe tener al menos 4 caracteres")
+            .MinimumLength(8).WithMessage("La contraseña debe tener al menos 8 caracteres")
             .MaximumLength(100).WithMessage("La contraseña no puede tener más de 100 caracteres");
 
         RuleFor(x => x.ConfirmPassword)

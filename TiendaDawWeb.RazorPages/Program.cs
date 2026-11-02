@@ -1,5 +1,6 @@
 using Serilog;
 using TiendaDawWeb.Shared.Web.Infrastructures;
+using TiendaDawWeb.Shared.Data.Seed;
 using System.Globalization;
 using System.Text;
 using TiendaDawWeb.Shared.Middleware;
@@ -170,12 +171,12 @@ static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration)
     Log.Information("Panel Admin:            {BaseUrl}/Admin", baseUrl);
     Log.Information("=================================================================");
     Log.Information("CREDENCIALES DE PRUEBA:");
-    Log.Information("  Admin:   admin@waladaw.com / Admin1 (ROLE_ADMIN)");
-    Log.Information("  Usuario: prueba@prueba.com / Prueba1 (ROLE_USER)");
+    Log.Information("  Admin:   {Email} / {Password} (ROLE_ADMIN)", SeedCredentials.AdminEmail, SeedCredentials.AdminPassword);
+    Log.Information("  Usuario: {Email} / {Password} (ROLE_USER)", SeedCredentials.PruebaEmail, SeedCredentials.PruebaPassword);
     Log.Information("=================================================================");
     Log.Information("DATOS SEMBRADOS (Seed):");
-    Log.Information("  SQLite In-Memory: 10 usuarios, 42 productos");
-    Log.Information("  Roles: ADMIN, MODERATOR, USER");
+    Log.Information("  SQLite In-Memory: {Usuarios} usuarios, {Productos} productos", SeedCredentials.Usuarios.Count, ProductsSeeder.Total);
+    Log.Information("  Roles: {Roles}", string.Join(", ", RolesSeeder.Roles));
     Log.Information("=================================================================");
     Log.Information("🚀 Aplicacion iniciada correctamente en {BaseUrl} ({Mode})",
         baseUrl, mode);

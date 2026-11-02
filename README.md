@@ -781,8 +781,8 @@ Blazor Server usa SignalR internamente para comunicación bidireccional. El proy
 
 | Usuario   | Email                 | Password  | Rol       |
 | --------- | --------------------- | --------- | --------- |
-| Admin     | admin@waladaw.com     | Admin1    | ADMIN     |
-| Prueba    | prueba@prueba.com     | Prueba1   | USER      |
+| Admin     | admin@waladaw.com     | Admin123! | ADMIN     |
+| Prueba    | prueba@prueba.com     | Prueba123!| USER      |
 
 > 🚪 **Login externo OAuth 2.0:** También puedes iniciar sesión con Google, GitHub o Microsoft desde las páginas de Login/Register. Los proveedores se activan con `Auth:{Provider}:Enabled` en appsettings. Los ClientId/Secret van en user-secrets.
 

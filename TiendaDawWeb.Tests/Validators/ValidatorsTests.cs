@@ -19,8 +19,8 @@ public class ValidatorsTests
             Nombre = "Juan",
             Apellidos = "García",
             Email = "juan@test.com",
-            Password = "1234",
-            ConfirmPassword = "1234"
+            Password = "Test1234",
+            ConfirmPassword = "Test1234"
         };
 
         var result = validator.Validate(model);
@@ -36,8 +36,8 @@ public class ValidatorsTests
             Nombre = "",
             Apellidos = "García",
             Email = "juan@test.com",
-            Password = "1234",
-            ConfirmPassword = "1234"
+            Password = "Test1234",
+            ConfirmPassword = "Test1234"
         };
 
         var result = validator.Validate(model);
@@ -54,8 +54,8 @@ public class ValidatorsTests
             Nombre = "Juan",
             Apellidos = "García",
             Email = "juan@test.com",
-            Password = "1234",
-            ConfirmPassword = "5678"
+            Password = "Test1234",
+            ConfirmPassword = "Test5678"
         };
 
         var result = validator.Validate(model);
@@ -67,7 +67,7 @@ public class ValidatorsTests
     public void LoginValidator_EmptyEmail_Fails()
     {
         var validator = new LoginViewModelValidator();
-        var model = new LoginViewModel { Email = "", Password = "1234" };
+        var model = new LoginViewModel { Email = "", Password = "Test1234" };
 
         var result = validator.Validate(model);
         result.IsValid.Should().BeFalse();
@@ -77,7 +77,7 @@ public class ValidatorsTests
     public void LoginValidator_ValidData_Passes()
     {
         var validator = new LoginViewModelValidator();
-        var model = new LoginViewModel { Email = "test@test.com", Password = "1234" };
+        var model = new LoginViewModel { Email = "test@test.com", Password = "Test1234" };
 
         var result = validator.Validate(model);
         result.IsValid.Should().BeTrue();
