@@ -724,7 +724,7 @@ return result.Match(
 - ✅ **Soft Delete**: Eliminación lógica (IsDeleted)
 - ✅ **Concurrency Control**: RowVersion
 - ✅ **Rate Limiting**: Protección contra DDoS
-- ✅ **Security Headers**: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
+- ✅ **Security Headers**: X-Content-Type-Options, X-Frame-Options, Content-Security-Policy, Referrer-Policy, Permissions-Policy
 
 ## 📡 Endpoints y Rutas
 
