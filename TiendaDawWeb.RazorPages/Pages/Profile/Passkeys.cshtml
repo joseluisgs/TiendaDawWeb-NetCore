@@ -1,0 +1,116 @@
+@page
+@model TiendaDawWeb.RazorPages.Pages.Profile.PasskeysModel
+@{
+    ViewData["Title"] = "Passkeys";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-shield-lock"></i> Passkeys
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] is string exito)
+                    {
+                        <div class="alert alert-success" data-testid="mensaje-exito">@exito</div>
+                    }
+                    @if (TempData["Error"] is string error)
+                    {
+                        <div class="alert alert-danger" data-testid="mensaje-error">@error</div>
+                    }
+
+                    <p class="text-muted">
+                        Una passkey es un par de claves que vive en el dispositivo: aquí solo se
+                        guarda la pública, y entrar con ella es un gesto (huella, cara o PIN) en
+                        lugar de escribir la contraseña. La passkey complementa a la contraseña,
+                        no la sustituye.
+                    </p>
+
+                    @if (Model.Passkeys.Count == 0)
+                    {
+                        <p class="text-muted text-center py-3" data-testid="sin-passkeys">
+                            <i class="bi bi-inbox"></i> Todavía no has creado ninguna passkey.
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle" data-testid="tabla-passkeys">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Creada</th>
+                                        <th>Copia de seguridad</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var passkey in Model.Passkeys)
+                                    {
+                                        @* El id viaja en base64url, que es como lo maneja WebAuthn
+                                           en el navegador; Identity lo guarda como bytes. *@
+                                        var idUrl = Convert.ToBase64String(passkey.CredentialId)
+                                            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+
+                                        <tr data-testid="fila-passkey">
+                                            <td>
+                                                @(string.IsNullOrWhiteSpace(passkey.Name)
+                                                    ? "Passkey sin nombre"
+                                                    : passkey.Name)
+                                            </td>
+                                            <td>@passkey.CreatedAt.ToLocalTime().ToString("d")</td>
+                                            <td>@(passkey.IsBackedUp ? "Sí" : "No")</td>
+                                            <td class="text-end">
+                                                <form method="post" asp-page-handler="Eliminar" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@idUrl" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            data-testid="boton-eliminar-passkey">
+                                                        <i class="bi bi-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    @* Zona de creación: passkeys.js mira este div para saber que aquí se CREA
+                       una passkey (en el acceso se pide en su lugar). El token anti-forgery
+                       viaja en el formulario. *@
+                    <div data-passkeys
+                         data-creacion="/Profile/Passkeys?handler=CreationOptions"
+                         data-atestacion="/Profile/Passkeys?handler=Attestation"
+                         data-testid="zona-passkey">
+                        <form method="post" class="mt-3">
+                            @Html.AntiForgeryToken()
+
+                            <button type="button" class="btn btn-primary" data-accion="crear"
+                                    data-testid="boton-crear-passkey">
+                                <i class="bi bi-plus-circle"></i> Crear passkey en este dispositivo
+                            </button>
+                        </form>
+
+                        <div class="mt-2" data-testid="aviso-passkey"></div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <a asp-page="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/passkeys.js" asp-append-version="true"></script>
+}

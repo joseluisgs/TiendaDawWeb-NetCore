@@ -12,6 +12,7 @@ using TiendaDawWeb.RazorPages.Pages.Auth;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.ViewModels;
 using TiendaDawWeb.Web.RazorPages.Pages.Auth;
+using IdentitySignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace TiendaDawWeb.Tests.RazorPages.Auth;
 
@@ -153,6 +154,72 @@ public class LoginModelTests
         
         result.Should().BeOfType<PageResult>();
         model.ModelState.Should().ContainKey(string.Empty);
+    }
+
+    [Test]
+    public async Task OnPostPasskeyRequestOptionsAsync_ReturnsJson_WhenNoEmail()
+    {
+        _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(It.IsAny<User>()))
+            .ReturnsAsync("{}");
+
+        var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
+        var result = await model.OnPostPasskeyRequestOptionsAsync(null);
+
+        result.Should().BeOfType<ContentResult>();
+        ((ContentResult)result).ContentType.Should().Be("application/json");
+    }
+
+    [Test]
+    public async Task OnPostPasskeyRequestOptionsAsync_LooksUpUser_WhenEmailProvided()
+    {
+        var user = new User { Id = 1, UserName = "test@example.com", Email = "test@example.com" };
+        _mockUserManager.Setup(u => u.FindByEmailAsync("test@example.com")).ReturnsAsync(user);
+        _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(user))
+            .ReturnsAsync("{}");
+
+        var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
+        var result = await model.OnPostPasskeyRequestOptionsAsync("test@example.com");
+
+        result.Should().BeOfType<ContentResult>();
+        _mockSignInManager.Verify(s => s.MakePasskeyRequestOptionsAsync(user), Times.Once);
+    }
+
+    [Test]
+    public async Task OnPostPasskeyAssertionAsync_ReturnsUnauthorized_WhenSignatureInvalid()
+    {
+        _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
+            .ReturnsAsync(IdentitySignInResult.Failed);
+
+        var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
+        var result = await model.OnPostPasskeyAssertionAsync("credencial-mala");
+
+        var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+        objectResult.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+    }
+
+    [Test]
+    public async Task OnPostPasskeyAssertionAsync_ReturnsJsonWithDestino_WhenSignatureValid()
+    {
+        var httpContext = new DefaultHttpContext();
+        var pageContext = new PageContext { HttpContext = httpContext };
+
+        _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
+            .ReturnsAsync(IdentitySignInResult.Success);
+
+        var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object)
+        {
+            PageContext = pageContext
+        };
+
+        // En runtime el framework inyecta el IUrlHelper; en unit test se mockea.
+        var urlHelper = new Mock<IUrlHelper>();
+        urlHelper.Setup(u => u.IsLocalUrl("/carrito")).Returns(true);
+        model.Url = urlHelper.Object;
+
+        var result = await model.OnPostPasskeyAssertionAsync("credencial-valida", "/carrito");
+
+        var json = result.Should().BeOfType<JsonResult>().Subject;
+        json.Value!.ToString().Should().Contain("destino = /carrito");
     }
 }
 
