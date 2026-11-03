@@ -398,7 +398,7 @@ services.AddIdentity<User, IdentityRole<long>>(options =>
 .AddDefaultTokenProviders();
 ```
 
-> 📝 **Nota:** en desarrollo la base de datos SQLite se borra y se crea en cada arranque, así que la tabla nueva aparece sola. En producción (PostgreSQL) hay que regenerar el esquema antes de desplegar.
+> 📝 **Nota:** EnsureCreated solo crea la base de datos si no existe: en desarrollo el SQLite se borra en cada arranque y la tabla nace sola, pero en una BD ya poblada (producción) no añade nada. Por eso el arranque llama a `IdentitySchemaPatch.CompletarAsync`, que consulta el catálogo del proveedor y crea la tabla que falte con su índice. Sin migraciones, sin pasos manuales y sin tocar los datos existentes: desplegar es reiniciar.
 
 ### 17.6.4. Implementación en el Proyecto
 
