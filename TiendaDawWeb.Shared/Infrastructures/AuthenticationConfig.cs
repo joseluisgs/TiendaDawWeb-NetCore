@@ -25,6 +25,10 @@ public static class AuthenticationConfig
 
         services.AddIdentity<User, IdentityRole<long>>(options =>
         {
+            // 🛡️ Esquema 3: añade la tabla AspNetUserPasskeys. Sin esta línea Identity
+            // crea el esquema antiguo y guardar una passkey falla al escribir.
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+
             // 🛡️ Password policy: mínimo razonable para proyecto educativo
             options.Password.RequireDigit = true;
             options.Password.RequireLowercase = true;

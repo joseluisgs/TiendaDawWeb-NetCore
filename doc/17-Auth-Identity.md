@@ -14,6 +14,13 @@
     - [17.5.4. Implementación en el Proyecto](#1754-implementación-en-el-proyecto)
     - [17.5.5. Configuración](#1755-configuración)
     - [17.5.6. Puntos Clave para el Alumno](#1756-puntos-clave-para-el-alumno)
+  - [17.6. Passkeys (FIDO2/WebAuthn)](#176-passkeys-fido2webauthn)
+    - [17.6.1. Qué es una passkey](#1761-qué-es-una-passkey)
+    - [17.6.2. Arquitectura: los dos flujos](#1762-arquitectura-los-dos-flujos)
+    - [17.6.3. Configuración](#1763-configuración)
+    - [17.6.4. Implementación en el Proyecto](#1764-implementación-en-el-proyecto)
+    - [17.6.5. El cliente: passkeys.js](#1765-el-cliente-passkeysjs)
+    - [17.6.6. Puntos Clave para el Alumno](#1766-puntos-clave-para-el-alumno)
 
 ---
 
@@ -320,6 +327,157 @@ dotnet user-secrets set "Google:ClientSecret" "GOCSPX-xxxx"
 
 ---
 
+## 17.6. Passkeys (FIDO2/WebAuthn)
+
+**.NET 10 trae las passkeys dentro de Identity: credenciales del dispositivo que sustituyen la contraseña sin cambiar el conducto de cookies que ya tienes montado.** La passkey nace en el navegador, con el autenticador del sistema operativo, y después el acceso es un gesto: el servidor manda un reto, el dispositivo lo firma y el servidor verifica la firma. No hay clave que robar ni que reutilizar entre sitios.
+
+📌 **Ejemplo real:** Google y Apple abren las cuentas con passkey: registras el dispositivo una vez y después solo pides entrar con tu huella o tu cara, sin escribir ninguna clave.
+
+### 17.6.1. Qué es una passkey
+
+Una passkey es un par de claves asimétricas (FIDO2/WebAuthn) que se crea en el dispositivo del usuario. La clave privada nunca sale del autenticador; en el servidor solo se guarda la pública, en la tabla `AspNetUserPasskeys` que añade Identity.
+
+| Aspecto | Descripción |
+|---------|-------------|
+| **Almacenamiento** | Clave pública en `AspNetUserPasskeys`; la privada vive en el dispositivo |
+| **Acceso** | Gesto del dispositivo: huella, cara o PIN |
+| **Phishing** | La passkey está atada al origen: en un dominio falso no sirve |
+| **Relación con la contraseña** | La complementa: las dos conviven en la vista de acceso |
+
+### 17.6.2. Arquitectura: los dos flujos
+
+Hay dos flujos y los dos acaban escribiendo la misma cookie de identidad que el login con contraseña. El primero entra sin sesión; el segundo se hace con la sesión abierta, desde la zona de perfil.
+
+```mermaid
+sequenceDiagram
+    participant N as Navegador
+    participant W as Tu web
+    participant D as Dispositivo (autenticador)
+
+    Note over N,W: Flujo de acceso (anónimo)
+    N->>W: POST /Auth/PasskeyRequestOptions
+    W-->>N: Opciones con el reto (challenge)
+    N->>D: navigator.credentials.get()
+    D-->>N: Gesto del usuario (huella/cara/PIN) + firma
+    N->>W: POST /Auth/PasskeyAssertion (credencial)
+    W->>W: Verifica la firma con la clave pública
+    W-->>N: Cookie de identidad + 302
+
+    Note over N,W: Flujo de creación (sesión abierta)
+    N->>W: POST /app/perfil/passkeys/crear-opciones
+    W-->>N: Opciones de creación
+    N->>D: navigator.credentials.create()
+    D-->>N: Par de claves nuevo + atestación
+    N->>W: POST /app/perfil/passkeys/atestacion
+    W->>W: Verifica y guarda en AspNetUserPasskeys
+    W-->>N: JSON { ok = true }
+```
+
+El patrón de Identity no cambia: el gestor sigue mandando.
+
+```csharp
+// El servidor solo pide opciones y verifica; la criptografía la hace el framework
+var opciones = await signInManager.MakePasskeyRequestOptionsAsync(usuario);
+var resultado = await signInManager.PasskeySignInAsync(credencial);
+```
+
+### 17.6.3. Configuración
+
+La única pieza nueva de configuración es el esquema de tablas de Identity. Sin la siguiente línea, Identity crea el esquema antiguo y no existe la tabla `AspNetUserPasskeys`, así que guardar una passkey falla al escribir:
+
+```csharp
+// TiendaDawWeb.Shared/Infrastructures/AuthenticationConfig.cs
+services.AddIdentity<User, IdentityRole<long>>(options =>
+{
+    // Esquema 3: añade la tabla AspNetUserPasskeys
+    options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+
+    // ... el resto de opciones de contraseña y bloqueo que ya tenías
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+```
+
+> 📝 **Nota:** en desarrollo la base de datos SQLite se borra y se crea en cada arranque, así que la tabla nueva aparece sola. En producción (PostgreSQL) hay que regenerar el esquema antes de desplegar.
+
+### 17.6.4. Implementación en el Proyecto
+
+Los endpoints van en las dos visiones, con la misma lógica y las mismas rutas adaptadas a cada una. Todos los POST llevan token anti-forgery.
+
+| Paso | MVC | Razor Pages | Protección |
+|------|-----|-------------|------------|
+| Opciones de acceso | `POST /Auth/PasskeyRequestOptions` | `/Auth/Login?handler=PasskeyRequestOptions` | anónimo + token |
+| Verificar y entrar | `POST /Auth/PasskeyAssertion` | `/Auth/Login?handler=PasskeyAssertion` | anónimo + token |
+| Zona de gestión | `GET /app/perfil/passkeys` | `/Profile/Passkeys` | `[Authorize]` |
+| Opciones de creación | `POST /app/perfil/passkeys/crear-opciones` | `/Profile/Passkeys?handler=CreationOptions` | `[Authorize]` + token |
+| Guardar credencial | `POST /app/perfil/passkeys/atestacion` | `/Profile/Passkeys?handler=Attestation` | `[Authorize]` + token |
+| Eliminar credencial | `POST /app/perfil/passkeys/eliminar` | `/Profile/Passkeys?handler=Eliminar` | `[Authorize]` + token |
+
+En MVC la lógica vive en `Controllers/AuthController.cs` (acceso) y en `Controllers/ProfileController.cs` (gestión); en Razor Pages, en `Pages/Auth/Login.cshtml.cs` y en `Pages/Profile/Passkeys.cshtml.cs`. El acceso con passkey escribe la cookie exactamente igual que `PasswordSignInAsync`:
+
+```csharp
+// AuthController.cs
+[HttpPost("/Auth/PasskeyAssertion")]
+[AllowAnonymous]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> PasskeyAssertion(string credential, string? returnUrl = null)
+{
+    var result = await signInManager.PasskeySignInAsync(credential);
+
+    if (result.Succeeded)
+        return Json(new { ok = true, destino = Destino(returnUrl) });
+
+    return StatusCode(StatusCodes.Status401Unauthorized, new
+    {
+        ok = false,
+        mensaje = "La passkey no es válida o ha caducado el reto; vuelve a intentarlo"
+    });
+}
+```
+
+Al guardar, el estado del reto nombra a una cuenta y se comprueba que es la conectada antes de escribir nada en la base:
+
+```csharp
+var userId = await userManager.GetUserIdAsync(user);
+if (!string.Equals(result.UserEntity?.Id, userId, StringComparison.Ordinal))
+    return StatusCode(StatusCodes.Status400BadRequest, new
+    {
+        ok = false,
+        mensaje = "La passkey no pertenece a la cuenta que está conectada"
+    });
+
+var guardado = await userManager.AddOrUpdatePasskeyAsync(user, result.Passkey);
+```
+
+Las vistas nuevas son `Views/Profile/Passkeys.cshtml` y `Pages/Profile/Passkeys.cshtml` (lista, creación y borrado), y el botón de acceso se añade en `Views/Auth/Login.cshtml` y `Pages/Auth/Login.cshtml`, junto a los botones de OAuth.
+
+### 17.6.5. El cliente: passkeys.js
+
+El navegador no entiende de formularios: hace falta un poco de JavaScript para puentear WebAuthn y el POST clásico de la aplicación. `wwwroot/js/passkeys.js` (en las dos visiones) hace exactamente eso, sin librerías:
+
+| Función | Qué hace |
+|---------|----------|
+| `entrar()` | Pide las opciones, ejecuta `navigator.credentials.get()` y manda la credencial al servidor |
+| `crear()` | Pide las opciones de creación, ejecuta `navigator.credentials.create()` y registra la atestación |
+| `serializar()` | Convierte la credencial a JSON en base64url, la forma en que WebAuthn transporta binario |
+| `falloConocido()` | Traduce los errores del navegador (`NotAllowedError`, `NotSupportedError`) a mensajes entendibles |
+
+El script se engancha a un contenedor `<div data-passkeys>` con atributos `data-opciones`, `data-afirmacion`, `data-creacion` y `data-atestacion`; el token anti-forgery viaja en el formulario del propio contenedor, así que los POST son idénticos a cualquier otro formulario de la aplicación.
+
+> ⚠️ **Advertencia:** WebAuthn solo funciona en un contexto seguro: HTTPS o `localhost`. La cookie de identidad ya usa `SecurePolicy.Always`, así que en local y en producción el comportamiento es el mismo.
+
+### 17.6.6. Puntos Clave para el Alumno
+
+| Concepto | Explicación |
+|----------|-------------|
+| **No rompe Identity** | La passkey es un camino más de acceso: la cookie y la contraseña siguen igual |
+| **AspNetUserPasskeys** | Tabla que añade `SchemaVersion = IdentitySchemaVersions.Version3` |
+| **Mismo patrón en MVC y RazorPages** | 2 endpoints de acceso + 4 de gestión por proyecto |
+| **El estado del reto, verificado** | La credencial se guarda solo si el reto nombra a la cuenta conectada |
+| **Complementa, no sustituye** | En la vista de acceso conviven contraseña, OAuth y passkey |
+
+---
+
 ## Resumen
 
 | Concepto           | Descripción                                              |
@@ -329,6 +487,7 @@ dotnet user-secrets set "Google:ClientSecret" "GOCSPX-xxxx"
 | **Principal**     | Contiene la identidad y sus claims                      |
 | **Authorization** | Control de acceso basado en roles/claims                 |
 | **OAuth 2.0**     | Login externo con Google, GitHub, Microsoft (Identity)    |
+| **Passkey**       | Acceso sin contraseña con el dispositivo (FIDO2/WebAuthn, Identity) |
 
 ---
 

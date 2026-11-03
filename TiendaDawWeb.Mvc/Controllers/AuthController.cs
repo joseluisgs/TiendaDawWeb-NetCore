@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Shared.Models;
@@ -113,6 +114,54 @@ public class AuthController(
     }
 
     /// <summary>
+    ///     POST /Auth/PasskeyRequestOptions - Primer paso de entrar con passkey.
+    ///     Devuelve las opciones WebAuthn en JSON. Si el visitante ha escrito su correo,
+    ///     solo se piden las passkeys de esa cuenta; sin correo, el navegador puede
+    ///     ofrecerlas todas (interfaz condicional).
+    /// </summary>
+    /// <param name="email">Correo escrito en el formulario, si lo hay.</param>
+    /// <returns>JSON con las opciones para navigator.credentials.get().</returns>
+    [HttpPost("/Auth/PasskeyRequestOptions")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PasskeyRequestOptions(string? email) {
+        User? user = null;
+
+        if (!string.IsNullOrWhiteSpace(email)) {
+            user = await userManager.FindByEmailAsync(email) ??
+                   await userManager.FindByNameAsync(email);
+        }
+
+        var opciones = await signInManager.MakePasskeyRequestOptionsAsync(user);
+        return Content(opciones, "application/json");
+    }
+
+    /// <summary>
+    ///     POST /Auth/PasskeyAssertion - Segundo paso de entrar con passkey.
+    ///     PasskeySignInAsync verifica la firma contra la clave pública guardada y,
+    ///     si es válida, escribe la cookie de identidad igual que PasswordSignInAsync.
+    /// </summary>
+    /// <param name="credential">Afirmación devuelta por el navegador, en JSON.</param>
+    /// <param name="returnUrl">Página a la que volver tras entrar.</param>
+    /// <returns>JSON con ok y el destino, o el motivo del rechazo.</returns>
+    [HttpPost("/Auth/PasskeyAssertion")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PasskeyAssertion(string credential, string? returnUrl = null) {
+        var result = await signInManager.PasskeySignInAsync(credential);
+
+        if (result.Succeeded) {
+            logger.LogInformation("Acceso con passkey correcto");
+            return Json(new { ok = true, destino = Destino(returnUrl) });
+        }
+
+        return StatusCode(StatusCodes.Status401Unauthorized, new {
+            ok = false,
+            mensaje = "La passkey no es válida o ha caducado el reto; vuelve a intentarlo"
+        });
+    }
+
+    /// <summary>
     ///     Inicia login externo con un proveedor OAuth 2.0 (Google, GitHub, Microsoft).
     ///     Redirige al usuario al proveedor para que autentique.
     /// </summary>
@@ -200,5 +249,18 @@ public class AuthController(
             return Redirect(returnUrl);
 
         return RedirectToAction(nameof(PublicController.Index), "Public");
+    }
+
+    /// <summary>
+    ///     Versión en cadena de <see cref="RedirectToLocal"/> para el destino que
+    ///     devuelve el JSON de passkey: solo destinos locales.
+    /// </summary>
+    /// <param name="returnUrl">Destino pedido.</param>
+    /// <returns>Ruta local, o la portada en caso contrario.</returns>
+    private string Destino(string? returnUrl) {
+        if (Url.IsLocalUrl(returnUrl))
+            return returnUrl!;
+
+        return Url.Content("~/")!;
     }
 }
