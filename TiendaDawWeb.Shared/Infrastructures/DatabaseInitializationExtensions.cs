@@ -24,6 +24,11 @@ public static class DatabaseInitializationExtensions
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<DatabaseInitializer>>();
 
         await context.Database.EnsureCreatedAsync();
+
+        // EnsureCreated no toca una BD que ya existe: si el modelo creció (p. ej.
+        // la tabla de passkeys), el parche completa el esquema antes de sembrar.
+        await IdentitySchemaPatch.CompletarAsync(context);
+
         await SeedData.InitializeAsync(scope.ServiceProvider);
         Log.Information("✅ Base de datos inicializada correctamente");
     }
