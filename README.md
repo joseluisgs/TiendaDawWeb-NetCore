@@ -712,7 +712,8 @@ return result.Match(
 | --------------- | ---------------------------------------------------- |
 | **Base de Datos** | SQLite (relacional)                                  |
 | **ORM**         | Entity Framework Core 10                             |
-| **Patrón**      | Code First con migraciones                           |
+| **Patrón**      | Code First con EnsureCreated (sin migraciones)        |
+| **Esquema**     | Se crea completo en el primer arranque; el parche IdentitySchemaPatch completa las tablas nuevas en BD existentes |
 | **Testing**     | SQLite In-Memory para tests rápidos                   |
 | **Concurrencia** | Optimistic Concurrency (RowVersion)                   |
 
