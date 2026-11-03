@@ -1,3 +1,4 @@
+using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
@@ -19,14 +20,24 @@ public class PostgresIntegrationTests
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        _fixture = new PostgresFixture();
-        await _fixture.StartAsync();
+        try
+        {
+            _fixture = new PostgresFixture();
+            await _fixture.StartAsync();
+        }
+        catch (DockerUnavailableException ex)
+        {
+            // Sin Docker no hay PostgreSQL que levantar: se omiten estos tests en
+            // lugar de fallar, para que `dotnet test` funcione en cualquier máquina.
+            Assert.Ignore($"Docker no disponible: tests de PostgreSQL omitidos ({ex.Message})");
+        }
     }
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
-        await _fixture.StopAsync();
+        if (_fixture is not null)
+            await _fixture.StopAsync();
     }
 
     private async Task<ApplicationDbContext> CreateFreshContextAsync()
