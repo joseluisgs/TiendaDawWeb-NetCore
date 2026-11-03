@@ -39,8 +39,13 @@
                         <i class="bi bi-pencil"></i> Editar Perfil
                     </a>
                     
-                    <a asp-page="/Profile/ChangePassword" class="btn btn-outline-secondary w-100">
+                    <a asp-page="/Profile/ChangePassword" class="btn btn-outline-secondary w-100 mb-2">
                         <i class="bi bi-key"></i> Cambiar Contraseña
+                    </a>
+
+                    <a asp-page="/Profile/Passkeys" class="btn btn-outline-success w-100"
+                       data-testid="enlace-passkeys">
+                        <i class="bi bi-shield-lock"></i> Passkeys
                     </a>
                 </div>
             </div>

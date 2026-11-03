@@ -65,8 +65,37 @@
                     </a>
                 </div>
 
-                
-                <div class="text-center">
+                <hr class="my-4" />
+
+                <!-- Passkey (FIDO2/WebAuthn): passkeys.js mira este div para saber qué
+                     flujo montar y de dónde sale el token anti-forgery, que va en el
+                     propio formulario del contenedor. -->
+                <div data-passkeys data-opciones="/Auth/PasskeyRequestOptions"
+                     data-afirmacion="/Auth/PasskeyAssertion"
+                     data-destino="@(ViewData["ReturnUrl"] as string ?? Model?.ReturnUrl ?? string.Empty)"
+                     data-testid="zona-passkey">
+                    <form method="post" class="mb-2">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="correo-passkey" class="form-label">Correo (opcional)</label>
+                            <input id="correo-passkey" name="email" class="form-control"
+                                   autocomplete="username" placeholder="tu@email.com"
+                                   data-testid="email-passkey" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-primary" data-accion="entrar"
+                                    data-testid="passkey-button">
+                                <i class="bi bi-fingerprint"></i> Entrar con passkey
+                            </button>
+                        </div>
+                    </form>
+
+                    <div data-testid="aviso-passkey"></div>
+                </div>
+
+                <div class="text-center mt-3">
                     <p class="mb-2">¿No tienes cuenta?</p>
                     <a asp-action="Register" class="btn btn-outline-primary">
                         <i class="bi bi-person-plus"></i> Regístrate aquí
@@ -79,4 +108,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/passkeys.js" asp-append-version="true"></script>
 }

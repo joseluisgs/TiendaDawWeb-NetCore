@@ -12,6 +12,7 @@ using Moq;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.ViewModels;
+using IdentitySignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
@@ -162,6 +163,75 @@ public class AuthControllerTests
         var result = _controller.AccessDenied();
 
         result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
+
+    #region Passkey Tests
+
+    [Test]
+    public async Task PasskeyRequestOptions_ReturnsJson_WhenNoEmail()
+    {
+        _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(It.IsAny<User>()))
+            .ReturnsAsync("{}");
+
+        var result = await _controller.PasskeyRequestOptions(null);
+
+        result.Should().BeOfType<ContentResult>();
+        ((ContentResult)result).ContentType.Should().Be("application/json");
+    }
+
+    [Test]
+    public async Task PasskeyRequestOptions_LooksUpUser_WhenEmailProvided()
+    {
+        var user = new User { Id = 1, UserName = "test@test.com", Email = "test@test.com" };
+        _mockUserManager.Setup(u => u.FindByEmailAsync("test@test.com")).ReturnsAsync(user);
+        _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(user))
+            .ReturnsAsync("{}");
+
+        var result = await _controller.PasskeyRequestOptions("test@test.com");
+
+        result.Should().BeOfType<ContentResult>();
+        _mockSignInManager.Verify(s => s.MakePasskeyRequestOptionsAsync(user), Times.Once);
+    }
+
+    [Test]
+    public async Task PasskeyAssertion_ReturnsUnauthorized_WhenSignatureInvalid()
+    {
+        _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
+            .ReturnsAsync(IdentitySignInResult.Failed);
+
+        var result = await _controller.PasskeyAssertion("credencial-mala");
+
+        var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+        objectResult.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+    }
+
+    [Test]
+    public async Task PasskeyAssertion_ReturnsJsonWithDestino_WhenSignatureValid()
+    {
+        var httpContext = new DefaultHttpContext();
+        var controller = new AuthController(
+            _mockUserManager.Object,
+            _mockSignInManager.Object,
+            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
+            _mockLogger.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext }
+        };
+
+        // En runtime el framework inyecta el IUrlHelper; en unit test se mockea.
+        var urlHelper = new Mock<IUrlHelper>();
+        urlHelper.Setup(u => u.IsLocalUrl("/carrito")).Returns(true);
+        controller.Url = urlHelper.Object;
+
+        _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
+            .ReturnsAsync(IdentitySignInResult.Success);
+
+        var result = await controller.PasskeyAssertion("credencial-valida", "/carrito");
+
+        var json = result.Should().BeOfType<JsonResult>().Subject;
+        json.Value!.ToString().Should().Contain("destino = /carrito");
     }
 
     #endregion
