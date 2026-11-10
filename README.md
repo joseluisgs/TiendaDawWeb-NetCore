@@ -302,8 +302,8 @@ Para una comprensión profunda de la arquitectura y las tecnologías utilizadas,
 ### Optimización y Rendimiento
 | #   | Documento                                           | Descripción                           |
 | --- | --------------------------------------------------- | ------------------------------------- |
-| 22  | [InMemory Cache](doc/22-InMemory-Cache.md)       | Caché de objetos en memoria          |
-| 23  | [Output Cache](doc/23-Output-Cache.md)           | Caché de respuestas HTML renderizadas|
+| 22  | [InMemory Cache](doc/22-InMemoryCache.md)       | Caché de objetos en memoria          |
+| 23  | [Output Cache](doc/23-OutputCache.md)           | Caché de respuestas HTML renderizadas|
 
 ### Operaciones y Producción
 | #   | Documento                                           | Descripción                                           |
