@@ -1,12 +1,10 @@
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
-using NUnit.Framework;
 using TiendaDawWeb.Tests.E2E.Extensions;
 
 namespace TiendaDawWeb.Tests.E2E.Blazor;
 
 /// <summary>
-/// Tests E2E usando exclusivamente TestId() extension
+///     Tests E2E usando exclusivamente TestId() extension
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
@@ -27,7 +25,8 @@ public class BlazorUserFlowTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("01-login");
 
-        await Expect(Page.TestId("user-name")).ToContainTextAsync("Carlos", new() { Timeout = 15000 });
+        await Expect(Page.TestId("user-name"))
+            .ToContainTextAsync("Carlos", new LocatorAssertionsToContainTextOptions { Timeout = 15000 });
     }
 
     [Test]
@@ -35,7 +34,8 @@ public class BlazorUserFlowTests : E2ETestBase {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public");
 
-        await Expect(Page.TestId("search-input")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Expect(Page.TestId("search-input"))
+            .ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
     }
 
     [Test]

@@ -1,4 +1,4 @@
-@model TiendaDawWeb.Shared.Models.User
+@model User
 @{
     ViewData["Title"] = "Mi Perfil";
 }
@@ -18,25 +18,24 @@
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-body text-center">
-                    @if (!string.IsNullOrEmpty(Model.Avatar))
-                    {
-                        <img src="@Model.Avatar" alt="Avatar" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    @if (!string.IsNullOrEmpty(Model.Avatar)) {
+                        <img src="@Model.Avatar" alt="Avatar" class="rounded-circle mb-3"
+                             style="width: 150px; height: 150px; object-fit: cover;">
                     }
-                    else
-                    {
-                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                    else {
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3"
                              style="width: 150px; height: 150px;">
                             <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
                         </div>
                     }
-                    
+
                     <h4 class="mb-1">@Model.Nombre @Model.Apellidos</h4>
                     <p class="text-muted mb-3">@@@Model.UserName</p>
-                    
+
                     <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary w-100 mb-2">
                         <i class="bi bi-pencil"></i> Editar Perfil
                     </a>
-                    
+
                     <a href="@Url.Action("ChangePassword", "Profile")" class="btn btn-outline-secondary w-100 mb-2">
                         <i class="bi bi-key"></i> Cambiar Contraseña
                     </a>
@@ -120,16 +119,13 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    @if (Model.Products.Any(p => !p.Deleted))
-                    {
+                    @if (Model.Products.Any(p => !p.Deleted)) {
                         <div class="list-group list-group-flush">
-                            @foreach (var producto in Model.Products.Where(p => !p.Deleted).OrderByDescending(p => p.CreatedAt).Take(5))
-                            {
+                            @foreach (var producto in Model.Products.Where(p => !p.Deleted).OrderByDescending(p => p.CreatedAt).Take(5)) {
                                 <div class="list-group-item px-0">
                                     <div class="d-flex align-items-center">
-                                        @if (!string.IsNullOrEmpty(producto.Imagen))
-                                        {
-                                            <img src="@producto.Imagen" alt="@producto.Nombre" class="rounded me-3" 
+                                        @if (!string.IsNullOrEmpty(producto.Imagen)) {
+                                            <img src="@producto.Imagen" alt="@producto.Nombre" class="rounded me-3"
                                                  style="width: 60px; height: 60px; object-fit: cover;">
                                         }
                                         <div class="flex-grow-1">
@@ -138,12 +134,10 @@
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-success d-block">@producto.Precio.ToString("C")</strong>
-                                            @if (producto.CompraId != null)
-                                            {
+                                            @if (producto.CompraId != null) {
                                                 <span class="badge bg-danger">Vendido</span>
                                             }
-                                            else
-                                            {
+                                            else {
                                                 <span class="badge bg-success">Disponible</span>
                                             }
                                         </div>
@@ -152,8 +146,7 @@
                             }
                         </div>
                     }
-                    else
-                    {
+                    else {
                         <p class="text-muted text-center py-4">
                             <i class="bi bi-inbox"></i> No has publicado productos aún
                         </p>
@@ -172,11 +165,9 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    @if (Model.Purchases.Any())
-                    {
+                    @if (Model.Purchases.Any()) {
                         <div class="list-group list-group-flush">
-                            @foreach (var compra in Model.Purchases.OrderByDescending(c => c.FechaCompra).Take(5))
-                            {
+                            @foreach (var compra in Model.Purchases.OrderByDescending(c => c.FechaCompra).Take(5)) {
                                 <div class="list-group-item px-0">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -189,7 +180,8 @@
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-success d-block">@compra.Total.ToString("C")</strong>
-                                            <a href="@Url.Action("Details", "Purchase", new { id = compra.Id })" class="btn btn-sm btn-outline-primary">
+                                            <a href="@Url.Action("Details", "Purchase", new { id = compra.Id })"
+                                               class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i> Ver
                                             </a>
                                         </div>
@@ -198,8 +190,7 @@
                             }
                         </div>
                     }
-                    else
-                    {
+                    else {
                         <p class="text-muted text-center py-4">
                             <i class="bi bi-inbox"></i> No has realizado compras aún
                         </p>

@@ -1,6 +1,4 @@
 @namespace TiendaDawWeb.Shared.Blazor.Ratings
-@using TiendaDawWeb.Shared.Services.Rating
-@using TiendaDawWeb.Shared.Models
 @inject IRatingStore RatingStore
 @inject ILogger<RatingSection> Logger
 @implements IDisposable
@@ -14,16 +12,14 @@
 }
 
 <div class="mb-4">
-    @if (_loading)
-    {
+    @if (_loading) {
         <div class="text-center">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando...</span>
             </div>
         </div>
     }
-    else if (userRating != null)
-    {
+    else if (userRating != null) {
         <div class="p-4 rounded border border-success bg-light mb-4 fade-in">
             <h5 class="text-success"><i class="bi bi-check-circle-fill"></i> ¡Gracias por tu valoración!</h5>
             <div class="d-flex align-items-center mb-2 mt-3">
@@ -34,8 +30,7 @@
             <p class="mb-0 text-muted">@((MarkupString)(string.IsNullOrWhiteSpace(userRating.Comentario) ? "<i>Sin comentario</i>" : userRating.Comentario))</p>
         </div>
     }
-    else if (canRate)
-    {
+    else if (canRate) {
         <div class="card border-primary mb-4" id="cardFormulario">
             <div class="card-header bg-primary text-white">
                 <i class="bi bi-pencil-square"></i> Valora tu compra ahora
@@ -45,39 +40,36 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tu puntuación:</label>
                         <div class="star-rating-input">
-                            @for (int i = 1; i <= 5; i++)
-                            {
+                            @for (int i = 1; i <= 5; i++) {
                                 var starValue = i;
-                                <i class="bi @(GetStarClass(starValue)) star-item" 
+                                <i class="bi @(GetStarClass(starValue)) star-item"
                                    style="cursor:pointer; font-size:1.5rem; transition: transform 0.2s;"
                                    @onclick="() => SelectStar(starValue)"
                                    @onmouseenter="() => HoverStar(starValue)"
                                    @onmouseleave="() => HoverStar(0)"></i>
                             }
                         </div>
-                        @if (_showStarError)
-                        {
+                        @if (_showStarError) {
                             <div class="text-danger small mt-1">Debes seleccionar una puntuación.</div>
                         }
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Comentario (opcional):</label>
-                        <textarea class="form-control" @bind="_comentario" rows="3" maxlength="500" placeholder="¿Qué te ha parecido este producto?"></textarea>
+                        <textarea class="form-control" @bind="_comentario" rows="3" maxlength="500"
+                                  placeholder="¿Qué te ha parecido este producto?"></textarea>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary" disabled="@(_submitting)">
-                            @if (_submitting)
-                            {
-                                <span class="spinner-border spinner-border-sm"></span> <span>Enviando...</span>
+                            @if (_submitting) {
+                                <span class="spinner-border spinner-border-sm"></span>
+                                <span>Enviando...</span>
                             }
-                            else
-                            {
+                            else {
                                 <span>Enviar Valoración</span>
                             }
                         </button>
                     </div>
-                    @if (!string.IsNullOrEmpty(_errorMessage))
-                    {
+                    @if (!string.IsNullOrEmpty(_errorMessage)) {
                         <div class="alert alert-danger mt-2">@_errorMessage</div>
                     }
                 </form>
@@ -86,12 +78,11 @@
     }
 </div>
 
-@if (otherRatings != null && otherRatings.Any())
-{
+@if (otherRatings != null && otherRatings.Any()) {
     <div id="ratingsList">
-        <h4 class="mb-3"><i class="bi bi-star-fill text-warning"></i> @(totalRatings == 1 ? "Valoración" : "Valoraciones")</h4>
-        @foreach (var rating in otherRatings)
-        {
+        <h4 class="mb-3"><i
+                    class="bi bi-star-fill text-warning"></i> @(totalRatings == 1 ? "Valoración" : "Valoraciones")</h4>
+        @foreach (var rating in otherRatings) {
             <div class="card mb-3 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
@@ -99,12 +90,10 @@
                         <strong class="ms-2">@(rating.Usuario?.Nombre ?? "Usuario")</strong>
                         <span class="text-muted ms-2 small">@rating.CreatedAt.ToLocalTime().ToString("g")</span>
                     </div>
-                    @if (!string.IsNullOrWhiteSpace(rating.Comentario))
-                    {
+                    @if (!string.IsNullOrWhiteSpace(rating.Comentario)) {
                         <p class="mb-0 text-muted">@rating.Comentario</p>
                     }
-                    else
-                    {
+                    else {
                         <p class="mb-0 text-muted fst-italic">Sin comentario</p>
                     }
                 </div>
@@ -112,10 +101,9 @@
         }
     </div>
 }
-else if (!canRate && userRating == null && _loading == false)
-{
+else if (!canRate && userRating == null && _loading == false) {
     <div class="alert alert-light border">
-        <i class="bi bi-info-circle"></i> No hay valoraciones todavía. 
+        <i class="bi bi-info-circle"></i> No hay valoraciones todavía.
         <a href="@ProductUrl" class="alert-link fw-bold">¡Compra</a> y valora!
     </div>
 }
@@ -141,46 +129,41 @@ else if (!canRate && userRating == null && _loading == false)
 
     private readonly List<IDisposable> subscriptions = new();
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         Logger.LogInformation("Blazor: RatingSection inicializado para Producto {ProductId}", ProductId);
-        
+
         subscriptions.Add(RatingStore.State.Subscribe(state => {
             State = state;
             InvokeAsync(StateHasChanged);
         }));
-        
+
         _isAuthenticated = IsAuthenticated;
         _isOwner = IsOwner;
-        
+
         await RatingStore.EnsureLoadedAsync(ProductId);
-        
+
         // Verificar si el usuario ha comprado el producto
         if (CurrentUserId.HasValue)
             _hasPurchased = await RatingStore.CanUserRateAsync(CurrentUserId.Value, ProductId);
-        
+
         _loading = false;
     }
 
-    private void SelectStar(int val)
-    {
+    private void SelectStar(int val) {
         _selectedPuntuacion = val;
         _showStarError = false;
     }
 
     private void HoverStar(int val) => _hoverPuntuacion = val;
 
-    private string GetStarClass(int starValue)
-    {
+    private string GetStarClass(int starValue) {
         int effectiveValue = _hoverPuntuacion > 0 ? _hoverPuntuacion : _selectedPuntuacion;
         return starValue <= effectiveValue ? "bi-star-fill text-warning" : "bi-star text-secondary";
     }
 
-    private async Task HandleSubmit()
-    {
+    private async Task HandleSubmit() {
         Logger.LogInformation("✍️ Blazor: RatingSection Intento de envío para Producto {ProductId}", ProductId);
-        if (_selectedPuntuacion == 0)
-        {
+        if (_selectedPuntuacion == 0) {
             _showStarError = true;
             return;
         }
@@ -194,33 +177,27 @@ else if (!canRate && userRating == null && _loading == false)
         _submitting = false;
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         foreach (var sub in subscriptions) sub.Dispose();
         subscriptions.Clear();
     }
 
-    private RenderFragment RenderStars(double val, double size) => builder =>
-    {
+    private RenderFragment RenderStars(double val, double size) => builder => {
         val = Math.Round(val * 2) / 2;
-        for (int i = 1; i <= 5; i++)
-        {
-            if (i <= val)
-            {
+        for (int i = 1; i <= 5; i++) {
+            if (i <= val) {
                 builder.OpenElement(0, "i");
                 builder.AddAttribute(1, "class", "bi bi-star-fill text-warning");
                 builder.AddAttribute(2, "style", $"font-size:{size}rem");
                 builder.CloseElement();
             }
-            else if (i - val == 0.5)
-            {
+            else if (i - val == 0.5) {
                 builder.OpenElement(3, "i");
                 builder.AddAttribute(4, "class", "bi bi-star-half text-warning");
                 builder.AddAttribute(5, "style", $"font-size:{size}rem");
                 builder.CloseElement();
             }
-            else
-            {
+            else {
                 builder.OpenElement(6, "i");
                 builder.AddAttribute(7, "class", "bi bi-star text-secondary");
                 builder.AddAttribute(8, "style", $"font-size:{size}rem");
@@ -228,4 +205,5 @@ else if (!canRate && userRating == null && _loading == false)
             }
         }
     };
+
 }

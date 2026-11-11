@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Favorite;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
@@ -17,10 +19,12 @@ public class IndexModel(
     public IEnumerable<ProductModel> Productos => Products;
 
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await favoriteService.GetUserFavoritesAsync(user.Id);
+        Result<IEnumerable<ProductModel>, DomainError> result = await favoriteService.GetUserFavoritesAsync(user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar favoritos";

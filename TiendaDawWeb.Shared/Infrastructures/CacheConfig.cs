@@ -1,19 +1,15 @@
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using StackExchange.Redis;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Configuración de caché y sesión.
-/// Desarrollo: MemoryCache + DistributedMemoryCache.
-/// Producción: Redis (OutputCache + MemoryCache distribuido + Session).
+///     Configuración de caché y sesión.
+///     Desarrollo: MemoryCache + DistributedMemoryCache.
+///     Producción: Redis (OutputCache + MemoryCache distribuido + Session).
 /// </summary>
 public static class CacheConfig {
     /// <summary>
-    /// Configura caché y sesión según el entorno.
+    ///     Configura caché y sesión según el entorno.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <param name="configuration">Configuración de la aplicación.</param>
@@ -23,7 +19,7 @@ public static class CacheConfig {
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment) {
-        var isExplicitProduction = environment.EnvironmentName == "Production";
+        bool isExplicitProduction = environment.EnvironmentName == "Production";
 
         // 🛡️ Solo Production explícito usa Redis. Si no, MemoryCache.
         if (!isExplicitProduction) {
@@ -41,10 +37,10 @@ public static class CacheConfig {
             });
         } else {
             // 🛡️ Producción: Redis para caché distribuida y sesión
-            var redisConnection = configuration.GetConnectionString("Redis")
-                ?? throw new InvalidOperationException(
-                    "Redis connection string es obligatoria en producción. " +
-                    "Configura ConnectionStrings:Redis en appsettings.json.");
+            string redisConnection = configuration.GetConnectionString("Redis")
+                                     ?? throw new InvalidOperationException(
+                                         "Redis connection string es obligatoria en producción. " +
+                                         "Configura ConnectionStrings:Redis en appsettings.json.");
 
             Log.Information("🔴 Producción: Configurando Redis...");
             services.AddStackExchangeRedisCache(options => {
@@ -77,11 +73,11 @@ public static class CacheConfig {
     }
 
     /// <summary>
-    /// Aplica el middleware de OutputCache al pipeline.
+    ///     Aplica el middleware de OutputCache al pipeline.
     /// </summary>
     /// <param name="app">Application builder.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) {
+    public static IApplicationBuilder UseOutputCaching(this IApplicationBuilder app) {
         Log.Information("🗂️ Aplicando middleware de OutputCache...");
         app.UseOutputCache();
         return app;

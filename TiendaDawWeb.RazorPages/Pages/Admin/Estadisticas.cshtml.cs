@@ -21,7 +21,7 @@ public class EstadisticasModel(ApplicationDbContext context) : PageModel {
         var compradoresActivos = await context.Purchases
             .GroupBy(p => new { p.CompradorId, p.Comprador.Nombre, p.Comprador.Apellidos })
             .Select(g => new {
-                CompradorId = g.Key.CompradorId,
+                g.Key.CompradorId,
                 Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 TotalCompras = g.Count(),
                 TotalGastado = g.Sum(p => p.Total)
@@ -34,7 +34,7 @@ public class EstadisticasModel(ApplicationDbContext context) : PageModel {
             .Where(p => p.CompraId != null)
             .GroupBy(p => new { p.PropietarioId, p.Propietario.Nombre, p.Propietario.Apellidos })
             .Select(g => new {
-                PropietarioId = g.Key.PropietarioId,
+                g.Key.PropietarioId,
                 Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 ProductosVendidos = g.Count()
             })
@@ -42,7 +42,7 @@ public class EstadisticasModel(ApplicationDbContext context) : PageModel {
             .Take(10)
             .ToListAsync();
 
-        var hace12Meses = DateTime.UtcNow.AddMonths(-12);
+        DateTime hace12Meses = DateTime.UtcNow.AddMonths(-12);
         var ventasPorMes = await context.Purchases
             .Where(p => p.FechaCompra >= hace12Meses)
             .GroupBy(p => new { p.FechaCompra.Year, p.FechaCompra.Month })

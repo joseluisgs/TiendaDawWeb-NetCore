@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NUnit.Framework;
 using TiendaDawWeb.RazorPages.Pages;
 
 namespace TiendaDawWeb.Tests.RazorPages.ErrorHandling;
@@ -77,7 +75,7 @@ public class ErrorPageTests {
         };
 
         // Act
-        pageModel.OnGet(null);
+        pageModel.OnGet();
 
         // Assert
         Assert.That(pageModel.StatusCodeValue, Is.EqualTo(403));
@@ -96,7 +94,7 @@ public class ErrorPageTests {
         };
 
         // Act
-        pageModel.OnGet(null);
+        pageModel.OnGet();
 
         // Assert
         Assert.That(pageModel.StatusCodeValue, Is.EqualTo(500));

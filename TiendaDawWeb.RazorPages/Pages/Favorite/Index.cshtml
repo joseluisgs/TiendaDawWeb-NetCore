@@ -1,7 +1,5 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Favorite.IndexModel
-@using System.Globalization
-@using Microsoft.Extensions.Localization
 @inject IStringLocalizer<SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = "Mis Favoritos";
@@ -90,7 +88,7 @@
             }
 
             const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-            
+
             try {
                 const response = await fetch('/Api/Favorites?handler=Delete&productoId=' + productId, {
                     method: 'GET',
@@ -100,7 +98,7 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (data.success) {
                     window.location.reload();
                 } else {

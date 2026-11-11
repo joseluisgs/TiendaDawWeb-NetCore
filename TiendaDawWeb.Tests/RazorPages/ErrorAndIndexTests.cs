@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Diagnostics;
 using TiendaDawWeb.RazorPages.Pages;
 
 namespace TiendaDawWeb.Tests.RazorPages;
@@ -65,7 +64,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_RedirectsToPublicIndex() {
         var model = new IndexModel();
-        var result = model.OnGet(search: null, q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = model.OnGet(null, null, null, null, null);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -75,7 +74,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_WithSearchQuery_PassesQueryToRedirect() {
         var model = new IndexModel();
-        var result = model.OnGet(search: "test", q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = model.OnGet("test", null, null, null, null);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -86,7 +85,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_WithQParameter_PassesQueryToRedirect() {
         var model = new IndexModel();
-        var result = model.OnGet(search: null, q: "laptop", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = model.OnGet(null, "laptop", null, null, null);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -97,7 +96,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_PrefersSearchOverQ() {
         var model = new IndexModel();
-        var result = model.OnGet(search: "priority", q: "secondary", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = model.OnGet("priority", "secondary", null, null, null);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -107,7 +106,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_WithCategory_PassesCategoryToRedirect() {
         var model = new IndexModel();
-        var result = model.OnGet(search: null, q: null, categoria: "electronics", minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = model.OnGet(null, null, "electronics", null, null);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -118,7 +117,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_WithPriceRange_PassesPricesToRedirect() {
         var model = new IndexModel();
-        var result = model.OnGet(search: null, q: null, categoria: null, minPrecio: 100, maxPrecio: 500, page: 1, size: 12);
+        IActionResult result = model.OnGet(null, null, null, 100, 500);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -129,7 +128,7 @@ public class IndexModelTests {
     [Test]
     public void OnGet_WithPagination_PassesPageToRedirect() {
         var model = new IndexModel();
-        var result = model.OnGet(search: null, q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 3, size: 24);
+        IActionResult result = model.OnGet(null, null, null, null, null, 3, 24);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;
@@ -140,14 +139,13 @@ public class IndexModelTests {
     [Test]
     public void OnGet_WithAllParameters_RedirectsWithAll() {
         var model = new IndexModel();
-        var result = model.OnGet(
-            search: "phone",
-            q: null,
-            categoria: "electronics",
-            minPrecio: 200,
-            maxPrecio: 1000,
-            page: 2,
-            size: 12);
+        IActionResult result = model.OnGet(
+            "phone",
+            null,
+            "electronics",
+            200,
+            1000,
+            2);
 
         result.Should().BeOfType<RedirectToPageResult>();
         var redirect = result as RedirectToPageResult;

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
@@ -12,16 +13,17 @@ using TiendaDawWeb.Shared.Services.Favorite;
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class FavoriteControllerTests {
-    private readonly Mock<IFavoriteService> _mockFavoriteService;
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<ILogger<FavoriteController>> _mockLogger;
     private readonly FavoriteController _controller;
+    private readonly Mock<IFavoriteService> _mockFavoriteService;
+    private readonly Mock<ILogger<FavoriteController>> _mockLogger;
+    private readonly Mock<UserManager<User>> _mockUserManager;
 
     public FavoriteControllerTests() {
         _mockFavoriteService = new Mock<IFavoriteService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _mockLogger = new Mock<ILogger<FavoriteController>>();
 
@@ -40,10 +42,10 @@ public class FavoriteControllerTests {
 
     [Test]
     public async Task Index_RedirectsToLogin_WhenUserNotFound() {
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.Index();
+        IActionResult result = await _controller.Index();
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -54,10 +56,10 @@ public class FavoriteControllerTests {
 
     [Test]
     public async Task Add_RedirectsToLogin_WhenUserNotFound() {
-        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+        _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.Add(1);
+        IActionResult result = await _controller.Add(1);
 
         result.Should().BeOfType<JsonResult>();
     }
@@ -71,7 +73,7 @@ public class FavoriteControllerTests {
         _mockFavoriteService.Setup(s => s.RemoveFavoriteAsync(1, 1))
             .Returns(Task.FromResult(Result.Success<bool, DomainError>(true)));
 
-        var result = await _controller.Remove(1);
+        IActionResult result = await _controller.Remove(1);
 
         result.Should().BeOfType<JsonResult>();
     }

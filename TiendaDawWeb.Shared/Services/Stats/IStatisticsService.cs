@@ -3,7 +3,7 @@ using TiendaDawWeb.Shared.Dto.Stats;
 namespace TiendaDawWeb.Shared.Services.Stats;
 
 /// <summary>
-/// Interfaz del servicio de estadísticas.
+///     Interfaz del servicio de estadísticas.
 /// </summary>
 public interface IStatisticsService {
     /// <summary>Obtiene las ventas agrupadas por categoría.</summary>

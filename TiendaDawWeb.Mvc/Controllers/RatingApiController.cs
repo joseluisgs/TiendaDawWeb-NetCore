@@ -1,6 +1,8 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Rating;
 
@@ -25,19 +27,24 @@ public class RatingApiController(
     [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> AddRating([FromBody] AddRatingRequest request) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        }
 
-        if (request.Puntuacion < 1 || request.Puntuacion > 5)
+        if (request.Puntuacion < 1 || request.Puntuacion > 5) {
             return BadRequest(new { success = false, message = "La puntuación debe estar entre 1 y 5" });
+        }
 
-        var result = await ratingService.AddRatingAsync(
+        Result<Rating, DomainError> result = await ratingService.AddRatingAsync(
             user.Id,
             request.ProductId,
             request.Puntuacion,
             request.Comentario);
 
-        if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return BadRequest(new { success = false, message = result.Error.Message });
+        }
 
         return Ok(new {
             success = true,
@@ -55,9 +62,11 @@ public class RatingApiController(
     [HttpGet("product/{productId}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetProductRatings(long productId) {
-        var result = await ratingService.GetByProductoIdAsync(productId);
+        Result<IEnumerable<Rating>, DomainError> result = await ratingService.GetByProductoIdAsync(productId);
 
-        if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return BadRequest(new { success = false, message = result.Error.Message });
+        }
 
         var ratings = result.Value.Select(r => new {
             id = r.Id,
@@ -79,17 +88,22 @@ public class RatingApiController(
     /// </summary>
     [HttpGet("user/{productId}")]
     public async Task<IActionResult> GetUserRating(long productId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null)
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
             return Unauthorized(new { success = false });
-        var result = await ratingService.GetByProductoIdAsync(productId);
-        if (result.IsFailure)
+        }
+
+        Result<IEnumerable<Rating>, DomainError> result = await ratingService.GetByProductoIdAsync(productId);
+        if (result.IsFailure) {
             return Ok(new { success = true, rating = (object?)null });
+        }
 
         // 👇— AJUSTE CLAVE —👇
-        var rating = result.Value.FirstOrDefault(r => r.UsuarioId == user.Id);
-        if (rating == null)
+        Rating? rating = result.Value.FirstOrDefault(r => r.UsuarioId == user.Id);
+        if (rating == null) {
             return Ok(new { success = true, rating = (object?)null });
+        }
+
         return Ok(new {
             success = true,
             rating = new {

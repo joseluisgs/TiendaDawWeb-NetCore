@@ -1,32 +1,29 @@
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using TiendaDawWeb.Shared.Binders;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Extensiones de configuración de MVC, Razor Pages y Blazor Server.
+///     Extensiones de configuración de MVC, Razor Pages y Blazor Server.
 /// </summary>
 public static class MvcConfig {
     /// <summary>
-    /// Configura los controladores MVC con binders personalizados.
+    ///     Configura los controladores MVC con binders personalizados.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <returns>IServiceCollection.</returns>
     public static IServiceCollection AddMvcControllers(this IServiceCollection services) {
         Log.Information("🎛️ Configurando controladores MVC...");
         services.AddControllersWithViews(options => {
-            options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
-        })
-        .AddViewLocalization()
-        .AddDataAnnotationsLocalization();
+                options.ModelBinderProviders.Insert(0, new DecimalModelBinderProvider());
+            })
+            .AddViewLocalization()
+            .AddDataAnnotationsLocalization();
 
         return services;
     }
 
     /// <summary>
-    /// Configura Razor Pages.
+    ///     Configura Razor Pages.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <returns>IServiceCollection.</returns>
@@ -37,7 +34,7 @@ public static class MvcConfig {
     }
 
     /// <summary>
-    /// Configura Blazor Server con opciones detalladas de errores.
+    ///     Configura Blazor Server con opciones detalladas de errores.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <returns>IServiceCollection.</returns>

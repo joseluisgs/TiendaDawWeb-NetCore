@@ -1,33 +1,33 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Exceptions;
+using ValidationException = TiendaDawWeb.Shared.Exceptions.ValidationException;
 
 namespace TiendaDawWeb.Shared.Middleware;
 
 /// <summary>
-/// Manejador global de excepciones para la aplicación Web.
-/// Captura excepciones no manejadas y excepciones de dominio,
-/// y genera respuestas HTTP consistentes (JSON para APIs, redirect para MVC).
+///     Manejador global de excepciones para la aplicación Web.
+///     Captura excepciones no manejadas y excepciones de dominio,
+///     y genera respuestas HTTP consistentes (JSON para APIs, redirect para MVC).
 /// </summary>
 public class GlobalExceptionHandler(
     RequestDelegate next,
     ILogger<GlobalExceptionHandler> logger,
     IWebHostEnvironment environment
 ) {
-    private readonly RequestDelegate _next = next;
-    private readonly ILogger<GlobalExceptionHandler> _logger = logger;
     private readonly IWebHostEnvironment _environment = environment;
+    private readonly ILogger<GlobalExceptionHandler> _logger = logger;
+    private readonly RequestDelegate _next = next;
 
     /// <summary>
-    /// Intercepta la petición y traduce cualquier excepción en una respuesta HTTP.
+    ///     Intercepta la petición y traduce cualquier excepción en una respuesta HTTP.
     /// </summary>
     public async Task InvokeAsync(HttpContext context) {
         try {
             await _next(context);
         } catch (Exception ex) {
-            var errorId = Guid.NewGuid().ToString()[..8];
+            string errorId = Guid.NewGuid().ToString()[..8];
             _logger.LogError(ex, "Excepción no manejada. ErrorId: {ErrorId}, Message: {Message}",
                 errorId, ex.Message);
 
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler(
     }
 
     /// <summary>
-    /// Detecta si la petición es una API (JSON) o una vista MVC (HTML).
+    ///     Detecta si la petición es una API (JSON) o una vista MVC (HTML).
     /// </summary>
     private static bool IsApiRequest(HttpContext context) {
         return context.Request.Path.StartsWithSegments("/api")
@@ -49,12 +49,13 @@ public class GlobalExceptionHandler(
     }
 
     /// <summary>
-    /// Maneja excepciones para peticiones API (respuesta JSON).
+    ///     Maneja excepciones para peticiones API (respuesta JSON).
     /// </summary>
     private async Task HandleApiExceptionAsync(HttpContext context, Exception exception, string errorId) {
         context.Response.ContentType = "application/json";
 
-        var (statusCode, message, errors, errorType) = MapException(exception);
+        (int statusCode, string message, Dictionary<string, string[]>? errors, string errorType) =
+            MapException(exception);
 
         context.Response.StatusCode = statusCode;
 
@@ -77,10 +78,10 @@ public class GlobalExceptionHandler(
     }
 
     /// <summary>
-    /// Maneja excepciones para peticiones MVC (redirect o vista de error).
+    ///     Maneja excepciones para peticiones MVC (redirect o vista de error).
     /// </summary>
     private async Task HandleMvcExceptionAsync(HttpContext context, Exception exception, string errorId) {
-        var (statusCode, message, _, _) = MapException(exception);
+        (int statusCode, string message, _, _) = MapException(exception);
 
         // Para peticiones AJAX, devolver JSON
         if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest") {
@@ -104,18 +105,20 @@ public class GlobalExceptionHandler(
     }
 
     /// <summary>
-    /// Mapea excepciones a códigos HTTP y mensajes.
+    ///     Mapea excepciones a códigos HTTP y mensajes.
     /// </summary>
-    private static (int StatusCode, string Message, Dictionary<string, string[]>? Errors, string ErrorType) MapException(Exception exception) {
+    private static (int StatusCode, string Message, Dictionary<string, string[]>? Errors, string ErrorType)
+        MapException(Exception exception) {
         return exception switch {
             NotFoundException notFound => (404, notFound.Message, null, "NotFoundError"),
-            Exceptions.ValidationException validation => (400, validation.Message, validation.ValidationErrors, "ValidationError"),
+            ValidationException validation => (400, validation.Message, validation.ValidationErrors, "ValidationError"),
             BusinessException business => (422, business.Message, null, "BusinessRuleError"),
             UnauthorizedException unauthorized => (401, unauthorized.Message, null, "UnauthorizedError"),
             ForbiddenException forbidden => (403, forbidden.Message, null, "ForbiddenError"),
             ConflictException conflict => (409, conflict.Message, null, "ConflictError"),
             InternalException internalEx => (500, internalEx.Message, null, "InternalError"),
-            DbUpdateConcurrencyException => (409, "Conflicto de concurrencia. El registro fue modificado por otro usuario.", null, "ConflictError"),
+            DbUpdateConcurrencyException => (409,
+                "Conflicto de concurrencia. El registro fue modificado por otro usuario.", null, "ConflictError"),
             DbUpdateException => (409, "Error al actualizar la base de datos", null, "ConflictError"),
             ArgumentNullException => (400, "Parámetro requerido no proporcionado", null, "ValidationError"),
             ArgumentException argument => (400, argument.Message, null, "ValidationError"),
@@ -126,12 +129,12 @@ public class GlobalExceptionHandler(
 }
 
 /// <summary>
-/// Extensiones para registro del middleware.
+///     Extensiones para registro del middleware.
 /// </summary>
 public static class GlobalExceptionHandlerExtensions {
     /// <summary>
-    /// Registra el middleware de excepciones globales.
-    /// Debe registrarse ANTES de UseRouting y UseEndpoints.
+    ///     Registra el middleware de excepciones globales.
+    ///     Debe registrarse ANTES de UseRouting y UseEndpoints.
     /// </summary>
     public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder app) {
         return app.UseMiddleware<GlobalExceptionHandler>();

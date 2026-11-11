@@ -1,10 +1,12 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Errors;
+using TiendaDawWeb.Shared.Mappers;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Rating;
 using TiendaDawWeb.Shared.ViewModels;
-using TiendaDawWeb.Shared.Mappers;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -31,22 +33,25 @@ public class RatingController(
             return RedirectToAction("Details", "Product", new { id = model.ProductoId });
         }
 
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         // 🧹 REFACTOR: Usamos el Mapper
-        var rating = model.ToEntity(user.Id);
+        Rating rating = model.ToEntity(user.Id);
 
-        var result = await ratingService.AddRatingAsync(
+        Result<Rating, DomainError> result = await ratingService.AddRatingAsync(
             user.Id,
             model.ProductoId,
             model.Puntuacion,
             model.Comentario);
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
             TempData["Success"] = "¡Valoración añadida correctamente!";
+        }
 
         return RedirectToAction("Details", "Product", new { id = model.ProductoId });
     }
@@ -56,7 +61,7 @@ public class RatingController(
     /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> Details(long id) {
-        var result = await ratingService.GetByIdAsync(id);
+        Result<Rating, DomainError> result = await ratingService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
@@ -71,17 +76,19 @@ public class RatingController(
     /// </summary>
     [HttpGet("{id}/edit")]
     public async Task<IActionResult> Edit(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await ratingService.GetByIdAsync(id);
+        Result<Rating, DomainError> result = await ratingService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
             return RedirectToAction("Index", "Public");
         }
 
-        var rating = result.Value;
+        Rating rating = result.Value;
 
         // Verificar que sea el propietario
         if (rating.UsuarioId != user.Id) {
@@ -104,21 +111,26 @@ public class RatingController(
     [HttpPost("{id}/edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(long id, [FromForm] RatingViewModel model) {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid) {
+            return View(model);
+        }
 
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await ratingService.UpdateRatingAsync(
+        Result<Rating, DomainError> result = await ratingService.UpdateRatingAsync(
             id,
             user.Id,
             model.Puntuacion,
             model.Comentario);
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
             TempData["Success"] = "Valoración actualizada correctamente";
+        }
 
         return RedirectToAction("Details", "Product", new { id = model.ProductoId });
     }
@@ -129,16 +141,19 @@ public class RatingController(
     [HttpPost("{id}/delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id, long productoId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var isAdmin = User.IsInRole("ADMIN");
-        var result = await ratingService.DeleteRatingAsync(id, user.Id, isAdmin);
+        bool isAdmin = User.IsInRole("ADMIN");
+        Result<bool, DomainError> result = await ratingService.DeleteRatingAsync(id, user.Id, isAdmin);
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
             TempData["Success"] = "Valoración eliminada correctamente";
+        }
 
         return RedirectToAction("Details", "Product", new { id = productoId });
     }

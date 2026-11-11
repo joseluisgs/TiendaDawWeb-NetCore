@@ -10,69 +10,71 @@
                 <h2 class="card-title mb-4">
                     <i class="bi bi-pencil"></i> Editar Producto
                 </h2>
-                
+
                 <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    
+
                     <div class="mb-3">
                         <label asp-for="Nombre" class="form-label"></label>
-                        <input asp-for="Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max" />
+                        <input asp-for="Nombre" class="form-control" placeholder="Ej: iPhone 15 Pro Max"/>
                         <span asp-validation-for="Nombre" class="text-danger"></span>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label asp-for="Descripcion" class="form-label"></label>
-                        <textarea asp-for="Descripcion" class="form-control" rows="4" 
+                        <textarea asp-for="Descripcion" class="form-control" rows="4"
                                   placeholder="Describe tu producto con detalle..."></textarea>
                         <span asp-validation-for="Descripcion" class="text-danger"></span>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label asp-for="Precio" class="form-label"></label>
                             <div class="input-group">
-                                <input asp-for="Precio" 
-                                       class="form-control" 
-                                       type="number" 
-                                       step="0.01" 
+                                <input asp-for="Precio"
+                                       class="form-control"
+                                       type="number"
+                                       step="0.01"
                                        min="0.01"
-                                       placeholder="19.99" />
+                                       placeholder="19.99"/>
                                 <span class="input-group-text">€</span>
                             </div>
                             @*<small class="text-muted">Use punto (.) como separador decimal. Ejemplo: 19.99</small>*@
                             <span asp-validation-for="Precio" class="text-danger"></span>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label asp-for="Categoria" class="form-label"></label>
-                            <select asp-for="Categoria" class="form-select" asp-items="Html.GetEnumSelectList<ProductCategory>()">
+                            <select asp-for="Categoria" class="form-select"
+                                    asp-items="Html.GetEnumSelectList<ProductCategory>()">
                                 <option value="">-- Selecciona una categoría --</option>
                             </select>
                             <span asp-validation-for="Categoria" class="text-danger"></span>
                         </div>
                     </div>
-                    
-                    @if (!string.IsNullOrEmpty(Model.ImagenUrl))
-                    {
+
+                    @if (!string.IsNullOrEmpty(Model.ImagenUrl)) {
                         <div class="mb-3">
                             <label class="form-label">Imagen Actual</label>
                             <div>
-                                <img src="@Model.ImagenUrl" alt="Imagen actual" class="img-thumbnail" style="max-width: 200px;">
+                                <img src="@Model.ImagenUrl" alt="Imagen actual" class="img-thumbnail"
+                                     style="max-width: 200px;">
                             </div>
                         </div>
                     }
-                    
+
                     <div class="mb-3">
                         <label asp-for="ImagenFile" class="form-label">Nueva Imagen (opcional)</label>
-                        <input asp-for="ImagenFile" class="form-control" type="file" accept="image/*" />
+                        <input asp-for="ImagenFile" class="form-control" type="file" accept="image/*"/>
                         <span asp-validation-for="ImagenFile" class="text-danger"></span>
                         <small class="form-text text-muted">
-                            Deja vacío para mantener la imagen actual. Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
+                            Deja vacío para mantener la imagen actual. Formatos permitidos: JPG, PNG, GIF. Tamaño
+                            máximo: 5MB
                         </small>
                     </div>
-                    
-                    <input type="hidden" asp-for="ImagenUrl" />
-                    
+
+                    <input type="hidden" asp-for="ImagenUrl"/>
+
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-circle"></i> Guardar Cambios
@@ -88,5 +90,5 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
 }

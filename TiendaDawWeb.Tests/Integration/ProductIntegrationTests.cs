@@ -1,9 +1,11 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Favorite;
@@ -11,225 +13,24 @@ using TiendaDawWeb.Shared.Services.Favorite;
 namespace TiendaDawWeb.Tests.Integration;
 
 /// <summary>
-/// Integration tests using SQLite (same as production).
-/// Each test creates its own isolated database.
+///     Integration tests using SQLite (same as production).
+///     Each test creates its own isolated database.
 /// </summary>
 [NonParallelizable]
 public class ProductIntegrationTests {
-    #region Create Product Tests
-
-    [Test]
-    public async Task CreateProduct_WithValidData_SavesToDatabase() {
-        await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
-
-        var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
-        db.Users.Add(user);
-
-        var product = new Product {
-            Nombre = "Test Product",
-            Descripcion = "A test product",
-            Precio = 99.99m,
-            Categoria = ProductCategory.SMARTPHONES,
-            PropietarioId = 1,
-            Deleted = false
-        };
-        db.Products.Add(product);
-        await db.SaveChangesAsync();
-
-        product.Id.Should().BeGreaterThan(0);
-        product.Nombre.Should().Be("Test Product");
-    }
-
-    [Test]
-    public async Task GetAllProducts_ReturnsOnlyNonDeleted() {
-        await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
-
-        var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
-
-        db.Products.AddRange(
-            new Product { Nombre = "Active", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false },
-            new Product { Nombre = "Deleted", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = true }
-        );
-        await db.SaveChangesAsync();
-
-        var activeProducts = await db.Products
-            .Where(p => !p.Deleted && p.CompraId == null)
-            .ToListAsync();
-
-        activeProducts.Should().HaveCount(1);
-        activeProducts.First().Nombre.Should().Be("Active");
-    }
-
-    [Test]
-    public async Task DeleteProduct_SoftDeletes() {
-        await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
-
-        var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
-
-        var product = new Product {
-            Id = 100,
-            Nombre = "To Delete",
-            Descripcion = "Desc",
-            Precio = 100,
-            Categoria = ProductCategory.SMARTPHONES,
-            PropietarioId = 1,
-            Deleted = false
-        };
-        db.Products.Add(product);
-        await db.SaveChangesAsync();
-
-        var dbProduct = await db.Products.FindAsync(100L);
-        dbProduct!.SoftDelete("TestUser");
-        await db.SaveChangesAsync();
-
-        var deleted = await db.Products.IgnoreQueryFilters().FirstAsync(p => p.Id == 100);
-        deleted.Deleted.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task Product_Propietario_Relationship_Works() {
-        await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
-
-        var user = new User { Id = 200, UserName = "owner", Email = "owner@test.com", Nombre = "Owner", Apellidos = "User", Rol = "USER" };
-        var product = new Product {
-            Id = 200,
-            Nombre = "Owner Product",
-            Descripcion = "Desc",
-            Precio = 500,
-            Categoria = ProductCategory.LAPTOPS,
-            PropietarioId = 200,
-            Propietario = user,
-            Deleted = false
-        };
-        db.Users.Add(user);
-        db.Products.Add(product);
-        await db.SaveChangesAsync();
-
-        var dbProduct = await db.Products
-            .Include(p => p.Propietario)
-            .FirstAsync(p => p.Id == 200);
-
-        dbProduct.Propietario.Should().NotBeNull();
-        dbProduct.Propietario!.Email.Should().Be("owner@test.com");
-    }
-
-    #endregion
-
-    #region Favorite Tests (With Include - SQLite supports this!)
-
-    [Test]
-    public async Task Favorite_AddAndQuery_Works() {
-        await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
-
-        var user = new User { Id = 300, Email = "user@test.com", UserName = "user", Nombre = "User", Apellidos = "Test", Rol = "USER" };
-        var owner = new User { Id = 301, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER" };
-        var owner2 = new User { Id = 302, Email = "owner2@test.com", UserName = "owner2", Nombre = "Owner2", Apellidos = "Test", Rol = "USER" };
-
-        var product1 = new Product { Id = 301, Nombre = "P1", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 301, Deleted = false };
-        var product2 = new Product { Id = 302, Nombre = "P2", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 302, Deleted = false };
-
-        db.Users.AddRange(user, owner, owner2);
-        db.Products.AddRange(product1, product2);
-        await db.SaveChangesAsync();
-
-        var favorite1 = new Favorite { UsuarioId = 300, ProductoId = 301 };
-        var favorite2 = new Favorite { UsuarioId = 300, ProductoId = 302 };
-        db.Favorites.AddRange(favorite1, favorite2);
-        await db.SaveChangesAsync();
-
-        var favorites = await db.Favorites
-            .Where(f => f.UsuarioId == 300)
-            .Include(f => f.Producto)
-            .ToListAsync();
-
-        favorites.Should().HaveCount(2);
-    }
-
-    [Test]
-    public async Task GetUserFavoritesAsync_ReturnsProducts() {
-        await using var fixture = new IntegrationTestFixture();
-
-        var user = new User { Id = 100, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
-        var owner1 = new User { Id = 101, Email = "owner1@test.com", UserName = "owner1", Nombre = "Owner1", Apellidos = "Test", Rol = "USER" };
-        var owner2 = new User { Id = 102, Email = "owner2@test.com", UserName = "owner2", Nombre = "Owner2", Apellidos = "Test", Rol = "USER" };
-
-        var product1 = new Product { Id = 200, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 101, Deleted = false };
-        var product2 = new Product { Id = 201, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 102, Deleted = false };
-
-        fixture.Context.Users.AddRange(user, owner1, owner2);
-        fixture.Context.Products.AddRange(product1, product2);
-        await fixture.Context.SaveChangesAsync();
-
-        var fav1 = new Favorite { UsuarioId = 100, ProductoId = 200 };
-        var fav2 = new Favorite { UsuarioId = 100, ProductoId = 201 };
-        fixture.Context.Favorites.AddRange(fav1, fav2);
-        await fixture.Context.SaveChangesAsync();
-
-        var result = await fixture.FavoriteService.GetUserFavoritesAsync(100);
-
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(2);
-    }
-
-    [Test]
-    public async Task Carrito_AddItem_Works() {
-        await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
-
-        var user = new User { Id = 400, Email = "user@test.com", UserName = "user", Nombre = "User", Apellidos = "Test", Rol = "USER" };
-        var owner = new User { Id = 401, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER" };
-
-        var product = new Product {
-            Id = 401,
-            Nombre = "Cart Product",
-            Precio = 300,
-            Categoria = ProductCategory.LAPTOPS,
-            PropietarioId = 401,
-            Deleted = false,
-            Reservado = false
-        };
-        db.Users.AddRange(user, owner);
-        db.Products.Add(product);
-        await db.SaveChangesAsync();
-
-        var cartItem = new CarritoItem {
-            UsuarioId = 400,
-            ProductoId = 401,
-            Precio = 300,
-            CreatedAt = DateTime.UtcNow
-        };
-        db.CarritoItems.Add(cartItem);
-        await db.SaveChangesAsync();
-
-        var cartItems = await db.CarritoItems
-            .Include(c => c.Producto)
-            .Where(c => c.UsuarioId == 400)
-            .ToListAsync();
-
-        cartItems.Should().HaveCount(1);
-        cartItems.First().Precio.Should().Be(300);
-    }
-
-    #endregion
-
     #region Purchase Tests
 
     [Test]
     public async Task Purchase_CreateAndQuery_Works() {
         await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
+        ApplicationDbContext db = fixture.Context;
 
-        var user = new User { Id = 500, Email = "buyer@test.com", UserName = "buyer", Nombre = "Buyer", Apellidos = "User", Rol = "USER" };
-        var owner = new User { Id = 501, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "User", Rol = "USER" };
+        var user = new User {
+            Id = 500, Email = "buyer@test.com", UserName = "buyer", Nombre = "Buyer", Apellidos = "User", Rol = "USER"
+        };
+        var owner = new User {
+            Id = 501, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "User", Rol = "USER"
+        };
 
         var product = new Product {
             Id = 501,
@@ -255,7 +56,7 @@ public class ProductIntegrationTests {
         product.CompraId = 100;
         await db.SaveChangesAsync();
 
-        var dbPurchase = await db.Purchases
+        Purchase dbPurchase = await db.Purchases
             .Include(p => p.Products)
             .FirstAsync(p => p.Id == 100);
 
@@ -270,10 +71,14 @@ public class ProductIntegrationTests {
     [Test]
     public async Task Rating_AddAndQuery_Works() {
         await using var fixture = new IntegrationTestFixture();
-        var db = fixture.Context;
+        ApplicationDbContext db = fixture.Context;
 
-        var user = new User { Id = 600, Email = "rater@test.com", UserName = "rater", Nombre = "Rater", Apellidos = "User", Rol = "USER" };
-        var owner = new User { Id = 601, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "User", Rol = "USER" };
+        var user = new User {
+            Id = 600, Email = "rater@test.com", UserName = "rater", Nombre = "Rater", Apellidos = "User", Rol = "USER"
+        };
+        var owner = new User {
+            Id = 601, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "User", Rol = "USER"
+        };
 
         var product = new Product {
             Id = 601,
@@ -297,7 +102,7 @@ public class ProductIntegrationTests {
         db.Ratings.Add(rating);
         await db.SaveChangesAsync();
 
-        var ratings = await db.Ratings
+        List<Rating> ratings = await db.Ratings
             .Include(r => r.Usuario)
             .Where(r => r.ProductoId == 601)
             .ToListAsync();
@@ -307,24 +112,268 @@ public class ProductIntegrationTests {
     }
 
     #endregion
+
+    #region Create Product Tests
+
+    [Test]
+    public async Task CreateProduct_WithValidData_SavesToDatabase() {
+        await using var fixture = new IntegrationTestFixture();
+        ApplicationDbContext db = fixture.Context;
+
+        var user = new User
+            { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
+        db.Users.Add(user);
+
+        var product = new Product {
+            Nombre = "Test Product",
+            Descripcion = "A test product",
+            Precio = 99.99m,
+            Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1,
+            Deleted = false
+        };
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+
+        product.Id.Should().BeGreaterThan(0);
+        product.Nombre.Should().Be("Test Product");
+    }
+
+    [Test]
+    public async Task GetAllProducts_ReturnsOnlyNonDeleted() {
+        await using var fixture = new IntegrationTestFixture();
+        ApplicationDbContext db = fixture.Context;
+
+        var user = new User
+            { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        db.Products.AddRange(
+            new Product {
+                Nombre = "Active", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1,
+                Deleted = false
+            },
+            new Product {
+                Nombre = "Deleted", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1,
+                Deleted = true
+            }
+        );
+        await db.SaveChangesAsync();
+
+        List<Product> activeProducts = await db.Products
+            .Where(p => !p.Deleted && p.CompraId == null)
+            .ToListAsync();
+
+        activeProducts.Should().HaveCount(1);
+        activeProducts.First().Nombre.Should().Be("Active");
+    }
+
+    [Test]
+    public async Task DeleteProduct_SoftDeletes() {
+        await using var fixture = new IntegrationTestFixture();
+        ApplicationDbContext db = fixture.Context;
+
+        var user = new User
+            { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        var product = new Product {
+            Id = 100,
+            Nombre = "To Delete",
+            Descripcion = "Desc",
+            Precio = 100,
+            Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1,
+            Deleted = false
+        };
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+
+        Product? dbProduct = await db.Products.FindAsync(100L);
+        dbProduct!.SoftDelete("TestUser");
+        await db.SaveChangesAsync();
+
+        Product deleted = await db.Products.IgnoreQueryFilters().FirstAsync(p => p.Id == 100);
+        deleted.Deleted.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Product_Propietario_Relationship_Works() {
+        await using var fixture = new IntegrationTestFixture();
+        ApplicationDbContext db = fixture.Context;
+
+        var user = new User {
+            Id = 200, UserName = "owner", Email = "owner@test.com", Nombre = "Owner", Apellidos = "User", Rol = "USER"
+        };
+        var product = new Product {
+            Id = 200,
+            Nombre = "Owner Product",
+            Descripcion = "Desc",
+            Precio = 500,
+            Categoria = ProductCategory.LAPTOPS,
+            PropietarioId = 200,
+            Propietario = user,
+            Deleted = false
+        };
+        db.Users.Add(user);
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+
+        Product dbProduct = await db.Products
+            .Include(p => p.Propietario)
+            .FirstAsync(p => p.Id == 200);
+
+        dbProduct.Propietario.Should().NotBeNull();
+        dbProduct.Propietario!.Email.Should().Be("owner@test.com");
+    }
+
+    #endregion
+
+    #region Favorite Tests (With Include - SQLite supports this!)
+
+    [Test]
+    public async Task Favorite_AddAndQuery_Works() {
+        await using var fixture = new IntegrationTestFixture();
+        ApplicationDbContext db = fixture.Context;
+
+        var user = new User
+            { Id = 300, Email = "user@test.com", UserName = "user", Nombre = "User", Apellidos = "Test", Rol = "USER" };
+        var owner = new User {
+            Id = 301, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER"
+        };
+        var owner2 = new User {
+            Id = 302, Email = "owner2@test.com", UserName = "owner2", Nombre = "Owner2", Apellidos = "Test",
+            Rol = "USER"
+        };
+
+        var product1 = new Product {
+            Id = 301, Nombre = "P1", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 301,
+            Deleted = false
+        };
+        var product2 = new Product {
+            Id = 302, Nombre = "P2", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 302,
+            Deleted = false
+        };
+
+        db.Users.AddRange(user, owner, owner2);
+        db.Products.AddRange(product1, product2);
+        await db.SaveChangesAsync();
+
+        var favorite1 = new Favorite { UsuarioId = 300, ProductoId = 301 };
+        var favorite2 = new Favorite { UsuarioId = 300, ProductoId = 302 };
+        db.Favorites.AddRange(favorite1, favorite2);
+        await db.SaveChangesAsync();
+
+        List<Favorite> favorites = await db.Favorites
+            .Where(f => f.UsuarioId == 300)
+            .Include(f => f.Producto)
+            .ToListAsync();
+
+        favorites.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task GetUserFavoritesAsync_ReturnsProducts() {
+        await using var fixture = new IntegrationTestFixture();
+
+        var user = new User
+            { Id = 100, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
+        var owner1 = new User {
+            Id = 101, Email = "owner1@test.com", UserName = "owner1", Nombre = "Owner1", Apellidos = "Test",
+            Rol = "USER"
+        };
+        var owner2 = new User {
+            Id = 102, Email = "owner2@test.com", UserName = "owner2", Nombre = "Owner2", Apellidos = "Test",
+            Rol = "USER"
+        };
+
+        var product1 = new Product {
+            Id = 200, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 101, Deleted = false
+        };
+        var product2 = new Product {
+            Id = 201, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES,
+            PropietarioId = 102, Deleted = false
+        };
+
+        fixture.Context.Users.AddRange(user, owner1, owner2);
+        fixture.Context.Products.AddRange(product1, product2);
+        await fixture.Context.SaveChangesAsync();
+
+        var fav1 = new Favorite { UsuarioId = 100, ProductoId = 200 };
+        var fav2 = new Favorite { UsuarioId = 100, ProductoId = 201 };
+        fixture.Context.Favorites.AddRange(fav1, fav2);
+        await fixture.Context.SaveChangesAsync();
+
+        Result<IEnumerable<Product>, DomainError> result = await fixture.FavoriteService.GetUserFavoritesAsync(100);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task Carrito_AddItem_Works() {
+        await using var fixture = new IntegrationTestFixture();
+        ApplicationDbContext db = fixture.Context;
+
+        var user = new User
+            { Id = 400, Email = "user@test.com", UserName = "user", Nombre = "User", Apellidos = "Test", Rol = "USER" };
+        var owner = new User {
+            Id = 401, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER"
+        };
+
+        var product = new Product {
+            Id = 401,
+            Nombre = "Cart Product",
+            Precio = 300,
+            Categoria = ProductCategory.LAPTOPS,
+            PropietarioId = 401,
+            Deleted = false,
+            Reservado = false
+        };
+        db.Users.AddRange(user, owner);
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+
+        var cartItem = new CarritoItem {
+            UsuarioId = 400,
+            ProductoId = 401,
+            Precio = 300,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.CarritoItems.Add(cartItem);
+        await db.SaveChangesAsync();
+
+        List<CarritoItem> cartItems = await db.CarritoItems
+            .Include(c => c.Producto)
+            .Where(c => c.UsuarioId == 400)
+            .ToListAsync();
+
+        cartItems.Should().HaveCount(1);
+        cartItems.First().Precio.Should().Be(300);
+    }
+
+    #endregion
 }
 
 /// <summary>
-/// Fixture that creates an isolated SQLite database for each test.
-/// Automatically cleans up the database file when disposed.
+///     Fixture that creates an isolated SQLite database for each test.
+///     Automatically cleans up the database file when disposed.
 /// </summary>
 public class IntegrationTestFixture : IDisposable, IAsyncDisposable {
-    private readonly SqliteConnection _connection;
     public readonly ApplicationDbContext Context;
     public readonly FavoriteService FavoriteService;
+    private readonly SqliteConnection _connection;
     private bool _disposed;
 
     public IntegrationTestFixture() {
-        var dbPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.db");
+        string dbPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.db");
         _connection = new SqliteConnection($"Data Source={dbPath}");
         _connection.Open();
 
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(_connection)
             .Options;
 

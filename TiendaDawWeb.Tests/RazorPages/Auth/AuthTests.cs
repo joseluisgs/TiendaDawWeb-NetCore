@@ -1,16 +1,13 @@
 #nullable disable
 using FluentAssertions;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.RazorPages.Pages.Auth;
 using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.ViewModels;
 using TiendaDawWeb.Web.RazorPages.Pages.Auth;
 using IdentitySignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -20,7 +17,7 @@ public class AccessDeniedModelTests {
     [Test]
     public void OnGet_DoesNotThrow() {
         var model = new AccessDeniedModel();
-        var act = () => model.OnGet();
+        Action act = () => model.OnGet();
         act.Should().NotThrow();
     }
 
@@ -37,15 +34,17 @@ public class AccessDeniedModelTests {
 }
 
 public class LogoutModelTests {
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<LogoutModel>> _mockLogger;
+    private readonly Mock<SignInManager<User>> _mockSignInManager;
+    private readonly Mock<UserManager<User>> _mockUserManager;
 
     public LogoutModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
-            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!, null!);
+            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!,
+            null!);
         _mockLogger = new Mock<ILogger<LogoutModel>>();
     }
 
@@ -57,15 +56,17 @@ public class LogoutModelTests {
 }
 
 public class LoginModelTests {
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<LoginModel>> _mockLogger;
+    private readonly Mock<SignInManager<User>> _mockSignInManager;
+    private readonly Mock<UserManager<User>> _mockUserManager;
 
     public LoginModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
-            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!, null!);
+            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!,
+            null!);
         _mockLogger = new Mock<ILogger<LoginModel>>();
     }
 
@@ -109,7 +110,7 @@ public class LoginModelTests {
     [Test]
     public void OnGet_SetsReturnUrlToNull_WhenNullProvided() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
-        model.OnGet(null);
+        model.OnGet();
         model.ReturnUrl.Should().BeNull();
     }
 
@@ -118,7 +119,7 @@ public class LoginModelTests {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.ModelState.AddModelError("Error", "Invalid model");
 
-        var result = await model.OnPostAsync();
+        IActionResult result = await model.OnPostAsync();
 
         result.Should().BeOfType<PageResult>();
     }
@@ -132,7 +133,7 @@ public class LoginModelTests {
         model.Email = "test@example.com";
         model.Password = "password";
 
-        var result = await model.OnPostAsync();
+        IActionResult result = await model.OnPostAsync();
 
         result.Should().BeOfType<PageResult>();
         model.ModelState.Should().ContainKey(string.Empty);
@@ -144,7 +145,7 @@ public class LoginModelTests {
             .ReturnsAsync("{}");
 
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
-        var result = await model.OnPostPasskeyRequestOptionsAsync(null);
+        IActionResult result = await model.OnPostPasskeyRequestOptionsAsync(null);
 
         result.Should().BeOfType<ContentResult>();
         ((ContentResult)result).ContentType.Should().Be("application/json");
@@ -158,7 +159,7 @@ public class LoginModelTests {
             .ReturnsAsync("{}");
 
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
-        var result = await model.OnPostPasskeyRequestOptionsAsync("test@example.com");
+        IActionResult result = await model.OnPostPasskeyRequestOptionsAsync("test@example.com");
 
         result.Should().BeOfType<ContentResult>();
         _mockSignInManager.Verify(s => s.MakePasskeyRequestOptionsAsync(user), Times.Once);
@@ -170,9 +171,9 @@ public class LoginModelTests {
             .ReturnsAsync(IdentitySignInResult.Failed);
 
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
-        var result = await model.OnPostPasskeyAssertionAsync("credencial-mala");
+        IActionResult result = await model.OnPostPasskeyAssertionAsync("credencial-mala");
 
-        var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+        ObjectResult objectResult = result.Should().BeOfType<ObjectResult>().Subject;
         objectResult.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
     }
 
@@ -193,23 +194,25 @@ public class LoginModelTests {
         urlHelper.Setup(u => u.IsLocalUrl("/carrito")).Returns(true);
         model.Url = urlHelper.Object;
 
-        var result = await model.OnPostPasskeyAssertionAsync("credencial-valida", "/carrito");
+        IActionResult result = await model.OnPostPasskeyAssertionAsync("credencial-valida", "/carrito");
 
-        var json = result.Should().BeOfType<JsonResult>().Subject;
+        JsonResult json = result.Should().BeOfType<JsonResult>().Subject;
         json.Value!.ToString().Should().Contain("destino = /carrito");
     }
 }
 
 public class RegisterModelTests {
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<RegisterModel>> _mockLogger;
+    private readonly Mock<SignInManager<User>> _mockSignInManager;
+    private readonly Mock<UserManager<User>> _mockUserManager;
 
     public RegisterModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
-            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!, null!);
+            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!,
+            null!);
         _mockLogger = new Mock<ILogger<RegisterModel>>();
     }
 

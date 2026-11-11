@@ -1,22 +1,21 @@
 using System.Threading.Channels;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using TiendaDawWeb.Shared.Services.BackgroundServices;
 using TiendaDawWeb.Shared.Services.Email;
-using Result = CSharpFunctionalExtensions.Result;
 
 namespace TiendaDawWeb.Tests.Shared.Services.BackgroundServices;
 
 public class EmailBackgroundServiceTests {
+    private Channel<EmailMessage> _emailChannel = null!;
+    private Mock<IEmailService> _emailServiceMock = null!;
     private Mock<ILogger<EmailBackgroundService>> _loggerMock = null!;
     private Mock<IServiceProvider> _serviceProviderMock = null!;
-    private Mock<IServiceScope> _serviceScopeMock = null!;
     private Mock<IServiceScopeFactory> _serviceScopeFactoryMock = null!;
-    private Mock<IEmailService> _emailServiceMock = null!;
-    private Channel<EmailMessage> _emailChannel = null!;
+    private Mock<IServiceScope> _serviceScopeMock = null!;
 
     [SetUp]
     public void Setup() {
@@ -40,8 +39,7 @@ public class EmailBackgroundServiceTests {
     public void TearDown() {
         try {
             _emailChannel.Writer.Complete();
-        } catch {
-        }
+        } catch { }
     }
 
     [Test]

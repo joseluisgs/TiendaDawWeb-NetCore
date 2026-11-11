@@ -1,5 +1,4 @@
 using Microsoft.Playwright;
-using NUnit.Framework;
 
 namespace TiendaDawWeb.Tests.E2E.Security;
 
@@ -15,12 +14,12 @@ namespace TiendaDawWeb.Tests.E2E.Security;
 public class SecurityHeadersTests : E2ETestBase {
     [Test]
     public async Task Home_LlevaContentSecurityPolicy() {
-        var respuesta = await Page.GotoAsync($"{BaseTestUrl}/");
+        IResponse? respuesta = await Page.GotoAsync($"{BaseTestUrl}/");
 
         Assert.That(respuesta, Is.Not.Null);
         Assert.That(respuesta!.Status, Is.EqualTo(200));
 
-        var csp = respuesta.Headers.GetValueOrDefault("content-security-policy");
+        string? csp = respuesta.Headers.GetValueOrDefault("content-security-policy");
         Assert.That(csp, Is.Not.Null, "falta Content-Security-Policy");
         Assert.That(csp, Does.Contain("default-src 'self'"));
         Assert.That(csp, Does.Contain("frame-ancestors 'none'"));
@@ -28,7 +27,7 @@ public class SecurityHeadersTests : E2ETestBase {
 
     [Test]
     public async Task Home_NoEnviaXssProtection() {
-        var respuesta = await Page.GotoAsync($"{BaseTestUrl}/");
+        IResponse? respuesta = await Page.GotoAsync($"{BaseTestUrl}/");
 
         Assert.That(respuesta, Is.Not.Null);
         Assert.That(respuesta!.Headers.ContainsKey("x-xss-protection"), Is.False,

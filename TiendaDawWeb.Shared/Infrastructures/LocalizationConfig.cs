@@ -1,16 +1,13 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Configuración de localización y culturas soportadas.
+///     Configuración de localización y culturas soportadas.
 /// </summary>
 public static class LocalizationConfig {
     /// <summary>
-    /// Configura la localización con recursos RESX.
+    ///     Configura la localización con recursos RESX.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <returns>IServiceCollection.</returns>
@@ -25,12 +22,12 @@ public static class LocalizationConfig {
     }
 
     /// <summary>
-    /// Configura las culturas soportadas y el middleware de localización.
+    ///     Configura las culturas soportadas y el middleware de localización.
     /// </summary>
     /// <param name="app">Application builder.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseAppLocalization(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) {
-        var supportedCultures = new[] {
+    public static IApplicationBuilder UseAppLocalization(this IApplicationBuilder app) {
+        CultureInfo[] supportedCultures = new[] {
             new CultureInfo("es-ES"),
             new CultureInfo("en-US"),
             new CultureInfo("fr-FR"),

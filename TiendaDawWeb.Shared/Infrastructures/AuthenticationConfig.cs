@@ -1,19 +1,16 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Configuración de autenticación y autorización con ASP.NET Core Identity.
+///     Configuración de autenticación y autorización con ASP.NET Core Identity.
 /// </summary>
 public static class AuthenticationConfig {
     /// <summary>
-    /// Configura Identity con cookies de autenticación.
+    ///     Configura Identity con cookies de autenticación.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <param name="configuration">Configuración de la aplicación.</param>
@@ -22,27 +19,27 @@ public static class AuthenticationConfig {
         Log.Information("🔐 Configurando ASP.NET Core Identity...");
 
         services.AddIdentity<User, IdentityRole<long>>(options => {
-            // 🛡️ Esquema 3: añade la tabla AspNetUserPasskeys. Sin esta línea Identity
-            // crea el esquema antiguo y guardar una passkey falla al escribir.
-            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+                // 🛡️ Esquema 3: añade la tabla AspNetUserPasskeys. Sin esta línea Identity
+                // crea el esquema antiguo y guardar una passkey falla al escribir.
+                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
 
-            // 🛡️ Password policy: mínimo razonable para proyecto educativo
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 8;
-            options.User.RequireUniqueEmail = true;
-            options.SignIn.RequireConfirmedEmail = false;
-            options.SignIn.RequireConfirmedPhoneNumber = false;
+                // 🛡️ Password policy: mínimo razonable para proyecto educativo
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 8;
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
 
-            // 🛡️ Lockout por fuerza bruta: 5 intentos fallidos → bloqueo 15 min
-            options.Lockout.AllowedForNewUsers = true;
-            options.Lockout.MaxFailedAccessAttempts = 5;
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-        })
-        .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders();
+                // 🛡️ Lockout por fuerza bruta: 5 intentos fallidos → bloqueo 15 min
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
         Log.Information("🔐 Configurando cookies de autenticación...");
 

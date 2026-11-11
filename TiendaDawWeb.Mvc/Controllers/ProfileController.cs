@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Storage;
 
@@ -24,8 +26,10 @@ public class ProfileController(
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         // Cargar las colecciones necesarias para la vista
         await context.Entry(user)
@@ -46,8 +50,10 @@ public class ProfileController(
     /// </summary>
     [HttpGet("editar")]
     public async Task<IActionResult> Edit() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         return View(user);
     }
@@ -58,8 +64,10 @@ public class ProfileController(
     [HttpPost("editar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(string nombre, string apellidos, IFormFile? avatar) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellidos)) {
             TempData["Error"] = "El nombre y apellidos son obligatorios";
@@ -79,17 +87,20 @@ public class ProfileController(
             }
 
             // Validar tipo de archivo
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+            string[] allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
             if (!allowedTypes.Contains(avatar.ContentType.ToLower())) {
                 TempData["Error"] = "Solo se permiten imágenes (JPG, PNG, GIF)";
                 return View(user);
             }
 
             // Guardar la imagen usando el servicio de storage (Result pattern)
-            var result = await storageService.SaveFileAsync(avatar, "avatars");
+            Result<string, DomainError> result = await storageService.SaveFileAsync(avatar, "avatars");
             if (result.IsSuccess) {
                 // Eliminar avatar anterior si existe
-                if (!string.IsNullOrEmpty(user.Avatar)) await storageService.DeleteFileAsync(user.Avatar);
+                if (!string.IsNullOrEmpty(user.Avatar)) {
+                    await storageService.DeleteFileAsync(user.Avatar);
+                }
+
                 user.Avatar = result.Value;
             } else {
                 TempData["Error"] = "Error al guardar el avatar: " + result.Error.Message;
@@ -98,7 +109,7 @@ public class ProfileController(
         }
 
         // Actualizar usuario
-        var updateResult = await userManager.UpdateAsync(user);
+        IdentityResult updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded) {
             logger.LogInformation("Perfil actualizado para usuario {UserId}", user.Id);
             TempData["Success"] = "Perfil actualizado correctamente";
@@ -116,8 +127,10 @@ public class ProfileController(
     [HttpPost("eliminar-avatar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteAvatar() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         if (!string.IsNullOrEmpty(user.Avatar)) {
             await storageService.DeleteFileAsync(user.Avatar);
@@ -146,8 +159,10 @@ public class ProfileController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult>
         ChangePassword(string currentPassword, string newPassword, string confirmPassword) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)) {
             TempData["Error"] = "Todos los campos son obligatorios";
@@ -164,7 +179,7 @@ public class ProfileController(
             return View();
         }
 
-        var changeResult = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        IdentityResult changeResult = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         if (changeResult.Succeeded) {
             logger.LogInformation("Contraseña cambiada para usuario {UserId}", user.Id);
             TempData["Success"] = "Contraseña cambiada correctamente";
@@ -184,10 +199,12 @@ public class ProfileController(
     /// <returns>Vista con las passkeys guardadas en la cuenta.</returns>
     [HttpGet("passkeys")]
     public async Task<IActionResult> Passkeys() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var passkeys = await userManager.GetPasskeysAsync(user);
+        IList<UserPasskeyInfo> passkeys = await userManager.GetPasskeysAsync(user);
         return View(passkeys.ToList());
     }
 
@@ -200,12 +217,14 @@ public class ProfileController(
     [HttpPost("passkeys/crear-opciones")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PasskeyCreationOptions() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return NotFound();
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return NotFound();
+        }
 
-        var nombre = user.UserName ?? user.Email ?? "usuario";
+        string nombre = user.UserName ?? user.Email ?? "usuario";
 
-        var opciones = await signInManager.MakePasskeyCreationOptionsAsync(new PasskeyUserEntity {
+        string opciones = await signInManager.MakePasskeyCreationOptionsAsync(new PasskeyUserEntity {
             Id = await userManager.GetUserIdAsync(user),
             Name = nombre,
             DisplayName = nombre
@@ -225,10 +244,12 @@ public class ProfileController(
     [HttpPost("passkeys/atestacion")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PasskeyAttestation(string credential) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return NotFound();
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return NotFound();
+        }
 
-        var result = await signInManager.PerformPasskeyAttestationAsync(credential);
+        PasskeyAttestationResult result = await signInManager.PerformPasskeyAttestationAsync(credential);
         if (!result.Succeeded) {
             return StatusCode(StatusCodes.Status400BadRequest, new {
                 ok = false,
@@ -236,7 +257,7 @@ public class ProfileController(
             });
         }
 
-        var userId = await userManager.GetUserIdAsync(user);
+        string userId = await userManager.GetUserIdAsync(user);
         if (!string.Equals(result.UserEntity?.Id, userId, StringComparison.Ordinal)) {
             return StatusCode(StatusCodes.Status400BadRequest, new {
                 ok = false,
@@ -244,7 +265,7 @@ public class ProfileController(
             });
         }
 
-        var guardado = await userManager.AddOrUpdatePasskeyAsync(user, result.Passkey);
+        IdentityResult guardado = await userManager.AddOrUpdatePasskeyAsync(user, result.Passkey);
         if (!guardado.Succeeded) {
             return StatusCode(StatusCodes.Status400BadRequest, new {
                 ok = false,
@@ -266,18 +287,21 @@ public class ProfileController(
     [HttpPost("passkeys/eliminar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PasskeyEliminar(string id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         try {
-            var credencial = DeBase64Url(id);
-            var result = await userManager.RemovePasskeyAsync(user, credencial);
+            byte[] credencial = DeBase64Url(id);
+            IdentityResult result = await userManager.RemovePasskeyAsync(user, credencial);
             TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
                 ? "Passkey eliminada"
                 : "No se pudo eliminar la passkey";
 
-            if (result.Succeeded)
+            if (result.Succeeded) {
                 logger.LogInformation("Passkey eliminada para usuario {UserId}", user.Id);
+            }
         } catch (FormatException) {
             TempData["Error"] = "El identificador de la passkey no es válido";
         }
@@ -287,8 +311,8 @@ public class ProfileController(
 
     /// <summary>De base64url (WebAuthn) a los bytes que guarda Identity.</summary>
     private static byte[] DeBase64Url(string id) {
-        var base64 = id.Replace('-', '+').Replace('_', '/');
-        base64 = base64.PadRight(base64.Length + ((4 - (base64.Length % 4)) % 4), '=');
+        string base64 = id.Replace('-', '+').Replace('_', '/');
+        base64 = base64.PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
         return Convert.FromBase64String(base64);
     }
 }

@@ -1,21 +1,6 @@
 #nullable disable
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.WebUtilities;
-using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.RazorPages.Pages.Product;
-using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Carrito;
-using TiendaDawWeb.Shared.Services.Favorite;
-using TiendaDawWeb.Shared.Services.Product;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.Tests.RazorPages.Product;

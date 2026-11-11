@@ -17,7 +17,7 @@ public class UserMapperTests {
             Avatar = null
         };
 
-        var result = model.ToEntity();
+        User result = model.ToEntity();
 
         result.UserName.Should().Be("juan@example.com");
         result.Email.Should().Be("juan@example.com");
@@ -39,7 +39,7 @@ public class UserMapperTests {
             Avatar = "https://custom.com/avatar.jpg"
         };
 
-        var result = model.ToEntity();
+        User result = model.ToEntity();
 
         result.Avatar.Should().Be("https://custom.com/avatar.jpg");
     }
@@ -55,7 +55,7 @@ public class UserMapperTests {
             Avatar = null
         };
 
-        var result = model.ToEntity();
+        User result = model.ToEntity();
 
         result.Avatar.Should().Be($"https://robohash.org/{model.Email}?size=150x150");
     }
@@ -71,7 +71,7 @@ public class RatingMapperTests {
             ProductoId = 100
         };
 
-        var result = rating.ToViewModel();
+        RatingViewModel result = rating.ToViewModel();
 
         result.Puntuacion.Should().Be(5);
         result.Comentario.Should().Be("Excellent product!");
@@ -87,7 +87,7 @@ public class RatingMapperTests {
             ProductoId = 100
         };
 
-        var result = rating.ToViewModel();
+        RatingViewModel result = rating.ToViewModel();
 
         result.Puntuacion.Should().Be(3);
         result.Comentario.Should().BeNull();
@@ -101,7 +101,7 @@ public class RatingMapperTests {
             ProductoId = 200
         };
 
-        var result = model.ToEntity(usuarioId: 50);
+        Rating result = model.ToEntity(50);
 
         result.Puntuacion.Should().Be(4);
         result.Comentario.Should().Be("Good quality");
@@ -117,7 +117,7 @@ public class RatingMapperTests {
             ProductoId = 100
         };
 
-        var result = model.ToEntity(usuarioId: 1);
+        Rating result = model.ToEntity(1);
 
         result.Comentario.Should().BeNull();
         result.Puntuacion.Should().Be(5);

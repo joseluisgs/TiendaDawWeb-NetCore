@@ -14,8 +14,10 @@ public class ErrorController(
     [Route("Error/{statusCode}")]
     public IActionResult Index(int? statusCode = null) {
         // Si no viene statusCode, es una excepción (500)
-        var code = statusCode ?? HttpContext.Response.StatusCode;
-        if (code == 200) code = 500; // Si llegamos aquí por exception handler
+        int code = statusCode ?? HttpContext.Response.StatusCode;
+        if (code == 200) {
+            code = 500; // Si llegamos aquí por exception handler
+        }
 
         var model = new ErrorViewModel {
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,

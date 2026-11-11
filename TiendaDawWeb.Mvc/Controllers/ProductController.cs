@@ -1,13 +1,15 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using TiendaDawWeb.Shared.Errors;
+using TiendaDawWeb.Shared.Mappers;
 using TiendaDawWeb.Shared.Models;
+using TiendaDawWeb.Shared.Services.Favorite;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Storage;
-using TiendaDawWeb.Shared.Services.Favorite;
 using TiendaDawWeb.Shared.ViewModels;
-using TiendaDawWeb.Shared.Mappers;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -29,7 +31,7 @@ public class ProductController(
     ///     Listado de productos (vista autenticada)
     /// </summary>
     public async Task<IActionResult> Index() {
-        var result = await productService.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await productService.GetAllAsync();
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar los productos";
@@ -38,9 +40,10 @@ public class ProductController(
 
         // Obtener IDs de favoritos si el usuario está autenticado
         if (User.Identity?.IsAuthenticated == true) {
-            var user = await userManager.GetUserAsync(User);
+            User? user = await userManager.GetUserAsync(User);
             if (user != null) {
-                var favoritesResult = await favoriteService.GetUserFavoritesAsync(user.Id);
+                Result<IEnumerable<Product>, DomainError> favoritesResult =
+                    await favoriteService.GetUserFavoritesAsync(user.Id);
                 if (favoritesResult.IsSuccess) {
                     ViewBag.FavoriteIds = favoritesResult.Value.Select(p => p.Id).ToList();
                 }
@@ -56,7 +59,7 @@ public class ProductController(
     [AllowAnonymous]
     [OutputCache(Duration = 600, Tags = new[] { "productos" })]
     public async Task<IActionResult> Details(long id) {
-        var result = await productService.GetByIdAsync(id);
+        Result<Product, DomainError> result = await productService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
@@ -65,9 +68,9 @@ public class ProductController(
 
         // Verificar si es favorito para el usuario actual
         if (User.Identity?.IsAuthenticated == true) {
-            var user = await userManager.GetUserAsync(User);
+            User? user = await userManager.GetUserAsync(User);
             if (user != null) {
-                var favoriteResult = await favoriteService.IsFavoriteAsync(user.Id, id);
+                Result<bool, DomainError> favoriteResult = await favoriteService.IsFavoriteAsync(user.Id, id);
                 ViewBag.IsFavorite = favoriteResult.IsSuccess && favoriteResult.Value;
             }
         } else {
@@ -91,22 +94,27 @@ public class ProductController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ProductViewModel model) {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid) {
             return View(model);
+        }
 
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         string? imagenUrl = null;
         if (model.ImagenFile != null) {
-            var saveResult = await storageService.SaveFileAsync(model.ImagenFile, "products");
-            if (saveResult.IsSuccess) imagenUrl = saveResult.Value;
+            Result<string, DomainError> saveResult = await storageService.SaveFileAsync(model.ImagenFile, "products");
+            if (saveResult.IsSuccess) {
+                imagenUrl = saveResult.Value;
+            }
         }
 
         // 🧹 REFACTOR: Usamos el Mapper para construir la entidad (sin ID para crear)
-        var product = model.ToEntity(user.Id, imagenUrl);
+        Product product = model.ToEntity(user.Id, imagenUrl);
 
-        var result = await productService.CreateAsync(product);
+        Result<Product, DomainError> result = await productService.CreateAsync(product);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
@@ -125,15 +133,15 @@ public class ProductController(
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> Edit(long id) {
-        var result = await productService.GetByIdAsync(id);
+        Result<Product, DomainError> result = await productService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
             return RedirectToAction("Index", "Public");
         }
 
-        var product = result.Value;
-        var user = await userManager.GetUserAsync(User);
+        Product product = result.Value;
+        User? user = await userManager.GetUserAsync(User);
 
         if (user == null || product.PropietarioId != user.Id) {
             TempData["Error"] = "No tienes permiso para editar este producto";
@@ -155,22 +163,27 @@ public class ProductController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(long id, ProductViewModel model) {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid) {
             return View(model);
+        }
 
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var imagenUrl = model.ImagenUrl;
+        string? imagenUrl = model.ImagenUrl;
         if (model.ImagenFile != null) {
-            var saveResult = await storageService.SaveFileAsync(model.ImagenFile, "products");
-            if (saveResult.IsSuccess) imagenUrl = saveResult.Value;
+            Result<string, DomainError> saveResult = await storageService.SaveFileAsync(model.ImagenFile, "products");
+            if (saveResult.IsSuccess) {
+                imagenUrl = saveResult.Value;
+            }
         }
 
         // 🧹 REFACTOR: Usamos el Mapper para construir la entidad actualizada (con ID)
-        var product = model.ToEntity(user.Id, imagenUrl, includeId: true);
+        Product product = model.ToEntity(user.Id, imagenUrl, true);
 
-        var result = await productService.UpdateAsync(id, product, user.Id);
+        Result<Product, DomainError> result = await productService.UpdateAsync(id, product, user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
@@ -190,16 +203,18 @@ public class ProductController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var productResult = await productService.GetByIdAsync(id);
+        Result<Product, DomainError> productResult = await productService.GetByIdAsync(id);
         if (productResult.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
             return RedirectToAction(nameof(MyProducts));
         }
 
-        var product = productResult.Value;
+        Product product = productResult.Value;
         if (product.PropietarioId != user.Id && !User.IsInRole("ADMIN")) {
             TempData["Error"] = "No tienes permiso para eliminar este producto";
             return RedirectToAction(nameof(MyProducts));
@@ -210,7 +225,7 @@ public class ProductController(
             return RedirectToAction(nameof(MyProducts));
         }
 
-        var result = await productService.DeleteAsync(id, user.Id, User.IsInRole("ADMIN"));
+        Result<bool, DomainError> result = await productService.DeleteAsync(id, user.Id, User.IsInRole("ADMIN"));
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
@@ -227,14 +242,18 @@ public class ProductController(
     ///     Mis productos
     /// </summary>
     public async Task<IActionResult> MyProducts() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await productService.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await productService.GetAllAsync();
 
-        if (result.IsFailure) return View(Enumerable.Empty<Product>());
+        if (result.IsFailure) {
+            return View(Enumerable.Empty<Product>());
+        }
 
-        var myProducts = result.Value.Where(p => p.PropietarioId == user.Id);
+        IEnumerable<Product> myProducts = result.Value.Where(p => p.PropietarioId == user.Id);
         return View(myProducts);
     }
 }

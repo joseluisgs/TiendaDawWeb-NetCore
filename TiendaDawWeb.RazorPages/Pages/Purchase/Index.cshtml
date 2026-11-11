@@ -1,6 +1,5 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Purchase.IndexModel
-@using System.Globalization
 @{
     ViewData["Title"] = "Mis Compras";
 }
@@ -10,8 +9,7 @@
         <i class="bi bi-bag-check"></i> Mis Compras
     </h1>
 
-    @if (!Model.Purchases.Any())
-    {
+    @if (!Model.Purchases.Any()) {
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="bi bi-bag-x fs-1 text-muted"></i>
@@ -23,11 +21,9 @@
             </div>
         </div>
     }
-    else
-    {
+    else {
         <div class="row">
-            @foreach (var purchase in Model.Purchases)
-            {
+            @foreach (var purchase in Model.Purchases) {
                 <div class="col-md-12 mb-4">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -50,12 +46,11 @@
                                         <i class="bi bi-box-seam"></i> Productos (@purchase.Products.Count)
                                     </h6>
                                     <div class="row">
-                                        @foreach (var product in purchase.Products.Take(3))
-                                        {
+                                        @foreach (var product in purchase.Products.Take(3)) {
                                             <div class="col-md-4 mb-2">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="@product.ImagenOrDefault" 
-                                                         alt="@product.Nombre" 
+                                                    <img src="@product.ImagenOrDefault"
+                                                         alt="@product.Nombre"
                                                          class="rounded me-2"
                                                          style="width: 50px; height: 50px; object-fit: cover;">
                                                     <div>
@@ -65,8 +60,7 @@
                                                 </div>
                                             </div>
                                         }
-                                        @if (purchase.Products.Count > 3)
-                                        {
+                                        @if (purchase.Products.Count > 3) {
                                             <div class="col-md-12">
                                                 <small class="text-muted">
                                                     y @(purchase.Products.Count - 3) producto(s) más...
@@ -78,13 +72,13 @@
                                 <div class="col-md-4 text-end">
                                     <h6 class="text-muted mb-2">Total Pagado</h6>
                                     <h3 class="text-success mb-3">@purchase.Total.ToString("C", new CultureInfo("es-ES"))</h3>
-                                    
+
                                     <div class="d-grid gap-2">
-                                        <a asp-page="/Purchase/Details" asp-route-id="@purchase.Id" 
+                                        <a asp-page="/Purchase/Details" asp-route-id="@purchase.Id"
                                            class="btn btn-primary btn-sm">
                                             <i class="bi bi-eye"></i> Ver Detalles
                                         </a>
-                                        <a asp-page="/Purchase/DownloadPdf" asp-route-id="@purchase.Id" 
+                                        <a asp-page="/Purchase/DownloadPdf" asp-route-id="@purchase.Id"
                                            class="btn btn-outline-secondary btn-sm">
                                             <i class="bi bi-file-pdf"></i> Descargar PDF
                                         </a>
@@ -98,12 +92,10 @@
         </div>
 
         <!-- Paginación -->
-        @if (ViewBag.CurrentPage != null)
-        {
+        @if (ViewBag.CurrentPage != null) {
             <nav aria-label="Navegación de compras">
                 <ul class="pagination justify-content-center">
-                    @if (ViewBag.CurrentPage > 1)
-                    {
+                    @if (ViewBag.CurrentPage > 1) {
                         <li class="page-item">
                             <a class="page-link" asp-page="/Purchase/Index" asp-route-page="@(ViewBag.CurrentPage - 1)">
                                 Anterior
@@ -113,8 +105,7 @@
                     <li class="page-item active">
                         <span class="page-link">@ViewBag.CurrentPage</span>
                     </li>
-                    @if (Model.Purchases.Count() >= 10)
-                    {
+                    @if (Model.Purchases.Count() >= 10) {
                         <li class="page-item">
                             <a class="page-link" asp-page="/Purchase/Index" asp-route-page="@(ViewBag.CurrentPage + 1)">
                                 Siguiente

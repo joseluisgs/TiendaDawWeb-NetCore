@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 
@@ -20,12 +21,12 @@ public class CartCountController(
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetCartCount() {
-        var user = await userManager.GetUserAsync(User);
+        User? user = await userManager.GetUserAsync(User);
         if (user == null) {
             return Ok(new { count = 0 });
         }
 
-        var result = await carritoService.GetCarritoCountAsync(user.Id);
+        Result<int, DomainError> result = await carritoService.GetCarritoCountAsync(user.Id);
 
         return Ok(new {
             count = result.IsSuccess ? result.Value : 0

@@ -4,8 +4,8 @@ using TiendaDawWeb.Shared.ViewModels;
 namespace TiendaDawWeb.Shared.Validators;
 
 /// <summary>
-/// Validador FluentValidation para el registro de usuarios.
-/// Reglas de cascada: si un campo falla, los dependientes también.
+///     Validador FluentValidation para el registro de usuarios.
+///     Reglas de cascada: si un campo falla, los dependientes también.
 /// </summary>
 public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel> {
     public RegisterViewModelValidator() {

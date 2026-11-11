@@ -1,27 +1,28 @@
-using Microsoft.AspNetCore.Builder;
-using Serilog;
-
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Extension methods para inicialización del directorio de almacenamiento.
+///     Extension methods para inicialización del directorio de almacenamiento.
 /// </summary>
 public static class StorageInitializationExtensions {
     /// <summary>
-    /// Inicializa el directorio de almacenamiento de archivos.
+    ///     Inicializa el directorio de almacenamiento de archivos.
     /// </summary>
     public static void InitializeStorage(this WebApplication app, bool isDevelopment) {
-        var storagePath = System.IO.Path.Combine(app.Environment.WebRootPath, "uploads");
-        var storageDirectory = new System.IO.DirectoryInfo(storagePath);
+        string storagePath = Path.Combine(app.Environment.WebRootPath, "uploads");
+        var storageDirectory = new DirectoryInfo(storagePath);
 
         if (isDevelopment) {
             Log.Information("🖼️ [DESARROLLO] Preparando directorio de almacenamiento: {Path}", storagePath);
             try {
                 if (storageDirectory.Exists) {
-                    foreach (var file in storageDirectory.GetFiles())
+                    foreach (FileInfo file in storageDirectory.GetFiles()) {
                         file.Delete();
-                    foreach (var dir in storageDirectory.GetDirectories())
+                    }
+
+                    foreach (DirectoryInfo dir in storageDirectory.GetDirectories()) {
                         dir.Delete(true);
+                    }
+
                     Log.Information("✅ Contenido del directorio borrado");
                 }
 

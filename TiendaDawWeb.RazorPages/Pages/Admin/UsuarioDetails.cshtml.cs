@@ -26,7 +26,7 @@ public class UsuarioDetailsModel(
     /// <param name="id">ID del usuario</param>
     /// <returns>Vista con los detalles del usuario</returns>
     public async Task<IActionResult> OnGetAsync(long id) {
-        var usuario = await context.Users
+        User? usuario = await context.Users
             .Include(u => u.Products)
             .Include(u => u.Purchases)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -36,7 +36,7 @@ public class UsuarioDetailsModel(
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var roles = await userManager.GetRolesAsync(usuario);
+        IList<string> roles = await userManager.GetRolesAsync(usuario);
         ViewData["Roles"] = roles.ToList();
 
         Usuario = usuario;
@@ -50,7 +50,7 @@ public class UsuarioDetailsModel(
     /// <param name="nuevoRol">Nuevo rol a asignar</param>
     /// <returns>Redirect a los detalles del usuario</returns>
     public async Task<IActionResult> OnPostCambiarRolAsync(long id, string nuevoRol) {
-        var usuario = await userManager.FindByIdAsync(id.ToString());
+        User? usuario = await userManager.FindByIdAsync(id.ToString());
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
             return RedirectToPage("/Admin/Usuarios");
@@ -61,10 +61,10 @@ public class UsuarioDetailsModel(
             return RedirectToPage("/Admin/UsuarioDetails", new { id });
         }
 
-        var rolesActuales = await userManager.GetRolesAsync(usuario);
+        IList<string> rolesActuales = await userManager.GetRolesAsync(usuario);
         await userManager.RemoveFromRolesAsync(usuario, rolesActuales);
 
-        var result = await userManager.AddToRoleAsync(usuario, nuevoRol);
+        IdentityResult result = await userManager.AddToRoleAsync(usuario, nuevoRol);
 
         if (result.Succeeded) {
             logger.LogInformation("Rol de usuario {UserId} cambiado a {Role}", id, nuevoRol);
@@ -82,13 +82,13 @@ public class UsuarioDetailsModel(
     /// <param name="id">ID del usuario a eliminar</param>
     /// <returns>Redirect a la lista de usuarios</returns>
     public async Task<IActionResult> OnPostEliminarAsync(long id) {
-        var usuario = await context.Users.FindAsync(id);
+        User? usuario = await context.Users.FindAsync(id);
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var hasProductosActivos = await context.Products
+        bool hasProductosActivos = await context.Products
             .IgnoreQueryFilters()
             .Where(p => p.PropietarioId == id && !p.Deleted && p.CompraId == null)
             .AnyAsync();
@@ -99,7 +99,7 @@ public class UsuarioDetailsModel(
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var hasProductosVendidos = await context.Products
+        bool hasProductosVendidos = await context.Products
             .IgnoreQueryFilters()
             .Where(p => p.PropietarioId == id && p.CompraId != null)
             .AnyAsync();
@@ -110,7 +110,7 @@ public class UsuarioDetailsModel(
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var hasCompras = await context.Purchases
+        bool hasCompras = await context.Purchases
             .AnyAsync(p => p.CompradorId == id);
 
         if (hasCompras) {
@@ -122,7 +122,7 @@ public class UsuarioDetailsModel(
         usuario.Deleted = true;
         usuario.DeletedAt = DateTime.UtcNow;
 
-        var adminUser = await userManager.GetUserAsync(User);
+        User? adminUser = await userManager.GetUserAsync(User);
         usuario.DeletedBy = adminUser?.Id.ToString();
 
         await context.SaveChangesAsync();

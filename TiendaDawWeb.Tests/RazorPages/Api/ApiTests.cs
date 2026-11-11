@@ -1,12 +1,14 @@
 #nullable disable
+using System.Security.Claims;
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.RazorPages.Pages.Api;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Favorite;
@@ -24,7 +26,8 @@ public class ApiCartCountModelTests {
         _mockCarritoService = new Mock<ICarritoService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -51,7 +54,7 @@ public class ApiCartCountModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<JsonResult>();
     }
@@ -63,9 +66,9 @@ public class ApiCartCountModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
         _mockCarritoService.Setup(s => s.GetCarritoCountAsync(user.Id))
-            .ReturnsAsync(CSharpFunctionalExtensions.Result.Success<int, TiendaDawWeb.Shared.Errors.DomainError>(5));
+            .ReturnsAsync(Result.Success<int, DomainError>(5));
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<JsonResult>();
     }
@@ -81,7 +84,8 @@ public class ApiRatingsModelTests {
         _mockRatingService = new Mock<IRatingService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -114,7 +118,8 @@ public class ApiFavoritesModelTests {
         _mockFavoriteService = new Mock<IFavoriteService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")

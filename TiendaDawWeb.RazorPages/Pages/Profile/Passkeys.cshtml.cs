@@ -30,8 +30,10 @@ public class PasskeysModel(
     /// </summary>
     /// <returns>La propia página, o 302 al acceso si la cookie ya no vale.</returns>
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         Passkeys = (await userManager.GetPasskeysAsync(user)).ToList();
         return Page();
@@ -42,12 +44,14 @@ public class PasskeysModel(
     /// </summary>
     /// <returns>JSON con las opciones para navigator.credentials.create().</returns>
     public async Task<IActionResult> OnPostCreationOptionsAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return NotFound();
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return NotFound();
+        }
 
-        var nombre = user.UserName ?? user.Email ?? "usuario";
+        string nombre = user.UserName ?? user.Email ?? "usuario";
 
-        var opciones = await signInManager.MakePasskeyCreationOptionsAsync(new PasskeyUserEntity {
+        string opciones = await signInManager.MakePasskeyCreationOptionsAsync(new PasskeyUserEntity {
             Id = await userManager.GetUserIdAsync(user),
             Name = nombre,
             DisplayName = nombre
@@ -64,10 +68,12 @@ public class PasskeysModel(
     /// <param name="credential">Credencial devuelta por el navegador, en JSON.</param>
     /// <returns>JSON con ok y, si falla, el motivo.</returns>
     public async Task<IActionResult> OnPostAttestationAsync(string credential) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return NotFound();
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return NotFound();
+        }
 
-        var result = await signInManager.PerformPasskeyAttestationAsync(credential);
+        PasskeyAttestationResult result = await signInManager.PerformPasskeyAttestationAsync(credential);
         if (!result.Succeeded) {
             return StatusCode(StatusCodes.Status400BadRequest, new {
                 ok = false,
@@ -75,7 +81,7 @@ public class PasskeysModel(
             });
         }
 
-        var userId = await userManager.GetUserIdAsync(user);
+        string userId = await userManager.GetUserIdAsync(user);
         if (!string.Equals(result.UserEntity?.Id, userId, StringComparison.Ordinal)) {
             return StatusCode(StatusCodes.Status400BadRequest, new {
                 ok = false,
@@ -83,7 +89,7 @@ public class PasskeysModel(
             });
         }
 
-        var guardado = await userManager.AddOrUpdatePasskeyAsync(user, result.Passkey);
+        IdentityResult guardado = await userManager.AddOrUpdatePasskeyAsync(user, result.Passkey);
         if (!guardado.Succeeded) {
             return StatusCode(StatusCodes.Status400BadRequest, new {
                 ok = false,
@@ -102,18 +108,21 @@ public class PasskeysModel(
     /// <param name="id">Identificador de la credencial en base64url.</param>
     /// <returns>302 a la propia página con el aviso en TempData.</returns>
     public async Task<IActionResult> OnPostEliminarAsync(string id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         try {
-            var credencial = DeBase64Url(id);
-            var result = await userManager.RemovePasskeyAsync(user, credencial);
+            byte[] credencial = DeBase64Url(id);
+            IdentityResult result = await userManager.RemovePasskeyAsync(user, credencial);
             TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
                 ? "Passkey eliminada"
                 : "No se pudo eliminar la passkey";
 
-            if (result.Succeeded)
+            if (result.Succeeded) {
                 logger.LogInformation("Passkey eliminada para usuario {UserId}", user.Id);
+            }
         } catch (FormatException) {
             TempData["Error"] = "El identificador de la passkey no es válido";
         }
@@ -123,8 +132,8 @@ public class PasskeysModel(
 
     /// <summary>De base64url (WebAuthn) a los bytes que guarda Identity.</summary>
     private static byte[] DeBase64Url(string id) {
-        var base64 = id.Replace('-', '+').Replace('_', '/');
-        base64 = base64.PadRight(base64.Length + ((4 - (base64.Length % 4)) % 4), '=');
+        string base64 = id.Replace('-', '+').Replace('_', '/');
+        base64 = base64.PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
         return Convert.FromBase64String(base64);
     }
 }

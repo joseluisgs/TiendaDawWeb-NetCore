@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.RazorPages.Pages.Auth;
 
@@ -19,13 +17,13 @@ public class ExternalModel(
     ///     Inicia login externo: redirige al proveedor OAuth.
     /// </summary>
     public async Task<IActionResult> OnGetAsync(string provider, string? returnUrl = null) {
-        var scheme = await schemeProvider.GetSchemeAsync(provider);
+        AuthenticationScheme? scheme = await schemeProvider.GetSchemeAsync(provider);
         if (scheme is null) {
             logger.LogWarning("Proveedor OAuth no configurado: {Provider}", provider);
             return NotFound($"Proveedor '{provider}' no está configurado");
         }
 
-        var redirectUrl = Url.Page("/Auth/ExternalCallback", new { returnUrl });
+        string? redirectUrl = Url.Page("/Auth/ExternalCallback", new { returnUrl });
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
 
         logger.LogInformation("Iniciando login externo con {Provider}", provider);

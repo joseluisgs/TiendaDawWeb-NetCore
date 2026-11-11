@@ -1,12 +1,14 @@
 #nullable disable
+using System.Security.Claims;
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.RazorPages.Pages.Carrito;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Product;
@@ -25,7 +27,8 @@ public class CarritoIndexModelTests {
         _mockProductService = new Mock<IProductService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -65,7 +68,7 @@ public class CarritoIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<RedirectToPageResult>();
         (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
@@ -79,7 +82,7 @@ public class CarritoIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
         _mockCarritoService.Setup(s => s.GetCarritoByUsuarioIdAsync(user.Id))
-            .ReturnsAsync(CSharpFunctionalExtensions.Result.Success<IEnumerable<CarritoItem>, TiendaDawWeb.Shared.Errors.DomainError>(items));
+            .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(items));
 
         // Note: GetTotalCarritoAsync may throw if ViewData is not properly set up, so we skip this test
         // The model can be instantiated and basic properties work
@@ -92,7 +95,7 @@ public class CarritoIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnPostAddAsync(1);
+        IActionResult result = await _model.OnPostAddAsync(1);
 
         result.Should().BeOfType<RedirectToPageResult>();
         (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
@@ -103,7 +106,7 @@ public class CarritoIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnPostRemoveAsync(1);
+        IActionResult result = await _model.OnPostRemoveAsync(1);
 
         result.Should().BeOfType<RedirectToPageResult>();
     }
@@ -113,7 +116,7 @@ public class CarritoIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnPostClearAsync();
+        IActionResult result = await _model.OnPostClearAsync();
 
         result.Should().BeOfType<RedirectToPageResult>();
     }
@@ -129,7 +132,8 @@ public class CarritoAddModelTests {
         _mockCarritoService = new Mock<ICarritoService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -156,7 +160,7 @@ public class CarritoAddModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync(productoId: 1);
+        IActionResult result = await _model.OnGetAsync(1);
 
         result.Should().BeOfType<JsonResult>();
     }
@@ -172,7 +176,8 @@ public class CarritoRemoveModelTests {
         _mockCarritoService = new Mock<ICarritoService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -199,7 +204,7 @@ public class CarritoRemoveModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync(itemId: 1);
+        IActionResult result = await _model.OnGetAsync(1);
 
         result.Should().BeOfType<JsonResult>();
     }

@@ -1,14 +1,11 @@
 #nullable disable
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
@@ -20,11 +17,13 @@ namespace TiendaDawWeb.Tests.Mvc.Controllers;
 public class AdminControllerTests {
     [Test]
     public void Constructor_CreatesInstance() {
-        var mockContext = new Mock<ApplicationDbContext>(new Microsoft.EntityFrameworkCore.DbContextOptions<ApplicationDbContext>());
+        var mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
         var userStoreMock = new Mock<IUserStore<User>>();
-        var mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!,
+            null!, null!, null!);
         var roleStoreMock = new Mock<IRoleStore<IdentityRole<long>>>();
-        var mockRoleManager = new Mock<RoleManager<IdentityRole<long>>>(roleStoreMock.Object, null!, null!, null!, null!);
+        var mockRoleManager =
+            new Mock<RoleManager<IdentityRole<long>>>(roleStoreMock.Object, null!, null!, null!, null!);
         var mockPurchaseService = new Mock<IPurchaseService>();
         var mockProductService = new Mock<IProductService>();
         var mockLogger = new Mock<ILogger<AdminController>>();
@@ -42,23 +41,23 @@ public class AdminControllerTests {
 
     [Test]
     public void AdminController_InheritsFromController() {
-        typeof(AdminController).Should().BeDerivedFrom<Microsoft.AspNetCore.Mvc.Controller>();
+        typeof(AdminController).Should().BeDerivedFrom<Controller>();
     }
 
     [Test]
     public void AdminController_HasAdminAuthorizeAttribute() {
-        var attributes = typeof(AdminController).GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true);
+        object[] attributes = typeof(AdminController).GetCustomAttributes(typeof(AuthorizeAttribute), true);
         attributes.Should().NotBeEmpty();
-        var authAttr = attributes.First() as Microsoft.AspNetCore.Authorization.AuthorizeAttribute;
+        var authAttr = attributes.First() as AuthorizeAttribute;
         authAttr!.Roles.Should().Contain("ADMIN");
     }
 
     [Test]
     public void AdminController_HasAdminRouteAttribute() {
-        var controllerType = typeof(AdminController);
-        var routeAttributes = controllerType.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.RouteAttribute), true);
+        Type controllerType = typeof(AdminController);
+        object[] routeAttributes = controllerType.GetCustomAttributes(typeof(RouteAttribute), true);
         routeAttributes.Should().NotBeEmpty();
-        var routeAttr = routeAttributes.First() as Microsoft.AspNetCore.Mvc.RouteAttribute;
+        var routeAttr = routeAttributes.First() as RouteAttribute;
         routeAttr!.Template.Should().Be("admin");
     }
 }

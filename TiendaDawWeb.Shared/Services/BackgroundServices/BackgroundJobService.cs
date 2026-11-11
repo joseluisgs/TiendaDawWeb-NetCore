@@ -9,9 +9,9 @@ public class BackgroundJobService(
     ILogger<BackgroundJobService> logger,
     IHostEnvironment environment
 ) : BackgroundService {
-    private readonly bool _isDevelopment = environment.IsDevelopment();
-    private readonly int _executionIntervalMinutes = 1440;
     private readonly int _executionIntervalHours = 168;
+    private readonly int _executionIntervalMinutes = 1440;
+    private readonly bool _isDevelopment = environment.IsDevelopment();
 
     /// <summary>
     ///     Punto de entrada del servicio de fondo.
@@ -21,7 +21,7 @@ public class BackgroundJobService(
         logger.LogInformation("BackgroundJobService iniciado - Modo: {Modo}",
             _isDevelopment ? "DESARROLLO" : "PRODUCCION");
 
-        var interval = _isDevelopment
+        TimeSpan interval = _isDevelopment
             ? TimeSpan.FromMinutes(_executionIntervalMinutes)
             : TimeSpan.FromHours(_executionIntervalHours);
 
@@ -47,8 +47,8 @@ public class BackgroundJobService(
     ///     Ejecuta los trabajos programados del sistema.
     /// </summary>
     private async Task ExecuteJobsAsync(CancellationToken ct) {
-        using var scope = serviceProvider.CreateScope();
-        var productoTask = scope.ServiceProvider.GetRequiredService<ProductoReportTask>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        ProductoReportTask productoTask = scope.ServiceProvider.GetRequiredService<ProductoReportTask>();
 
         logger.LogDebug("Ejecutando jobs programados");
 

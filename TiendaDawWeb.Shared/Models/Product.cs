@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using TiendaDawWeb.Shared.Models.Enums;
 
 namespace TiendaDawWeb.Shared.Models;
 
 /// <summary>
-/// Entidad de producto del marketplace.
-/// Representa un artículo en venta con información de precio, categoría y estado.
+///     Entidad de producto del marketplace.
+///     Representa un artículo en venta con información de precio, categoría y estado.
 /// </summary>
 public class Product : AuditableEntity {
     /// <summary>ID único del producto (PK en SQLite).</summary>
@@ -70,7 +69,7 @@ public class Product : AuditableEntity {
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 
     /// <summary>
-    /// Obtiene la URL de la imagen con valor por defecto.
+    ///     Obtiene la URL de la imagen con valor por defecto.
     /// </summary>
     /// <returns>URL absoluta, relativa o por defecto.</returns>
     public string ImagenOrDefault => string.IsNullOrEmpty(Imagen)
@@ -80,13 +79,13 @@ public class Product : AuditableEntity {
             : $"/uploads/{Imagen}";
 
     /// <summary>
-    /// Calcula el promedio de valoraciones del producto.
+    ///     Calcula el promedio de valoraciones del producto.
     /// </summary>
     /// <returns>Promedio de puntuación (0 si no hay valoraciones).</returns>
     public double RatingPromedio => Ratings.Any() ? Ratings.Average(r => r.Puntuacion) : 0;
 
     /// <summary>
-    /// Realiza un soft-delete del producto.
+    ///     Realiza un soft-delete del producto.
     /// </summary>
     /// <param name="deletedBy">ID del usuario que elimina el producto.</param>
     public void SoftDelete(string deletedBy) {

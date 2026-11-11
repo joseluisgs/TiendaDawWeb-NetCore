@@ -1,17 +1,15 @@
-using System.Globalization;
-using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Dto.Stats;
 
 namespace TiendaDawWeb.Shared.Services.Stats;
 
 /// <summary>
-/// Servicio de estadísticas para el panel de administración.
-/// Calcula ventas por categoría, mensuales, y tops de compradores/vendedores.
+///     Servicio de estadísticas para el panel de administración.
+///     Calcula ventas por categoría, mensuales, y tops de compradores/vendedores.
 /// </summary>
 public class StatisticsService(ApplicationDbContext context) : IStatisticsService {
     /// <summary>
-    /// Obtiene las ventas agrupadas por categoría con porcentaje.
+    ///     Obtiene las ventas agrupadas por categoría con porcentaje.
     /// </summary>
     public async Task<IEnumerable<CategorySalesDto>> GetSalesByCategoryAsync() {
         var data = await context.Products
@@ -24,7 +22,7 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
             .OrderByDescending(x => x.Cantidad)
             .ToListAsync();
 
-        var total = data.Sum(x => x.Cantidad);
+        int total = data.Sum(x => x.Cantidad);
 
         return data.Select(x => new CategorySalesDto {
             Categoria = x.Categoria,
@@ -34,11 +32,11 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     }
 
     /// <summary>
-    /// Obtiene las ventas mensuales de los últimos X meses.
+    ///     Obtiene las ventas mensuales de los últimos X meses.
     /// </summary>
     /// <param name="months">Número de meses hacia atrás (por defecto 12).</param>
     public async Task<IEnumerable<MonthlySalesDto>> GetMonthlySalesAsync(int months = 12) {
-        var haceMeses = DateTime.UtcNow.AddMonths(-months);
+        DateTime haceMeses = DateTime.UtcNow.AddMonths(-months);
         var culture = new CultureInfo("es-ES");
 
         var data = await context.Purchases
@@ -64,7 +62,7 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     }
 
     /// <summary>
-    /// Obtiene los mejores compradores orderedados por total de compras.
+    ///     Obtiene los mejores compradores orderedados por total de compras.
     /// </summary>
     /// <param name="top">Número de compradores a devolver (por defecto 10).</param>
     public async Task<IEnumerable<TopBuyerDto>> GetTopBuyersAsync(int top = 10) {
@@ -82,7 +80,7 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     }
 
     /// <summary>
-    /// Obtiene los mejores vendedores ordenados por productos vendidos.
+    ///     Obtiene los mejores vendedores ordenados por productos vendidos.
     /// </summary>
     /// <param name="top">Número de vendedores a devolver (por defecto 10).</param>
     public async Task<IEnumerable<TopSellerDto>> GetTopSellersAsync(int top = 10) {

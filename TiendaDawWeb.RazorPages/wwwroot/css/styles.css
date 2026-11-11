@@ -26,7 +26,7 @@ body {
 .navbar {
     margin-bottom: 0;
     border-radius: 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Main content container */
@@ -50,21 +50,21 @@ main.container {
 
 .jumbotron h1 {
     font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Cards styling */
 .card {
     border: none;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
 
 .card-img-top {
@@ -118,7 +118,7 @@ main.container {
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-primary {
@@ -135,7 +135,7 @@ main.container {
     margin-bottom: 30px;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .carousel-item img {
@@ -145,10 +145,10 @@ main.container {
 }
 
 .carousel-caption {
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     border-radius: 10px;
     padding: 20px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .main-text {
@@ -181,13 +181,13 @@ main.container {
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 30px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Avatar in navbar */
 .navbar .rounded-circle {
     border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Footer */
@@ -195,7 +195,7 @@ footer {
     background-color: rgba(255, 255, 255, 0.95) !important;
     padding: 2rem 0;
     margin-top: auto;
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Alerts */
@@ -293,16 +293,16 @@ footer {
     .carousel-item img {
         height: 250px;
     }
-    
+
     main.container {
         padding: 15px;
         margin-top: 70px;
     }
-    
+
     .jumbotron {
         padding: 2rem 1rem;
     }
-    
+
     .jumbotron h1 {
         font-size: 2rem;
     }

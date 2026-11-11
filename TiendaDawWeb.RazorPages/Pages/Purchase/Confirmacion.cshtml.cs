@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Purchase;
 using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
@@ -24,17 +26,19 @@ public class ConfirmacionModel(
     /// <param name="id">ID de la compra</param>
     /// <returns>Vista de confirmación</returns>
     public async Task<IActionResult> OnGetAsync(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await purchaseService.GetByIdAsync(id);
+        Result<PurchaseModel, DomainError> result = await purchaseService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
             return RedirectToPage("/Purchase/Index");
         }
 
-        var purchase = result.Value;
+        PurchaseModel purchase = result.Value;
 
         if (purchase.CompradorId != user.Id) {
             TempData["Error"] = "No tienes permiso para ver esta compra";

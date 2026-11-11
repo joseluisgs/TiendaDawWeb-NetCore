@@ -4,7 +4,7 @@ using TiendaDawWeb.Shared.ViewModels;
 namespace TiendaDawWeb.Shared.Validators;
 
 /// <summary>
-/// Validador FluentValidation para el login.
+///     Validador FluentValidation para el login.
 /// </summary>
 public class LoginViewModelValidator : AbstractValidator<LoginViewModel> {
     public LoginViewModelValidator() {

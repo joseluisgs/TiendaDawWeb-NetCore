@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Purchase;
 using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
@@ -16,10 +18,12 @@ public class IndexModel(
     public IEnumerable<PurchaseModel> Purchases { get; set; } = Enumerable.Empty<PurchaseModel>();
 
     public async Task<IActionResult> OnGetAsync(int page = 1) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await purchaseService.GetByUserAsync(user.Id, page);
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await purchaseService.GetByUserAsync(user.Id, page);
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar las compras";

@@ -1,4 +1,4 @@
-@model TiendaDawWeb.Shared.Models.User
+@model User
 @{
     ViewData["Title"] = "Editar Perfil";
 }
@@ -16,13 +16,13 @@
                     <!-- Avatar actual - shown before forms -->
                     <div class="row mb-4">
                         <div class="col-md-12 text-center">
-                            @if (!string.IsNullOrEmpty(Model.Avatar))
-                            {
-                                <img src="@Model.Avatar" alt="Avatar actual" 
-                                     class="rounded-circle mb-3" 
+                            @if (!string.IsNullOrEmpty(Model.Avatar)) {
+                                <img src="@Model.Avatar" alt="Avatar actual"
+                                     class="rounded-circle mb-3"
                                      style="width: 150px; height: 150px; object-fit: cover;">
                                 <div>
-                                    <form asp-action="DeleteAvatar" method="post" class="d-inline" id="deleteAvatarForm">
+                                    <form asp-action="DeleteAvatar" method="post" class="d-inline"
+                                          id="deleteAvatarForm">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-outline-danger"
                                                 onclick="return confirm('¿Eliminar avatar?')">
@@ -31,9 +31,8 @@
                                     </form>
                                 </div>
                             }
-                            else
-                            {
-                                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                            else {
+                                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3"
                                      style="width: 150px; height: 150px;">
                                     <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
                                 </div>
@@ -50,11 +49,11 @@
                             <label for="nombre" class="form-label">
                                 <i class="bi bi-person"></i> Nombre *
                             </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="nombre" 
-                                   name="nombre" 
-                                   value="@Model.Nombre" 
+                            <input type="text"
+                                   class="form-control"
+                                   id="nombre"
+                                   name="nombre"
+                                   value="@Model.Nombre"
                                    required
                                    maxlength="100"
                                    placeholder="Tu nombre">
@@ -65,11 +64,11 @@
                             <label for="apellidos" class="form-label">
                                 <i class="bi bi-person"></i> Apellidos *
                             </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="apellidos" 
-                                   name="apellidos" 
-                                   value="@Model.Apellidos" 
+                            <input type="text"
+                                   class="form-control"
+                                   id="apellidos"
+                                   name="apellidos"
+                                   value="@Model.Apellidos"
                                    required
                                    maxlength="100"
                                    placeholder="Tus apellidos">
@@ -80,10 +79,10 @@
                             <label for="avatar" class="form-label">
                                 <i class="bi bi-image"></i> Cambiar Avatar
                             </label>
-                            <input type="file" 
-                                   class="form-control" 
-                                   id="avatar" 
-                                   name="avatar" 
+                            <input type="file"
+                                   class="form-control"
+                                   id="avatar"
+                                   name="avatar"
                                    accept="image/jpeg,image/jpg,image/png,image/gif">
                             <div class="form-text">
                                 Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
@@ -95,9 +94,9 @@
                             <label class="form-label">
                                 <i class="bi bi-envelope"></i> Email
                             </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   value="@Model.Email" 
+                            <input type="text"
+                                   class="form-control"
+                                   value="@Model.Email"
                                    readonly
                                    disabled>
                             <div class="form-text">
@@ -110,9 +109,9 @@
                             <label class="form-label">
                                 <i class="bi bi-at"></i> Usuario
                             </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   value="@Model.UserName" 
+                            <input type="text"
+                                   class="form-control"
+                                   value="@Model.UserName"
                                    readonly
                                    disabled>
                             <div class="form-text">
@@ -148,10 +147,10 @@
 @section Scripts {
     <script>
         // Preview avatar before upload
-        document.getElementById('avatar').addEventListener('change', function(e) {
+        document.getElementById('avatar').addEventListener('change', function (e) {
             if (e.target.files && e.target.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     const img = document.querySelector('.rounded-circle, .bg-secondary');
                     if (img && img.tagName === 'IMG') {
                         img.src = event.target.result;

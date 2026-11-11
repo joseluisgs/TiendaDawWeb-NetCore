@@ -1,10 +1,12 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.BackgroundServices;
 using TiendaDawWeb.Shared.Services.Email;
@@ -13,47 +15,16 @@ using ProductModel = TiendaDawWeb.Shared.Models.Product;
 namespace TiendaDawWeb.Tests.Shared.Services.BackgroundServices;
 
 public class ProductoReportTaskTests {
+    private MemoryConfiguration _configuration = null!;
     private ApplicationDbContext _context = null!;
     private Mock<IEmailService> _emailServiceMock = null!;
     private Mock<ILogger<ProductoReportTask>> _loggerMock = null!;
-    private MemoryConfiguration _configuration = null!;
     private ProductoReportTask _service = null!;
-
-    private class MemoryConfiguration : IConfiguration {
-        private readonly Dictionary<string, string> _values = new();
-        public string? this[string key] { get => _values.TryGetValue(key, out var v) ? v : null; set => _values[key] = value!; }
-        public IConfigurationSection GetSection(string key) => new MemoryConfigurationSection(key, _values);
-        public IEnumerable<IConfigurationSection> GetChildren() => Enumerable.Empty<IConfigurationSection>();
-        public IChangeToken GetReloadToken() => new FakeChangeToken();
-    }
-
-    private class MemoryConfigurationSection : IConfigurationSection {
-        private readonly string _key;
-        private readonly Dictionary<string, string> _values;
-        public string? this[string key] { get => _values.TryGetValue(key, out var v) ? v : null; set => _values[key] = value!; }
-        public string Key => _key;
-        public string Path { get; set; } = string.Empty;
-        public string? Value { get; set; }
-        public MemoryConfigurationSection(string key, Dictionary<string, string> values) => (_key, _values) = (key, values);
-        public IConfigurationSection GetSection(string key) => new MemoryConfigurationSection($"{_key}:{key}", _values);
-        public IEnumerable<IConfigurationSection> GetChildren() => Enumerable.Empty<IConfigurationSection>();
-        public IChangeToken GetReloadToken() => new FakeChangeToken();
-    }
-
-    private class FakeChangeToken : IChangeToken {
-        public bool HasChanged => false;
-        public bool ActiveChangeCallbacks => false;
-        public IDisposable RegisterChangeCallback(Action<object?> callback, object? state) => Disposable.Empty;
-    }
-
-    private static class Disposable {
-        public static IDisposable Empty { get; } = new Mock<IDisposable>().Object;
-    }
 
     [SetUp]
     public void Setup() {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         _context = new ApplicationDbContext(options);
         _emailServiceMock = new Mock<IEmailService>();
@@ -73,18 +44,19 @@ public class ProductoReportTaskTests {
 
     [Test]
     public async Task ExecuteAsync_ReturnsSuccess_InDevelopmentMode() {
-        var result = await _service.ExecuteAsync();
+        UnitResult<DomainError> result = await _service.ExecuteAsync();
 
         result.IsSuccess.Should().BeTrue();
     }
 
     [Test]
     public async Task ExecuteAsync_SkipsDatabaseQuery_InDevelopmentMode() {
-        var user = new User { Id = 1, Email = "test@test.com", UserName = "test", EmailConfirmed = true, Deleted = false };
+        var user = new User
+            { Id = 1, Email = "test@test.com", UserName = "test", EmailConfirmed = true, Deleted = false };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        var result = await _service.ExecuteAsync();
+        UnitResult<DomainError> result = await _service.ExecuteAsync();
 
         result.IsSuccess.Should().BeTrue();
         _emailServiceMock.Verify(e => e.EnqueueEmail(It.IsAny<EmailMessage>()), Times.Never);
@@ -93,11 +65,11 @@ public class ProductoReportTaskTests {
     [Test]
     public async Task GenerateHtmlEmail_GeneratesValidHtml() {
         var productos = new List<ProductModel> {
-            new ProductModel { Id = 1, Nombre = "Product 1", Descripcion = "Description 1", Precio = 100 },
-            new ProductModel { Id = 2, Nombre = "Product 2", Descripcion = "Description 2", Precio = 200 }
+            new() { Id = 1, Nombre = "Product 1", Descripcion = "Description 1", Precio = 100 },
+            new() { Id = 2, Nombre = "Product 2", Descripcion = "Description 2", Precio = 200 }
         };
 
-        var html = GenerateHtmlEmail(productos, "TestUser");
+        string html = GenerateHtmlEmail(productos, "TestUser");
 
         html.Should().Contain("Product 1");
         html.Should().Contain("Description 1");
@@ -111,14 +83,14 @@ public class ProductoReportTaskTests {
     public async Task GenerateHtmlEmail_HandlesEmptyProducts() {
         var productos = new List<ProductModel>();
 
-        var html = GenerateHtmlEmail(productos, "TestUser");
+        string html = GenerateHtmlEmail(productos, "TestUser");
 
         html.Should().Contain("TestUser");
         html.Should().Contain("Novedades de la Semana");
     }
 
     private static string GenerateHtmlEmail(IEnumerable<ProductModel> productos, string userName) {
-        var productosHtml = string.Concat(productos.Select(p => string.Format(@"
+        string productosHtml = string.Concat(productos.Select(p => string.Format(@"
             <div style=""border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;"">
                 <h3 style=""margin: 0 0 10px 0;"">{0}</h3>
                 <p style=""margin: 0; color: #666;"">{1}</p>
@@ -155,5 +127,69 @@ public class ProductoReportTaskTests {
     </div>
 </body>
 </html>", userName, productos.Count(), productosHtml);
+    }
+
+    private class MemoryConfiguration : IConfiguration {
+        private readonly Dictionary<string, string> _values = new();
+
+        public string? this[string key] {
+            get => _values.TryGetValue(key, out string? v) ? v : null;
+            set => _values[key] = value!;
+        }
+
+        public IConfigurationSection GetSection(string key) {
+            return new MemoryConfigurationSection(key, _values);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren() {
+            return Enumerable.Empty<IConfigurationSection>();
+        }
+
+        public IChangeToken GetReloadToken() {
+            return new FakeChangeToken();
+        }
+    }
+
+    private class MemoryConfigurationSection : IConfigurationSection {
+        private readonly Dictionary<string, string> _values;
+
+        public MemoryConfigurationSection(string key, Dictionary<string, string> values) {
+            (Key, _values) = (key, values);
+        }
+
+        public string? this[string key] {
+            get => _values.TryGetValue(key, out string? v) ? v : null;
+            set => _values[key] = value!;
+        }
+
+        public string Key { get; }
+
+        public string Path { get; } = string.Empty;
+        public string? Value { get; set; }
+
+        public IConfigurationSection GetSection(string key) {
+            return new MemoryConfigurationSection($"{Key}:{key}", _values);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren() {
+            return Enumerable.Empty<IConfigurationSection>();
+        }
+
+        public IChangeToken GetReloadToken() {
+            return new FakeChangeToken();
+        }
+    }
+
+    private class FakeChangeToken : IChangeToken {
+        public bool HasChanged => false;
+        public bool ActiveChangeCallbacks => false;
+
+        public IDisposable RegisterChangeCallback(Action<object?> callback, object? state) {
+            return Disposable.Empty;
+        }
+    }
+
+    private static class Disposable {
+        public static IDisposable Empty { get; } = new Mock<IDisposable>().Object;
     }
 }

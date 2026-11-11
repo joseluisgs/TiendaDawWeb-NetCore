@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 
@@ -13,18 +15,18 @@ public class AddModel(
     UserManager<User> userManager
 ) : PageModel {
     public async Task<IActionResult> OnGetAsync([FromQuery] long productoId) {
-        var user = await userManager.GetUserAsync(User);
+        User? user = await userManager.GetUserAsync(User);
         if (user == null) {
             return new JsonResult(new { success = false, message = "Debes iniciar sesión" });
         }
 
-        var result = await carritoService.AddToCarritoAsync(user.Id, productoId);
+        Result<CarritoItem, DomainError> result = await carritoService.AddToCarritoAsync(user.Id, productoId);
 
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }
 
-        var countResult = await carritoService.GetCarritoCountAsync(user.Id);
+        Result<int, DomainError> countResult = await carritoService.GetCarritoCountAsync(user.Id);
         return new JsonResult(new {
             success = true,
             message = "Producto añadido al carrito",

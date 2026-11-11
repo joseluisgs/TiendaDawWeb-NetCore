@@ -1,24 +1,19 @@
 #nullable disable
+using System.Security.Claims;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.RazorPages.Pages.Admin;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
-using TiendaDawWeb.Shared.ViewModels;
-using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.Tests.RazorPages.Admin;
 
 public class AdminIndexModelTests {
-    private readonly Mock<ApplicationDbContext> _mockContext;
     private readonly ClaimsPrincipal _adminUser;
+    private readonly Mock<ApplicationDbContext> _mockContext;
 
     public AdminIndexModelTests() {
         _mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
@@ -51,8 +46,8 @@ public class AdminIndexModelTests {
 }
 
 public class AdminUsuariosModelTests {
-    private readonly Mock<ApplicationDbContext> _mockContext;
     private readonly ClaimsPrincipal _adminUser;
+    private readonly Mock<ApplicationDbContext> _mockContext;
 
     public AdminUsuariosModelTests() {
         _mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
@@ -77,17 +72,18 @@ public class AdminUsuariosModelTests {
 }
 
 public class AdminProductosModelTests {
+    private readonly ClaimsPrincipal _adminUser;
     private readonly Mock<ApplicationDbContext> _mockContext;
     private readonly Mock<IProductService> _mockProductService;
     private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly ClaimsPrincipal _adminUser;
 
     public AdminProductosModelTests() {
         _mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
         _mockProductService = new Mock<IProductService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _adminUser = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1"),
@@ -109,8 +105,8 @@ public class AdminProductosModelTests {
 }
 
 public class AdminComprasModelTests {
-    private readonly Mock<ApplicationDbContext> _mockContext;
     private readonly ClaimsPrincipal _adminUser;
+    private readonly Mock<ApplicationDbContext> _mockContext;
 
     public AdminComprasModelTests() {
         _mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
@@ -135,8 +131,8 @@ public class AdminComprasModelTests {
 }
 
 public class AdminVentasModelTests {
-    private readonly Mock<ApplicationDbContext> _mockContext;
     private readonly ClaimsPrincipal _adminUser;
+    private readonly Mock<ApplicationDbContext> _mockContext;
 
     public AdminVentasModelTests() {
         _mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());

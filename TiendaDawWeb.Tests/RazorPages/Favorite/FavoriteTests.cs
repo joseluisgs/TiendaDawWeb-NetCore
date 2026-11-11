@@ -1,12 +1,14 @@
 #nullable disable
+using System.Security.Claims;
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.RazorPages.Pages.Favorite;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Favorite;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
@@ -23,7 +25,8 @@ public class FavoriteIndexModelTests {
         _mockFavoriteService = new Mock<IFavoriteService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -62,7 +65,7 @@ public class FavoriteIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<RedirectToPageResult>();
         (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
@@ -76,9 +79,9 @@ public class FavoriteIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
         _mockFavoriteService.Setup(s => s.GetUserFavoritesAsync(user.Id))
-            .ReturnsAsync(CSharpFunctionalExtensions.Result.Success<IEnumerable<ProductModel>, TiendaDawWeb.Shared.Errors.DomainError>(products));
+            .ReturnsAsync(Result.Success<IEnumerable<ProductModel>, DomainError>(products));
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<PageResult>();
     }

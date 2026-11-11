@@ -1,8 +1,8 @@
 namespace TiendaDawWeb.Shared.Models;
 
 /// <summary>
-/// Entidad de compra realizada por un usuario.
-/// Representa una transacción con fecha, total y lista de productos comprados.
+///     Entidad de compra realizada por un usuario.
+///     Representa una transacción con fecha, total y lista de productos comprados.
 /// </summary>
 public class Purchase : AuditableEntity {
     /// <summary>ID único de la compra (PK en SQLite).</summary>

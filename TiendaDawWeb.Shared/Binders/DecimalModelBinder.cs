@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Globalization;
 
 namespace TiendaDawWeb.Shared.Binders;
 
 public class DecimalModelBinder : IModelBinder {
     public Task BindModelAsync(ModelBindingContext bindingContext) {
-        var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+        ValueProviderResult valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
 
         if (valueProviderResult == ValueProviderResult.None) {
             return Task.CompletedTask;
@@ -13,7 +12,7 @@ public class DecimalModelBinder : IModelBinder {
 
         bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
-        var value = valueProviderResult.FirstValue;
+        string? value = valueProviderResult.FirstValue;
 
         if (string.IsNullOrWhiteSpace(value)) {
             return Task.CompletedTask;
@@ -24,8 +23,9 @@ public class DecimalModelBinder : IModelBinder {
             value = value.Replace(',', '.');
         }
 
-        if (decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
-            CultureInfo.InvariantCulture, out var result)) {
+        if (decimal.TryParse(value,
+                NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
+                CultureInfo.InvariantCulture, out decimal result)) {
             bindingContext.Result = ModelBindingResult.Success(result);
             return Task.CompletedTask;
         }

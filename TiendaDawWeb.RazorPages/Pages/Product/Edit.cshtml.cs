@@ -1,14 +1,15 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Extensions.Logging;
+using TiendaDawWeb.Shared.Errors;
+using TiendaDawWeb.Shared.Mappers;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Storage;
 using TiendaDawWeb.Shared.ViewModels;
-using TiendaDawWeb.Shared.Mappers;
 
 namespace TiendaDawWeb.RazorPages.Pages.Product;
 
@@ -20,27 +21,27 @@ public class EditModel(
     ILogger<EditModel> logger,
     IOutputCacheStore outputCacheStore
 ) : PageModel {
-    [BindProperty]
-    public ProductViewModel Input { get; set; } = default!;
-    public ProductViewModel ProductViewModel { get { return Input; } }
+    [BindProperty] public ProductViewModel Input { get; set; } = default!;
+
+    public ProductViewModel ProductViewModel => Input;
 
     private async Task LoadProductData(long id) {
-        var result = await productService.GetByIdAsync(id);
+        Result<Shared.Models.Product, DomainError> result = await productService.GetByIdAsync(id);
         if (result.IsSuccess) {
             Input = result.Value.ToViewModel();
         }
     }
 
     public async Task<IActionResult> OnGetAsync(long id) {
-        var result = await productService.GetByIdAsync(id);
+        Result<Shared.Models.Product, DomainError> result = await productService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
             return RedirectToPage("/Public/Index");
         }
 
-        var product = result.Value;
-        var user = await userManager.GetUserAsync(User);
+        Shared.Models.Product product = result.Value;
+        User? user = await userManager.GetUserAsync(User);
 
         if (user == null || product.PropietarioId != user.Id) {
             TempData["Error"] = "No tienes permiso para editar este producto";
@@ -55,21 +56,22 @@ public class EditModel(
         logger.LogInformation("OnPostAsync llamado, ModelState.IsValid: {IsValid}", ModelState.IsValid);
 
         if (!ModelState.IsValid) {
-            logger.LogWarning("ModelState inválido: {Errors}", ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)));
+            logger.LogWarning("ModelState inválido: {Errors}",
+                ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)));
             await LoadProductData(Input.Id);
             return Page();
         }
 
-        var user = await userManager.GetUserAsync(User);
+        User? user = await userManager.GetUserAsync(User);
         if (user == null) {
             logger.LogWarning("Usuario no encontrado");
             return RedirectToPage("/Auth/Login");
         }
 
-        var imagenUrl = Input.ImagenUrl;
+        string? imagenUrl = Input.ImagenUrl;
         if (Input.ImagenFile != null) {
             logger.LogInformation("Guardando nueva imagen...");
-            var saveResult = await storageService.SaveFileAsync(Input.ImagenFile, "products");
+            Result<string, DomainError> saveResult = await storageService.SaveFileAsync(Input.ImagenFile, "products");
             if (saveResult.IsSuccess) {
                 imagenUrl = saveResult.Value;
                 logger.LogInformation("Imagen guardada: {Url}", imagenUrl);
@@ -78,10 +80,11 @@ public class EditModel(
             }
         }
 
-        var product = Input.ToEntity(user.Id, imagenUrl, includeId: true);
+        Shared.Models.Product product = Input.ToEntity(user.Id, imagenUrl, true);
 
         logger.LogInformation("Actualizando producto {Id}", Input.Id);
-        var result = await productService.UpdateAsync(Input.Id, product, user.Id);
+        Result<Shared.Models.Product, DomainError>
+            result = await productService.UpdateAsync(Input.Id, product, user.Id);
 
         if (result.IsFailure) {
             logger.LogError("Error actualizando producto: {Error}", result.Error.Message);

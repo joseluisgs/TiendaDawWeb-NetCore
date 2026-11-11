@@ -14,12 +14,10 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    @if (TempData["Success"] is string exito)
-                    {
+                    @if (TempData["Success"] is string exito) {
                         <div class="alert alert-success" data-testid="mensaje-exito">@exito</div>
                     }
-                    @if (TempData["Error"] is string error)
-                    {
+                    @if (TempData["Error"] is string error) {
                         <div class="alert alert-danger" data-testid="mensaje-error">@error</div>
                     }
 
@@ -30,52 +28,49 @@
                         no la sustituye.
                     </p>
 
-                    @if (Model.Passkeys.Count == 0)
-                    {
+                    @if (Model.Passkeys.Count == 0) {
                         <p class="text-muted text-center py-3" data-testid="sin-passkeys">
                             <i class="bi bi-inbox"></i> Todavía no has creado ninguna passkey.
                         </p>
                     }
-                    else
-                    {
+                    else {
                         <div class="table-responsive">
                             <table class="table table-striped align-middle" data-testid="tabla-passkeys">
                                 <thead>
-                                    <tr>
-                                        <th>Nombre</th>
-                                        <th>Creada</th>
-                                        <th>Copia de seguridad</th>
-                                        <th class="text-end">Acciones</th>
-                                    </tr>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Creada</th>
+                                    <th>Copia de seguridad</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var passkey in Model.Passkeys)
-                                    {
-                                        @* El id viaja en base64url, que es como lo maneja WebAuthn
+                                @foreach (var passkey in Model.Passkeys) {
+                                    @* El id viaja en base64url, que es como lo maneja WebAuthn
                                            en el navegador; Identity lo guarda como bytes. *@
-                                        var idUrl = Convert.ToBase64String(passkey.CredentialId)
+                                    var idUrl = Convert.ToBase64String(passkey.CredentialId)
                                             .Replace('+', '-').Replace('/', '_').TrimEnd('=');
 
-                                        <tr data-testid="fila-passkey">
-                                            <td>
-                                                @(string.IsNullOrWhiteSpace(passkey.Name)
+                                    <tr data-testid="fila-passkey">
+                                        <td>
+                                            @(string.IsNullOrWhiteSpace(passkey.Name)
                                                     ? "Passkey sin nombre"
                                                     : passkey.Name)
-                                            </td>
-                                            <td>@passkey.CreatedAt.ToLocalTime().ToString("d")</td>
-                                            <td>@(passkey.IsBackedUp ? "Sí" : "No")</td>
-                                            <td class="text-end">
-                                                <form method="post" asp-page-handler="Eliminar" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@idUrl" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                            data-testid="boton-eliminar-passkey">
-                                                        <i class="bi bi-trash"></i> Eliminar
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    }
+                                        </td>
+                                        <td>@passkey.CreatedAt.ToLocalTime().ToString("d")</td>
+                                        <td>@(passkey.IsBackedUp ? "Sí" : "No")</td>
+                                        <td class="text-end">
+                                            <form method="post" asp-page-handler="Eliminar" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@idUrl"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        data-testid="boton-eliminar-passkey">
+                                                    <i class="bi bi-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
                                 </tbody>
                             </table>
                         </div>
@@ -100,7 +95,7 @@
                         <div class="mt-2" data-testid="aviso-passkey"></div>
                     </div>
 
-                    <hr class="my-4" />
+                    <hr class="my-4"/>
 
                     <a asp-page="Index" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al perfil

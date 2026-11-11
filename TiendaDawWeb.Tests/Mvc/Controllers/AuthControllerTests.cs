@@ -1,12 +1,9 @@
 #nullable disable
-using System.Security.Claims;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Controllers;
@@ -17,16 +14,17 @@ using IdentitySignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class AuthControllerTests {
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<SignInManager<User>> _mockSignInManager;
-    private readonly Mock<ILogger<AuthController>> _mockLogger;
     private readonly AuthController _controller;
+    private readonly Mock<ILogger<AuthController>> _mockLogger;
+    private readonly Mock<SignInManager<User>> _mockSignInManager;
+    private readonly Mock<UserManager<User>> _mockUserManager;
 
     public AuthControllerTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
-        var contextAccessor = new Mock<Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<User>>();
+        var contextAccessor = new Mock<IUserClaimsPrincipalFactory<User>>();
         _mockSignInManager = new Mock<SignInManager<User>>(
             _mockUserManager.Object,
             new HttpContextAccessor(),
@@ -38,7 +36,7 @@ public class AuthControllerTests {
         _controller = new AuthController(
             _mockUserManager.Object,
             _mockSignInManager.Object,
-            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
+            Mock.Of<IAuthenticationSchemeProvider>(),
             _mockLogger.Object);
     }
 
@@ -46,6 +44,67 @@ public class AuthControllerTests {
     public void OneTimeTearDown() {
         _controller.Dispose();
     }
+
+    #region Login POST Tests
+
+    [Test]
+    public async Task Login_POST_ReturnsView_WhenModelStateInvalid() {
+        var model = new LoginViewModel { Email = "test@test.com", Password = "password" };
+        _controller.ModelState.AddModelError("Error", "Invalid");
+
+        IActionResult result = await _controller.Login(model);
+
+        result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
+
+    #region Register Tests
+
+    [Test]
+    public void Register_ReturnsView() {
+        IActionResult result = _controller.Register();
+
+        result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
+
+    #region Logout Tests
+
+    [Test]
+    public async Task Logout_RedirectsToPublic() {
+        _mockSignInManager.Setup(s => s.SignOutAsync())
+            .Returns(Task.CompletedTask);
+
+        var httpContext = new DefaultHttpContext();
+        var controller = new AuthController(
+            _mockUserManager.Object,
+            _mockSignInManager.Object,
+            Mock.Of<IAuthenticationSchemeProvider>(),
+            _mockLogger.Object) {
+            ControllerContext = new ControllerContext {
+                HttpContext = httpContext
+            }
+        };
+
+        IActionResult result = await controller.Logout();
+
+        result.Should().BeOfType<RedirectToActionResult>();
+    }
+
+    #endregion
+
+    #region AccessDenied Tests
+
+    [Test]
+    public void AccessDenied_ReturnsView() {
+        IActionResult result = _controller.AccessDenied();
+
+        result.Should().BeOfType<ViewResult>();
+    }
+
+    #endregion
 
     #region Constructor Tests
 
@@ -69,14 +128,14 @@ public class AuthControllerTests {
         var controller = new AuthController(
             _mockUserManager.Object,
             _mockSignInManager.Object,
-            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
+            Mock.Of<IAuthenticationSchemeProvider>(),
             _mockLogger.Object) {
             ControllerContext = new ControllerContext {
                 HttpContext = httpContext
             }
         };
 
-        var result = controller.Login("/return/url");
+        IActionResult result = controller.Login("/return/url");
 
         result.Should().BeOfType<ViewResult>();
         controller.ViewData["ReturnUrl"].Should().Be("/return/url");
@@ -84,68 +143,7 @@ public class AuthControllerTests {
 
     [Test]
     public void Login_ReturnsView_WithNullReturnUrl() {
-        var result = _controller.Login(default(string));
-
-        result.Should().BeOfType<ViewResult>();
-    }
-
-    #endregion
-
-    #region Login POST Tests
-
-    [Test]
-    public async Task Login_POST_ReturnsView_WhenModelStateInvalid() {
-        var model = new LoginViewModel { Email = "test@test.com", Password = "password" };
-        _controller.ModelState.AddModelError("Error", "Invalid");
-
-        var result = await _controller.Login(model);
-
-        result.Should().BeOfType<ViewResult>();
-    }
-
-    #endregion
-
-    #region Register Tests
-
-    [Test]
-    public void Register_ReturnsView() {
-        var result = _controller.Register();
-
-        result.Should().BeOfType<ViewResult>();
-    }
-
-    #endregion
-
-    #region Logout Tests
-
-    [Test]
-    public async Task Logout_RedirectsToPublic() {
-        _mockSignInManager.Setup(s => s.SignOutAsync())
-            .Returns(Task.CompletedTask);
-
-        var httpContext = new DefaultHttpContext();
-        var controller = new AuthController(
-            _mockUserManager.Object,
-            _mockSignInManager.Object,
-            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
-            _mockLogger.Object) {
-            ControllerContext = new ControllerContext {
-                HttpContext = httpContext
-            }
-        };
-
-        var result = await controller.Logout();
-
-        result.Should().BeOfType<RedirectToActionResult>();
-    }
-
-    #endregion
-
-    #region AccessDenied Tests
-
-    [Test]
-    public void AccessDenied_ReturnsView() {
-        var result = _controller.AccessDenied();
+        IActionResult result = _controller.Login();
 
         result.Should().BeOfType<ViewResult>();
     }
@@ -159,7 +157,7 @@ public class AuthControllerTests {
         _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(It.IsAny<User>()))
             .ReturnsAsync("{}");
 
-        var result = await _controller.PasskeyRequestOptions(null);
+        IActionResult result = await _controller.PasskeyRequestOptions(null);
 
         result.Should().BeOfType<ContentResult>();
         ((ContentResult)result).ContentType.Should().Be("application/json");
@@ -172,7 +170,7 @@ public class AuthControllerTests {
         _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(user))
             .ReturnsAsync("{}");
 
-        var result = await _controller.PasskeyRequestOptions("test@test.com");
+        IActionResult result = await _controller.PasskeyRequestOptions("test@test.com");
 
         result.Should().BeOfType<ContentResult>();
         _mockSignInManager.Verify(s => s.MakePasskeyRequestOptionsAsync(user), Times.Once);
@@ -183,9 +181,9 @@ public class AuthControllerTests {
         _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
             .ReturnsAsync(IdentitySignInResult.Failed);
 
-        var result = await _controller.PasskeyAssertion("credencial-mala");
+        IActionResult result = await _controller.PasskeyAssertion("credencial-mala");
 
-        var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+        ObjectResult objectResult = result.Should().BeOfType<ObjectResult>().Subject;
         objectResult.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
     }
 
@@ -195,7 +193,7 @@ public class AuthControllerTests {
         var controller = new AuthController(
             _mockUserManager.Object,
             _mockSignInManager.Object,
-            Mock.Of<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>(),
+            Mock.Of<IAuthenticationSchemeProvider>(),
             _mockLogger.Object) {
             ControllerContext = new ControllerContext { HttpContext = httpContext }
         };
@@ -208,9 +206,9 @@ public class AuthControllerTests {
         _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
             .ReturnsAsync(IdentitySignInResult.Success);
 
-        var result = await controller.PasskeyAssertion("credencial-valida", "/carrito");
+        IActionResult result = await controller.PasskeyAssertion("credencial-valida", "/carrito");
 
-        var json = result.Should().BeOfType<JsonResult>().Subject;
+        JsonResult json = result.Should().BeOfType<JsonResult>().Subject;
         json.Value!.ToString().Should().Contain("destino = /carrito");
     }
 

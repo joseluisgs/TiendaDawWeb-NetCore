@@ -1,26 +1,22 @@
 using Microsoft.Extensions.Configuration;
-using Serilog;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Puertas de login externo (OAuth 2.0), activables por configuración.
-///
-/// Cada puerta solo se registra si Auth:{Proveedor}:Enabled es true: con la
-/// puerta cerrada la app ni siquiera conoce al proveedor. Los ClientId y
-/// ClientSecret van en user-secrets o variables de entorno, nunca en appsettings.json:
-///   dotnet user-secrets set "Google:ClientId" "xxxx.apps.googleusercontent.com"
-///
-/// La puerta principal (Identity Cookies) ya está registrada en AuthenticationConfig.
-/// Aquí solo se AÑADEN esquemas de proveedores encima: el default sigue siendo Cookies.
-///
-/// A diferencia de las APIs (que parsean claims manualmente), aquí usamos
-/// ASP.NET Core Identity que trae SignInManager.GetExternalLoginInfoAsync()
-/// y la tabla AspNetUserLogins para vinculación.
+///     Puertas de login externo (OAuth 2.0), activables por configuración.
+///     Cada puerta solo se registra si Auth:{Proveedor}:Enabled es true: con la
+///     puerta cerrada la app ni siquiera conoce al proveedor. Los ClientId y
+///     ClientSecret van en user-secrets o variables de entorno, nunca en appsettings.json:
+///     dotnet user-secrets set "Google:ClientId" "xxxx.apps.googleusercontent.com"
+///     La puerta principal (Identity Cookies) ya está registrada en AuthenticationConfig.
+///     Aquí solo se AÑADEN esquemas de proveedores encima: el default sigue siendo Cookies.
+///     A diferencia de las APIs (que parsean claims manualmente), aquí usamos
+///     ASP.NET Core Identity que trae SignInManager.GetExternalLoginInfoAsync()
+///     y la tabla AspNetUserLogins para vinculación.
 /// </summary>
 public static class OAuthConfig {
     /// <summary>
-    /// Registra las puertas externas activadas en la configuración.
+    ///     Registra las puertas externas activadas en la configuración.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <param name="configuration">Configuración de la app (sección Auth).</param>
@@ -31,11 +27,11 @@ public static class OAuthConfig {
         // Un único AddAuthentication() como menú de puertas: los esquemas
         // defaults (Identity Cookies) ya los puso AuthenticationConfig, aquí solo se
         // añaden esquemas de proveedores encima.
-        var auth = services.AddAuthentication();
+        AuthenticationBuilder auth = services.AddAuthentication();
 
         if (configuration.GetValue<bool>("Auth:Google:Enabled")) {
-            var clientId = configuration["Google:ClientId"];
-            var clientSecret = configuration["Google:ClientSecret"];
+            string? clientId = configuration["Google:ClientId"];
+            string? clientSecret = configuration["Google:ClientSecret"];
             if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
                 Log.Warning("🚪 Auth:Google:Enabled=true pero falta credenciales — puerta NO registrada");
             } else {
@@ -51,8 +47,8 @@ public static class OAuthConfig {
         }
 
         if (configuration.GetValue<bool>("Auth:GitHub:Enabled")) {
-            var clientId = configuration["GitHub:ClientId"];
-            var clientSecret = configuration["GitHub:ClientSecret"];
+            string? clientId = configuration["GitHub:ClientId"];
+            string? clientSecret = configuration["GitHub:ClientSecret"];
             if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
                 Log.Warning("🚪 Auth:GitHub:Enabled=true pero falta credenciales — puerta NO registrada");
             } else {
@@ -67,8 +63,8 @@ public static class OAuthConfig {
         }
 
         if (configuration.GetValue<bool>("Auth:Microsoft:Enabled")) {
-            var clientId = configuration["Microsoft:ClientId"];
-            var clientSecret = configuration["Microsoft:ClientSecret"];
+            string? clientId = configuration["Microsoft:ClientId"];
+            string? clientSecret = configuration["Microsoft:ClientSecret"];
             if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
                 Log.Warning("🚪 Auth:Microsoft:Enabled=true pero falta credenciales — puerta NO registrada");
             } else {

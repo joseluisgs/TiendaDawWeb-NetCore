@@ -1,9 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace TiendaDawWeb.Shared.ViewModels;
 
 /// <summary>
-/// ViewModel para el formulario de registro
+///     ViewModel para el formulario de registro
 /// </summary>
 public class RegisterViewModel {
     [Required(ErrorMessage = "El nombre es obligatorio")]

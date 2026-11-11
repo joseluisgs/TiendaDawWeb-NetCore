@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
 using TiendaDawWeb.Shared.Models.Enums;
 
 namespace TiendaDawWeb.Shared.ViewModels;
 
 /// <summary>
-/// ViewModel para formularios de producto
+///     ViewModel para formularios de producto
 /// </summary>
 public class ProductViewModel {
     public long Id { get; set; }

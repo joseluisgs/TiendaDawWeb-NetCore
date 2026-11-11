@@ -60,7 +60,7 @@ public class ProductTests {
 
     [Test]
     public void Product_CanSetDeletedProperties() {
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         var product = new Product {
             Deleted = true,
             DeletedAt = now,
@@ -118,9 +118,9 @@ public class ProductTests {
     public void RatingPromedio_ReturnsAverage_WhenHasRatings() {
         var product = new Product {
             Ratings = new List<Rating> {
-                new Rating { Puntuacion = 4 },
-                new Rating { Puntuacion = 5 },
-                new Rating { Puntuacion = 3 }
+                new() { Puntuacion = 4 },
+                new() { Puntuacion = 5 },
+                new() { Puntuacion = 3 }
             }
         };
 
@@ -141,7 +141,7 @@ public class ProductTests {
     [Test]
     public void SoftDelete_SetsDeletedAtToNow() {
         var product = new Product();
-        var beforeCall = DateTime.UtcNow.AddSeconds(-1);
+        DateTime beforeCall = DateTime.UtcNow.AddSeconds(-1);
 
         product.SoftDelete("User-123");
 
@@ -154,7 +154,7 @@ public class RatingTests {
     public void Rating_CalculatesAverage_SingleRating() {
         var product = new Product {
             Ratings = new List<Rating> {
-                new Rating { Puntuacion = 5 }
+                new() { Puntuacion = 5 }
             }
         };
 
@@ -165,11 +165,11 @@ public class RatingTests {
     public void Rating_CalculatesAverage_AllFiveRatings() {
         var product = new Product {
             Ratings = new List<Rating> {
-                new Rating { Puntuacion = 1 },
-                new Rating { Puntuacion = 2 },
-                new Rating { Puntuacion = 3 },
-                new Rating { Puntuacion = 4 },
-                new Rating { Puntuacion = 5 }
+                new() { Puntuacion = 1 },
+                new() { Puntuacion = 2 },
+                new() { Puntuacion = 3 },
+                new() { Puntuacion = 4 },
+                new() { Puntuacion = 5 }
             }
         };
 
@@ -213,9 +213,9 @@ public class PurchaseTests {
 
     [Test]
     public void Purchase_DefaultDate_IsNow() {
-        var before = DateTime.UtcNow.AddSeconds(-1);
+        DateTime before = DateTime.UtcNow.AddSeconds(-1);
         var purchase = new Purchase();
-        var after = DateTime.UtcNow.AddSeconds(1);
+        DateTime after = DateTime.UtcNow.AddSeconds(1);
 
         purchase.FechaCompra.Should().BeAfter(before);
         purchase.FechaCompra.Should().BeBefore(after);

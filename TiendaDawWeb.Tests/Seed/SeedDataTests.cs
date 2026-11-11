@@ -4,7 +4,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NUnit.Framework;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Data.Seed;
 using TiendaDawWeb.Shared.Models;
@@ -12,17 +11,13 @@ using TiendaDawWeb.Shared.Models;
 namespace TiendaDawWeb.Tests.Seed;
 
 /// <summary>
-/// Tests del sistema de siembra unificado (Data/Seed).
-///
-/// 🎓 Se ejecuta con Identity real sobre SQLite en memoria (no mocks): la
-/// siembra usa UserManager de verdad y el objetivo es comprobar que es
-/// idempotente — dos corridas seguidas dejan EXACTAMENTE los mismos datos.
+///     Tests del sistema de siembra unificado (Data/Seed).
+///     🎓 Se ejecuta con Identity real sobre SQLite en memoria (no mocks): la
+///     siembra usa UserManager de verdad y el objetivo es comprobar que es
+///     idempotente — dos corridas seguidas dejan EXACTAMENTE los mismos datos.
 /// </summary>
 [TestFixture]
 public class SeedDataTests {
-    private SqliteConnection _conexion = null!;
-    private ServiceProvider _provider = null!;
-
     [SetUp]
     public void Setup() {
         // SQLite en memoria: la conexión se mantiene abierta; si se cierra,
@@ -37,13 +32,13 @@ public class SeedDataTests {
         // Mismas reglas que la aplicación (AuthenticationConfig): con la
         // política por defecto de Identity "Admin1" no sería válida.
         servicios.AddIdentityCore<User>(options => {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 8;
-            options.User.RequireUniqueEmail = true;
-        })
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 8;
+                options.User.RequireUniqueEmail = true;
+            })
             .AddRoles<IdentityRole<long>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -61,13 +56,16 @@ public class SeedDataTests {
         _conexion.Dispose();
     }
 
+    private SqliteConnection _conexion = null!;
+    private ServiceProvider _provider = null!;
+
     [Test]
     public async Task Initialize_DosVecesSeguidas_NoDuplicaNada() {
         await SembrarAsync();
         await SembrarAsync();
 
-        using var scope = _provider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope scope = _provider.CreateScope();
+        ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         (await context.Users.CountAsync()).Should().Be(SeedCredentials.Usuarios.Count,
             "los usuarios se dan de alta una sola vez");
@@ -82,17 +80,17 @@ public class SeedDataTests {
         await SembrarAsync();
 
         // Se borra un producto: el catálogo deja de estar completo.
-        using (var scope = _provider.CreateScope()) {
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var producto = await context.Products.FirstAsync(p => p.Nombre == "iPhone 17 Pro Max");
+        using (IServiceScope scope = _provider.CreateScope()) {
+            ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            Product producto = await context.Products.FirstAsync(p => p.Nombre == "iPhone 17 Pro Max");
             context.Products.Remove(producto);
             await context.SaveChangesAsync();
         }
 
         await SembrarAsync();
 
-        using (var scope = _provider.CreateScope()) {
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using (IServiceScope scope = _provider.CreateScope()) {
+            ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             (await context.Products.AnyAsync(p => p.Nombre == "iPhone 17 Pro Max")).Should().BeTrue(
                 "el seeder repone lo que falte sin tocar el resto");
             (await context.Products.CountAsync()).Should().Be(ProductsSeeder.Total);
@@ -103,15 +101,15 @@ public class SeedDataTests {
     public async Task Initialize_UsuariosTienenSuRolAsignado() {
         await SembrarAsync();
 
-        using var scope = _provider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope scope = _provider.CreateScope();
+        ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var admin = await context.Users.SingleAsync(u => u.Email == SeedCredentials.AdminEmail);
-        var roles = await context.UserRoles
+        User admin = await context.Users.SingleAsync(u => u.Email == SeedCredentials.AdminEmail);
+        List<long> roles = await context.UserRoles
             .Where(ur => ur.UserId == admin.Id)
             .Select(ur => ur.RoleId)
             .ToListAsync();
-        var nombres = await context.Roles
+        List<string?> nombres = await context.Roles
             .Where(r => roles.Contains(r.Id))
             .Select(r => r.Name)
             .ToListAsync();
@@ -120,7 +118,7 @@ public class SeedDataTests {
     }
 
     private async Task SembrarAsync() {
-        using var scope = _provider.CreateScope();
+        using IServiceScope scope = _provider.CreateScope();
         await SeedData.InitializeAsync(scope.ServiceProvider);
     }
 }

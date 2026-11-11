@@ -1,7 +1,7 @@
 using System.Data;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
@@ -9,7 +9,6 @@ using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Email;
 using TiendaDawWeb.Shared.Services.Pdf;
-using TiendaDawWeb.Shared.Services.Purchase;
 
 namespace TiendaDawWeb.Shared.Services.Purchase;
 
@@ -35,7 +34,7 @@ public class PurchaseService(
     /// <param name="usuarioId">ID del usuario comprador</param>
     /// <returns>La compra creada o un error</returns>
     public async Task<Result<Models.Purchase, DomainError>> CreatePurchaseFromCarritoAsync(long usuarioId) {
-        var attempt = 0;
+        int attempt = 0;
 
         while (attempt <= MaxRetries) {
             try {
@@ -48,108 +47,8 @@ public class PurchaseService(
         }
 
         return Result.Failure<Models.Purchase, DomainError>(
-            PurchaseError.ProductNotAvailable("El producto fue adquirido por otro usuario. Por favor, intenta con otro."));
-    }
-
-    private async Task<Result<Models.Purchase, DomainError>> TryPurchaseAsync(long usuarioId) {
-        var strategy = context.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync(async () => {
-            using var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-
-            try {
-                var carritoResult = await carritoService.GetCarritoByUsuarioIdAsync(usuarioId);
-                if (carritoResult.IsFailure)
-                    return Result.Failure<Models.Purchase, DomainError>(carritoResult.Error);
-
-                var carritoItems = carritoResult.Value.ToList();
-                if (!carritoItems.Any())
-                    return Result.Failure<Models.Purchase, DomainError>(PurchaseError.EmptyCarrito());
-
-                var productIds = carritoItems.Select(ci => ci.ProductoId).ToList();
-                var productos = await context.Products
-                    .Where(p => productIds.Contains(p.Id) && !p.Deleted)
-                    .ToListAsync();
-
-                foreach (var item in carritoItems) {
-                    var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
-                    if (producto == null) {
-                        await transaction.RollbackAsync();
-                        return Result.Failure<Models.Purchase, DomainError>(ProductError.NotFound(item.ProductoId));
-                    }
-
-                    if (producto.CompraId != null) {
-                        await transaction.RollbackAsync();
-                        return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
-                    }
-
-                    if (producto.PropietarioId == usuarioId) {
-                        await transaction.RollbackAsync();
-                        return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
-                    }
-
-                    if (producto.Reservado && producto.ReservadoPor != usuarioId &&
-                        producto.ReservadoHasta > DateTime.UtcNow) {
-                        await transaction.RollbackAsync();
-                        return Result.Failure<Models.Purchase, DomainError>(PurchaseError.ProductNotAvailable(producto.Nombre));
-                    }
-                }
-
-                var total = carritoItems.Sum(ci => ci.Precio);
-                var purchase = new Models.Purchase {
-                    CompradorId = usuarioId,
-                    FechaCompra = DateTime.UtcNow,
-                    Total = total
-                };
-
-                context.Purchases.Add(purchase);
-                await context.SaveChangesAsync();
-
-                foreach (var producto in productos) {
-                    producto.CompraId = purchase.Id;
-                    producto.Reservado = false;
-                    producto.ReservadoHasta = null;
-                    producto.ReservadoPor = null;
-                }
-
-                await context.SaveChangesAsync();
-
-                var purchaseWithDetails = await context.Purchases
-                    .Include(p => p.Comprador)
-                    .Include(p => p.Products)
-                    .ThenInclude(prod => prod.Propietario)
-                    .FirstOrDefaultAsync(p => p.Id == purchase.Id);
-
-                // 🎓 Patrón API: invalidación de caché con await directo, no con .Tap(async)
-                // El .Tap(async _ => ...) no espera el Task — es el mismo problema que Task.Run.
-                cache.Remove(ProductsCacheKey);
-                foreach (var producto in productos)
-                    cache.Remove($"product_details_{producto.Id}");
-
-                // Invalidar OutputCache por tag "productos"
-                await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
-
-                var clearResult = await carritoService.ClearCarritoAsync(usuarioId);
-                if (clearResult.IsFailure)
-                    logger.LogWarning("Error al vaciar carrito: {Error}", clearResult.Error.Message);
-
-                await transaction.CommitAsync();
-
-                return Result.Success<Models.Purchase, DomainError>(purchaseWithDetails!);
-            } catch (DbUpdateConcurrencyException ex) {
-                await transaction.RollbackAsync();
-                logger.LogError(ex, "Error de concurrencia");
-                throw;
-            } catch (Exception ex) {
-                await transaction.RollbackAsync();
-                logger.LogError(ex, "Error al crear compra");
-                return Result.Failure<Models.Purchase, DomainError>(GenericError.DatabaseError($"Error: {ex.Message}"));
-            }
-        });
-    }
-
-    private static bool IsSerializationFailure(DbUpdateConcurrencyException ex) {
-        var message = ex.InnerException?.Message ?? string.Empty;
-        return message.Contains("40001") || message.Contains("3960") || message.Contains("serialization");
+            PurchaseError.ProductNotAvailable(
+                "El producto fue adquirido por otro usuario. Por favor, intenta con otro."));
     }
 
     /// <summary>
@@ -159,14 +58,15 @@ public class PurchaseService(
     /// <returns>La compra encontrada o error</returns>
     public async Task<Result<Models.Purchase, DomainError>> GetByIdAsync(long id) {
         try {
-            var purchase = await context.Purchases
+            Models.Purchase? purchase = await context.Purchases
                 .Include(p => p.Comprador)
                 .Include(p => p.Products)
                 .ThenInclude(prod => prod.Propietario)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (purchase == null)
+            if (purchase == null) {
                 return Result.Failure<Models.Purchase, DomainError>(PurchaseError.NotFound(id));
+            }
 
             return Result.Success<Models.Purchase, DomainError>(purchase);
         } catch (Exception ex) {
@@ -185,7 +85,7 @@ public class PurchaseService(
     public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetByUserAsync(long usuarioId, int page = 1,
         int pageSize = 10) {
         try {
-            var purchases = await context.Purchases
+            List<Models.Purchase> purchases = await context.Purchases
                 .Include(p => p.Comprador)
                 .Include(p => p.Products)
                 .Where(p => p.CompradorId == usuarioId)
@@ -209,7 +109,7 @@ public class PurchaseService(
     /// <returns>Lista paginada de compras o error</returns>
     public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetAllAsync(int page = 1, int pageSize = 10) {
         try {
-            var purchases = await context.Purchases
+            List<Models.Purchase> purchases = await context.Purchases
                 .Include(p => p.Comprador)
                 .Include(p => p.Products)
                 .OrderByDescending(p => p.FechaCompra)
@@ -232,10 +132,11 @@ public class PurchaseService(
     /// <param name="page">Número de página</param>
     /// <param name="pageSize">Cantidad de elementos por página</param>
     /// <returns>Lista paginada de compras o error</returns>
-    public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetByDateRangeAsync(DateTime desde, DateTime hasta,
+    public async Task<Result<IEnumerable<Models.Purchase>, DomainError>> GetByDateRangeAsync(DateTime desde,
+        DateTime hasta,
         int page = 1, int pageSize = 10) {
         try {
-            var purchases = await context.Purchases
+            List<Models.Purchase> purchases = await context.Purchases
                 .Include(p => p.Comprador)
                 .Include(p => p.Products)
                 .Where(p => p.FechaCompra >= desde && p.FechaCompra <= hasta)
@@ -258,9 +159,10 @@ public class PurchaseService(
     /// <returns>Bytes del PDF generado o error</returns>
     public async Task<Result<byte[], DomainError>> GeneratePdfAsync(long purchaseId) {
         try {
-            var purchaseResult = await GetByIdAsync(purchaseId);
-            if (purchaseResult.IsFailure)
+            Result<Models.Purchase, DomainError> purchaseResult = await GetByIdAsync(purchaseId);
+            if (purchaseResult.IsFailure) {
                 return Result.Failure<byte[], DomainError>(purchaseResult.Error);
+            }
 
             return await pdfService.GenerateInvoicePdfAsync(purchaseResult.Value);
         } catch (Exception ex) {
@@ -277,33 +179,39 @@ public class PurchaseService(
     /// <returns>True si se emitió o success incluso si falló el envío</returns>
     public async Task<Result<bool, DomainError>> SendConfirmationEmailAsync(long purchaseId) {
         try {
-            var purchaseResult = await GetByIdAsync(purchaseId);
-            if (purchaseResult.IsFailure)
+            Result<Models.Purchase, DomainError> purchaseResult = await GetByIdAsync(purchaseId);
+            if (purchaseResult.IsFailure) {
                 return Result.Failure<bool, DomainError>(purchaseResult.Error);
+            }
 
-            var purchase = purchaseResult.Value;
+            Models.Purchase purchase = purchaseResult.Value;
 
             if (string.IsNullOrEmpty(purchase.Comprador?.Email)) {
-                logger.LogWarning("Compra {PurchaseId}: No se puede enviar email, el comprador no tiene email", purchaseId);
+                logger.LogWarning("Compra {PurchaseId}: No se puede enviar email, el comprador no tiene email",
+                    purchaseId);
                 return Result.Success<bool, DomainError>(true);
             }
 
-            logger.LogInformation("Compra {PurchaseId}: Generando PDF para enviar a {Email}", purchaseId, purchase.Comprador.Email);
+            logger.LogInformation("Compra {PurchaseId}: Generando PDF para enviar a {Email}", purchaseId,
+                purchase.Comprador.Email);
 
-            var pdfResult = await GeneratePdfAsync(purchaseId);
-            var pdfAttachment = pdfResult.IsSuccess ? pdfResult.Value : null;
+            Result<byte[], DomainError> pdfResult = await GeneratePdfAsync(purchaseId);
+            byte[]? pdfAttachment = pdfResult.IsSuccess ? pdfResult.Value : null;
 
-            logger.LogInformation("Compra {PurchaseId}: Enviando email de confirmación a {Email}", purchaseId, purchase.Comprador.Email);
+            logger.LogInformation("Compra {PurchaseId}: Enviando email de confirmación a {Email}", purchaseId,
+                purchase.Comprador.Email);
 
-            var emailResult = await emailService.SendPurchaseConfirmationEmailAsync(
+            Result<bool, DomainError> emailResult = await emailService.SendPurchaseConfirmationEmailAsync(
                 purchase.Comprador.Email,
                 purchase,
                 pdfAttachment);
 
             if (emailResult.IsFailure) {
-                logger.LogWarning("Compra {PurchaseId}: Error al enviar email: {Error}", purchaseId, emailResult.Error.Message);
+                logger.LogWarning("Compra {PurchaseId}: Error al enviar email: {Error}", purchaseId,
+                    emailResult.Error.Message);
             } else {
-                logger.LogInformation("Compra {PurchaseId}: Email de confirmación enviado exitosamente a {Email}", purchaseId, purchase.Comprador.Email);
+                logger.LogInformation("Compra {PurchaseId}: Email de confirmación enviado exitosamente a {Email}",
+                    purchaseId, purchase.Comprador.Email);
             }
 
             return Result.Success<bool, DomainError>(true);
@@ -311,5 +219,115 @@ public class PurchaseService(
             logger.LogError(ex, "Compra {PurchaseId}: Excepción al enviar email de confirmación", purchaseId);
             return Result.Success<bool, DomainError>(true);
         }
+    }
+
+    private async Task<Result<Models.Purchase, DomainError>> TryPurchaseAsync(long usuarioId) {
+        IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () => {
+            using IDbContextTransaction transaction =
+                await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+            try {
+                Result<IEnumerable<CarritoItem>, DomainError> carritoResult =
+                    await carritoService.GetCarritoByUsuarioIdAsync(usuarioId);
+                if (carritoResult.IsFailure) {
+                    return Result.Failure<Models.Purchase, DomainError>(carritoResult.Error);
+                }
+
+                var carritoItems = carritoResult.Value.ToList();
+                if (!carritoItems.Any()) {
+                    return Result.Failure<Models.Purchase, DomainError>(PurchaseError.EmptyCarrito());
+                }
+
+                var productIds = carritoItems.Select(ci => ci.ProductoId).ToList();
+                List<Models.Product> productos = await context.Products
+                    .Where(p => productIds.Contains(p.Id) && !p.Deleted)
+                    .ToListAsync();
+
+                foreach (CarritoItem item in carritoItems) {
+                    Models.Product? producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                    if (producto == null) {
+                        await transaction.RollbackAsync();
+                        return Result.Failure<Models.Purchase, DomainError>(ProductError.NotFound(item.ProductoId));
+                    }
+
+                    if (producto.CompraId != null) {
+                        await transaction.RollbackAsync();
+                        return Result.Failure<Models.Purchase, DomainError>(
+                            PurchaseError.ProductNotAvailable(producto.Nombre));
+                    }
+
+                    if (producto.PropietarioId == usuarioId) {
+                        await transaction.RollbackAsync();
+                        return Result.Failure<Models.Purchase, DomainError>(
+                            PurchaseError.ProductNotAvailable(producto.Nombre));
+                    }
+
+                    if (producto.Reservado && producto.ReservadoPor != usuarioId &&
+                        producto.ReservadoHasta > DateTime.UtcNow) {
+                        await transaction.RollbackAsync();
+                        return Result.Failure<Models.Purchase, DomainError>(
+                            PurchaseError.ProductNotAvailable(producto.Nombre));
+                    }
+                }
+
+                decimal total = carritoItems.Sum(ci => ci.Precio);
+                var purchase = new Models.Purchase {
+                    CompradorId = usuarioId,
+                    FechaCompra = DateTime.UtcNow,
+                    Total = total
+                };
+
+                context.Purchases.Add(purchase);
+                await context.SaveChangesAsync();
+
+                foreach (Models.Product producto in productos) {
+                    producto.CompraId = purchase.Id;
+                    producto.Reservado = false;
+                    producto.ReservadoHasta = null;
+                    producto.ReservadoPor = null;
+                }
+
+                await context.SaveChangesAsync();
+
+                Models.Purchase? purchaseWithDetails = await context.Purchases
+                    .Include(p => p.Comprador)
+                    .Include(p => p.Products)
+                    .ThenInclude(prod => prod.Propietario)
+                    .FirstOrDefaultAsync(p => p.Id == purchase.Id);
+
+                // 🎓 Patrón API: invalidación de caché con await directo, no con .Tap(async)
+                // El .Tap(async _ => ...) no espera el Task — es el mismo problema que Task.Run.
+                cache.Remove(ProductsCacheKey);
+                foreach (Models.Product producto in productos) {
+                    cache.Remove($"product_details_{producto.Id}");
+                }
+
+                // Invalidar OutputCache por tag "productos"
+                await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
+
+                Result<bool, DomainError> clearResult = await carritoService.ClearCarritoAsync(usuarioId);
+                if (clearResult.IsFailure) {
+                    logger.LogWarning("Error al vaciar carrito: {Error}", clearResult.Error.Message);
+                }
+
+                await transaction.CommitAsync();
+
+                return Result.Success<Models.Purchase, DomainError>(purchaseWithDetails!);
+            } catch (DbUpdateConcurrencyException ex) {
+                await transaction.RollbackAsync();
+                logger.LogError(ex, "Error de concurrencia");
+                throw;
+            } catch (Exception ex) {
+                await transaction.RollbackAsync();
+                logger.LogError(ex, "Error al crear compra");
+                return Result.Failure<Models.Purchase, DomainError>(GenericError.DatabaseError($"Error: {ex.Message}"));
+            }
+        });
+    }
+
+    private static bool IsSerializationFailure(DbUpdateConcurrencyException ex) {
+        string message = ex.InnerException?.Message ?? string.Empty;
+        return message.Contains("40001") || message.Contains("3960") || message.Contains("serialization");
     }
 }

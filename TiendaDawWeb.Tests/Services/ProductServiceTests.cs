@@ -1,44 +1,48 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
+using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Tests.Services;
 
 /// <summary>
-/// Tests unitarios para ProductService con EF Core InMemory.
+///     Tests unitarios para ProductService con EF Core InMemory.
 /// </summary>
 public class ProductServiceTests {
     private static ProductService CreateService(ApplicationDbContext context) {
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var logger = Mock.Of<ILogger<ProductService>>();
-        var hubContext = Mock.Of<Microsoft.AspNetCore.SignalR.IHubContext<TiendaDawWeb.Shared.Web.Hubs.NotificationHub>>();
+        ILogger<ProductService> logger = Mock.Of<ILogger<ProductService>>();
+        IHubContext<NotificationHub> hubContext = Mock.Of<IHubContext<NotificationHub>>();
         return new ProductService(context, cache, hubContext, logger);
     }
 
     private static ApplicationDbContext CreateContext() {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         return new ApplicationDbContext(options);
     }
 
     [Test]
     public async Task GetByIdAsync_NonExistentProduct_ReturnsFailure() {
-        await using var context = CreateContext();
-        var service = CreateService(context);
-        var result = await service.GetByIdAsync(999);
+        await using ApplicationDbContext context = CreateContext();
+        ProductService service = CreateService(context);
+        Result<Product, DomainError> result = await service.GetByIdAsync(999);
 
         result.IsFailure.Should().BeTrue();
     }
 
     [Test]
     public async Task GetByIdAsync_ExistingProduct_ReturnsProduct() {
-        await using var context = CreateContext();
+        await using ApplicationDbContext context = CreateContext();
         var user = new User { UserName = "owner", Email = "owner@test.com" };
         context.Users.Add(user);
         var product = new Product {
@@ -51,8 +55,8 @@ public class ProductServiceTests {
         context.Products.Add(product);
         await context.SaveChangesAsync();
 
-        var service = CreateService(context);
-        var result = await service.GetByIdAsync(product.Id);
+        ProductService service = CreateService(context);
+        Result<Product, DomainError> result = await service.GetByIdAsync(product.Id);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Nombre.Should().Be("Laptop");

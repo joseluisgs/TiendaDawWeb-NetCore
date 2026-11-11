@@ -1,22 +1,22 @@
-using Serilog;
-using TiendaDawWeb.Shared.Web.Infrastructures;
-using TiendaDawWeb.Shared.Data.Seed;
 using System.Globalization;
 using System.Text;
+using Serilog;
+using TiendaDawWeb.Shared.Data.Seed;
 using TiendaDawWeb.Shared.Middleware;
+using TiendaDawWeb.Shared.Web.Infrastructures;
 
 Console.OutputEncoding = Encoding.UTF8;
 
 Log.Logger = SerilogConfig.Configure().CreateLogger();
 
-var options = WebRootConfig.CreateOptionsWithArgs(args);
+WebApplicationOptions options = WebRootConfig.CreateOptionsWithArgs(args);
 // 🛡️ Si no se especifica ASPNETCORE_ENVIRONMENT, usar Development por defecto
 // (dotnet run sin launchSettings.json usa Production por defecto)
 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))) {
     Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 }
 
-var builder = WebApplication.CreateBuilder(options);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(options);
 
 builder.WebHost.UseStaticWebAssets();
 
@@ -32,9 +32,9 @@ Log.Information("🚀 Inicializando TiendaDawWeb...");
 // 🔧 CONFIGURACIÓN DE SERVICIOS (Extension Methods en Infrastructure)
 // ============================================================================
 
-var services = builder.Services;
-var configuration = builder.Configuration;
-var environment = builder.Environment;
+IServiceCollection services = builder.Services;
+ConfigurationManager configuration = builder.Configuration;
+IWebHostEnvironment environment = builder.Environment;
 
 // Data
 services.AddDatabases(builder.Configuration, builder.Environment);
@@ -76,8 +76,8 @@ services.AddAppSignalR();
 // 🚀 CONSTRUCCIÓN DE LA APLICACIÓN
 // ============================================================================
 
-var app = builder.Build();
-var isDevelopment = app.Environment.IsDevelopment();
+WebApplication app = builder.Build();
+bool isDevelopment = app.Environment.IsDevelopment();
 
 Log.Information("✅ Aplicación construida");
 
@@ -146,14 +146,14 @@ try {
 /// Imprime en los logs la información de inicio de la aplicación.
 /// </summary>
 static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration) {
-    var urls = configuration["ASPNETCORE_URLS"]?.Split(';') ?? new[] { "http://localhost:5000" };
-    var firstUrl = urls.FirstOrDefault() ?? "http://localhost:5000";
-    var protocol = firstUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
-    var host = firstUrl.Contains("://") ? firstUrl.Split("://")[1].Split(':')[0] : "localhost";
-    var port = firstUrl.Contains(':') ? firstUrl.Split(':').Last() : "5000";
+    string[] urls = configuration["ASPNETCORE_URLS"]?.Split(';') ?? new[] { "http://localhost:5000" };
+    string firstUrl = urls.FirstOrDefault() ?? "http://localhost:5000";
+    string protocol = firstUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https" : "http";
+    string host = firstUrl.Contains("://") ? firstUrl.Split("://")[1].Split(':')[0] : "localhost";
+    string port = firstUrl.Contains(':') ? firstUrl.Split(':').Last() : "5000";
 
-    var mode = isDevelopment ? "DESARROLLO" : "PRODUCCION";
-    var baseUrl = $"{protocol}://{host}:{port}";
+    string mode = isDevelopment ? "DESARROLLO" : "PRODUCCION";
+    string baseUrl = $"{protocol}://{host}:{port}";
 
     Log.Information("=================================================================");
     Log.Information("TiendaDawWeb - Aplicación Web Educativa");
@@ -162,11 +162,14 @@ static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration) {
     Log.Information("Panel Admin:            {BaseUrl}/Admin", baseUrl);
     Log.Information("=================================================================");
     Log.Information("CREDENCIALES DE PRUEBA:");
-    Log.Information("  Admin:   {Email} / {Password} (ROLE_ADMIN)", SeedCredentials.AdminEmail, SeedCredentials.AdminPassword);
-    Log.Information("  Usuario: {Email} / {Password} (ROLE_USER)", SeedCredentials.PruebaEmail, SeedCredentials.PruebaPassword);
+    Log.Information("  Admin:   {Email} / {Password} (ROLE_ADMIN)", SeedCredentials.AdminEmail,
+        SeedCredentials.AdminPassword);
+    Log.Information("  Usuario: {Email} / {Password} (ROLE_USER)", SeedCredentials.PruebaEmail,
+        SeedCredentials.PruebaPassword);
     Log.Information("=================================================================");
     Log.Information("DATOS SEMBRADOS (Seed):");
-    Log.Information("  SQLite In-Memory: {Usuarios} usuarios, {Productos} productos", SeedCredentials.Usuarios.Count, ProductsSeeder.Total);
+    Log.Information("  SQLite In-Memory: {Usuarios} usuarios, {Productos} productos", SeedCredentials.Usuarios.Count,
+        ProductsSeeder.Total);
     Log.Information("  Roles: {Roles}", string.Join(", ", RolesSeeder.Roles));
     Log.Information("=================================================================");
     Log.Information("🚀 Aplicacion iniciada correctamente en {BaseUrl} ({Mode})",

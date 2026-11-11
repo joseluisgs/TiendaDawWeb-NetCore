@@ -1,3 +1,4 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Product;
@@ -14,15 +16,15 @@ namespace TiendaDawWeb.Tests.Shared.Services;
 
 public class ProductServiceTests {
     private ApplicationDbContext Context = null!;
-    private ProductService _service = null!;
-    private Mock<ILogger<ProductService>> _loggerMock = null!;
-    private Mock<IHubContext<NotificationHub>> _hubContextMock = null!;
     private MemoryCache MemoryCache = null!;
+    private Mock<IHubContext<NotificationHub>> _hubContextMock = null!;
+    private Mock<ILogger<ProductService>> _loggerMock = null!;
+    private ProductService _service = null!;
 
     [SetUp]
     public void Setup() {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         Context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<ProductService>>();
@@ -42,12 +44,15 @@ public class ProductServiceTests {
     [Test]
     public async Task GetByIdAsync_ReturnsProduct_WhenExists() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Propietario = user, Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.GetByIdAsync(1);
+        Result<Product, DomainError> result = await _service.GetByIdAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Nombre.Should().Be("Test");
@@ -55,7 +60,7 @@ public class ProductServiceTests {
 
     [Test]
     public async Task GetByIdAsync_ReturnsFailure_WhenNotExists() {
-        var result = await _service.GetByIdAsync(999);
+        Result<Product, DomainError> result = await _service.GetByIdAsync(999);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -63,12 +68,15 @@ public class ProductServiceTests {
     [Test]
     public async Task GetByIdAsync_ReturnsFailure_WhenDeleted() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Deleted", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user, Deleted = true };
+        var product = new Product {
+            Id = 1, Nombre = "Deleted", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Propietario = user, Deleted = true
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.GetByIdAsync(1);
+        Result<Product, DomainError> result = await _service.GetByIdAsync(1);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -82,13 +90,19 @@ public class ProductServiceTests {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
         Context.Products.AddRange(
-            new Product { Id = 1, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user1, Deleted = false, CompraId = null },
-            new Product { Id = 2, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 2, Propietario = user2, Deleted = false, CompraId = null }
+            new Product {
+                Id = 1, Nombre = "P1", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Propietario = user1, Deleted = false, CompraId = null
+            },
+            new Product {
+                Id = 2, Nombre = "P2", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES,
+                PropietarioId = 2, Propietario = user2, Deleted = false, CompraId = null
+            }
         );
         Context.Users.AddRange(user1, user2);
         await Context.SaveChangesAsync();
 
-        var result = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
@@ -96,7 +110,7 @@ public class ProductServiceTests {
 
     [Test]
     public async Task GetAllAsync_ReturnsEmpty_WhenNoProducts() {
-        var result = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEmpty();
@@ -106,13 +120,19 @@ public class ProductServiceTests {
     public async Task GetAllAsync_ExcludesDeletedProducts() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
-            new Product { Id = 1, Nombre = "Active", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false },
-            new Product { Id = 2, Nombre = "Deleted", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = true }
+            new Product {
+                Id = 1, Nombre = "Active", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = false
+            },
+            new Product {
+                Id = 2, Nombre = "Deleted", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = true
+            }
         );
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var result = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -123,13 +143,19 @@ public class ProductServiceTests {
     public async Task GetAllAsync_ExcludesSoldProducts() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
-            new Product { Id = 1, Nombre = "Available", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
-            new Product { Id = 2, Nombre = "Sold", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = 1 }
+            new Product {
+                Id = 1, Nombre = "Available", Descripcion = "Desc", Precio = 100,
+                Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null
+            },
+            new Product {
+                Id = 2, Nombre = "Sold", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = false, CompraId = 1
+            }
         );
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var result = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -145,13 +171,19 @@ public class ProductServiceTests {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
         Context.Products.AddRange(
-            new Product { Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user1, Deleted = false, CompraId = null },
-            new Product { Id = 2, Nombre = "Samsung", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 2, Propietario = user2, Deleted = false, CompraId = null }
+            new Product {
+                Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Propietario = user1, Deleted = false, CompraId = null
+            },
+            new Product {
+                Id = 2, Nombre = "Samsung", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 2, Propietario = user2, Deleted = false, CompraId = null
+            }
         );
         Context.Users.AddRange(user1, user2);
         await Context.SaveChangesAsync();
 
-        var result = await _service.SearchAsync("iPhone", null);
+        Result<IEnumerable<Product>, DomainError> result = await _service.SearchAsync("iPhone", null);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -162,13 +194,19 @@ public class ProductServiceTests {
     public async Task SearchAsync_FiltersByCategory() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
-            new Product { Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
-            new Product { Id = 2, Nombre = "Cable", Descripcion = "Desc", Precio = 50, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false, CompraId = null }
+            new Product {
+                Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = false, CompraId = null
+            },
+            new Product {
+                Id = 2, Nombre = "Cable", Descripcion = "Desc", Precio = 50, Categoria = ProductCategory.ACCESSORIES,
+                PropietarioId = 1, Deleted = false, CompraId = null
+            }
         );
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var result = await _service.SearchAsync(null, "SMARTPHONES");
+        Result<IEnumerable<Product>, DomainError> result = await _service.SearchAsync(null, "SMARTPHONES");
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -179,13 +217,19 @@ public class ProductServiceTests {
     public async Task SearchAsync_FiltersByNameAndCategory() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
-            new Product { Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
-            new Product { Id = 2, Nombre = "iPhone Case", Descripcion = "Desc", Precio = 50, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false, CompraId = null }
+            new Product {
+                Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = false, CompraId = null
+            },
+            new Product {
+                Id = 2, Nombre = "iPhone Case", Descripcion = "Desc", Precio = 50,
+                Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false, CompraId = null
+            }
         );
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var result = await _service.SearchAsync("iPhone", "SMARTPHONES");
+        Result<IEnumerable<Product>, DomainError> result = await _service.SearchAsync("iPhone", "SMARTPHONES");
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -196,12 +240,15 @@ public class ProductServiceTests {
     public async Task SearchAsync_ReturnsEmpty_WhenNoMatch() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.Add(
-            new Product { Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null }
+            new Product {
+                Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = false, CompraId = null
+            }
         );
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var result = await _service.SearchAsync("NonExistent", "SMARTPHONES");
+        Result<IEnumerable<Product>, DomainError> result = await _service.SearchAsync("NonExistent", "SMARTPHONES");
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEmpty();
@@ -211,12 +258,15 @@ public class ProductServiceTests {
     public async Task SearchAsync_CaseInsensitive() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.Add(
-            new Product { Id = 1, Nombre = "IPHONE", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null }
+            new Product {
+                Id = 1, Nombre = "IPHONE", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+                PropietarioId = 1, Deleted = false, CompraId = null
+            }
         );
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var result = await _service.SearchAsync("IPHONE", null);
+        Result<IEnumerable<Product>, DomainError> result = await _service.SearchAsync("IPHONE", null);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -228,9 +278,12 @@ public class ProductServiceTests {
 
     [Test]
     public async Task CreateAsync_CreatesProduct() {
-        var product = new Product { Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.CreateAsync(product);
+        Result<Product, DomainError> result = await _service.CreateAsync(product);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Nombre.Should().Be("New");
@@ -239,9 +292,12 @@ public class ProductServiceTests {
 
     [Test]
     public async Task CreateAsync_GeneratesId() {
-        var product = new Product { Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.CreateAsync(product);
+        Result<Product, DomainError> result = await _service.CreateAsync(product);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Id.Should().BeGreaterThan(0);
@@ -249,10 +305,13 @@ public class ProductServiceTests {
 
     [Test]
     public async Task CreateAsync_SetsCreatedAt() {
-        var before = DateTime.UtcNow.AddSeconds(-1);
-        var product = new Product { Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        DateTime before = DateTime.UtcNow.AddSeconds(-1);
+        var product = new Product {
+            Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.CreateAsync(product);
+        Result<Product, DomainError> result = await _service.CreateAsync(product);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.CreatedAt.Should().BeAfter(before);
@@ -260,9 +319,12 @@ public class ProductServiceTests {
 
     [Test]
     public async Task CreateAsync_InvalidPrice_ReturnsFailure() {
-        var product = new Product { Nombre = "Invalid", Descripcion = "Desc", Precio = -10, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Nombre = "Invalid", Descripcion = "Desc", Precio = -10, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.CreateAsync(product);
+        Result<Product, DomainError> result = await _service.CreateAsync(product);
 
         result.IsSuccess.Should().BeFalse();
         Context.Products.Should().BeEmpty();
@@ -275,26 +337,35 @@ public class ProductServiceTests {
     [Test]
     public async Task UpdateAsync_UpdatesProduct() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Old Name", Descripcion = "Old Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Old Name", Descripcion = "Old Desc", Precio = 100,
+            Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var update = new Product { Id = 1, Nombre = "New Name", Descripcion = "New Desc", Precio = 150, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false };
+        var update = new Product {
+            Id = 1, Nombre = "New Name", Descripcion = "New Desc", Precio = 150,
+            Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.UpdateAsync(1, update, 1);
+        Result<Product, DomainError> result = await _service.UpdateAsync(1, update, 1);
 
         result.IsSuccess.Should().BeTrue();
-        var updated = await Context.Products.FindAsync(1L);
+        Product? updated = await Context.Products.FindAsync(1L);
         updated!.Nombre.Should().Be("New Name");
         updated.Precio.Should().Be(150);
     }
 
     [Test]
     public async Task UpdateAsync_ReturnsFailure_WhenNotExists() {
-        var product = new Product { Id = 999, Nombre = "Ghost", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 999, Nombre = "Ghost", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.UpdateAsync(999, product, 1);
+        Result<Product, DomainError> result = await _service.UpdateAsync(999, product, 1);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -302,15 +373,21 @@ public class ProductServiceTests {
     [Test]
     public async Task UpdateAsync_OnlyUpdatesAllowedFields() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var beforeCreatedAt = product.CreatedAt;
-        var update = new Product { Id = 1, Nombre = "Updated", Descripcion = "Updated Desc", Precio = 200, Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false };
+        DateTime beforeCreatedAt = product.CreatedAt;
+        var update = new Product {
+            Id = 1, Nombre = "Updated", Descripcion = "Updated Desc", Precio = 200,
+            Categoria = ProductCategory.ACCESSORIES, PropietarioId = 1, Deleted = false
+        };
 
-        var result = await _service.UpdateAsync(1, update, 1);
+        Result<Product, DomainError> result = await _service.UpdateAsync(1, update, 1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Nombre.Should().Be("Updated");
@@ -324,22 +401,25 @@ public class ProductServiceTests {
     [Test]
     public async Task DeleteAsync_MarksAsDeleted() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.DeleteAsync(1, 1, false);
+        Result<bool, DomainError> result = await _service.DeleteAsync(1, 1);
 
         result.IsSuccess.Should().BeTrue();
-        var deletedProduct = await Context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
+        Product? deletedProduct = await Context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
         deletedProduct.Should().NotBeNull();
         deletedProduct!.Deleted.Should().BeTrue();
     }
 
     [Test]
     public async Task DeleteAsync_ReturnsFailure_WhenNotExists() {
-        var result = await _service.DeleteAsync(999, 1, false);
+        Result<bool, DomainError> result = await _service.DeleteAsync(999, 1);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -348,15 +428,18 @@ public class ProductServiceTests {
     public async Task DeleteAsync_AdminCanDeleteAnyProduct() {
         var owner = new User { Id = 1, Email = "owner@test.com", UserName = "owner" };
         var admin = new User { Id = 2, Email = "admin@test.com", UserName = "admin" };
-        var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         Context.Users.AddRange(owner, admin);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.DeleteAsync(1, 2, true);
+        Result<bool, DomainError> result = await _service.DeleteAsync(1, 2, true);
 
         result.IsSuccess.Should().BeTrue();
-        var deletedProduct = await Context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
+        Product? deletedProduct = await Context.Products.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == 1);
         deletedProduct.Should().NotBeNull();
         deletedProduct!.Deleted.Should().BeTrue();
     }
@@ -371,51 +454,66 @@ public class ProductServiceTests {
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var product1 = new Product { Nombre = "First", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product1 = new Product {
+            Nombre = "First", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         await _service.CreateAsync(product1);
 
-        var result1 = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result1 = await _service.GetAllAsync();
         result1.Value.Should().HaveCount(1);
 
-        var product2 = new Product { Nombre = "Second", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product2 = new Product {
+            Nombre = "Second", Descripcion = "Desc", Precio = 200, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         await _service.CreateAsync(product2);
 
-        var result2 = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result2 = await _service.GetAllAsync();
         result2.Value.Should().HaveCount(2);
     }
 
     [Test]
     public async Task UpdateAsync_InvalidatesCache() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result1 = await _service.GetByIdAsync(1);
+        Result<Product, DomainError> result1 = await _service.GetByIdAsync(1);
         result1.Value.Nombre.Should().Be("Original");
 
-        var update = new Product { Id = 1, Nombre = "Updated", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var update = new Product {
+            Id = 1, Nombre = "Updated", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         await _service.UpdateAsync(1, update, 1);
 
-        var result2 = await _service.GetByIdAsync(1);
+        Result<Product, DomainError> result2 = await _service.GetByIdAsync(1);
         result2.Value.Nombre.Should().Be("Updated");
     }
 
     [Test]
     public async Task DeleteAsync_InvalidatesCache() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "ToDelete", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "ToDelete", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            PropietarioId = 1, Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result1 = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result1 = await _service.GetAllAsync();
         result1.Value.Should().HaveCount(1);
 
-        await _service.DeleteAsync(1, 1, false);
+        await _service.DeleteAsync(1, 1);
 
-        var result2 = await _service.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result2 = await _service.GetAllAsync();
         result2.Value.Should().HaveCount(0);
     }
 

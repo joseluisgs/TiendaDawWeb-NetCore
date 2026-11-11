@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace TiendaDawWeb.Controllers;
 
 /// <summary>
-/// Controlador raíz que redirige a la página pública preservando parámetros de búsqueda
+///     Controlador raíz que redirige a la página pública preservando parámetros de búsqueda
 /// </summary>
 public class HomeController : Controller {
     /// <summary>
-    /// GET / - Redirige a PublicController.Index preservando todos los query parameters
+    ///     GET / - Redirige a PublicController.Index preservando todos los query parameters
     /// </summary>
     [Route("")]
     public IActionResult Index(
@@ -19,7 +19,7 @@ public class HomeController : Controller {
         int page = 1,
         int size = 12) {
         // Normalizar parámetros de búsqueda (puede venir como "search" o "q")
-        var searchQuery = search ?? q;
+        string? searchQuery = search ?? q;
 
         // Preservar todos los parámetros en la redirección
         return RedirectToAction("Index", "Public", new {

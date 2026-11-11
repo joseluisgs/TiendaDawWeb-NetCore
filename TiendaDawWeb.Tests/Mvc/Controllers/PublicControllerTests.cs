@@ -3,7 +3,6 @@ using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
@@ -17,9 +16,9 @@ using TiendaDawWeb.Shared.Services.Product;
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class PublicControllerTests {
-    private readonly Mock<IProductService> _mockProductService;
-    private readonly Mock<ILogger<PublicController>> _mockLogger;
     private readonly PublicController _controller;
+    private readonly Mock<ILogger<PublicController>> _mockLogger;
+    private readonly Mock<IProductService> _mockProductService;
 
     public PublicControllerTests() {
         _mockProductService = new Mock<IProductService>();
@@ -53,7 +52,7 @@ public class PublicControllerTests {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Success<IEnumerable<Product>, DomainError>(products)));
 
-        var result = await _controller.Index(q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = await _controller.Index(null, null, null, null);
 
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
@@ -65,14 +64,14 @@ public class PublicControllerTests {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Failure<IEnumerable<Product>, DomainError>(ProductError.NotFound(0))));
 
-        var result = await _controller.Index(q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = await _controller.Index(null, null, null, null);
 
         result.Should().BeOfType<ViewResult>();
     }
 
     [Test]
     public async Task Index_Redirects_WhenLangProvided() {
-        var result = await _controller.Index(q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12, lang: "en");
+        IActionResult result = await _controller.Index(null, null, null, null, 1, 12, "en");
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -86,7 +85,7 @@ public class PublicControllerTests {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Success<IEnumerable<Product>, DomainError>(products)));
 
-        var result = await _controller.Index(q: "laptop", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = await _controller.Index("laptop", null, null, null);
 
         result.Should().BeOfType<ViewResult>();
     }
@@ -100,7 +99,7 @@ public class PublicControllerTests {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Success<IEnumerable<Product>, DomainError>(products)));
 
-        var result = await _controller.Index(q: null, categoria: "SMARTPHONES", minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = await _controller.Index(null, "SMARTPHONES", null, null);
 
         result.Should().BeOfType<ViewResult>();
     }
@@ -114,7 +113,7 @@ public class PublicControllerTests {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Success<IEnumerable<Product>, DomainError>(products)));
 
-        var result = await _controller.Index(q: null, categoria: null, minPrecio: 100, maxPrecio: 200, page: 1, size: 12);
+        IActionResult result = await _controller.Index(null, null, 100, 200);
 
         result.Should().BeOfType<ViewResult>();
     }
@@ -131,7 +130,7 @@ public class PublicControllerTests {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Success<IEnumerable<Product>, DomainError>(products)));
 
-        var result = await _controller.Index(q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
+        IActionResult result = await _controller.Index(null, null, null, null);
 
         result.Should().BeOfType<ViewResult>();
     }

@@ -1,6 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using TiendaDawWeb.Shared.Data.Seed;
+using TiendaDawWeb.Shared.Infrastructures;
+using TiendaDawWeb.Shared.Services.BackgroundServices;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Email;
 using TiendaDawWeb.Shared.Services.Favorite;
@@ -8,19 +8,17 @@ using TiendaDawWeb.Shared.Services.Pdf;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Purchase;
 using TiendaDawWeb.Shared.Services.Rating;
-using TiendaDawWeb.Shared.Services.Storage;
-using TiendaDawWeb.Shared.Services.BackgroundServices;
 using TiendaDawWeb.Shared.Services.Stats;
-using TiendaDawWeb.Shared.Infrastructures;
+using TiendaDawWeb.Shared.Services.Storage;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Extensiones de configuración de servicios de negocio.
+///     Extensiones de configuración de servicios de negocio.
 /// </summary>
 public static class ServicesConfig {
     /// <summary>
-    /// Registra todos los servicios de negocio en el contenedor de dependencias.
+    ///     Registra todos los servicios de negocio en el contenedor de dependencias.
     /// </summary>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services) {
         Log.Information("⚙️ Registrando servicios de negocio...");
@@ -39,7 +37,7 @@ public static class ServicesConfig {
     }
 
     /// <summary>
-    /// Registra los seeders de datos de ejemplo (roles, usuarios y catálogo).
+    ///     Registra los seeders de datos de ejemplo (roles, usuarios y catálogo).
     /// </summary>
     public static IServiceCollection AddSeeders(this IServiceCollection services) {
         Log.Information("🌱 Registrando seeders de datos de ejemplo...");
@@ -50,7 +48,7 @@ public static class ServicesConfig {
     }
 
     /// <summary>
-    /// Configura las tareas programadas de background jobs.
+    ///     Configura las tareas programadas de background jobs.
     /// </summary>
     public static IServiceCollection AddBackgroundJobs(this IServiceCollection services) {
         Log.Information("📰 Configurando Background Jobs...");
@@ -59,7 +57,7 @@ public static class ServicesConfig {
     }
 
     /// <summary>
-    /// Configura los servicios de limpieza automática.
+    ///     Configura los servicios de limpieza automática.
     /// </summary>
     public static IServiceCollection AddCleanupServices(this IServiceCollection services) {
         Log.Information("🧹 Configurando servicios de limpieza...");

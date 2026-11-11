@@ -3,11 +3,11 @@ using TiendaDawWeb.Shared.Services.Rating;
 namespace TiendaDawWeb.Shared.Infrastructures;
 
 /// <summary>
-/// Define métodos de extensión para el registro de los almacenes de estado reactivo.
+///     Define métodos de extensión para el registro de los almacenes de estado reactivo.
 /// </summary>
 public static class StateConfig {
     /// <summary>
-    /// Registra los almacenes de estado globales como Singletons.
+    ///     Registra los almacenes de estado globales como Singletons.
     /// </summary>
     /// <param name="services">Contenedor de dependencias.</param>
     /// <returns>Contenedor de dependencias actualizado.</returns>

@@ -1,9 +1,6 @@
 using CSharpFunctionalExtensions;
-using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
-using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Favorite;
 
 namespace TiendaDawWeb.Shared.Services.Favorite;
 
@@ -16,7 +13,7 @@ public class FavoriteService(
 ) : IFavoriteService {
     public async Task<Result<bool, DomainError>> IsFavoriteAsync(long userId, long productId) {
         try {
-            var exists = await context.Favorites
+            bool exists = await context.Favorites
                 .AnyAsync(f => f.UsuarioId == userId && f.ProductoId == productId);
 
             return Result.Success<bool, DomainError>(exists);
@@ -27,9 +24,10 @@ public class FavoriteService(
     }
 
     public async Task<Result<Models.Favorite, DomainError>> AddFavoriteAsync(long userId, long productId) {
-        var existsResult = await IsFavoriteAsync(userId, productId);
-        if (existsResult.Value)
+        Result<bool, DomainError> existsResult = await IsFavoriteAsync(userId, productId);
+        if (existsResult.Value) {
             return Result.Failure<Models.Favorite, DomainError>(FavoriteError.AlreadyExists());
+        }
 
         var favorite = new Models.Favorite {
             UsuarioId = userId,
@@ -45,11 +43,12 @@ public class FavoriteService(
     }
 
     public async Task<Result<bool, DomainError>> RemoveFavoriteAsync(long userId, long productId) {
-        var favorite = await context.Favorites
+        Models.Favorite? favorite = await context.Favorites
             .FirstOrDefaultAsync(f => f.UsuarioId == userId && f.ProductoId == productId);
 
-        if (favorite == null)
+        if (favorite == null) {
             return Result.Failure<bool, DomainError>(FavoriteError.NotFound());
+        }
 
         context.Favorites.Remove(favorite);
         await context.SaveChangesAsync();
@@ -61,7 +60,7 @@ public class FavoriteService(
 
     public async Task<Result<IEnumerable<Models.Product>, DomainError>> GetUserFavoritesAsync(long userId) {
         try {
-            var favorites = await context.Favorites
+            List<Models.Product> favorites = await context.Favorites
                 .Where(f => f.UsuarioId == userId)
                 .Include(f => f.Producto)
                 .ThenInclude(p => p.Propietario)

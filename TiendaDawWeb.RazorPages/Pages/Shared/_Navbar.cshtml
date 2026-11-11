@@ -1,7 +1,4 @@
-@using Microsoft.AspNetCore.Identity
-@using TiendaDawWeb.Shared.Models
 @using TiendaDawWeb.Shared.Services.Carrito
-@using Microsoft.Extensions.Localization
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 @inject ICarritoService CarritoService
@@ -10,8 +7,7 @@
 @{
     var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
     var cartCount = 0;
-    if (currentUser != null)
-    {
+    if (currentUser != null) {
         var cartCountResult = await CarritoService.GetCarritoCountAsync(currentUser.Id);
         cartCount = cartCountResult.IsSuccess ? cartCountResult.Value : 0;
     }
@@ -32,8 +28,7 @@
                         <i class="bi bi-house-door"></i> @Localizer["Nav.Home"]
                     </a>
                 </li>
-                @if (SignInManager.IsSignedIn(User))
-                {
+                @if (SignInManager.IsSignedIn(User)) {
                     <li class="nav-item">
                         <a class="nav-link" asp-page="/Product/MyProducts">
                             <i class="bi bi-bag"></i> @Localizer["Nav.MyProducts"]
@@ -49,8 +44,7 @@
                             <i class="bi bi-heart"></i> @Localizer["Nav.Favorites"]
                         </a>
                     </li>
-                    @if (currentUser?.Rol == "ADMIN")
-                    {
+                    @if (currentUser?.Rol == "ADMIN") {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-shield-check"></i> @Localizer["Nav.Admin"]
@@ -67,7 +61,8 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" asp-page="/Admin/Productos" data-testid="admin-products-link">
+                                    <a class="dropdown-item" asp-page="/Admin/Productos"
+                                       data-testid="admin-products-link">
                                         <i class="bi bi-box-seam"></i> @Localizer["Products"]
                                     </a>
                                 </li>
@@ -82,10 +77,12 @@
                 }
             </ul>
 
-                <form action="/Public" class="d-flex me-3" method="get" role="search">
-                    <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="search" value="@ViewBag.Search" data-testid="navbar-search-input">
-                    <button class="btn btn-outline-light ms-2" type="submit" data-testid="navbar-search-button"><i class="bi bi-search"></i></button>
-                </form>
+            <form action="/Public" class="d-flex me-3" method="get" role="search">
+                <input class="form-control" name="q" placeholder="@Localizer["SearchProducts"]" type="search"
+                       value="@ViewBag.Search" data-testid="navbar-search-input">
+                <button class="btn btn-outline-light ms-2" type="submit" data-testid="navbar-search-button"><i
+                            class="bi bi-search"></i></button>
+            </form>
 
             <ul class="navbar-nav">
                 @* Language Switcher *@
@@ -95,69 +92,80 @@
                         @{
                             var currentCulture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
                             var langName = currentCulture switch {
-                                "es" => "ES",
-                                "en" => "EN",
-                                "fr" => "FR",
-                                "de" => "DE",
-                                "pt" => "PT",
-                                _ => "ES"
+                                    "es" => "ES",
+                                    "en" => "EN",
+                                    "fr" => "FR",
+                                    "de" => "DE",
+                                    "pt" => "PT",
+                                    _ => "ES"
                             };
                         }
                         @langName
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item @(currentCulture == "es" ? "active" : "")" href="@(Context.Request.Path)?lang=es">Español</a>
+                            <a class="dropdown-item @(currentCulture == "es" ? "active" : "")"
+                               href="@(Context.Request.Path)?lang=es">Español</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "en" ? "active" : "")" href="@(Context.Request.Path)?lang=en">English</a>
+                            <a class="dropdown-item @(currentCulture == "en" ? "active" : "")"
+                               href="@(Context.Request.Path)?lang=en">English</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "fr" ? "active" : "")" href="@(Context.Request.Path)?lang=fr">Français</a>
+                            <a class="dropdown-item @(currentCulture == "fr" ? "active" : "")"
+                               href="@(Context.Request.Path)?lang=fr">Français</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "de" ? "active" : "")" href="@(Context.Request.Path)?lang=de">Deutsch</a>
+                            <a class="dropdown-item @(currentCulture == "de" ? "active" : "")"
+                               href="@(Context.Request.Path)?lang=de">Deutsch</a>
                         </li>
                         <li>
-                            <a class="dropdown-item @(currentCulture == "pt" ? "active" : "")" href="@(Context.Request.Path)?lang=pt">Português</a>
+                            <a class="dropdown-item @(currentCulture == "pt" ? "active" : "")"
+                               href="@(Context.Request.Path)?lang=pt">Português</a>
                         </li>
                     </ul>
                 </li>
 
-                @if (SignInManager.IsSignedIn(User) && currentUser != null)
-                {
+                @if (SignInManager.IsSignedIn(User) && currentUser != null) {
                     <li class="nav-item">
                         <a class="nav-link position-relative" asp-page="/Carrito/Index" data-testid="cart-icon">
                             <i class="bi bi-cart3"></i> @Localizer["Nav.Cart"]
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger @(cartCount > 0 ? "" : "d-none")" data-testid="cart-count">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger @(cartCount > 0 ? "" : "d-none")"
+                                  data-testid="cart-count">
                                 @cartCount
                                 <span class="visually-hidden">productos en carrito</span>
                             </span>
                         </a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-testid="user-menu">
-                            <i class="bi bi-person-circle"></i> <span data-testid="user-name">@(currentUser.Nombre ?? "Usuario")</span>
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                           data-testid="user-menu">
+                            <i class="bi bi-person-circle"></i> <span
+                                    data-testid="user-name">@(currentUser.Nombre ?? "Usuario")</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><h6 class="dropdown-header">@(currentUser.Rol ?? "USER")</h6></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <a class="dropdown-item" asp-page="/Profile/Index" data-testid="profile-link">
                                     <i class="bi bi-person"></i> @Localizer["Nav.Profile"]
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit()">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   href="javascript:document.getElementById('logoutForm').submit()">
                                     <i class="bi bi-box-arrow-right"></i> @Localizer["Nav.Logout"]
                                 </a>
                             </li>
                         </ul>
                     </li>
                 }
-                else
-                {
+                else {
                     <li class="nav-item">
                         <a class="nav-link" asp-page="/Auth/Login">
                             <i class="bi bi-person"></i> @Localizer["Nav.Login"]
@@ -169,8 +177,7 @@
     </div>
 </nav>
 
-@if (SignInManager.IsSignedIn(User))
-{
+@if (SignInManager.IsSignedIn(User)) {
     <form asp-page="/Auth/Logout" method="post" id="logoutForm" style="display: none;">
     </form>
 }

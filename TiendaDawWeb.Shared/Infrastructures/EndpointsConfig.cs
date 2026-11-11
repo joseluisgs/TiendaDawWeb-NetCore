@@ -1,27 +1,24 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using Serilog;
 using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Configuración de endpoints de la aplicación.
+///     Configuración de endpoints de la aplicación.
 /// </summary>
 public static class EndpointsConfig {
     /// <summary>
-    /// Configura los endpoints MVC y Blazor.
+    ///     Configura los endpoints MVC y Blazor.
     /// </summary>
     /// <param name="app">Application builder.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static Microsoft.AspNetCore.Builder.IApplicationBuilder MapAppEndpoints(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) {
-        var webApp = (Microsoft.AspNetCore.Builder.WebApplication)app;
+    public static IApplicationBuilder MapAppEndpoints(this IApplicationBuilder app) {
+        var webApp = (WebApplication)app;
 
         Log.Information("🛣️ Mapeando endpoints MVC...");
         webApp.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
+            "default",
+            "{controller=Home}/{action=Index}/{id?}");
 
         Log.Information("🛣️ Mapeando Razor Pages...");
         webApp.MapRazorPages();

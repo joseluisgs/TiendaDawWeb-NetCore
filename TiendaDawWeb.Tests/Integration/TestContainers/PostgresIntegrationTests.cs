@@ -8,14 +8,11 @@ using TiendaDawWeb.Shared.Models.Enums;
 namespace TiendaDawWeb.Tests.Integration.TestContainers;
 
 /// <summary>
-/// Tests de integración con PostgreSQL real (TestContainers).
-/// Cada test usa un contexto fresh con base de datos única.
+///     Tests de integración con PostgreSQL real (TestContainers).
+///     Cada test usa un contexto fresh con base de datos única.
 /// </summary>
 [TestFixture]
 public class PostgresIntegrationTests {
-    private PostgresFixture _fixture = null!;
-    private int _dbCounter;
-
     [OneTimeSetUp]
     public async Task OneTimeSetUp() {
         try {
@@ -30,20 +27,24 @@ public class PostgresIntegrationTests {
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown() {
-        if (_fixture is not null)
+        if (_fixture is not null) {
             await _fixture.StopAsync();
+        }
     }
 
+    private PostgresFixture _fixture = null!;
+    private int _dbCounter;
+
     private async Task<ApplicationDbContext> CreateFreshContextAsync() {
-        var dbName = $"tiendadaw_{Interlocked.Increment(ref _dbCounter)}";
-        var context = _fixture.CreateIsolatedContext(dbName);
+        string dbName = $"tiendadaw_{Interlocked.Increment(ref _dbCounter)}";
+        ApplicationDbContext context = _fixture.CreateIsolatedContext(dbName);
         await context.Database.EnsureCreatedAsync();
         return context;
     }
 
     [Test]
     public async Task Product_Create_SavesToPostgres() {
-        await using var context = await CreateFreshContextAsync();
+        await using ApplicationDbContext context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "testuser", Email = "test@test.com" };
         context.Users.Add(user);
@@ -60,7 +61,7 @@ public class PostgresIntegrationTests {
         context.Products.Add(product);
         await context.SaveChangesAsync();
 
-        var saved = await context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
+        Product? saved = await context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
         saved.Should().NotBeNull();
         saved!.Nombre.Should().Be("Laptop Dell");
         saved.Precio.Should().Be(999.99m);
@@ -68,7 +69,7 @@ public class PostgresIntegrationTests {
 
     [Test]
     public async Task Product_SoftDelete_MarksAsDeleted() {
-        await using var context = await CreateFreshContextAsync();
+        await using ApplicationDbContext context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "user2", Email = "user2@test.com" };
         context.Users.Add(user);
@@ -90,7 +91,7 @@ public class PostgresIntegrationTests {
 
         // 🎓 HasQueryFilter(p => !p.Deleted) filtra automáticamente los borrados.
         // IgnoreQueryFilters() es necesario para verificar que el soft-delete funciona.
-        var deleted = await context.Products.IgnoreQueryFilters()
+        Product? deleted = await context.Products.IgnoreQueryFilters()
             .FirstOrDefaultAsync(p => p.Id == product.Id);
         deleted.Should().NotBeNull();
         deleted!.Deleted.Should().BeTrue();
@@ -100,7 +101,7 @@ public class PostgresIntegrationTests {
 
     [Test]
     public async Task Purchase_Create_SavesToPostgres() {
-        await using var context = await CreateFreshContextAsync();
+        await using ApplicationDbContext context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "buyer", Email = "buyer@test.com" };
         context.Users.Add(user);
@@ -114,14 +115,14 @@ public class PostgresIntegrationTests {
         context.Purchases.Add(purchase);
         await context.SaveChangesAsync();
 
-        var saved = await context.Purchases.FirstOrDefaultAsync(p => p.Id == purchase.Id);
+        Purchase? saved = await context.Purchases.FirstOrDefaultAsync(p => p.Id == purchase.Id);
         saved.Should().NotBeNull();
         saved!.Total.Should().Be(150m);
     }
 
     [Test]
     public async Task Rating_Create_SavesToPostgres() {
-        await using var context = await CreateFreshContextAsync();
+        await using ApplicationDbContext context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "rater", Email = "rater@test.com" };
         context.Users.Add(user);
@@ -148,14 +149,14 @@ public class PostgresIntegrationTests {
         context.Ratings.Add(rating);
         await context.SaveChangesAsync();
 
-        var saved = await context.Ratings.FirstOrDefaultAsync(r => r.Id == rating.Id);
+        Rating? saved = await context.Ratings.FirstOrDefaultAsync(r => r.Id == rating.Id);
         saved.Should().NotBeNull();
         saved!.Puntuacion.Should().Be(5);
     }
 
     [Test]
     public async Task Favorite_AddAndQuery_Works() {
-        await using var context = await CreateFreshContextAsync();
+        await using ApplicationDbContext context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "favuser", Email = "fav@test.com" };
         context.Users.Add(user);
@@ -179,33 +180,42 @@ public class PostgresIntegrationTests {
         context.Favorites.Add(favorite);
         await context.SaveChangesAsync();
 
-        var exists = await context.Favorites
+        bool exists = await context.Favorites
             .AnyAsync(f => f.UsuarioId == user.Id && f.ProductoId == product.Id);
         exists.Should().BeTrue();
     }
 
     [Test]
     public async Task Product_QueryWithFilters_Works() {
-        await using var context = await CreateFreshContextAsync();
+        await using ApplicationDbContext context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "filter", Email = "filter@test.com" };
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
         context.Products.AddRange(
-            new Product { Nombre = "Laptop", Precio = 100m, Categoria = ProductCategory.LAPTOPS, PropietarioId = user.Id, Deleted = false },
-            new Product { Nombre = "Mouse", Precio = 20m, Categoria = ProductCategory.ACCESSORIES, PropietarioId = user.Id, Deleted = false },
-            new Product { Nombre = "Borrado", Precio = 10m, Categoria = ProductCategory.AUDIO, PropietarioId = user.Id, Deleted = true }
+            new Product {
+                Nombre = "Laptop", Precio = 100m, Categoria = ProductCategory.LAPTOPS, PropietarioId = user.Id,
+                Deleted = false
+            },
+            new Product {
+                Nombre = "Mouse", Precio = 20m, Categoria = ProductCategory.ACCESSORIES, PropietarioId = user.Id,
+                Deleted = false
+            },
+            new Product {
+                Nombre = "Borrado", Precio = 10m, Categoria = ProductCategory.AUDIO, PropietarioId = user.Id,
+                Deleted = true
+            }
         );
         await context.SaveChangesAsync();
 
-        var active = await context.Products
+        List<Product> active = await context.Products
             .Where(p => !p.Deleted)
             .ToListAsync();
 
         active.Should().HaveCount(2);
 
-        var laptops = await context.Products
+        List<Product> laptops = await context.Products
             .Where(p => p.Categoria == ProductCategory.LAPTOPS && !p.Deleted)
             .ToListAsync();
 

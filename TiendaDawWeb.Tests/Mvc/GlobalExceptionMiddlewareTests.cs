@@ -29,7 +29,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.StatusCode.Should().Be(404);
@@ -46,7 +46,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.StatusCode.Should().Be(400);
@@ -63,7 +63,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.StatusCode.Should().Be(400);
@@ -80,7 +80,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.StatusCode.Should().Be(401);
@@ -97,7 +97,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.StatusCode.Should().Be(403);
@@ -114,7 +114,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.StatusCode.Should().Be(500);
@@ -131,7 +131,7 @@ public class GlobalExceptionMiddlewareTests {
         };
         httpContext.Request.Headers["Accept"] = "application/json";
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
         httpContext.Response.ContentType.Should().Contain("application/json");
@@ -145,7 +145,7 @@ public class GlobalExceptionMiddlewareTests {
 
         var httpContext = new DefaultHttpContext();
 
-        var act = async () => await middleware.InvokeAsync(httpContext);
+        Func<Task> act = async () => await middleware.InvokeAsync(httpContext);
 
         act.Should().NotThrowAsync();
     }

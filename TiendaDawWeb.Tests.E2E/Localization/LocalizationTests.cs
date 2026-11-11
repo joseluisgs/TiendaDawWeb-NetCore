@@ -1,13 +1,11 @@
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
-using NUnit.Framework;
 using TiendaDawWeb.Tests.E2E.Extensions;
 
 namespace TiendaDawWeb.Tests.E2E.Localization;
 
 /**
  * MÓDULO DE LOCALIZACIÓN (E2E - i18n)
- * 
+ *
  * OBJETIVO: Validar que el cambio de idioma en el Navbar actualiza las etiquetas de la UI.
  * TECNOLOGÍAS TESTEADAS: ASP.NET Core Localization, Cookies de Cultura, Playwright Context Options.
  */
@@ -27,7 +25,7 @@ public class LocalizationTests : E2ETestBase {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public-spanish");
 
-        var searchLabel = Page.Locator("label.form-label").First;
+        ILocator searchLabel = Page.Locator("label.form-label").First;
         await Expect(searchLabel).ToContainTextAsync("Buscar");
 
         await Page.Locator(".nav-link.dropdown-toggle:has(.bi-globe)").ClickAsync();
@@ -38,7 +36,7 @@ public class LocalizationTests : E2ETestBase {
 
         await Expect(searchLabel).ToHaveTextAsync("Search");
 
-        var searchInput = Page.TestId("search-input");
+        ILocator searchInput = Page.TestId("search-input");
         await Expect(searchInput).ToHaveAttributeAsync("placeholder", "Search products...");
     }
 }

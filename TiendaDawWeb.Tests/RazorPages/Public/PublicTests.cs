@@ -1,7 +1,5 @@
 #nullable disable
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TiendaDawWeb.RazorPages.Pages.Public;
 

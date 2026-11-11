@@ -1,13 +1,15 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.OutputCaching;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
-using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Favorite;
+using TiendaDawWeb.Shared.Services.Product;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.RazorPages.Pages.Product;
@@ -33,7 +35,7 @@ public class DetailsModel(
     /// <returns>Vista con los detalles del producto</returns>
     public async Task<IActionResult> OnGetAsync(long id, string? lang) {
         if (!string.IsNullOrEmpty(lang)) {
-            var culture = lang.ToLowerInvariant() switch {
+            string culture = lang.ToLowerInvariant() switch {
                 "en" => "en-US",
                 "es" => "es-ES",
                 "fr" => "fr-FR",
@@ -55,7 +57,7 @@ public class DetailsModel(
             return RedirectToPage(new { id, lang = (string?)null });
         }
 
-        var result = await productService.GetByIdAsync(id);
+        Result<ProductModel, DomainError> result = await productService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
@@ -63,9 +65,9 @@ public class DetailsModel(
         }
 
         if (User.Identity?.IsAuthenticated == true) {
-            var user = await userManager.GetUserAsync(User);
+            User? user = await userManager.GetUserAsync(User);
             if (user != null) {
-                var favoriteResult = await favoriteService.IsFavoriteAsync(user.Id, id);
+                Result<bool, DomainError> favoriteResult = await favoriteService.IsFavoriteAsync(user.Id, id);
                 ViewData["IsFavorite"] = favoriteResult.IsSuccess && favoriteResult.Value;
             }
         } else {
@@ -82,27 +84,30 @@ public class DetailsModel(
     /// <param name="productoId">ID del producto a añadir</param>
     /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostAddAsync(long productoId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var productResult = await productService.GetByIdAsync(productoId);
+        Result<ProductModel, DomainError> productResult = await productService.GetByIdAsync(productoId);
         if (productResult.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
             return RedirectToPage("/Public/Index");
         }
 
-        var product = productResult.Value;
+        ProductModel product = productResult.Value;
         if (product.Reservado) {
             TempData["Error"] = "Este producto está reservado";
             return RedirectToPage("/Public/Index");
         }
 
-        var result = await carritoService.AddToCarritoAsync(user.Id, productoId);
+        Result<CarritoItem, DomainError> result = await carritoService.AddToCarritoAsync(user.Id, productoId);
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
             TempData["Success"] = "Producto añadido al carrito";
+        }
 
         return RedirectToPage("/Carrito/Index");
     }
@@ -113,12 +118,12 @@ public class DetailsModel(
     /// <param name="id">ID del producto a eliminar</param>
     /// <returns>Redirect a Mis Productos</returns>
     public async Task<IActionResult> OnPostDeleteAsync(long id) {
-        var user = await userManager.GetUserAsync(User);
+        User? user = await userManager.GetUserAsync(User);
         if (user == null) {
             return RedirectToPage("/Auth/Login");
         }
 
-        var result = await productService.DeleteAsync(id, user.Id);
+        Result<bool, DomainError> result = await productService.DeleteAsync(id, user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
