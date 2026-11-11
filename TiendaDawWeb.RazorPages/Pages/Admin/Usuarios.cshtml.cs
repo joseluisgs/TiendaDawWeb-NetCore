@@ -11,7 +11,7 @@ public class UsuariosModel(ApplicationDbContext context) : PageModel {
     public List<User> Usuarios { get; set; } = new();
 
     public async Task OnGetAsync(int page = 1, int pageSize = 20) {
-        var skip = (page - 1) * pageSize;
+        int skip = (page - 1) * pageSize;
 
         Usuarios = await context.Users
             .Include(u => u.Products.Where(p => !p.Deleted))

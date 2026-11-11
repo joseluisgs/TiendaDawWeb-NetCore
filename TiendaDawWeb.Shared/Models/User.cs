@@ -1,20 +1,12 @@
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
 using TiendaDawWeb.Shared.Data.Abstractions;
 
 namespace TiendaDawWeb.Shared.Models;
 
 /// <summary>
-/// Entidad de usuario con soporte de ASP.NET Core Identity.
-/// Hereda de IdentityUser para autenticación con email/password.
+///     Entidad de usuario con soporte de ASP.NET Core Identity.
+///     Hereda de IdentityUser para autenticación con email/password.
 /// </summary>
 public class User : IdentityUser<long>, ITimestamped {
-    /// <summary>Fecha de creación del registro en UTC.</summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>Fecha de última modificación en UTC.</summary>
-    public DateTime UpdatedAt { get; set; }
-
     /// <summary>ID del usuario que creó el registro (username o ID).</summary>
     public string? CreatedBy { get; set; }
 
@@ -61,4 +53,10 @@ public class User : IdentityUser<long>, ITimestamped {
 
     /// <summary>Items en el carrito del usuario.</summary>
     public virtual ICollection<CarritoItem> CarritoItems { get; set; } = new List<CarritoItem>();
+
+    /// <summary>Fecha de creación del registro en UTC.</summary>
+    public DateTime CreatedAt { get; set; }
+
+    /// <summary>Fecha de última modificación en UTC.</summary>
+    public DateTime UpdatedAt { get; set; }
 }

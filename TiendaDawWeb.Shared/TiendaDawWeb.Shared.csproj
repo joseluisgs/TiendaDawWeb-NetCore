@@ -1,54 +1,54 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
-    <RootNamespace>TiendaDawWeb.Shared</RootNamespace>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);NU1902;NU1903;CS1591</NoWarn>
-    <!-- Generate XML documentation file for API docs -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/TiendaDawWeb.Shared.xml</DocumentationFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>TiendaDawWeb.Shared</RootNamespace>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>$(NoWarn);NU1902;NU1903;CS1591</NoWarn>
+        <!-- Generate XML documentation file for API docs -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/TiendaDawWeb.Shared.xml</DocumentationFile>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Implicit usings for ASP.NET Core -->
-    <Using Include="Microsoft.AspNetCore.Builder" />
-    <Using Include="Microsoft.AspNetCore.Hosting" />
-    <Using Include="Microsoft.Extensions.DependencyInjection" />
-    <Using Include="Microsoft.Extensions.Logging" />
-    <Using Include="Microsoft.Extensions.Hosting" />
-    <Using Include="Microsoft.EntityFrameworkCore" />
-    <Using Include="Microsoft.AspNetCore.Identity" />
-    <Using Include="Microsoft.AspNetCore.Authentication" />
-    <Using Include="Microsoft.AspNetCore.Authorization" />
-    <Using Include="Microsoft.AspNetCore.SignalR" />
-    <Using Include="System.Net.Http" />
-    <Using Include="System.ComponentModel.DataAnnotations" />
-    <Using Include="System.Globalization" />
-    <Using Include="Serilog" />
-  </ItemGroup>
+    <ItemGroup>
+        <!-- Implicit usings for ASP.NET Core -->
+        <Using Include="Microsoft.AspNetCore.Builder"/>
+        <Using Include="Microsoft.AspNetCore.Hosting"/>
+        <Using Include="Microsoft.Extensions.DependencyInjection"/>
+        <Using Include="Microsoft.Extensions.Logging"/>
+        <Using Include="Microsoft.Extensions.Hosting"/>
+        <Using Include="Microsoft.EntityFrameworkCore"/>
+        <Using Include="Microsoft.AspNetCore.Identity"/>
+        <Using Include="Microsoft.AspNetCore.Authentication"/>
+        <Using Include="Microsoft.AspNetCore.Authorization"/>
+        <Using Include="Microsoft.AspNetCore.SignalR"/>
+        <Using Include="System.Net.Http"/>
+        <Using Include="System.ComponentModel.DataAnnotations"/>
+        <Using Include="System.Globalization"/>
+        <Using Include="Serilog"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AspNet.Security.OAuth.GitHub" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
-    <PackageReference Include="CSharpFunctionalExtensions" />
-    <PackageReference Include="SixLabors.ImageSharp" />
-    <PackageReference Include="QuestPDF" />
-    <PackageReference Include="Serilog.AspNetCore" />
-    <PackageReference Include="MailKit" />
-    <PackageReference Include="AspNetCoreRateLimit" />
-    <PackageReference Include="System.Reactive" />
-    <PackageReference Include="FluentValidation.AspNetCore" />
-    <PackageReference Include="StackExchange.Redis" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="AspNet.Security.OAuth.GitHub"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools"/>
+        <PackageReference Include="CSharpFunctionalExtensions"/>
+        <PackageReference Include="SixLabors.ImageSharp"/>
+        <PackageReference Include="QuestPDF"/>
+        <PackageReference Include="Serilog.AspNetCore"/>
+        <PackageReference Include="MailKit"/>
+        <PackageReference Include="AspNetCoreRateLimit"/>
+        <PackageReference Include="System.Reactive"/>
+        <PackageReference Include="FluentValidation.AspNetCore"/>
+        <PackageReference Include="StackExchange.Redis"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis"/>
+    </ItemGroup>
 </Project>

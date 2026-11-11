@@ -5,12 +5,13 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Blazor.Admin.Charts;
 using TiendaDawWeb.Shared.Services.Stats;
+using TestContext = Bunit.TestContext;
 
 namespace TiendaDawWeb.Tests.Blazor;
 
 public class VentasMensualesChartTests {
-    private readonly Mock<IStatisticsService> _mockStatsService;
     private readonly Mock<ILogger<VentasMensualesChart>> _mockLogger;
+    private readonly Mock<IStatisticsService> _mockStatsService;
 
     public VentasMensualesChartTests() {
         _mockStatsService = new Mock<IStatisticsService>();
@@ -20,12 +21,12 @@ public class VentasMensualesChartTests {
     [Test]
     public void VentasMensualesChart_Component_CanBeCreated() {
 #pragma warning disable CS0618
-        using var ctx = new Bunit.TestContext();
+        using var ctx = new TestContext();
 #pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
-        var cut = ctx.Render<VentasMensualesChart>();
+        IRenderedComponent<VentasMensualesChart> cut = ctx.Render<VentasMensualesChart>();
 
         cut.Should().NotBeNull();
     }
@@ -38,12 +39,12 @@ public class VentasMensualesChartTests {
     [Test]
     public void VentasMensualesChart_HasCardStructure() {
 #pragma warning disable CS0618
-        using var ctx = new Bunit.TestContext();
+        using var ctx = new TestContext();
 #pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
-        var cut = ctx.Render<VentasMensualesChart>();
+        IRenderedComponent<VentasMensualesChart> cut = ctx.Render<VentasMensualesChart>();
 
         cut.Find(".card").Should().NotBeNull();
     }
@@ -51,12 +52,12 @@ public class VentasMensualesChartTests {
     [Test]
     public void VentasMensualesChart_HasWarningHeader() {
 #pragma warning disable CS0618
-        using var ctx = new Bunit.TestContext();
+        using var ctx = new TestContext();
 #pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
-        var cut = ctx.Render<VentasMensualesChart>();
+        IRenderedComponent<VentasMensualesChart> cut = ctx.Render<VentasMensualesChart>();
 
         cut.Find(".card-header.bg-warning").Should().NotBeNull();
     }
@@ -64,12 +65,12 @@ public class VentasMensualesChartTests {
     [Test]
     public void VentasMensualesChart_HasRefreshButton() {
 #pragma warning disable CS0618
-        using var ctx = new Bunit.TestContext();
+        using var ctx = new TestContext();
 #pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
-        var cut = ctx.Render<VentasMensualesChart>();
+        IRenderedComponent<VentasMensualesChart> cut = ctx.Render<VentasMensualesChart>();
 
         cut.Find("button").Should().NotBeNull();
     }
@@ -77,12 +78,12 @@ public class VentasMensualesChartTests {
     [Test]
     public void VentasMensualesChart_HasAutoRefreshBadge() {
 #pragma warning disable CS0618
-        using var ctx = new Bunit.TestContext();
+        using var ctx = new TestContext();
 #pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
-        var cut = ctx.Render<VentasMensualesChart>();
+        IRenderedComponent<VentasMensualesChart> cut = ctx.Render<VentasMensualesChart>();
 
         cut.Find(".badge").Should().NotBeNull();
     }

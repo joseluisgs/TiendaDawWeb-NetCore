@@ -1,10 +1,12 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Mappers;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.ViewModels;
-using TiendaDawWeb.Shared.Mappers;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace TiendaDawWeb.Controllers;
 
@@ -32,16 +34,17 @@ public class AuthController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model) {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid) {
             return View(model);
+        }
 
-        var user = await userManager.FindByEmailAsync(model.Email);
+        User? user = await userManager.FindByEmailAsync(model.Email);
         if (user == null) {
             ModelState.AddModelError(string.Empty, "Email o contraseña incorrectos");
             return View(model);
         }
 
-        var result = await signInManager.PasswordSignInAsync(
+        SignInResult result = await signInManager.PasswordSignInAsync(
             user.UserName!,
             model.Password,
             model.RememberMe,
@@ -70,19 +73,20 @@ public class AuthController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model) {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid) {
             return View(model);
+        }
 
-        var existingUser = await userManager.FindByEmailAsync(model.Email);
+        User? existingUser = await userManager.FindByEmailAsync(model.Email);
         if (existingUser != null) {
             ModelState.AddModelError(string.Empty, "Ya existe un usuario con este email");
             return View(model);
         }
 
         // 🧹 REFACTOR: Usamos el Mapper
-        var user = model.ToEntity();
+        User user = model.ToEntity();
 
-        var result = await userManager.CreateAsync(user, model.Password);
+        IdentityResult result = await userManager.CreateAsync(user, model.Password);
 
         if (result.Succeeded) {
             logger.LogInformation("Nuevo usuario registrado: {Email}", model.Email);
@@ -90,7 +94,9 @@ public class AuthController(
             return RedirectToAction(nameof(PublicController.Index), "Public");
         }
 
-        foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
+        foreach (IdentityError error in result.Errors) {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
 
         return View(model);
     }
@@ -132,7 +138,7 @@ public class AuthController(
                    await userManager.FindByNameAsync(email);
         }
 
-        var opciones = await signInManager.MakePasskeyRequestOptionsAsync(user);
+        string opciones = await signInManager.MakePasskeyRequestOptionsAsync(user);
         return Content(opciones, "application/json");
     }
 
@@ -148,7 +154,7 @@ public class AuthController(
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PasskeyAssertion(string credential, string? returnUrl = null) {
-        var result = await signInManager.PasskeySignInAsync(credential);
+        SignInResult result = await signInManager.PasskeySignInAsync(credential);
 
         if (result.Succeeded) {
             logger.LogInformation("Acceso con passkey correcto");
@@ -169,13 +175,13 @@ public class AuthController(
     /// <returns>302 Redirect al proveedor OAuth, o 404 si no está configurado.</returns>
     [HttpGet("/Auth/External/{provider}")]
     public async Task<IActionResult> ExternalLogin(string provider) {
-        var scheme = await schemeProvider.GetSchemeAsync(provider);
+        AuthenticationScheme? scheme = await schemeProvider.GetSchemeAsync(provider);
         if (scheme is null) {
             logger.LogWarning("Proveedor OAuth no configurado: {Provider}", provider);
             return NotFound($"Proveedor '{provider}' no está configurado");
         }
 
-        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth");
+        string? redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth");
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
 
         logger.LogInformation("Iniciando login externo con {Provider}", provider);
@@ -189,15 +195,15 @@ public class AuthController(
     /// <returns>Redirect al home o a returnUrl, o error.</returns>
     [HttpGet("/Auth/ExternalCallback")]
     public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null) {
-        var info = await signInManager.GetExternalLoginInfoAsync();
+        ExternalLoginInfo? info = await signInManager.GetExternalLoginInfoAsync();
         if (info is null) {
             logger.LogWarning("Login externo falló: sin información del proveedor");
             TempData["Error"] = "No se pudo autenticar con el proveedor externo";
             return RedirectToAction(nameof(Login));
         }
 
-        var result = await signInManager.ExternalLoginSignInAsync(
-            info.LoginProvider, info.ProviderKey, isPersistent: false);
+        SignInResult result = await signInManager.ExternalLoginSignInAsync(
+            info.LoginProvider, info.ProviderKey, false);
 
         if (result.Succeeded) {
             logger.LogInformation("Login externo exitoso con {Provider}", info.LoginProvider);
@@ -205,16 +211,16 @@ public class AuthController(
         }
 
         // Primera vez: crear cuenta local vinculada
-        var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        string? email = info.Principal.FindFirst(ClaimTypes.Email)?.Value;
         if (string.IsNullOrWhiteSpace(email)) {
             TempData["Error"] = "El proveedor no devolvió email";
             return RedirectToAction(nameof(Login));
         }
 
-        var user = await userManager.FindByEmailAsync(email);
+        User? user = await userManager.FindByEmailAsync(email);
         if (user is null) {
-            var fullName = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "";
-            var nameParts = fullName.Split(' ', 2);
+            string fullName = info.Principal.FindFirst(ClaimTypes.Name)?.Value ?? "";
+            string[] nameParts = fullName.Split(' ', 2);
             user = new User {
                 UserName = email,
                 Email = email,
@@ -224,18 +230,19 @@ public class AuthController(
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            var createResult = await userManager.CreateAsync(user);
+            IdentityResult createResult = await userManager.CreateAsync(user);
             if (!createResult.Succeeded) {
                 TempData["Error"] = "Error creando usuario: " +
-                    string.Join(", ", createResult.Errors.Select(e => e.Description));
+                                    string.Join(", ", createResult.Errors.Select(e => e.Description));
                 return RedirectToAction(nameof(Login));
             }
+
             logger.LogInformation("Usuario OAuth creado: {Email} ({Provider})", email, info.LoginProvider);
         }
 
-        var addLoginResult = await userManager.AddLoginAsync(user, info);
+        IdentityResult addLoginResult = await userManager.AddLoginAsync(user, info);
         if (addLoginResult.Succeeded) {
-            await signInManager.SignInAsync(user, isPersistent: false);
+            await signInManager.SignInAsync(user, false);
             logger.LogInformation("Login externo completado: {Email}", email);
             return RedirectToLocal(returnUrl);
         }
@@ -245,21 +252,23 @@ public class AuthController(
     }
 
     private IActionResult RedirectToLocal(string? returnUrl) {
-        if (Url.IsLocalUrl(returnUrl))
+        if (Url.IsLocalUrl(returnUrl)) {
             return Redirect(returnUrl);
+        }
 
         return RedirectToAction(nameof(PublicController.Index), "Public");
     }
 
     /// <summary>
-    ///     Versión en cadena de <see cref="RedirectToLocal"/> para el destino que
+    ///     Versión en cadena de <see cref="RedirectToLocal" /> para el destino que
     ///     devuelve el JSON de passkey: solo destinos locales.
     /// </summary>
     /// <param name="returnUrl">Destino pedido.</param>
     /// <returns>Ruta local, o la portada en caso contrario.</returns>
     private string Destino(string? returnUrl) {
-        if (Url.IsLocalUrl(returnUrl))
+        if (Url.IsLocalUrl(returnUrl)) {
             return returnUrl!;
+        }
 
         return Url.Content("~/")!;
     }

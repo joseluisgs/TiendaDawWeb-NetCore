@@ -117,7 +117,7 @@ public class DomainExceptionsTests {
 
     [Test]
     public void DomainException_IsThrowable() {
-        var action = new System.Action(() => throw new NotFoundException("Test exception"));
+        var action = new Action(() => throw new NotFoundException("Test exception"));
 
         action.Should().Throw<NotFoundException>();
     }

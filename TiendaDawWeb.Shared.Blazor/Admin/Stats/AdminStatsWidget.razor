@@ -1,10 +1,6 @@
 @namespace TiendaDawWeb.Shared.Blazor.Admin
-@using TiendaDawWeb.Shared.Services.Product
-@using TiendaDawWeb.Shared.Services.Purchase
-@using TiendaDawWeb.Shared.Models
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
 @using System.Timers
+@using Microsoft.EntityFrameworkCore
 @implements IDisposable
 @inject IProductService ProductService
 @inject UserManager<User> UserManager
@@ -17,12 +13,10 @@
         <div>
             <span class="badge bg-light text-primary me-2">Auto-refresh: 30s</span>
             <button class="btn btn-sm btn-light" @onclick="ManualRefresh" disabled="@isLoading">
-                @if (isLoading)
-                {
+                @if (isLoading) {
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 }
-                else
-                {
+                else {
                     <i class="bi bi-arrow-clockwise"></i>
                 }
             </button>
@@ -54,14 +48,13 @@
     private int productsCount;
     private int ordersCount;
     private DateTime lastUpdate;
-    private bool isLoading = false;
+    private bool isLoading;
     private Timer? _timer;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         Logger.LogInformation("Blazor: AdminStatsWidget inicializado");
         await LoadData();
-        
+
         // Configurar actualización automática cada 30 segundos
         _timer = new Timer(30000);
         _timer.Elapsed += async (sender, e) => await InvokeAsync(AutoRefresh);
@@ -69,8 +62,7 @@
         _timer.Enabled = true;
     }
 
-    private async Task ManualRefresh()
-    {
+    private async Task ManualRefresh() {
         Logger.LogInformation("🫱 Blazor Admin Stats: Refresco MANUAL solicitado por el usuario");
         isLoading = true;
         await Task.Delay(500); // UI Feedback
@@ -78,19 +70,16 @@
         isLoading = false;
     }
 
-    private async Task AutoRefresh()
-    {
+    private async Task AutoRefresh() {
         Logger.LogInformation("⏱️ Blazor Admin Stats: Refresco AUTOMÁTICO por Timer");
         await LoadData();
         StateHasChanged(); // Forzar renderizado en refresco automático
     }
 
-    private async Task LoadData()
-    {
-        try
-        {
+    private async Task LoadData() {
+        try {
             usersCount = await UserManager.Users.CountAsync();
-            
+
             var productsResult = await ProductService.GetAllAsync();
             productsCount = productsResult.IsSuccess ? productsResult.Value.Count() : 0;
 
@@ -100,15 +89,14 @@
             lastUpdate = DateTime.Now;
             Logger.LogDebug("Blazor: Datos cargados correctamente a las {Time}", lastUpdate);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Logger.LogError(ex, "Blazor: Error al cargar datos en el widget");
         }
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         Logger.LogInformation("Blazor: AdminStatsWidget eliminado (Dispose)");
         _timer?.Dispose();
     }
+
 }

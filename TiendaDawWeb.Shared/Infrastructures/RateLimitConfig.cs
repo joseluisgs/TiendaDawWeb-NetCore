@@ -3,12 +3,12 @@ using AspNetCoreRateLimit;
 namespace TiendaDawWeb.Shared.Web.Infrastructures;
 
 /// <summary>
-/// Extension methods para configurar Rate Limiting.
-/// Protege la aplicación contra DDoS, fuerza bruta y abuso.
+///     Extension methods para configurar Rate Limiting.
+///     Protege la aplicación contra DDoS, fuerza bruta y abuso.
 /// </summary>
 public static class RateLimitConfig {
     /// <summary>
-    /// Configura Rate Limiting con reglas por defecto.
+    ///     Configura Rate Limiting con reglas por defecto.
     /// </summary>
     public static IServiceCollection AddRateLimitingPolicy(this IServiceCollection services) {
         services.AddMemoryCache();
@@ -19,19 +19,19 @@ public static class RateLimitConfig {
 
             options.GeneralRules = new List<RateLimitRule> {
                 // General: 100 requests por 15 segundos
-                new RateLimitRule {
+                new() {
                     Endpoint = "*",
                     Limit = 100,
                     Period = "15s"
                 },
                 // Endpoints de autenticación: más estrictos (fuerza bruta)
-                new RateLimitRule {
+                new() {
                     Endpoint = "*/Auth/*",
                     Limit = 10,
                     Period = "1m"
                 },
                 // Endpoints de escritura: más estrictos
-                new RateLimitRule {
+                new() {
                     Endpoint = "POST:*",
                     Limit = 20,
                     Period = "1m"
@@ -48,7 +48,7 @@ public static class RateLimitConfig {
     }
 
     /// <summary>
-    /// Aplica el middleware de Rate Limiting.
+    ///     Aplica el middleware de Rate Limiting.
     /// </summary>
     public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder app) {
         app.UseIpRateLimiting();

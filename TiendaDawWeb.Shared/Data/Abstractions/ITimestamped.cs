@@ -1,8 +1,8 @@
 namespace TiendaDawWeb.Shared.Data.Abstractions;
 
 /// <summary>
-/// Interfaz de auditoría para entidades.
-/// Propiedades: CreatedAt (readonly), UpdatedAt.
+///     Interfaz de auditoría para entidades.
+///     Propiedades: CreatedAt (readonly), UpdatedAt.
 /// </summary>
 public interface ITimestamped {
     /// <summary>Fecha de creación (se asigna en INSERT).</summary>

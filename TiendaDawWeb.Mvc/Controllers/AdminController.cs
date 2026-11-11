@@ -1,8 +1,10 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Product;
@@ -50,9 +52,9 @@ public class AdminController(
             .CountAsync(p => !p.Deleted && p.CompraId == null);
 
         // Estadísticas de tiempo
-        var now = DateTime.UtcNow;
-        var hoy = now.Date;
-        var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+        DateTime now = DateTime.UtcNow;
+        DateTime hoy = now.Date;
+        DateTime inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
         var inicioMes = new DateTime(now.Year, now.Month, 1);
 
         // Compras por período
@@ -82,9 +84,9 @@ public class AdminController(
     /// </summary>
     [HttpGet("usuarios")]
     public async Task<IActionResult> Usuarios(int page = 1, int pageSize = 20) {
-        var skip = (page - 1) * pageSize;
+        int skip = (page - 1) * pageSize;
 
-        var usuarios = await context.Users
+        List<User> usuarios = await context.Users
             .Include(u => u.Products.Where(p => !p.Deleted))
             .Include(u => u.Purchases)
             .Where(u => !u.Deleted)
@@ -105,7 +107,7 @@ public class AdminController(
     /// </summary>
     [HttpGet("usuarios/{id}")]
     public async Task<IActionResult> UsuarioDetails(long id) {
-        var usuario = await context.Users
+        User? usuario = await context.Users
             .Include(u => u.Products)
             .Include(u => u.Purchases)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -116,7 +118,7 @@ public class AdminController(
         }
 
         // Obtener roles del usuario
-        var roles = await userManager.GetRolesAsync(usuario);
+        IList<string> roles = await userManager.GetRolesAsync(usuario);
         ViewBag.Roles = roles.ToList();
 
         return View(usuario);
@@ -128,7 +130,7 @@ public class AdminController(
     [HttpPost("usuarios/{id}/cambiar-rol")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CambiarRol(long id, string nuevoRol) {
-        var usuario = await userManager.FindByIdAsync(id.ToString());
+        User? usuario = await userManager.FindByIdAsync(id.ToString());
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
             return RedirectToAction(nameof(Usuarios));
@@ -141,11 +143,11 @@ public class AdminController(
         }
 
         // Remover roles actuales
-        var rolesActuales = await userManager.GetRolesAsync(usuario);
+        IList<string> rolesActuales = await userManager.GetRolesAsync(usuario);
         await userManager.RemoveFromRolesAsync(usuario, rolesActuales);
 
         // Añadir nuevo rol
-        var result = await userManager.AddToRoleAsync(usuario, nuevoRol);
+        IdentityResult result = await userManager.AddToRoleAsync(usuario, nuevoRol);
 
         if (result.Succeeded) {
             logger.LogInformation("Rol de usuario {UserId} cambiado a {Role}", id, nuevoRol);
@@ -163,7 +165,7 @@ public class AdminController(
     [HttpPost("usuarios/{id}/eliminar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarUsuario(long id) {
-        var adminUser = await userManager.GetUserAsync(User);
+        User? adminUser = await userManager.GetUserAsync(User);
         if (adminUser == null) {
             TempData["Error"] = "Usuario no autenticado";
             return RedirectToAction(nameof(Usuarios));
@@ -175,14 +177,14 @@ public class AdminController(
             return RedirectToAction(nameof(Usuarios));
         }
 
-        var usuario = await context.Users.FindAsync(id);
+        User? usuario = await context.Users.FindAsync(id);
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
             return RedirectToAction(nameof(Usuarios));
         }
 
         // CRÍTICO: Impedir eliminar usuarios con productos activos (no vendidos)
-        var hasProductosActivos = await context.Products
+        bool hasProductosActivos = await context.Products
             .IgnoreQueryFilters() // Ignorar filtro de soft delete para comprobar todos los productos
             .Where(p => p.PropietarioId == id && !p.Deleted && p.CompraId == null)
             .AnyAsync();
@@ -194,7 +196,7 @@ public class AdminController(
         }
 
         // CRÍTICO: Impedir eliminar usuarios con productos vendidos
-        var hasProductosVendidos = await context.Products
+        bool hasProductosVendidos = await context.Products
             .IgnoreQueryFilters()
             .Where(p => p.PropietarioId == id && p.CompraId != null)
             .AnyAsync();
@@ -206,7 +208,7 @@ public class AdminController(
         }
 
         // Impedir eliminar usuarios con compras realizadas
-        var hasCompras = await context.Purchases
+        bool hasCompras = await context.Purchases
             .AnyAsync(p => p.CompradorId == id);
 
         if (hasCompras) {
@@ -235,17 +237,19 @@ public class AdminController(
     /// </summary>
     [HttpGet("productos")]
     public async Task<IActionResult> Productos(int page = 1, int pageSize = 20, string? categoria = null) {
-        var skip = (page - 1) * pageSize;
+        int skip = (page - 1) * pageSize;
 
-        var query = context.Products
+        IQueryable<Product> query = context.Products
             .Include(p => p.Propietario)
             .Where(p => !p.Deleted);
 
-        if (!string.IsNullOrEmpty(categoria))
-            if (Enum.TryParse<ProductCategory>(categoria, out var cat))
+        if (!string.IsNullOrEmpty(categoria)) {
+            if (Enum.TryParse<ProductCategory>(categoria, out ProductCategory cat)) {
                 query = query.Where(p => p.Categoria == cat);
+            }
+        }
 
-        var productos = await query
+        List<Product> productos = await query
             .OrderByDescending(p => p.CreatedAt)
             .Skip(skip)
             .Take(pageSize)
@@ -265,18 +269,19 @@ public class AdminController(
     [HttpPost("productos/{id}/eliminar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarProducto(long id) {
-        var adminUser = await userManager.GetUserAsync(User);
+        User? adminUser = await userManager.GetUserAsync(User);
         if (adminUser == null) {
             TempData["Error"] = "Usuario no encontrado";
             return RedirectToAction(nameof(Productos));
         }
 
-        var result = await productService.DeleteAsync(id, adminUser.Id, true);
+        Result<bool, DomainError> result = await productService.DeleteAsync(id, adminUser.Id, true);
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
             TempData["Success"] = "Producto eliminado correctamente";
+        }
 
         return RedirectToAction(nameof(Productos));
     }
@@ -287,21 +292,24 @@ public class AdminController(
     [HttpGet("compras")]
     public async Task<IActionResult> Compras(int page = 1, int pageSize = 20, DateTime? desde = null,
         DateTime? hasta = null) {
-        var skip = (page - 1) * pageSize;
+        int skip = (page - 1) * pageSize;
 
-        var query = context.Purchases
+        IQueryable<Purchase> query = context.Purchases
             .Include(p => p.Comprador)
             .Include(p => p.Products)
             .AsQueryable();
 
         // Filtrar por fecha si se proporciona
-        if (desde.HasValue) query = query.Where(p => p.FechaCompra >= desde.Value);
+        if (desde.HasValue) {
+            query = query.Where(p => p.FechaCompra >= desde.Value);
+        }
+
         if (hasta.HasValue) {
-            var hastaFinal = hasta.Value.AddDays(1).AddSeconds(-1);
+            DateTime hastaFinal = hasta.Value.AddDays(1).AddSeconds(-1);
             query = query.Where(p => p.FechaCompra <= hastaFinal);
         }
 
-        var compras = await query
+        List<Purchase> compras = await query
             .OrderByDescending(p => p.FechaCompra)
             .Skip(skip)
             .Take(pageSize)
@@ -345,7 +353,7 @@ public class AdminController(
         var compradoresActivos = await context.Purchases
             .GroupBy(p => new { p.CompradorId, p.Comprador.Nombre, p.Comprador.Apellidos })
             .Select(g => new {
-                CompradorId = g.Key.CompradorId,
+                g.Key.CompradorId,
                 Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 TotalCompras = g.Count(),
                 TotalGastado = g.Sum(p => p.Total)
@@ -359,7 +367,7 @@ public class AdminController(
             .Where(p => p.CompraId != null)
             .GroupBy(p => new { p.PropietarioId, p.Propietario.Nombre, p.Propietario.Apellidos })
             .Select(g => new {
-                PropietarioId = g.Key.PropietarioId,
+                g.Key.PropietarioId,
                 Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 ProductosVendidos = g.Count()
             })
@@ -368,7 +376,7 @@ public class AdminController(
             .ToListAsync();
 
         // Ventas por mes (últimos 12 meses)
-        var hace12Meses = DateTime.UtcNow.AddMonths(-12);
+        DateTime hace12Meses = DateTime.UtcNow.AddMonths(-12);
         var ventasPorMes = await context.Purchases
             .Where(p => p.FechaCompra >= hace12Meses)
             .GroupBy(p => new { p.FechaCompra.Year, p.FechaCompra.Month })

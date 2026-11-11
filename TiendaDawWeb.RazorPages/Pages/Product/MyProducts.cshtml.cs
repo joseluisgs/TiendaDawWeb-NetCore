@@ -1,8 +1,10 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.OutputCaching;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
@@ -18,10 +20,12 @@ public class MyProductsModel(
     public IEnumerable<ProductModel> Products { get; set; } = Enumerable.Empty<ProductModel>();
 
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await productService.GetAllAsync();
+        Result<IEnumerable<ProductModel>, DomainError> result = await productService.GetAllAsync();
 
         if (result.IsFailure) {
             Products = Enumerable.Empty<ProductModel>();
@@ -33,10 +37,12 @@ public class MyProductsModel(
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await productService.DeleteAsync(id, user.Id);
+        Result<bool, DomainError> result = await productService.DeleteAsync(id, user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error;

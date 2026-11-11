@@ -11,12 +11,13 @@ public class ChangePasswordModel(
     UserManager<User> userManager,
     ILogger<ChangePasswordModel> logger
 ) : PageModel {
-    public void OnGet() {
-    }
+    public void OnGet() { }
 
     public async Task<IActionResult> OnPostAsync(string currentPassword, string newPassword, string confirmPassword) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)) {
             TempData["Error"] = "Todos los campos son obligatorios";
@@ -33,7 +34,7 @@ public class ChangePasswordModel(
             return Page();
         }
 
-        var changeResult = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        IdentityResult changeResult = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         if (changeResult.Succeeded) {
             logger.LogInformation("Contraseña cambiada para usuario {UserId}", user.Id);
             TempData["Success"] = "Contraseña cambiada correctamente";

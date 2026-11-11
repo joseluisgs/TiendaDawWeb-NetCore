@@ -1,9 +1,11 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Carrito;
@@ -12,14 +14,14 @@ namespace TiendaDawWeb.Tests.Shared.Services.Carrito;
 
 public class CarritoServiceTests {
     private ApplicationDbContext Context = null!;
-    private CarritoService _service = null!;
     private Mock<ILogger<CarritoService>> _loggerMock = null!;
     private MemoryCache _memoryCache = null!;
+    private CarritoService _service = null!;
 
     [SetUp]
     public void Setup() {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         Context = new ApplicationDbContext(options);
         _loggerMock = new Mock<ILogger<CarritoService>>();
@@ -37,10 +39,32 @@ public class CarritoServiceTests {
 
     [Test]
     public async Task GetCarritoByUsuarioIdAsync_ReturnsEmptyList_WhenEmpty() {
-        var result = await _service.GetCarritoByUsuarioIdAsync(1);
+        Result<IEnumerable<CarritoItem>, DomainError> result = await _service.GetCarritoByUsuarioIdAsync(1);
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region GetTotalCarritoAsync Tests
+
+    [Test]
+    public async Task GetTotalCarritoAsync_ReturnsZero_WhenEmpty() {
+        Result<decimal, DomainError> result = await _service.GetTotalCarritoAsync(999);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(0);
+    }
+
+    #endregion
+
+    #region GetCarritoCountAsync Tests
+
+    [Test]
+    public async Task GetCarritoCountAsync_ReturnsZero_WhenEmpty() {
+        Result<int, DomainError> result = await _service.GetCarritoCountAsync(999);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(0);
     }
 
     #endregion
@@ -50,12 +74,15 @@ public class CarritoServiceTests {
     [Test]
     public async Task AddToCarritoAsync_AddsItem() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            Deleted = false
+        };
         Context.Users.Add(user);
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.AddToCarritoAsync(1, 1);
+        Result<CarritoItem, DomainError> result = await _service.AddToCarritoAsync(1, 1);
 
         result.IsSuccess.Should().BeTrue();
         Context.CarritoItems.Should().HaveCount(1);
@@ -63,7 +90,7 @@ public class CarritoServiceTests {
 
     [Test]
     public async Task AddToCarritoAsync_ReturnsFailure_ProductNotFound() {
-        var result = await _service.AddToCarritoAsync(1, 999);
+        Result<CarritoItem, DomainError> result = await _service.AddToCarritoAsync(1, 999);
         result.IsSuccess.Should().BeFalse();
     }
 
@@ -73,7 +100,7 @@ public class CarritoServiceTests {
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.AddToCarritoAsync(1, 1);
+        Result<CarritoItem, DomainError> result = await _service.AddToCarritoAsync(1, 1);
         result.IsSuccess.Should().BeFalse();
     }
 
@@ -83,7 +110,7 @@ public class CarritoServiceTests {
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.AddToCarritoAsync(1, 1);
+        Result<CarritoItem, DomainError> result = await _service.AddToCarritoAsync(1, 1);
         result.IsSuccess.Should().BeFalse();
     }
 
@@ -97,7 +124,7 @@ public class CarritoServiceTests {
         Context.CarritoItems.Add(existingItem);
         await Context.SaveChangesAsync();
 
-        var result = await _service.AddToCarritoAsync(1, 1);
+        Result<CarritoItem, DomainError> result = await _service.AddToCarritoAsync(1, 1);
         result.IsSuccess.Should().BeFalse();
     }
 
@@ -109,10 +136,10 @@ public class CarritoServiceTests {
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
 
-        var result = await _service.AddToCarritoAsync(1, 1);
+        Result<CarritoItem, DomainError> result = await _service.AddToCarritoAsync(1, 1);
 
         result.IsSuccess.Should().BeTrue();
-        var updatedProduct = await Context.Products.FindAsync(1L);
+        Product? updatedProduct = await Context.Products.FindAsync(1L);
         updatedProduct!.Reservado.Should().BeTrue();
     }
 
@@ -130,7 +157,7 @@ public class CarritoServiceTests {
         Context.CarritoItems.Add(item);
         await Context.SaveChangesAsync();
 
-        var result = await _service.RemoveFromCarritoAsync(1);
+        Result<bool, DomainError> result = await _service.RemoveFromCarritoAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         Context.CarritoItems.Should().BeEmpty();
@@ -151,16 +178,16 @@ public class CarritoServiceTests {
         Context.CarritoItems.Add(item);
         await Context.SaveChangesAsync();
 
-        var result = await _service.RemoveFromCarritoAsync(1);
+        Result<bool, DomainError> result = await _service.RemoveFromCarritoAsync(1);
 
         result.IsSuccess.Should().BeTrue();
-        var updatedProduct = await Context.Products.FindAsync(1L);
+        Product? updatedProduct = await Context.Products.FindAsync(1L);
         updatedProduct!.Reservado.Should().BeFalse();
     }
 
     [Test]
     public async Task RemoveFromCarritoAsync_ReturnsFailure_ItemNotFound() {
-        var result = await _service.RemoveFromCarritoAsync(999);
+        Result<bool, DomainError> result = await _service.RemoveFromCarritoAsync(999);
         result.IsSuccess.Should().BeFalse();
     }
 
@@ -177,7 +204,7 @@ public class CarritoServiceTests {
         Context.CarritoItems.AddRange(item1, item2);
         await Context.SaveChangesAsync();
 
-        var result = await _service.ClearCarritoAsync(1);
+        Result<bool, DomainError> result = await _service.ClearCarritoAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         Context.CarritoItems.Should().BeEmpty();
@@ -185,30 +212,8 @@ public class CarritoServiceTests {
 
     [Test]
     public async Task ClearCarritoAsync_ReturnsSuccess_WhenEmpty() {
-        var result = await _service.ClearCarritoAsync(999);
+        Result<bool, DomainError> result = await _service.ClearCarritoAsync(999);
         result.IsSuccess.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region GetTotalCarritoAsync Tests
-
-    [Test]
-    public async Task GetTotalCarritoAsync_ReturnsZero_WhenEmpty() {
-        var result = await _service.GetTotalCarritoAsync(999);
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(0);
-    }
-
-    #endregion
-
-    #region GetCarritoCountAsync Tests
-
-    [Test]
-    public async Task GetCarritoCountAsync_ReturnsZero_WhenEmpty() {
-        var result = await _service.GetCarritoCountAsync(999);
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(0);
     }
 
     #endregion

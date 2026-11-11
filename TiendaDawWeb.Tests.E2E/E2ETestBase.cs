@@ -1,6 +1,5 @@
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
-using System;
 
 namespace TiendaDawWeb.Tests.E2E;
 
@@ -19,8 +18,8 @@ public abstract class E2ETestBase : PageTest {
     protected const string CarlosPassword = "Carlos123";
 
     protected string BaseTestUrl => Environment.GetEnvironmentVariable("E2E_BASE_URL")
-        ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
-        ?? DefaultBaseUrl;
+                                    ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
+                                    ?? DefaultBaseUrl;
 
     public override BrowserNewContextOptions ContextOptions() {
         return new BrowserNewContextOptions {
@@ -31,7 +30,7 @@ public abstract class E2ETestBase : PageTest {
     }
 
     protected async Task CaptureScreenshotAsync(string stepName) {
-        var screenshotPath = Path.Combine("TestScreenshots", TestContext.CurrentContext.Test.Name);
+        string screenshotPath = Path.Combine("TestScreenshots", TestContext.CurrentContext.Test.Name);
         Directory.CreateDirectory(screenshotPath);
         await Page.ScreenshotAsync(new PageScreenshotOptions {
             Path = Path.Combine(screenshotPath, $"{stepName}.png"),

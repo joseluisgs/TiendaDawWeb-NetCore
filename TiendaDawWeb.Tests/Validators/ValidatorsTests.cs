@@ -6,7 +6,7 @@ using TiendaDawWeb.Shared.ViewModels;
 namespace TiendaDawWeb.Tests.Validators;
 
 /// <summary>
-/// Tests unitarios para los validadores FluentValidation.
+///     Tests unitarios para los validadores FluentValidation.
 /// </summary>
 public class ValidatorsTests {
     [Test]
@@ -20,7 +20,7 @@ public class ValidatorsTests {
             ConfirmPassword = "Test1234"
         };
 
-        var result = validator.Validate(model);
+        ValidationResult result = validator.Validate(model);
         result.IsValid.Should().BeTrue();
     }
 
@@ -35,7 +35,7 @@ public class ValidatorsTests {
             ConfirmPassword = "Test1234"
         };
 
-        var result = validator.Validate(model);
+        ValidationResult result = validator.Validate(model);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "Nombre");
     }
@@ -51,7 +51,7 @@ public class ValidatorsTests {
             ConfirmPassword = "Test5678"
         };
 
-        var result = validator.Validate(model);
+        ValidationResult result = validator.Validate(model);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "ConfirmPassword");
     }
@@ -61,7 +61,7 @@ public class ValidatorsTests {
         var validator = new LoginViewModelValidator();
         var model = new LoginViewModel { Email = "", Password = "Test1234" };
 
-        var result = validator.Validate(model);
+        ValidationResult result = validator.Validate(model);
         result.IsValid.Should().BeFalse();
     }
 
@@ -70,7 +70,7 @@ public class ValidatorsTests {
         var validator = new LoginViewModelValidator();
         var model = new LoginViewModel { Email = "test@test.com", Password = "Test1234" };
 
-        var result = validator.Validate(model);
+        ValidationResult result = validator.Validate(model);
         result.IsValid.Should().BeTrue();
     }
 }

@@ -1,6 +1,8 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Purchase;
 
@@ -24,10 +26,12 @@ public class PurchaseController(
     [HttpGet]
     [HttpGet("/Purchase/MyPurchases")]
     public async Task<IActionResult> Index(int page = 1) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await purchaseService.GetByUserAsync(user.Id, page);
+        Result<IEnumerable<Purchase>, DomainError> result = await purchaseService.GetByUserAsync(user.Id, page);
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar las compras";
@@ -43,17 +47,19 @@ public class PurchaseController(
     /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> Details(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await purchaseService.GetByIdAsync(id);
+        Result<Purchase, DomainError> result = await purchaseService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
             return RedirectToAction(nameof(Index));
         }
 
-        var purchase = result.Value;
+        Purchase purchase = result.Value;
 
         // Verificar que el usuario sea el comprador (o sea admin)
         if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
@@ -69,23 +75,25 @@ public class PurchaseController(
     /// </summary>
     [HttpGet("{id}/pdf")]
     public async Task<IActionResult> DownloadPdf(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
         // Verificar que la compra pertenezca al usuario
-        var purchaseResult = await purchaseService.GetByIdAsync(id);
+        Result<Purchase, DomainError> purchaseResult = await purchaseService.GetByIdAsync(id);
         if (purchaseResult.IsFailure) {
             TempData["Error"] = "Compra no encontrada";
             return RedirectToAction(nameof(Index));
         }
 
-        var purchase = purchaseResult.Value;
+        Purchase purchase = purchaseResult.Value;
         if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
             TempData["Error"] = "No tienes permiso para descargar esta factura";
             return RedirectToAction(nameof(Index));
         }
 
-        var pdfResult = await purchaseService.GeneratePdfAsync(id);
+        Result<byte[], DomainError> pdfResult = await purchaseService.GeneratePdfAsync(id);
 
         if (pdfResult.IsFailure) {
             TempData["Error"] = pdfResult.Error.Message;
@@ -100,17 +108,19 @@ public class PurchaseController(
     /// </summary>
     [HttpGet("{id}/confirmacion")]
     public async Task<IActionResult> Confirmacion(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await purchaseService.GetByIdAsync(id);
+        Result<Purchase, DomainError> result = await purchaseService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
             return RedirectToAction(nameof(Index));
         }
 
-        var purchase = result.Value;
+        Purchase purchase = result.Value;
 
         if (purchase.CompradorId != user.Id) {
             TempData["Error"] = "No tienes permiso para ver esta compra";
@@ -128,22 +138,22 @@ public class PurchaseController(
     [ValidateAntiForgeryToken]
     [HttpPost("{id}/reenviaremail")]
     public async Task<IActionResult> ReenviarEmail(long id) {
-        var user = await userManager.GetUserAsync(User);
+        User? user = await userManager.GetUserAsync(User);
         if (user == null) {
             return Json(new { success = false, message = "Usuario no autenticado" });
         }
 
-        var purchaseResult = await purchaseService.GetByIdAsync(id);
+        Result<Purchase, DomainError> purchaseResult = await purchaseService.GetByIdAsync(id);
         if (purchaseResult.IsFailure) {
             return Json(new { success = false, message = "Compra no encontrada" });
         }
 
-        var purchase = purchaseResult.Value;
+        Purchase purchase = purchaseResult.Value;
         if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
             return Json(new { success = false, message = "No tienes permiso" });
         }
 
-        var result = await purchaseService.SendConfirmationEmailAsync(id);
+        Result<bool, DomainError> result = await purchaseService.SendConfirmationEmailAsync(id);
 
         if (result.IsFailure) {
             return Json(new { success = false, message = result.Error.Message });

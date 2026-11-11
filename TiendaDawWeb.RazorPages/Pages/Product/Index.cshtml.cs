@@ -1,10 +1,12 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Favorite;
+using TiendaDawWeb.Shared.Services.Product;
 using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.RazorPages.Pages.Product;
@@ -18,7 +20,7 @@ public class IndexModel(
     public IEnumerable<ProductModel> Products { get; set; } = Enumerable.Empty<ProductModel>();
 
     public async Task<IActionResult> OnGetAsync() {
-        var result = await productService.GetAllAsync();
+        Result<IEnumerable<ProductModel>, DomainError> result = await productService.GetAllAsync();
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar los productos";
@@ -27,9 +29,10 @@ public class IndexModel(
         }
 
         if (User.Identity?.IsAuthenticated == true) {
-            var user = await userManager.GetUserAsync(User);
+            User? user = await userManager.GetUserAsync(User);
             if (user != null) {
-                var favoritesResult = await favoriteService.GetUserFavoritesAsync(user.Id);
+                Result<IEnumerable<ProductModel>, DomainError> favoritesResult =
+                    await favoriteService.GetUserFavoritesAsync(user.Id);
                 if (favoritesResult.IsSuccess) {
                     ViewData["FavoriteIds"] = favoritesResult.Value.Select(p => p.Id).ToList();
                 }

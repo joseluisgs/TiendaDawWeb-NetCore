@@ -1,13 +1,11 @@
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
-using NUnit.Framework;
 using TiendaDawWeb.Tests.E2E.Extensions;
 
 namespace TiendaDawWeb.Tests.E2E.Purchase;
 
 /**
  * MÓDULO DE INTENCIÓN DE COMPRA (E2E)
- * 
+ *
  * OBJETIVO: Simular un usuario interesado que busca un producto específico y verifica al vendedor.
  * TECNOLOGÍAS TESTEADAS: Buscador, Filtros de Propiedad, Verificación de Vendedor (Relaciones EF Core).
  */
@@ -24,7 +22,7 @@ public class PurchaseIntentTests : E2ETestBase {
 
     [Test]
     public async Task SearchSpecificProduct_AndVerifySeller_ShouldShowPurchaseOption() {
-        string id = System.Guid.NewGuid().ToString().Substring(0, 8);
+        string id = Guid.NewGuid().ToString().Substring(0, 8);
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Register");
         await CaptureScreenshotAsync("01-register-page");
 
@@ -45,10 +43,10 @@ public class PurchaseIntentTests : E2ETestBase {
         await Page.TestId("search-button").ClickAsync();
         await CaptureScreenshotAsync("04-search-results");
 
-        var firstProductCard = Page.TestId("product-card").First;
+        ILocator firstProductCard = Page.TestId("product-card").First;
         await Expect(firstProductCard).ToContainTextAsync("Samsung Galaxy S24");
 
-        var productLinks = Page.Locator("a[href*='/Product/Details']");
+        ILocator productLinks = Page.Locator("a[href*='/Product/Details']");
         if (await productLinks.CountAsync() > 0) {
             await productLinks.First.ClickAsync();
         } else {
@@ -58,12 +56,12 @@ public class PurchaseIntentTests : E2ETestBase {
         await CaptureScreenshotAsync("05-product-details");
         await Page.WaitForTimeoutAsync(2000);
 
-        var productTitle = Page.Locator("h1, [data-testid='product-title']").First;
-        await Expect(productTitle).ToBeVisibleAsync(new() { Timeout = 5000 });
+        ILocator productTitle = Page.Locator("h1, [data-testid='product-title']").First;
+        await Expect(productTitle).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 5000 });
 
-        var sellerSection = Page.Locator("[data-testid='seller-info'], .seller-info");
+        ILocator sellerSection = Page.Locator("[data-testid='seller-info'], .seller-info");
         if (await sellerSection.CountAsync() > 0) {
-            var sellerContent = await sellerSection.TextContentAsync();
+            string? sellerContent = await sellerSection.TextContentAsync();
             Assert.That(sellerContent != null && sellerContent.Contains("Prueba"), Is.True);
         }
 

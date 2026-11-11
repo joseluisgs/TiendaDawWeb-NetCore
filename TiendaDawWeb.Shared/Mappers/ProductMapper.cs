@@ -4,14 +4,14 @@ using TiendaDawWeb.Shared.ViewModels;
 namespace TiendaDawWeb.Shared.Mappers;
 
 /// <summary>
-/// OBJETIVO: Centralizar la lógica de conversión entre Modelos de Dominio y ViewModels.
-/// UBICACIÓN: /Mappers
-/// RAZÓN: Aplica el principio DRY (Don't Repeat Yourself). Evita que los controladores 
-/// tengan código repetitivo de asignación de propiedades, facilitando el mantenimiento.
+///     OBJETIVO: Centralizar la lógica de conversión entre Modelos de Dominio y ViewModels.
+///     UBICACIÓN: /Mappers
+///     RAZÓN: Aplica el principio DRY (Don't Repeat Yourself). Evita que los controladores
+///     tengan código repetitivo de asignación de propiedades, facilitando el mantenimiento.
 /// </summary>
 public static class ProductMapper {
     /// <summary>
-    /// Convierte un Producto (Base de Datos) a un ProductViewModel (Vista).
+    ///     Convierte un Producto (Base de Datos) a un ProductViewModel (Vista).
     /// </summary>
     public static ProductViewModel ToViewModel(this Product product) {
         return new ProductViewModel {
@@ -25,13 +25,14 @@ public static class ProductMapper {
     }
 
     /// <summary>
-    /// Convierte un ProductViewModel (Vista) a un Producto (Base de Datos).
+    ///     Convierte un ProductViewModel (Vista) a un Producto (Base de Datos).
     /// </summary>
     /// <param name="model">El viewmodel de origen.</param>
     /// <param name="propietarioId">ID del usuario que realiza la acción.</param>
     /// <param name="imagenUrl">URL de la imagen ya procesada por el storage.</param>
     /// <param name="includeId">Si true, incluye el ID del modelo en la entidad.</param>
-    public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl, bool includeId = false) {
+    public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl,
+        bool includeId = false) {
         var product = new Product {
             Nombre = model.Nombre,
             Descripcion = model.Descripcion,
@@ -41,21 +42,24 @@ public static class ProductMapper {
             Imagen = imagenUrl ?? model.ImagenUrl
         };
 
-        if (includeId)
+        if (includeId) {
             product.Id = model.Id;
+        }
 
         return product;
     }
 
     /// <summary>
-    /// Actualiza una entidad existente con los datos del viewmodel.
-    /// Útil para no crear objetos nuevos en memoria si no es necesario.
+    ///     Actualiza una entidad existente con los datos del viewmodel.
+    ///     Útil para no crear objetos nuevos en memoria si no es necesario.
     /// </summary>
     public static void UpdateEntity(this ProductViewModel model, Product product, string? imagenUrl) {
         product.Nombre = model.Nombre;
         product.Descripcion = model.Descripcion;
         product.Precio = model.Precio;
         product.Categoria = model.Categoria;
-        if (imagenUrl != null) product.Imagen = imagenUrl;
+        if (imagenUrl != null) {
+            product.Imagen = imagenUrl;
+        }
     }
 }

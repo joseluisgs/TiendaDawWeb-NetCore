@@ -1,6 +1,5 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Carrito.IndexModel
-@using System.Globalization
 @{
     ViewData["Title"] = "Carrito de Compras";
 }
@@ -10,8 +9,7 @@
         <i class="bi bi-cart3"></i> Mi Carrito de Compras
     </h1>
 
-    @if (!Model.Items.Any())
-    {
+    @if (!Model.Items.Any()) {
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="bi bi-cart-x fs-1 text-muted"></i>
@@ -23,8 +21,7 @@
             </div>
         </div>
     }
-    else
-    {
+    else {
         <div class="row">
             <div class="col-lg-8">
                 <div class="card mb-4">
@@ -32,12 +29,11 @@
                         <h5 class="mb-0">Productos en el carrito (@Model.Items.Count())</h5>
                     </div>
                     <div class="card-body" data-testid="cart-items">
-                        @foreach (var item in Model.Items)
-                        {
+                        @foreach (var item in Model.Items) {
                             <div class="row mb-3 border-bottom pb-3" data-testid="cart-item">
                                 <div class="col-md-2">
-                                    <img src="@item.Producto.ImagenOrDefault" 
-                                         alt="@item.Producto.Nombre" 
+                                    <img src="@item.Producto.ImagenOrDefault"
+                                         alt="@item.Producto.Nombre"
                                          class="img-fluid rounded"
                                          data-testid="cart-item-image">
                                 </div>
@@ -53,7 +49,7 @@
                                 <div class="col-md-2 text-end">
                                     <form method="post" asp-page-handler="Remove" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="itemId" value="@item.Id" />
+                                        <input type="hidden" name="itemId" value="@item.Id"/>
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
@@ -70,7 +66,7 @@
                     </a>
                     <form method="post" asp-page-handler="Clear" class="d-inline">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-outline-danger" 
+                        <button type="submit" class="btn btn-outline-danger"
                                 onclick="return confirm('¿Estás seguro de vaciar el carrito?')">
                             <i class="bi bi-trash"></i> Vaciar Carrito
                         </button>
@@ -95,7 +91,8 @@
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total:</strong>
-                            <strong class="text-primary fs-4" data-testid="total">@ViewBag.Total.ToString("C2", new CultureInfo("es-ES"))</strong>
+                            <strong class="text-primary fs-4"
+                                    data-testid="total">@ViewBag.Total.ToString("C2", new CultureInfo("es-ES"))</strong>
                         </div>
 
                         <a asp-page="/Carrito/Resumen" class="btn btn-primary w-100 mb-2" data-testid="checkout-button">

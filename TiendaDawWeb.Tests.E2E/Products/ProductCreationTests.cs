@@ -1,6 +1,5 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
-using NUnit.Framework;
 using TiendaDawWeb.Tests.E2E.Extensions;
 
 namespace TiendaDawWeb.Tests.E2E.Products;
@@ -22,7 +21,7 @@ public class ProductCreationTests : E2ETestBase {
     public async Task UserCanCreateProductWithImage() {
         await LoginAsync(AdminEmail, AdminPassword);
 
-        var productName = $"Producto con Imagen {DateTime.UtcNow:yyyyMMddHHmmss}";
+        string productName = $"Producto con Imagen {DateTime.UtcNow:yyyyMMddHHmmss}";
 
         await Page.GotoAsync($"{BaseTestUrl}/Product/Create");
 
@@ -31,7 +30,8 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("precio-input").FillAsync("149.99");
         await Page.Locator("select[name*='Categoria'], select[id*='Categoria']").SelectOptionAsync("SMARTPHONES");
 
-        var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures", "test-product.svg"));
+        string projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures",
+            "test-product.svg"));
         if (File.Exists(projectRoot)) {
             await Page.Locator("input[type='file']").SetInputFilesAsync(projectRoot);
         }
@@ -39,19 +39,19 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(
-            new System.Text.RegularExpressions.Regex(".*Product/Details.*", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
-            new() { Timeout = 20000 });
+            new Regex(".*Product/Details.*", RegexOptions.IgnoreCase),
+            new PageAssertionsToHaveURLOptions { Timeout = 20000 });
 
         await Expect(Page.Locator("h1").First).ToContainTextAsync(
-            new System.Text.RegularExpressions.Regex(productName, System.Text.RegularExpressions.RegexOptions.IgnoreCase),
-            new() { Timeout = 10000 });
+            new Regex(productName, RegexOptions.IgnoreCase),
+            new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
     }
 
     [Test]
     public async Task ProductAppearsInPublicListAfterCreation() {
         await LoginAsync(AdminEmail, AdminPassword);
 
-        var productName = $"Buscable {DateTime.UtcNow:yyyyMMddHHmmss}";
+        string productName = $"Buscable {DateTime.UtcNow:yyyyMMddHHmmss}";
 
         await Page.GotoAsync($"{BaseTestUrl}/Product/Create");
         await Page.TestId("nombre-input").FillAsync(productName);
@@ -59,7 +59,8 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("precio-input").FillAsync("49.99");
         await Page.Locator("select[name*='Categoria'], select[id*='Categoria']").SelectOptionAsync("ACCESSORIES");
 
-        var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures", "test-product.svg"));
+        string projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures",
+            "test-product.svg"));
         if (File.Exists(projectRoot)) {
             await Page.Locator("input[type='file']").SetInputFilesAsync(projectRoot);
         }
@@ -70,15 +71,15 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("search-input").FillAsync(productName);
         await Page.TestId("search-button").ClickAsync();
 
-        var productCard = Page.TestId("product-card").First;
-        await Expect(productCard).ToBeVisibleAsync(new() { Timeout = 10000 });
+        ILocator productCard = Page.TestId("product-card").First;
+        await Expect(productCard).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
     }
 
     [Test]
     public async Task ProductOwnerCannotRateOwnProduct() {
         await LoginAsync(AdminEmail, AdminPassword);
 
-        var productName = $"Mi Producto {DateTime.UtcNow:yyyyMMddHHmmss}";
+        string productName = $"Mi Producto {DateTime.UtcNow:yyyyMMddHHmmss}";
 
         await Page.GotoAsync($"{BaseTestUrl}/Product/Create");
         await Page.TestId("nombre-input").FillAsync(productName);
@@ -86,26 +87,27 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("precio-input").FillAsync("75.00");
         await Page.Locator("select[name*='Categoria'], select[id*='Categoria']").SelectOptionAsync("SMARTPHONES");
 
-        var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures", "test-product.svg"));
+        string projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures",
+            "test-product.svg"));
         if (File.Exists(projectRoot)) {
             await Page.Locator("input[type='file']").SetInputFilesAsync(projectRoot);
         }
 
         await Page.TestId("submit-button").ClickAsync();
 
-        var productId = System.Text.RegularExpressions.Regex.Match(Page.Url, @"id=(\d+)").Groups[1].Value;
+        string productId = Regex.Match(Page.Url, @"id=(\d+)").Groups[1].Value;
 
         await Page.GotoAsync($"{BaseTestUrl}/Product/Details/{productId}");
 
-        var ratingForm = Page.Locator("form:has-text('Valorar')");
-        await Expect(ratingForm).Not.ToBeVisibleAsync(new() { Timeout = 5000 });
+        ILocator ratingForm = Page.Locator("form:has-text('Valorar')");
+        await Expect(ratingForm).Not.ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 5000 });
     }
 
     [Test]
     public async Task CreateProductWithoutImage() {
         await LoginAsync(AdminEmail, AdminPassword);
 
-        var productName = $"Sin Imagen {DateTime.UtcNow:yyyyMMddHHmmss}";
+        string productName = $"Sin Imagen {DateTime.UtcNow:yyyyMMddHHmmss}";
 
         await Page.GotoAsync($"{BaseTestUrl}/Product/Create");
         await Page.TestId("nombre-input").FillAsync(productName);
@@ -116,12 +118,12 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(
-            new System.Text.RegularExpressions.Regex(".*Product/Details.*", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
-            new() { Timeout = 20000 });
+            new Regex(".*Product/Details.*", RegexOptions.IgnoreCase),
+            new PageAssertionsToHaveURLOptions { Timeout = 20000 });
 
         await Expect(Page.Locator("h1").First).ToContainTextAsync(
-            new System.Text.RegularExpressions.Regex(productName, System.Text.RegularExpressions.RegexOptions.IgnoreCase),
-            new() { Timeout = 10000 });
+            new Regex(productName, RegexOptions.IgnoreCase),
+            new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
     }
 
     private async Task LoginAsync(string email, string password) {
@@ -129,6 +131,7 @@ public class ProductCreationTests : E2ETestBase {
         await Page.TestId("email-input").FillAsync(email);
         await Page.TestId("password-input").FillAsync(password);
         await Page.TestId("submit-button").ClickAsync();
-        await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Admin", System.Text.RegularExpressions.RegexOptions.IgnoreCase), new() { Timeout = 10000 });
+        await Expect(Page.Locator(".navbar")).ToContainTextAsync(new Regex("Admin", RegexOptions.IgnoreCase),
+            new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
     }
 }

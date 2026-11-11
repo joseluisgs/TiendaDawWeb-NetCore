@@ -1,7 +1,7 @@
 namespace TiendaDawWeb.Shared.Services.Email;
 
 /// <summary>
-/// Mensaje de email para la cola de procesamiento asíncrono.
+///     Mensaje de email para la cola de procesamiento asíncrono.
 /// </summary>
 public class EmailMessage {
     public required string To { get; init; }

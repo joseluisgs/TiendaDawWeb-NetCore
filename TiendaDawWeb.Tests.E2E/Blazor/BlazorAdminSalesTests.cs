@@ -1,12 +1,10 @@
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
-using NUnit.Framework;
 using TiendaDawWeb.Tests.E2E.Extensions;
 
 namespace TiendaDawWeb.Tests.E2E.Blazor;
 
 /// <summary>
-/// Tests E2E para el flujo completo de ventas y panel de administración
+///     Tests E2E para el flujo completo de ventas y panel de administración
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
@@ -21,7 +19,7 @@ public class BlazorAdminSalesTests : E2ETestBase {
 
     [Test]
     public async Task Purchase_ShouldUpdateAdminStatistics() {
-        string id = System.Guid.NewGuid().ToString().Substring(0, 8);
+        string id = Guid.NewGuid().ToString().Substring(0, 8);
         string buyerEmail = $"admin_buyer_{id}@test.com";
 
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Register");
@@ -33,7 +31,8 @@ public class BlazorAdminSalesTests : E2ETestBase {
         await Page.TestId("confirm-password-input").FillAsync("Password123!");
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("02-registered-buyer");
-        await Expect(Page.TestId("user-name")).ToContainTextAsync("AdminBuyer", new() { Timeout = 10000 });
+        await Expect(Page.TestId("user-name"))
+            .ToContainTextAsync("AdminBuyer", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
 
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("03-public-page");
@@ -53,14 +52,18 @@ public class BlazorAdminSalesTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("06-admin-login");
 
-        await Expect(Page.TestId("user-name")).ToContainTextAsync("Admin", new() { Timeout = 15000 });
+        await Expect(Page.TestId("user-name"))
+            .ToContainTextAsync("Admin", new LocatorAssertionsToContainTextOptions { Timeout = 15000 });
 
-        await Page.GotoAsync($"{BaseTestUrl}/Admin", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+        await Page.GotoAsync($"{BaseTestUrl}/Admin",
+            new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
         await CaptureScreenshotAsync("07-admin-panel");
         await Page.WaitForTimeoutAsync(3000);
 
-        var statsContent = await Page.Locator("body").TextContentAsync();
-        Assert.That(statsContent != null && (statsContent.Contains("Usuarios") || statsContent.Contains("Ventas") || statsContent.Contains("Estadística")),
+        string? statsContent = await Page.Locator("body").TextContentAsync();
+        Assert.That(
+            statsContent != null && (statsContent.Contains("Usuarios") || statsContent.Contains("Ventas") ||
+                                     statsContent.Contains("Estadística")),
             Is.True, "Admin should see statistics widget");
     }
 
@@ -72,14 +75,18 @@ public class BlazorAdminSalesTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("01-admin-login");
 
-        await Expect(Page.TestId("user-name")).ToContainTextAsync("Admin", new() { Timeout = 15000 });
+        await Expect(Page.TestId("user-name"))
+            .ToContainTextAsync("Admin", new LocatorAssertionsToContainTextOptions { Timeout = 15000 });
 
-        await Page.GotoAsync($"{BaseTestUrl}/Admin", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+        await Page.GotoAsync($"{BaseTestUrl}/Admin",
+            new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
         await CaptureScreenshotAsync("02-admin-stats");
         await Page.WaitForTimeoutAsync(3000);
 
-        var statsContent = await Page.Locator("body").TextContentAsync();
-        Assert.That(statsContent != null && (statsContent.Contains("Usuarios") || statsContent.Contains("Ventas") || statsContent.Contains("Productos")),
+        string? statsContent = await Page.Locator("body").TextContentAsync();
+        Assert.That(
+            statsContent != null && (statsContent.Contains("Usuarios") || statsContent.Contains("Ventas") ||
+                                     statsContent.Contains("Productos")),
             Is.True, "Admin stats widget should show statistics");
     }
 }

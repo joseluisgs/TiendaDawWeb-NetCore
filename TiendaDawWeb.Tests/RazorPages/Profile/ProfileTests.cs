@@ -1,13 +1,14 @@
 #nullable disable
+using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.RazorPages.Pages.Profile;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Models;
@@ -15,16 +16,17 @@ using TiendaDawWeb.Shared.Models;
 namespace TiendaDawWeb.Tests.RazorPages.Profile;
 
 public class ProfileIndexModelTests {
-    private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<ApplicationDbContext> _mockContext;
+    private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly IndexModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
     public ProfileIndexModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
-        _mockContext = new Mock<ApplicationDbContext>(new Microsoft.EntityFrameworkCore.DbContextOptions<ApplicationDbContext>());
+        _mockContext = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -63,7 +65,7 @@ public class ProfileIndexModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<RedirectToPageResult>();
         (result as RedirectToPageResult)!.PageName.Should().Be("/Auth/Login");
@@ -71,17 +73,19 @@ public class ProfileIndexModelTests {
 }
 
 public class PasskeysModelTests {
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<PasskeysModel>> _mockLogger;
+    private readonly Mock<SignInManager<User>> _mockSignInManager;
+    private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly PasskeysModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
     public PasskeysModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
-            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!, null!);
+            new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!,
+            null!);
         _mockLogger = new Mock<ILogger<PasskeysModel>>();
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
@@ -111,7 +115,7 @@ public class PasskeysModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<RedirectToPageResult>();
         ((RedirectToPageResult)result).PageName.Should().Be("/Auth/Login");
@@ -124,7 +128,7 @@ public class PasskeysModelTests {
         _mockUserManager.Setup(u => u.GetPasskeysAsync(user))
             .ReturnsAsync(new List<UserPasskeyInfo>());
 
-        var result = await _model.OnGetAsync();
+        IActionResult result = await _model.OnGetAsync();
 
         result.Should().BeOfType<PageResult>();
         _model.Passkeys.Should().BeEmpty();
@@ -135,7 +139,7 @@ public class PasskeysModelTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _model.OnPostCreationOptionsAsync();
+        IActionResult result = await _model.OnPostCreationOptionsAsync();
 
         result.Should().BeOfType<NotFoundResult>();
     }
@@ -148,7 +152,7 @@ public class PasskeysModelTests {
         _mockSignInManager.Setup(s => s.MakePasskeyCreationOptionsAsync(It.IsAny<PasskeyUserEntity>()))
             .ReturnsAsync("{}");
 
-        var result = await _model.OnPostCreationOptionsAsync();
+        IActionResult result = await _model.OnPostCreationOptionsAsync();
 
         result.Should().BeOfType<ContentResult>();
         ((ContentResult)result).ContentType.Should().Be("application/json");
@@ -161,9 +165,9 @@ public class PasskeysModelTests {
         _mockSignInManager.Setup(s => s.PerformPasskeyAttestationAsync(It.IsAny<string>()))
             .ReturnsAsync(PasskeyAttestationResult.Fail(new PasskeyException("reto no válido")));
 
-        var result = await _model.OnPostAttestationAsync("credencial-mala");
+        IActionResult result = await _model.OnPostAttestationAsync("credencial-mala");
 
-        var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+        ObjectResult objectResult = result.Should().BeOfType<ObjectResult>().Subject;
         objectResult.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
@@ -175,7 +179,7 @@ public class PasskeysModelTests {
         // En runtime el framework inyecta el TempData; en unit test hay que ponerlo a mano.
         _model.TempData = CrearTempData(_model.PageContext.HttpContext);
 
-        var result = await _model.OnPostEliminarAsync("no-es-base64!!");
+        IActionResult result = await _model.OnPostEliminarAsync("no-es-base64!!");
 
         result.Should().BeOfType<RedirectToPageResult>();
         _model.TempData["Error"].Should().Be("El identificador de la passkey no es válido");

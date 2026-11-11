@@ -1,12 +1,11 @@
 using CSharpFunctionalExtensions;
 using TiendaDawWeb.Shared.Errors;
-using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.Shared.Services.Product;
 
 /// <summary>
-/// Interfaz de servicio para gestión de productos del marketplace.
-/// Define las operaciones CRUD y búsqueda de productos.
+///     Interfaz de servicio para gestión de productos del marketplace.
+///     Define las operaciones CRUD y búsqueda de productos.
 /// </summary>
 public interface IProductService {
     /// <summary>Obtiene un producto por su ID.</summary>

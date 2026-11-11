@@ -1,8 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Purchase;
@@ -20,10 +21,12 @@ public class ResumenModel(
     public IEnumerable<CarritoItem> Items => CarritoItems;
 
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await carritoService.GetCarritoByUsuarioIdAsync(user.Id);
+        Result<IEnumerable<CarritoItem>, DomainError> result = await carritoService.GetCarritoByUsuarioIdAsync(user.Id);
 
         if (result.IsFailure || !result.Value.Any()) {
             TempData["Error"] = "El carrito está vacío";
@@ -32,7 +35,7 @@ public class ResumenModel(
 
         CarritoItems = result.Value.ToList();
 
-        var totalResult = await carritoService.GetTotalCarritoAsync(user.Id);
+        Result<decimal, DomainError> totalResult = await carritoService.GetTotalCarritoAsync(user.Id);
         ViewData["Total"] = totalResult.IsSuccess ? totalResult.Value : 0;
         ViewData["User"] = user;
 
@@ -40,12 +43,15 @@ public class ResumenModel(
     }
 
     public async Task<IActionResult> OnPostFinalizarCompraAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         logger.LogInformation("Usuario {UserId} iniciando proceso de compra", user.Id);
 
-        var result = await purchaseService.CreatePurchaseFromCarritoAsync(user.Id);
+        Result<Shared.Models.Purchase, DomainError> result =
+            await purchaseService.CreatePurchaseFromCarritoAsync(user.Id);
 
         if (result.IsFailure) {
             logger.LogWarning("Error al finalizar compra para usuario {UserId}: {Error}",
@@ -54,7 +60,7 @@ public class ResumenModel(
             return RedirectToPage();
         }
 
-        var purchase = result.Value;
+        Shared.Models.Purchase purchase = result.Value;
         logger.LogInformation("Compra {PurchaseId} finalizada exitosamente para usuario {UserId}",
             purchase.Id, user.Id);
 

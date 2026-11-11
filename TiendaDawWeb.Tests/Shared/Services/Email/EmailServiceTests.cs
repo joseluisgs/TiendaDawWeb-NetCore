@@ -1,20 +1,20 @@
+using System.Threading.Channels;
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Email;
-using System.Threading.Channels;
 using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
 namespace TiendaDawWeb.Tests.Shared.Services;
 
 public class EmailServiceTests {
     private Mock<IConfiguration> _configurationMock = null!;
-    private Mock<ILogger<EmailService>> _loggerMock = null!;
     private Channel<EmailMessage> _emailChannel = null!;
+    private Mock<ILogger<EmailService>> _loggerMock = null!;
     private EmailService _service = null!;
 
     [SetUp]
@@ -30,28 +30,6 @@ public class EmailServiceTests {
         _emailChannel.Writer.Complete();
     }
 
-    #region SendWelcomeEmailAsync Tests
-
-    [Test]
-    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
-        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
-
-        var result = await _service.SendWelcomeEmailAsync("test@example.com", "TestUser");
-
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder() {
-        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns("${SmtpHost}");
-
-        var result = await _service.SendWelcomeEmailAsync("test@example.com", "TestUser");
-
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    #endregion
-
     #region SendPurchaseConfirmationEmailAsync Tests
 
     [Test]
@@ -66,37 +44,8 @@ public class EmailServiceTests {
             Products = new List<Product>()
         };
 
-        var result = await _service.SendPurchaseConfirmationEmailAsync("test@example.com", purchase);
-
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region SendEmailAsync Tests
-
-    [Test]
-    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
-        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
-
-        var result = await _service.SendEmailAsync(
-            "test@example.com",
-            "Test Subject",
-            "<html><body>Test Body</body></html>"
-        );
-
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Test]
-    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder() {
-        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns("${SmtpHost}");
-
-        var result = await _service.SendEmailAsync(
-            "test@example.com",
-            "Test Subject",
-            "<html><body>Test Body</body></html>"
-        );
+        Result<bool, DomainError> result =
+            await _service.SendPurchaseConfirmationEmailAsync("test@example.com", purchase);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -115,9 +64,61 @@ public class EmailServiceTests {
 
         _service.EnqueueEmail(emailMessage);
 
-        _emailChannel.Reader.TryRead(out var dequeued).Should().BeTrue();
+        _emailChannel.Reader.TryRead(out EmailMessage? dequeued).Should().BeTrue();
         dequeued!.To.Should().Be("test@example.com");
         dequeued.Subject.Should().Be("Test Subject");
+    }
+
+    #endregion
+
+    #region SendWelcomeEmailAsync Tests
+
+    [Test]
+    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
+        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
+
+        Result<bool, DomainError> result = await _service.SendWelcomeEmailAsync("test@example.com", "TestUser");
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder() {
+        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns("${SmtpHost}");
+
+        Result<bool, DomainError> result = await _service.SendWelcomeEmailAsync("test@example.com", "TestUser");
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region SendEmailAsync Tests
+
+    [Test]
+    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
+        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
+
+        Result<bool, DomainError> result = await _service.SendEmailAsync(
+            "test@example.com",
+            "Test Subject",
+            "<html><body>Test Body</body></html>"
+        );
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder() {
+        _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns("${SmtpHost}");
+
+        Result<bool, DomainError> result = await _service.SendEmailAsync(
+            "test@example.com",
+            "Test Subject",
+            "<html><body>Test Body</body></html>"
+        );
+
+        result.IsSuccess.Should().BeTrue();
     }
 
     #endregion

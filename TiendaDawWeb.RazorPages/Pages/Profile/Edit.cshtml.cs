@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Storage;
 
@@ -14,19 +16,23 @@ public class EditModel(
     ILogger<EditModel> logger
 ) : PageModel {
     public User UserProfile { get; set; } = default!;
-    public User Usuario { get { return UserProfile; } }
+    public User Usuario => UserProfile;
 
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         UserProfile = user;
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(string nombre, string apellidos, IFormFile? avatar) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellidos)) {
             TempData["Error"] = "El nombre y apellidos son obligatorios";
@@ -44,7 +50,7 @@ public class EditModel(
                 return Page();
             }
 
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+            string[] allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
             if (!allowedTypes.Contains(avatar.ContentType.ToLower())) {
                 TempData["Error"] = "Solo se permiten imágenes (JPG, PNG, GIF)";
                 UserProfile = user;
@@ -52,9 +58,12 @@ public class EditModel(
             }
 
             try {
-                var result = await storageService.SaveFileAsync(avatar, "avatars");
+                Result<string, DomainError> result = await storageService.SaveFileAsync(avatar, "avatars");
                 if (result.IsSuccess) {
-                    if (!string.IsNullOrEmpty(user.Avatar)) await storageService.DeleteFileAsync(user.Avatar);
+                    if (!string.IsNullOrEmpty(user.Avatar)) {
+                        await storageService.DeleteFileAsync(user.Avatar);
+                    }
+
                     user.Avatar = result.Value;
                 } else {
                     TempData["Error"] = "Error al guardar el avatar: " + result.Error.Message;
@@ -69,7 +78,7 @@ public class EditModel(
             }
         }
 
-        var updateResult = await userManager.UpdateAsync(user);
+        IdentityResult updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded) {
             logger.LogInformation("Perfil actualizado para usuario {UserId}", user.Id);
             TempData["Success"] = "Perfil actualizado correctamente";
@@ -83,8 +92,10 @@ public class EditModel(
     }
 
     public async Task<IActionResult> OnPostDeleteAvatarAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         if (!string.IsNullOrEmpty(user.Avatar)) {
             try {

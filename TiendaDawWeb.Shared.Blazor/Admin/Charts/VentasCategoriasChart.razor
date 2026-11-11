@@ -1,7 +1,7 @@
 @namespace TiendaDawWeb.Shared.Blazor.Admin.Charts
-@using TiendaDawWeb.Shared.Services.Stats
-@using TiendaDawWeb.Shared.Dto.Stats
 @using System.Timers
+@using TiendaDawWeb.Shared.Dto.Stats
+@using TiendaDawWeb.Shared.Services.Stats
 @implements IDisposable
 @inject IStatisticsService StatsService
 @inject ILogger<VentasCategoriasChart> Logger
@@ -12,45 +12,40 @@
         <div>
             <span class="badge bg-light text-primary me-2">Auto-refresh: 30s</span>
             <button class="btn btn-sm btn-light" @onclick="ManualRefresh" disabled="@isLoading">
-                @if (isLoading)
-                {
+                @if (isLoading) {
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 }
-                else
-                {
+                else {
                     <i class="bi bi-arrow-clockwise"></i>
                 }
             </button>
         </div>
     </div>
     <div class="card-body">
-        @if (isLoading && (Data == null || !Data.Any()))
-        {
+        @if (isLoading && (Data == null || !Data.Any())) {
             <div class="d-flex justify-content-center align-items-center" style="height: 350px;">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Cargando...</span>
                 </div>
             </div>
         }
-        else if (Data == null || !Data.Any())
-        {
+        else if (Data == null || !Data.Any()) {
             <div class="d-flex flex-column justify-content-center align-items-center text-muted" style="height: 350px;">
                 <i class="bi bi-graph-down display-4"></i>
                 <p class="mt-2">No hay datos de ventas disponibles</p>
             </div>
         }
-        else
-        {
-            <ApexChart TItem="CategorySalesDto" 
-                        Title="Distribución de Ventas"
-                        Options="Options">
+        else {
+            <ApexChart TItem="CategorySalesDto"
+                       Title="Distribución de Ventas"
+                       Options="Options">
 
                 <ApexPointSeries TItem="CategorySalesDto"
-                                Items="Data"
-                                Name="Ventas"
-                                SeriesType="SeriesType.Donut"
-                                XValue="@(e => e.Categoria.ToString())"
-                                YValue="@(e => e.Cantidad)" />
+                                 Items="Data"
+                                 Name="Ventas"
+                                 SeriesType="SeriesType.Donut"
+                                 XValue="@(e => e.Categoria.ToString())"
+                                 YValue="@(e => e.Cantidad)"/>
             </ApexChart>
         }
         <div class="text-end mt-2">
@@ -66,8 +61,7 @@
     private bool isLoading = true;
     private Timer? _timer;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         Logger.LogInformation("Blazor VentasCategoriasChart: Inicializado");
         ConfigureOptions();
         await LoadData();
@@ -78,65 +72,54 @@
         _timer.Enabled = true;
     }
 
-    private void ConfigureOptions()
-    {
+    private void ConfigureOptions() {
         Options.Chart = new Chart { Toolbar = new Toolbar { Show = true } };
         Options.Legend = new Legend { Position = LegendPosition.Bottom };
-        Options.PlotOptions = new PlotOptions
-        {
-            Pie = new PlotOptionsPie
-            {
-                Donut = new PlotOptionsDonut
-                {
-                    Labels = new DonutLabels
-                    {
-                        Show = true,
-                        Total = new DonutLabelTotal { Show = true, Label = "Total" }
-                    }
+        Options.PlotOptions = new PlotOptions {
+                Pie = new PlotOptionsPie {
+                        Donut = new PlotOptionsDonut {
+                                Labels = new DonutLabels {
+                                        Show = true,
+                                        Total = new DonutLabelTotal { Show = true, Label = "Total" }
+                                }
+                        }
                 }
-            }
         };
     }
 
-    private async Task ManualRefresh()
-    {
+    private async Task ManualRefresh() {
         Logger.LogInformation("🫱 Blazor VentasCategoriasChart: Refresco MANUAL solicitado");
         isLoading = true;
-        await Task.Delay(300); 
+        await Task.Delay(300);
         await LoadData();
         isLoading = false;
         StateHasChanged();
     }
 
-    private async Task AutoRefresh()
-    {
+    private async Task AutoRefresh() {
         Logger.LogInformation("⏱️ Blazor VentasCategoriasChart: Refresco AUTOMÁTICO por Timer");
         await LoadData();
         StateHasChanged();
     }
 
-    private async Task LoadData()
-    {
-        try
-        {
+    private async Task LoadData() {
+        try {
             var result = await StatsService.GetSalesByCategoryAsync();
             Data = result.ToList();
             lastUpdate = DateTime.Now;
             Logger.LogDebug("Blazor VentasCategoriasChart: Datos cargados correctamente");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Logger.LogError(ex, "Blazor VentasCategoriasChart: Error al cargar datos");
         }
-        finally
-        {
+        finally {
             isLoading = false;
         }
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         Logger.LogInformation("Blazor VentasCategoriasChart: Eliminado (Dispose)");
         _timer?.Dispose();
     }
+
 }

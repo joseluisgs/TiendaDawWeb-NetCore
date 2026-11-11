@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Product;
@@ -24,10 +26,12 @@ public class IndexModel(
     ///     GET /app/carrito - Muestra el contenido del carrito
     /// </summary>
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await carritoService.GetCarritoByUsuarioIdAsync(user.Id);
+        Result<IEnumerable<CarritoItem>, DomainError> result = await carritoService.GetCarritoByUsuarioIdAsync(user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar el carrito";
@@ -37,7 +41,7 @@ public class IndexModel(
 
         CarritoItems = result.Value.ToList();
 
-        var totalResult = await carritoService.GetTotalCarritoAsync(user.Id);
+        Result<decimal, DomainError> totalResult = await carritoService.GetTotalCarritoAsync(user.Id);
         ViewData["Total"] = totalResult.IsSuccess ? totalResult.Value : 0;
 
         return Page();
@@ -49,27 +53,30 @@ public class IndexModel(
     /// <param name="productoId">ID del producto a añadir</param>
     /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostAddAsync(long productoId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var productResult = await productService.GetByIdAsync(productoId);
+        Result<Shared.Models.Product, DomainError> productResult = await productService.GetByIdAsync(productoId);
         if (productResult.IsFailure) {
             TempData["Error"] = "Producto no encontrado";
             return RedirectToPage("/Public/Index");
         }
 
-        var product = productResult.Value;
+        Shared.Models.Product product = productResult.Value;
         if (product.Reservado) {
             TempData["Error"] = "Este producto está reservado";
             return RedirectToPage("/Public/Index");
         }
 
-        var result = await carritoService.AddToCarritoAsync(user.Id, productoId);
+        Result<CarritoItem, DomainError> result = await carritoService.AddToCarritoAsync(user.Id, productoId);
 
-        if (result.IsFailure)
+        if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
-        else
+        } else {
             TempData["Success"] = "Producto añadido al carrito";
+        }
 
         return RedirectToPage("./Index");
     }
@@ -80,10 +87,12 @@ public class IndexModel(
     /// <param name="itemId">ID del item a eliminar</param>
     /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostRemoveAsync(long itemId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await carritoService.RemoveFromCarritoAsync(itemId);
+        Result<bool, DomainError> result = await carritoService.RemoveFromCarritoAsync(itemId);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
@@ -99,10 +108,12 @@ public class IndexModel(
     /// </summary>
     /// <returns>Redirect al carrito</returns>
     public async Task<IActionResult> OnPostClearAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await carritoService.ClearCarritoAsync(user.Id);
+        Result<bool, DomainError> result = await carritoService.ClearCarritoAsync(user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error;

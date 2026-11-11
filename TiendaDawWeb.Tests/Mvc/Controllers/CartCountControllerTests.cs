@@ -1,15 +1,13 @@
 #nullable disable
+using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
@@ -18,16 +16,17 @@ using TiendaDawWeb.Shared.Services.Carrito;
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class CartCountControllerTests {
+    private readonly CartCountController _controller;
     private readonly Mock<ICarritoService> _mockCarritoService;
     private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly CartCountController _controller;
     private readonly ClaimsPrincipal _userPrincipal;
 
     public CartCountControllerTests() {
         _mockCarritoService = new Mock<ICarritoService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
@@ -45,8 +44,7 @@ public class CartCountControllerTests {
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown() {
-    }
+    public void OneTimeTearDown() { }
 
     #region Constructor Tests
 
@@ -69,7 +67,7 @@ public class CartCountControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.GetCartCount();
+        IActionResult result = await _controller.GetCartCount();
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
@@ -84,7 +82,7 @@ public class CartCountControllerTests {
         _mockCarritoService.Setup(s => s.GetCarritoCountAsync(user.Id))
             .ReturnsAsync(Result.Success<int, DomainError>(5));
 
-        var result = await _controller.GetCartCount();
+        IActionResult result = await _controller.GetCartCount();
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -97,7 +95,7 @@ public class CartCountControllerTests {
         _mockCarritoService.Setup(s => s.GetCarritoCountAsync(user.Id))
             .ReturnsAsync(Result.Failure<int, DomainError>(GenericError.DatabaseError("Error")));
 
-        var result = await _controller.GetCartCount();
+        IActionResult result = await _controller.GetCartCount();
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -110,7 +108,7 @@ public class CartCountControllerTests {
         _mockCarritoService.Setup(s => s.GetCarritoCountAsync(user.Id))
             .ReturnsAsync(Result.Success<int, DomainError>(10));
 
-        var result = await _controller.GetCartCount();
+        IActionResult result = await _controller.GetCartCount();
 
         result.Should().BeOfType<OkObjectResult>();
     }

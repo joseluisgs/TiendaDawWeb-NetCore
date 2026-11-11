@@ -1,12 +1,10 @@
-using Microsoft.Extensions.Configuration;
 using System.Threading.Channels;
 using CSharpFunctionalExtensions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using TiendaDawWeb.Shared.Errors;
-using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Email;
 
 namespace TiendaDawWeb.Shared.Services.Email;
 
@@ -27,8 +25,8 @@ public class EmailService(
     /// <param name="userName">Nombre del usuario</param>
     /// <returns>True si se envió o error</returns>
     public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName) {
-        var subject = "Bienvenido a WalaDaw!";
-        var body = $@"<html><body><h1>Hola {userName},</h1><p>Gracias por registrarte.</p></body></html>";
+        string subject = "Bienvenido a WalaDaw!";
+        string body = $@"<html><body><h1>Hola {userName},</h1><p>Gracias por registrarte.</p></body></html>";
         return await SendEmailAsync(toEmail, subject, body);
     }
 
@@ -41,19 +39,19 @@ public class EmailService(
     /// <returns>True si se envió o error</returns>
     public async Task<Result<bool, DomainError>> SendPurchaseConfirmationEmailAsync(
         string toEmail, Models.Purchase purchase, byte[]? pdfAttachment = null) {
-        var subject = $"Confirmación de compra #{purchase.Id} - WalaDaw";
+        string subject = $"Confirmación de compra #{purchase.Id} - WalaDaw";
 
-        var productosHtml = purchase.Products.Select(p => $@"
+        string productosHtml = purchase.Products.Select(p => $@"
             <tr style='background-color: #f8f9fa;'>
                 <td style='padding: 12px; border: 1px solid #dee2e6;'>{p.Nombre}</td>
                 <td style='padding: 12px; border: 1px solid #dee2e6;'>{p.Categoria}</td>
                 <td style='padding: 12px; border: 1px solid #dee2e6; text-align: right;'>{p.Precio:C}</td>
             </tr>").Aggregate("", (acc, next) => acc + next);
 
-        var subtotal = purchase.Total / 1.21m;
-        var iva = purchase.Total - subtotal;
+        decimal subtotal = purchase.Total / 1.21m;
+        decimal iva = purchase.Total - subtotal;
 
-        var body = $@"<!DOCTYPE html>
+        string body = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
@@ -133,12 +131,12 @@ public class EmailService(
         logger.LogInformation("Intentando enviar email a {To} - Asunto: {Subject}", toEmail, subject);
 
         try {
-            var smtpHost = configuration["Email:SmtpHost"];
-            var smtpPortRaw = configuration["Email:SmtpPort"] ?? "587";
-            var smtpUser = configuration["Email:SmtpUser"];
-            var smtpPass = configuration["Email:SmtpPass"];
-            var fromEmail = configuration["Email:FromEmail"] ?? smtpUser;
-            var fromName = configuration["Email:FromName"] ?? "WalaDaw";
+            string? smtpHost = configuration["Email:SmtpHost"];
+            string smtpPortRaw = configuration["Email:SmtpPort"] ?? "587";
+            string? smtpUser = configuration["Email:SmtpUser"];
+            string? smtpPass = configuration["Email:SmtpPass"];
+            string? fromEmail = configuration["Email:FromEmail"] ?? smtpUser;
+            string? fromName = configuration["Email:FromName"] ?? "WalaDaw";
 
             if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser) ||
                 smtpHost.StartsWith("${") || smtpPortRaw.StartsWith("${")) {
@@ -146,7 +144,7 @@ public class EmailService(
                 return Result.Success<bool, DomainError>(true);
             }
 
-            var smtpPort = int.Parse(smtpPortRaw);
+            int smtpPort = int.Parse(smtpPortRaw);
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName ?? string.Empty, fromEmail ?? string.Empty));
@@ -154,14 +152,18 @@ public class EmailService(
             message.Subject = subject;
 
             var builder = new BodyBuilder { HtmlBody = body };
-            if (attachment != null && !string.IsNullOrEmpty(attachmentName))
+            if (attachment != null && !string.IsNullOrEmpty(attachmentName)) {
                 builder.Attachments.Add(attachmentName, attachment);
+            }
 
             message.Body = builder.ToMessageBody();
 
             using var client = new SmtpClient();
             await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
-            if (!string.IsNullOrEmpty(smtpPass)) await client.AuthenticateAsync(smtpUser, smtpPass);
+            if (!string.IsNullOrEmpty(smtpPass)) {
+                await client.AuthenticateAsync(smtpUser, smtpPass);
+            }
+
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
 

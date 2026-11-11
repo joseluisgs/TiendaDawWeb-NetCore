@@ -4,8 +4,8 @@ using TiendaDawWeb.Shared.Services.Email;
 namespace TiendaDawWeb.Shared.Services.BackgroundServices;
 
 /// <summary>
-/// Servicio en segundo plano para procesar la cola de emails.
-/// Usa Channel para gestión thread-safe de la cola.
+///     Servicio en segundo plano para procesar la cola de emails.
+///     Usa Channel para gestión thread-safe de la cola.
 /// </summary>
 public class EmailBackgroundService(
     Channel<EmailMessage> emailChannel,
@@ -13,16 +13,16 @@ public class EmailBackgroundService(
     ILogger<EmailBackgroundService> logger
 ) : BackgroundService {
     private readonly Channel<EmailMessage> _emailChannel = emailChannel;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<EmailBackgroundService> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         _logger.LogInformation("Servicio de email en segundo plano iniciado");
 
-        await foreach (var emailMessage in _emailChannel.Reader.ReadAllAsync(stoppingToken)) {
+        await foreach (EmailMessage emailMessage in _emailChannel.Reader.ReadAllAsync(stoppingToken)) {
             try {
-                using var scope = _serviceProvider.CreateScope();
-                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                using IServiceScope scope = _serviceProvider.CreateScope();
+                IEmailService emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
                 _logger.LogInformation("Procesando email de la cola para: {To}", emailMessage.To);
 

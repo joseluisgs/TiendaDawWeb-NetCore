@@ -1,16 +1,15 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
-using NUnit.Framework;
 using TiendaDawWeb.Tests.E2E.Extensions;
 
 namespace TiendaDawWeb.Tests.E2E.Auth;
 
 /**
  * MÓDULO DE AUTENTICACIÓN (E2E)
- * 
+ *
  * OBJETIVO: Validar que el flujo de acceso (Login) sea seguro y funcional desde el navegador.
  * TECNOLOGÍAS TESTEADAS: ASP.NET Core Identity, Playwright Locators, Validaciones DataAnnotations.
- * 
+ *
  * EJEMPLO DE USO DE TEST IDS:
  * - Page.TestId("login-form") - Busca el formulario por data-testid
  * - Page.TestId("email-input").FillAsync(AdminEmail) - Busca input y escribe
@@ -30,7 +29,7 @@ public class AuthTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("02-validation-errors");
 
-        var error = Page.Locator(".text-danger:not(:empty), .field-validation-error").First;
+        ILocator error = Page.Locator(".text-danger:not(:empty), .field-validation-error").First;
         await Expect(error).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
     }
 
@@ -43,8 +42,8 @@ public class AuthTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("04-after-login");
 
-        await Expect(Page).Not.ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/Auth/Login.*"));
-        await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Admin", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+        await Expect(Page).Not.ToHaveURLAsync(new Regex(".*/Auth/Login.*"));
+        await Expect(Page.Locator(".navbar")).ToContainTextAsync(new Regex("Admin", RegexOptions.IgnoreCase));
     }
 
     [Test]
@@ -56,7 +55,7 @@ public class AuthTests : E2ETestBase {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("06-error-message");
 
-        var errorSummary = Page.Locator(".validation-summary-errors");
-        await Expect(errorSummary).ToContainTextAsync(new System.Text.RegularExpressions.Regex("incorrectos", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+        ILocator errorSummary = Page.Locator(".validation-summary-errors");
+        await Expect(errorSummary).ToContainTextAsync(new Regex("incorrectos", RegexOptions.IgnoreCase));
     }
 }

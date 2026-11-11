@@ -1,5 +1,5 @@
 @using Microsoft.Extensions.Localization
-@using TiendaDawWeb.Resources
+@using TiendaDawWeb.Shared.Blazor.Ratings
 @using TiendaDawWeb.Shared.Helpers
 @model Product
 @inject UserManager<User> UserManager
@@ -19,7 +19,7 @@
 @section Scripts
 {
     @* Script original para AJAX comentado para propósitos didácticos *@
-    @* 
+    @*
     <script>
         window.isAuthenticated = @isAuthenticated.ToString().ToLower();
         window.isOwner = @isOwner.ToString().ToLower();
@@ -31,13 +31,15 @@
 <div class="container mt-4" data-testid="product-details-page">
     <div class="row">
         <div class="col-md-6">
-            <img src="@Model.ImagenOrDefault" class="img-fluid rounded shadow" alt="@Model.Nombre" data-testid="product-image">
+            <img src="@Model.ImagenOrDefault" class="img-fluid rounded shadow" alt="@Model.Nombre"
+                 data-testid="product-image">
         </div>
 
         <div class="col-md-6">
             <h1 class="mb-3" data-testid="product-title">@Model.Nombre</h1>
             <div class="mb-3 d-flex gap-2">
-                <span class="badge bg-secondary" data-testid="product-category">@SharedLocalizer[$"Category.{Model.Categoria}"]</span>
+                <span class="badge bg-secondary"
+                      data-testid="product-category">@SharedLocalizer[$"Category.{Model.Categoria}"]</span>
                 <span class="badge bg-light text-dark border">
                     <i class="bi bi-calendar3"></i> @SharedLocalizer["Created"]: @Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
                 </span>
@@ -52,7 +54,8 @@
                 @* Código original con AJAX comentado para propósitos didácticos *@
                 @* <script>loadRatings();</script> *@
 
-                <component type="typeof(TiendaDawWeb.Shared.Blazor.Ratings.RatingSummary)" render-mode="ServerPrerendered"
+  pe="tyndaDawWeb.Shared.Blazor.Ratings.RatingSummary)"
+                           render-mode="ServerPrerendered"
                            param-ProductId="@Model.Id"/>
             </div>
 
@@ -129,9 +132,9 @@
     <div class="row mt-5">
         <div class="col-12">
             @* Código original con AJAX comentado para propósitos didácticos *@
-            @* 
+            @*
             <div id="ratingSectionAJAX" class="mb-4"></div>
-            <div id="ratingsListAJAX"></div> 
+            <div id="ratingsListAJAX"></div>
             *@
 
             <component type="typeof(TiendaDawWeb.Shared.Blazor.Ratings.RatingSection)" render-mode="ServerPrerendered"

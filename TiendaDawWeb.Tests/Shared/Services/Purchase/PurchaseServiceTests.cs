@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using FluentAssertions;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -17,18 +18,18 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 namespace TiendaDawWeb.Tests.Shared.Services.Purchase;
 
 public class PurchaseServiceTests {
-    private ApplicationDbContext _context = null!;
-    private Mock<ICarritoService> _carritoServiceMock = null!;
-    private Mock<IPdfService> _pdfServiceMock = null!;
-    private Mock<IEmailService> _emailServiceMock = null!;
     private Mock<IMemoryCache> _cacheMock = null!;
+    private Mock<ICarritoService> _carritoServiceMock = null!;
+    private ApplicationDbContext _context = null!;
+    private Mock<IEmailService> _emailServiceMock = null!;
     private Mock<ILogger<PurchaseService>> _loggerMock = null!;
+    private Mock<IPdfService> _pdfServiceMock = null!;
     private PurchaseService _service = null!;
 
     [SetUp]
     public void Setup() {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         _context = new ApplicationDbContext(options);
         _carritoServiceMock = new Mock<ICarritoService>();
@@ -42,7 +43,7 @@ public class PurchaseServiceTests {
             _pdfServiceMock.Object,
             _emailServiceMock.Object,
             _cacheMock.Object,
-            new Mock<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>().Object,
+            new Mock<IOutputCacheStore>().Object,
             _loggerMock.Object);
     }
 
@@ -61,7 +62,7 @@ public class PurchaseServiceTests {
         _context.Purchases.Add(purchase);
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByIdAsync(1);
+        Result<PurchaseModel, DomainError> result = await _service.GetByIdAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Id.Should().Be(1);
@@ -69,7 +70,7 @@ public class PurchaseServiceTests {
 
     [Test]
     public async Task GetByIdAsync_ReturnsFailure_WhenNotExists() {
-        var result = await _service.GetByIdAsync(999);
+        Result<PurchaseModel, DomainError> result = await _service.GetByIdAsync(999);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -77,7 +78,10 @@ public class PurchaseServiceTests {
     [Test]
     public async Task GetByIdAsync_IncludesProducts() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var product = new Product { Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, Deleted = false };
+        var product = new Product {
+            Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES,
+            Deleted = false
+        };
         var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
         purchase.Products.Add(product);
         _context.Users.Add(user);
@@ -85,7 +89,7 @@ public class PurchaseServiceTests {
         _context.Purchases.Add(purchase);
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByIdAsync(1);
+        Result<PurchaseModel, DomainError> result = await _service.GetByIdAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Products.Should().HaveCount(1);
@@ -104,7 +108,7 @@ public class PurchaseServiceTests {
         _context.Purchases.AddRange(purchase1, purchase2);
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByUserAsync(1);
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetByUserAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
@@ -112,7 +116,7 @@ public class PurchaseServiceTests {
 
     [Test]
     public async Task GetByUserAsync_ReturnsEmpty_WhenNoPurchases() {
-        var result = await _service.GetByUserAsync(999);
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetByUserAsync(999);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEmpty();
@@ -123,11 +127,13 @@ public class PurchaseServiceTests {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         _context.Users.Add(user);
         for (int i = 1; i <= 15; i++) {
-            _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = DateTime.UtcNow });
+            _context.Purchases.Add(new PurchaseModel
+                { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = DateTime.UtcNow });
         }
+
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByUserAsync(1, page: 1, pageSize: 5);
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetByUserAsync(1, 1, 5);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(5);
@@ -144,7 +150,7 @@ public class PurchaseServiceTests {
         );
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByUserAsync(1);
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetByUserAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(1);
@@ -166,7 +172,7 @@ public class PurchaseServiceTests {
         );
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetAllAsync();
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
@@ -174,7 +180,7 @@ public class PurchaseServiceTests {
 
     [Test]
     public async Task GetAllAsync_ReturnsEmpty_WhenNoPurchases() {
-        var result = await _service.GetAllAsync();
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEmpty();
@@ -185,11 +191,13 @@ public class PurchaseServiceTests {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         _context.Users.Add(user);
         for (int i = 1; i <= 15; i++) {
-            _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = DateTime.UtcNow });
+            _context.Purchases.Add(new PurchaseModel
+                { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = DateTime.UtcNow });
         }
+
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetAllAsync(page: 2, pageSize: 5);
+        Result<IEnumerable<PurchaseModel>, DomainError> result = await _service.GetAllAsync(2, 5);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(5);
@@ -202,7 +210,7 @@ public class PurchaseServiceTests {
     [Test]
     public async Task GetByDateRangeAsync_ReturnsPurchasesInRange() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         _context.Users.Add(user);
         _context.Purchases.AddRange(
             new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = now.AddDays(-5) },
@@ -211,7 +219,8 @@ public class PurchaseServiceTests {
         );
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByDateRangeAsync(now.AddDays(-7), now.AddDays(-1));
+        Result<IEnumerable<PurchaseModel>, DomainError> result =
+            await _service.GetByDateRangeAsync(now.AddDays(-7), now.AddDays(-1));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);
@@ -221,10 +230,12 @@ public class PurchaseServiceTests {
     public async Task GetByDateRangeAsync_ReturnsEmpty_WhenNoMatch() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         _context.Users.Add(user);
-        _context.Purchases.Add(new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow });
+        _context.Purchases.Add(
+            new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow });
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByDateRangeAsync(DateTime.UtcNow.AddYears(-1), DateTime.UtcNow.AddYears(-2));
+        Result<IEnumerable<PurchaseModel>, DomainError> result =
+            await _service.GetByDateRangeAsync(DateTime.UtcNow.AddYears(-1), DateTime.UtcNow.AddYears(-2));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEmpty();
@@ -233,14 +244,17 @@ public class PurchaseServiceTests {
     [Test]
     public async Task GetByDateRangeAsync_PaginatesResults() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         _context.Users.Add(user);
         for (int i = 1; i <= 15; i++) {
-            _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = now.AddDays(-i) });
+            _context.Purchases.Add(new PurchaseModel
+                { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = now.AddDays(-i) });
         }
+
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetByDateRangeAsync(now.AddDays(-20), now, page: 1, pageSize: 5);
+        Result<IEnumerable<PurchaseModel>, DomainError> result =
+            await _service.GetByDateRangeAsync(now.AddDays(-20), now, 1, 5);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(5);
@@ -255,7 +269,7 @@ public class PurchaseServiceTests {
         _carritoServiceMock.Setup(c => c.GetCarritoByUsuarioIdAsync(It.IsAny<long>()))
             .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(Enumerable.Empty<CarritoItem>()));
 
-        var result = await _service.CreatePurchaseFromCarritoAsync(1);
+        Result<PurchaseModel, DomainError> result = await _service.CreatePurchaseFromCarritoAsync(1);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -265,7 +279,7 @@ public class PurchaseServiceTests {
         _carritoServiceMock.Setup(c => c.GetCarritoByUsuarioIdAsync(It.IsAny<long>()))
             .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(Enumerable.Empty<CarritoItem>()));
 
-        var result = await _service.CreatePurchaseFromCarritoAsync(999);
+        Result<PurchaseModel, DomainError> result = await _service.CreatePurchaseFromCarritoAsync(999);
 
         result.IsSuccess.Should().BeFalse();
     }
@@ -285,7 +299,7 @@ public class PurchaseServiceTests {
         _context.Purchases.Add(purchase);
         await _context.SaveChangesAsync();
 
-        var result = await _service.GeneratePdfAsync(1);
+        Result<byte[], DomainError> result = await _service.GeneratePdfAsync(1);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
@@ -293,7 +307,7 @@ public class PurchaseServiceTests {
 
     [Test]
     public async Task GeneratePdfAsync_ReturnsFailure_WhenNotExists() {
-        var result = await _service.GeneratePdfAsync(999);
+        Result<byte[], DomainError> result = await _service.GeneratePdfAsync(999);
 
         result.IsSuccess.Should().BeFalse();
     }

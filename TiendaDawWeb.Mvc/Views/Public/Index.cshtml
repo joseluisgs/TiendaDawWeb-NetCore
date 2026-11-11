@@ -1,7 +1,5 @@
-@using Microsoft.Extensions.Localization
-@using TiendaDawWeb.Resources
-@using TiendaDawWeb.Shared.Helpers
 @addTagHelper *, TiendaDawWeb.Mvc
+@using Microsoft.Extensions.Localization
 @model IEnumerable<Product>
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
@@ -60,7 +58,8 @@
                            value="@ViewBag.MaxPrecio" data-testid="max-price-input">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" type="submit" data-testid="search-button"><i class="bi bi-search"></i></button>
+                    <button class="btn btn-primary w-100" type="submit" data-testid="search-button"><i
+                                class="bi bi-search"></i></button>
                 </div>
             </form>
         </div>
@@ -107,12 +106,15 @@
                         <div class="card-footer bg-white">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
-                                    <h4 class="text-primary mb-0"><price value="@producto.Precio"></price></h4>
+                                    <h4 class="text-primary mb-0">
+                                        <price value="@producto.Precio"></price>
+                                    </h4>
                                 </div>
                                 @if (SignInManager.IsSignedIn(User) && currentUser != null && currentUser.Email != producto.Propietario?.Email) {
                                     <div class="col-md-6 text-end">
                                         @if (!producto.Reservado) {
-                                            <form asp-controller="Carrito" asp-action="Add" asp-route-productoId="@producto.Id"
+                                            <form asp-controller="Carrito" asp-action="Add"
+                                                  asp-route-productoId="@producto.Id"
                                                   method="post" style="display: inline-block;">
                                                 @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-success btn-sm">
@@ -161,7 +163,7 @@
                             else {
                                 <li class="page-item disabled">
                                     <span class="page-link"><i
-                                            class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]</span>
+                                                class="bi bi-chevron-left"></i> @SharedLocalizer["Pag.Previous"]</span>
                                 </li>
                             }
 
@@ -194,7 +196,7 @@
                             else {
                                 <li class="page-item disabled">
                                     <span class="page-link">@SharedLocalizer["Pag.Next"] <i
-                                            class="bi bi-chevron-right"></i></span>
+                                                class="bi bi-chevron-right"></i></span>
                                 </li>
                             }
                         </ul>

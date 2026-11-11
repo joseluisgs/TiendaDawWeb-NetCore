@@ -1,6 +1,8 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Favorite;
 
@@ -21,10 +23,12 @@ public class FavoriteController(
     ///     Listado de productos favoritos del usuario
     /// </summary>
     public async Task<IActionResult> Index() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToAction("Login", "Auth");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToAction("Login", "Auth");
+        }
 
-        var result = await favoriteService.GetUserFavoritesAsync(user.Id);
+        Result<IEnumerable<Product>, DomainError> result = await favoriteService.GetUserFavoritesAsync(user.Id);
 
         if (result.IsFailure) {
             TempData["Error"] = "Error al cargar favoritos";
@@ -40,12 +44,16 @@ public class FavoriteController(
     [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> Add(long productId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Json(new { success = false, message = "No autorizado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Json(new { success = false, message = "No autorizado" });
+        }
 
-        var result = await favoriteService.AddFavoriteAsync(user.Id, productId);
+        Result<Favorite, DomainError> result = await favoriteService.AddFavoriteAsync(user.Id, productId);
 
-        if (result.IsFailure) return Json(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return Json(new { success = false, message = result.Error.Message });
+        }
 
         return Json(new { success = true, message = "Añadido a favoritos" });
     }
@@ -56,12 +64,16 @@ public class FavoriteController(
     [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> Remove(long productId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Json(new { success = false, message = "No autorizado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Json(new { success = false, message = "No autorizado" });
+        }
 
-        var result = await favoriteService.RemoveFavoriteAsync(user.Id, productId);
+        Result<bool, DomainError> result = await favoriteService.RemoveFavoriteAsync(user.Id, productId);
 
-        if (result.IsFailure) return Json(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return Json(new { success = false, message = result.Error.Message });
+        }
 
         return Json(new { success = true, message = "Eliminado de favoritos" });
     }

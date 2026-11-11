@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
+using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.Shared.Services.BackgroundServices;
 
@@ -15,11 +15,13 @@ public class CarritoCleanupService(
 ) : IHostedService, IDisposable {
     private Timer? _timer;
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose() {
+        _timer?.Dispose();
+    }
 
     public Task StartAsync(CancellationToken cancellationToken) {
         logger.LogInformation("Servicio de limpieza de carritos iniciado");
-        var intervalMinutes = configuration.GetValue("Carrito:CleanupIntervalMinutes", 60);
+        int intervalMinutes = configuration.GetValue("Carrito:CleanupIntervalMinutes", 60);
         var interval = TimeSpan.FromMinutes(intervalMinutes);
         _timer = new Timer(async _ => await DoWorkAsync(_), null, TimeSpan.Zero, interval);
         return Task.CompletedTask;
@@ -34,11 +36,12 @@ public class CarritoCleanupService(
     private async Task DoWorkAsync(object? state) {
         logger.LogInformation("Ejecutando limpieza de carritos abandonados...");
         try {
-            using var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var expirationMinutes = configuration.GetValue("Carrito:ExpirationMinutes", 1440);
-            var expirationTime = DateTime.UtcNow.AddMinutes(-expirationMinutes);
-            var expiredItems = await context.CarritoItems.Where(ci => ci.CreatedAt < expirationTime).ToListAsync();
+            using IServiceScope scope = serviceProvider.CreateScope();
+            ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            int expirationMinutes = configuration.GetValue("Carrito:ExpirationMinutes", 1440);
+            DateTime expirationTime = DateTime.UtcNow.AddMinutes(-expirationMinutes);
+            List<CarritoItem> expiredItems =
+                await context.CarritoItems.Where(ci => ci.CreatedAt < expirationTime).ToListAsync();
             if (expiredItems.Any()) {
                 context.CarritoItems.RemoveRange(expiredItems);
                 await context.SaveChangesAsync();

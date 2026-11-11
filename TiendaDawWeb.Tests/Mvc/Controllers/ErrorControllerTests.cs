@@ -2,20 +2,18 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Diagnostics;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class ErrorControllerTests {
-    private readonly Mock<ILogger<ErrorController>> _mockLogger;
     private readonly ErrorController _controller;
+    private readonly Mock<ILogger<ErrorController>> _mockLogger;
 
     public ErrorControllerTests() {
         _mockLogger = new Mock<ILogger<ErrorController>>();
@@ -36,7 +34,7 @@ public class ErrorControllerTests {
 
     [Test]
     public void Index_ReturnsErrorView_With404StatusCode() {
-        var result = _controller.Index(404);
+        IActionResult result = _controller.Index(404);
 
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
@@ -47,7 +45,7 @@ public class ErrorControllerTests {
 
     [Test]
     public void Index_ReturnsErrorView_With403StatusCode() {
-        var result = _controller.Index(403);
+        IActionResult result = _controller.Index(403);
 
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
@@ -58,7 +56,7 @@ public class ErrorControllerTests {
 
     [Test]
     public void Index_ReturnsErrorView_With500StatusCode() {
-        var result = _controller.Index(500);
+        IActionResult result = _controller.Index(500);
 
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
@@ -69,7 +67,7 @@ public class ErrorControllerTests {
 
     [Test]
     public void Index_SetsRequestId() {
-        var result = _controller.Index(404);
+        IActionResult result = _controller.Index(404);
 
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;

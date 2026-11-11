@@ -1,53 +1,22 @@
+using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Moq;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Services.Storage;
 
 namespace TiendaDawWeb.Tests.Shared.Services.Storage;
 
 public class StorageServiceTests {
-    private Mock<IWebHostEnvironment> _environmentMock = null!;
     private MemoryConfigurationRoot _configuration = null!;
+    private Mock<IWebHostEnvironment> _environmentMock = null!;
     private Mock<ILogger<StorageService>> _loggerMock = null!;
     private StorageService _service = null!;
     private string _webRootPath = null!;
-
-    private class MemoryConfigurationRoot : IConfiguration {
-        private readonly Dictionary<string, string> _values = new();
-        public string? this[string key] { get => _values.TryGetValue(key, out var v) ? v : null; set => _values[key] = value!; }
-        public IConfigurationSection GetSection(string key) => new MemoryConfigurationSection(key, _values);
-        public IEnumerable<IConfigurationSection> GetChildren() => Enumerable.Empty<IConfigurationSection>();
-        public IChangeToken GetReloadToken() => new FakeChangeToken();
-
-        public void Add(string key, string value) => _values[key] = value;
-    }
-
-    private class MemoryConfigurationSection : IConfigurationSection {
-        private readonly string _key;
-        private readonly Dictionary<string, string> _values;
-        public string? this[string key] { get => _values.TryGetValue(key, out var v) ? v : null; set => _values[key] = value!; }
-        public string Key => _key;
-        public string Path { get; set; } = string.Empty;
-        public string? Value { get; set; }
-        public MemoryConfigurationSection(string key, Dictionary<string, string> values) => (_key, _values) = (key, values);
-        public IConfigurationSection GetSection(string key) => new MemoryConfigurationSection($"{_key}:{key}", _values);
-        public IEnumerable<IConfigurationSection> GetChildren() => Enumerable.Empty<IConfigurationSection>();
-        public IChangeToken GetReloadToken() => new FakeChangeToken();
-    }
-
-    private class FakeChangeToken : IChangeToken {
-        public bool HasChanged => false;
-        public bool ActiveChangeCallbacks => false;
-        public IDisposable RegisterChangeCallback(Action<object?> callback, object? state) => Disposable.Empty;
-    }
-
-    private static class Disposable {
-        public static IDisposable Empty { get; } = new Mock<IDisposable>().Object;
-    }
 
     [SetUp]
     public void Setup() {
@@ -74,11 +43,79 @@ public class StorageServiceTests {
         }
     }
 
+    private class MemoryConfigurationRoot : IConfiguration {
+        private readonly Dictionary<string, string> _values = new();
+
+        public string? this[string key] {
+            get => _values.TryGetValue(key, out string? v) ? v : null;
+            set => _values[key] = value!;
+        }
+
+        public IConfigurationSection GetSection(string key) {
+            return new MemoryConfigurationSection(key, _values);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren() {
+            return Enumerable.Empty<IConfigurationSection>();
+        }
+
+        public IChangeToken GetReloadToken() {
+            return new FakeChangeToken();
+        }
+
+        public void Add(string key, string value) {
+            _values[key] = value;
+        }
+    }
+
+    private class MemoryConfigurationSection : IConfigurationSection {
+        private readonly Dictionary<string, string> _values;
+
+        public MemoryConfigurationSection(string key, Dictionary<string, string> values) {
+            (Key, _values) = (key, values);
+        }
+
+        public string? this[string key] {
+            get => _values.TryGetValue(key, out string? v) ? v : null;
+            set => _values[key] = value!;
+        }
+
+        public string Key { get; }
+
+        public string Path { get; } = string.Empty;
+        public string? Value { get; set; }
+
+        public IConfigurationSection GetSection(string key) {
+            return new MemoryConfigurationSection($"{Key}:{key}", _values);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren() {
+            return Enumerable.Empty<IConfigurationSection>();
+        }
+
+        public IChangeToken GetReloadToken() {
+            return new FakeChangeToken();
+        }
+    }
+
+    private class FakeChangeToken : IChangeToken {
+        public bool HasChanged => false;
+        public bool ActiveChangeCallbacks => false;
+
+        public IDisposable RegisterChangeCallback(Action<object?> callback, object? state) {
+            return Disposable.Empty;
+        }
+    }
+
+    private static class Disposable {
+        public static IDisposable Empty { get; } = new Mock<IDisposable>().Object;
+    }
+
     #region SaveFileAsync Tests
 
     [Test]
     public async Task SaveFileAsync_ReturnsFailure_WhenFileIsNull() {
-        var result = await _service.SaveFileAsync(null!, "products");
+        Result<string, DomainError> result = await _service.SaveFileAsync(null!, "products");
 
         result.IsFailure.Should().BeTrue();
     }
@@ -88,7 +125,7 @@ public class StorageServiceTests {
         var formFile = new Mock<IFormFile>();
         formFile.Setup(f => f.Length).Returns(0);
 
-        var result = await _service.SaveFileAsync(formFile.Object, "products");
+        Result<string, DomainError> result = await _service.SaveFileAsync(formFile.Object, "products");
 
         result.IsFailure.Should().BeTrue();
     }
@@ -99,7 +136,7 @@ public class StorageServiceTests {
         formFile.Setup(f => f.Length).Returns(1000);
         formFile.Setup(f => f.FileName).Returns("test.exe");
 
-        var result = await _service.SaveFileAsync(formFile.Object, "products");
+        Result<string, DomainError> result = await _service.SaveFileAsync(formFile.Object, "products");
 
         result.IsFailure.Should().BeTrue();
         result.Error.ToString().Should().Contain("Extension no permitida");
@@ -111,13 +148,13 @@ public class StorageServiceTests {
 
     [Test]
     public async Task DeleteFileAsync_DeletesExistingFile_Success() {
-        var folder = Path.Combine(_webRootPath, "uploads", "products");
+        string folder = Path.Combine(_webRootPath, "uploads", "products");
         Directory.CreateDirectory(folder);
-        var filePath = Path.Combine(folder, "test.jpg");
+        string filePath = Path.Combine(folder, "test.jpg");
         File.WriteAllText(filePath, "test content");
 
-        var relativePath = "/uploads/products/test.jpg";
-        var result = await _service.DeleteFileAsync(relativePath);
+        string relativePath = "/uploads/products/test.jpg";
+        Result<bool, DomainError> result = await _service.DeleteFileAsync(relativePath);
 
         result.IsSuccess.Should().BeTrue();
         File.Exists(filePath).Should().BeFalse();
@@ -125,21 +162,21 @@ public class StorageServiceTests {
 
     [Test]
     public async Task DeleteFileAsync_ReturnsSuccess_WhenFileNotExists() {
-        var result = await _service.DeleteFileAsync("/uploads/products/nonexistent.jpg");
+        Result<bool, DomainError> result = await _service.DeleteFileAsync("/uploads/products/nonexistent.jpg");
 
         result.IsSuccess.Should().BeTrue();
     }
 
     [Test]
     public async Task DeleteFileAsync_ReturnsSuccess_WhenPathIsNull() {
-        var result = await _service.DeleteFileAsync(null!);
+        Result<bool, DomainError> result = await _service.DeleteFileAsync(null!);
 
         result.IsSuccess.Should().BeTrue();
     }
 
     [Test]
     public async Task DeleteFileAsync_ReturnsSuccess_WhenPathIsEmpty() {
-        var result = await _service.DeleteFileAsync("");
+        Result<bool, DomainError> result = await _service.DeleteFileAsync("");
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -150,33 +187,33 @@ public class StorageServiceTests {
 
     [Test]
     public void FileExists_ReturnsTrue_WhenFileExists() {
-        var folder = Path.Combine(_webRootPath, "uploads", "products");
+        string folder = Path.Combine(_webRootPath, "uploads", "products");
         Directory.CreateDirectory(folder);
-        var filePath = Path.Combine(folder, "test.jpg");
+        string filePath = Path.Combine(folder, "test.jpg");
         File.WriteAllText(filePath, "test content");
 
-        var result = _service.FileExists("/uploads/products/test.jpg");
+        bool result = _service.FileExists("/uploads/products/test.jpg");
 
         result.Should().BeTrue();
     }
 
     [Test]
     public void FileExists_ReturnsFalse_WhenFileNotExists() {
-        var result = _service.FileExists("/uploads/products/nonexistent.jpg");
+        bool result = _service.FileExists("/uploads/products/nonexistent.jpg");
 
         result.Should().BeFalse();
     }
 
     [Test]
     public void FileExists_ReturnsFalse_WhenPathIsNull() {
-        var result = _service.FileExists(null!);
+        bool result = _service.FileExists(null!);
 
         result.Should().BeFalse();
     }
 
     [Test]
     public void FileExists_ReturnsFalse_WhenPathIsEmpty() {
-        var result = _service.FileExists("");
+        bool result = _service.FileExists("");
 
         result.Should().BeFalse();
     }

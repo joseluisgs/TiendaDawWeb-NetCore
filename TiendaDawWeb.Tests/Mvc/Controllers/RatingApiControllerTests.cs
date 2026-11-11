@@ -1,15 +1,14 @@
 #nullable disable
+using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Security.Claims;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
@@ -18,17 +17,18 @@ using TiendaDawWeb.Shared.Services.Rating;
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class RatingApiControllerTests {
+    private readonly RatingApiController _controller;
+    private readonly Mock<ILogger<RatingApiController>> _mockLogger;
     private readonly Mock<IRatingService> _mockRatingService;
     private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<ILogger<RatingApiController>> _mockLogger;
-    private readonly RatingApiController _controller;
     private readonly ClaimsPrincipal _userPrincipal;
 
     public RatingApiControllerTests() {
         _mockRatingService = new Mock<IRatingService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _mockLogger = new Mock<ILogger<RatingApiController>>();
 
@@ -49,8 +49,7 @@ public class RatingApiControllerTests {
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown() {
-    }
+    public void OneTimeTearDown() { }
 
     #region Constructor Tests
 
@@ -73,7 +72,7 @@ public class RatingApiControllerTests {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(1))
             .ReturnsAsync(Result.Failure<IEnumerable<Rating>, DomainError>(RatingError.NotFound(1)));
 
-        var result = await _controller.GetProductRatings(1);
+        IActionResult result = await _controller.GetProductRatings(1);
 
         result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -86,7 +85,7 @@ public class RatingApiControllerTests {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(1))
             .ReturnsAsync(Result.Success<IEnumerable<Rating>, DomainError>(ratings));
 
-        var result = await _controller.GetProductRatings(1);
+        IActionResult result = await _controller.GetProductRatings(1);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -96,7 +95,7 @@ public class RatingApiControllerTests {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(999))
             .ReturnsAsync(Result.Success<IEnumerable<Rating>, DomainError>(new List<Rating>()));
 
-        var result = await _controller.GetProductRatings(999);
+        IActionResult result = await _controller.GetProductRatings(999);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -110,7 +109,7 @@ public class RatingApiControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.GetUserRating(1);
+        IActionResult result = await _controller.GetUserRating(1);
 
         result.Should().BeOfType<UnauthorizedObjectResult>();
     }
@@ -123,7 +122,7 @@ public class RatingApiControllerTests {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(1))
             .ReturnsAsync(Result.Success<IEnumerable<Rating>, DomainError>(new List<Rating>()));
 
-        var result = await _controller.GetUserRating(1);
+        IActionResult result = await _controller.GetUserRating(1);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -137,7 +136,7 @@ public class RatingApiControllerTests {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(1))
             .ReturnsAsync(Result.Success<IEnumerable<Rating>, DomainError>(new List<Rating> { rating }));
 
-        var result = await _controller.GetUserRating(1);
+        IActionResult result = await _controller.GetUserRating(1);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -152,7 +151,7 @@ public class RatingApiControllerTests {
             .ReturnsAsync((User)null!);
 
         var request = new AddRatingRequest(1, 5, "Great!");
-        var result = await _controller.AddRating(request);
+        IActionResult result = await _controller.AddRating(request);
 
         result.Should().BeOfType<UnauthorizedObjectResult>();
     }
@@ -164,7 +163,7 @@ public class RatingApiControllerTests {
             .ReturnsAsync(user);
 
         var request = new AddRatingRequest(1, 6, "Great!");
-        var result = await _controller.AddRating(request);
+        IActionResult result = await _controller.AddRating(request);
 
         result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -178,7 +177,7 @@ public class RatingApiControllerTests {
             .ReturnsAsync(Result.Failure<Rating, DomainError>(RatingError.AlreadyRated()));
 
         var request = new AddRatingRequest(1, 5, "Great!");
-        var result = await _controller.AddRating(request);
+        IActionResult result = await _controller.AddRating(request);
 
         result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -193,7 +192,7 @@ public class RatingApiControllerTests {
             .ReturnsAsync(Result.Success<Rating, DomainError>(rating));
 
         var request = new AddRatingRequest(1, 5, "Great!");
-        var result = await _controller.AddRating(request);
+        IActionResult result = await _controller.AddRating(request);
 
         result.Should().BeOfType<OkObjectResult>();
     }

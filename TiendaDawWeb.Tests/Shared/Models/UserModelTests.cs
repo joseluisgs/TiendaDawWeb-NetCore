@@ -86,7 +86,7 @@ public class UserModelTests {
 
     [Test]
     public void User_CanSetAuditFields() {
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         var user = new User {
             CreatedAt = now,
             UpdatedAt = now.AddHours(1),
@@ -102,7 +102,7 @@ public class UserModelTests {
 
     [Test]
     public void User_CanSetDeletedProperties() {
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         var user = new User {
             Deleted = true,
             DeletedAt = now,
@@ -231,8 +231,8 @@ public class PurchaseModelTests {
     public void Purchase_CanAddProducts() {
         var purchase = new Purchase {
             Products = new List<Product> {
-                new Product { Id = 1, Nombre = "Product 1" },
-                new Product { Id = 2, Nombre = "Product 2" }
+                new() { Id = 1, Nombre = "Product 1" },
+                new() { Id = 2, Nombre = "Product 2" }
             }
         };
 
@@ -243,7 +243,7 @@ public class PurchaseModelTests {
 public class ProductCategoryTests {
     [Test]
     public void ProductCategory_HasAllValues() {
-        var categories = Enum.GetValues<ProductCategory>();
+        ProductCategory[] categories = Enum.GetValues<ProductCategory>();
         categories.Should().Contain(ProductCategory.SMARTPHONES);
         categories.Should().Contain(ProductCategory.LAPTOPS);
         categories.Should().Contain(ProductCategory.AUDIO);
@@ -253,7 +253,7 @@ public class ProductCategoryTests {
 
     [Test]
     public void ProductCategory_Count_IsFive() {
-        var categories = Enum.GetValues<ProductCategory>();
+        ProductCategory[] categories = Enum.GetValues<ProductCategory>();
         categories.Length.Should().Be(5);
     }
 }

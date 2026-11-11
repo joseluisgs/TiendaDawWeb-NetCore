@@ -1,11 +1,8 @@
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
-using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Rating;
 
 namespace TiendaDawWeb.Shared.Services.Rating;
 
@@ -20,14 +17,7 @@ public class RatingService(
 ) : IRatingService {
     // Claves de caché compartidas con ProductService
     private const string ProductsCacheKey = "all_products";
-    private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
 
-    /// <summary>
-    ///     Invalida el OutputCache por tag "productos" después de cada escritura.
-    /// </summary>
-    private async Task InvalidarOutputCacheAsync() {
-        try { await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None); } catch (Exception ex) { logger.LogWarning(ex, "Output cache invalidation error: Tag=productos"); }
-    }
     /// <summary>
     ///     Añade una nueva valoración a un producto.
     /// </summary>
@@ -38,26 +28,30 @@ public class RatingService(
     /// <returns>La valoración creada o un error</returns>
     public async Task<Result<Models.Rating, DomainError>> AddRatingAsync(
         long usuarioId, long productoId, int puntuacion, string? comentario) {
-        if (puntuacion < 1 || puntuacion > 5)
+        if (puntuacion < 1 || puntuacion > 5) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.InvalidRating());
+        }
 
-        var producto = await context.Products.FirstOrDefaultAsync(p => p.Id == productoId && !p.Deleted);
-        if (producto == null)
+        Models.Product? producto = await context.Products.FirstOrDefaultAsync(p => p.Id == productoId && !p.Deleted);
+        if (producto == null) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.ProductNotFound(productoId));
+        }
 
-        var existingRating = await context.Ratings
+        Models.Rating? existingRating = await context.Ratings
             .FirstOrDefaultAsync(r => r.UsuarioId == usuarioId && r.ProductoId == productoId);
 
-        if (existingRating != null)
+        if (existingRating != null) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.AlreadyRated());
+        }
 
-        var hasPurchased = await context.Purchases
+        bool hasPurchased = await context.Purchases
             .Where(p => p.CompradorId == usuarioId)
             .SelectMany(p => p.Products)
             .AnyAsync(prod => prod.Id == productoId);
 
-        if (!hasPurchased)
+        if (!hasPurchased) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.ProductNotPurchased());
+        }
 
         var rating = new Models.Rating {
             UsuarioId = usuarioId,
@@ -85,7 +79,7 @@ public class RatingService(
     /// <returns>Lista de valoraciones o error</returns>
     public async Task<Result<IEnumerable<Models.Rating>, DomainError>> GetByProductoIdAsync(long productoId) {
         try {
-            var ratings = await context.Ratings
+            List<Models.Rating> ratings = await context.Ratings
                 .Include(r => r.Usuario)
                 .Where(r => r.ProductoId == productoId)
                 .OrderByDescending(r => r.CreatedAt)
@@ -105,13 +99,14 @@ public class RatingService(
     /// <returns>La valoración encontrada o error</returns>
     public async Task<Result<Models.Rating, DomainError>> GetByIdAsync(long id) {
         try {
-            var rating = await context.Ratings
+            Models.Rating? rating = await context.Ratings
                 .Include(r => r.Usuario)
                 .Include(r => r.Producto)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (rating == null)
+            if (rating == null) {
                 return Result.Failure<Models.Rating, DomainError>(RatingError.NotFound(id));
+            }
 
             return Result.Success<Models.Rating, DomainError>(rating);
         } catch (Exception ex) {
@@ -130,19 +125,22 @@ public class RatingService(
     /// <returns>La valoración actualizada o error</returns>
     public async Task<Result<Models.Rating, DomainError>> UpdateRatingAsync(
         long ratingId, long usuarioId, int puntuacion, string? comentario) {
-        if (puntuacion < 1 || puntuacion > 5)
+        if (puntuacion < 1 || puntuacion > 5) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.InvalidRating());
+        }
 
-        var rating = await context.Ratings
+        Models.Rating? rating = await context.Ratings
             .Include(r => r.Usuario)
             .Include(r => r.Producto)
             .FirstOrDefaultAsync(r => r.Id == ratingId);
 
-        if (rating == null)
+        if (rating == null) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.NotFound(ratingId));
+        }
 
-        if (rating.UsuarioId != usuarioId)
+        if (rating.UsuarioId != usuarioId) {
             return Result.Failure<Models.Rating, DomainError>(RatingError.Unauthorized());
+        }
 
         rating.Puntuacion = puntuacion;
         rating.Comentario = comentario;
@@ -164,15 +162,19 @@ public class RatingService(
     /// <param name="usuarioId">ID del usuario que elimina</param>
     /// <param name="isAdmin">Indica si el usuario es administrador</param>
     /// <returns>True si se eliminó o error</returns>
-    public async Task<Result<bool, DomainError>> DeleteRatingAsync(long ratingId, long usuarioId, bool isAdmin = false) {
+    public async Task<Result<bool, DomainError>>
+        DeleteRatingAsync(long ratingId, long usuarioId, bool isAdmin = false) {
         try {
-            var rating = await context.Ratings.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == ratingId);
+            Models.Rating? rating =
+                await context.Ratings.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == ratingId);
 
-            if (rating == null)
+            if (rating == null) {
                 return Result.Failure<bool, DomainError>(RatingError.NotFound(ratingId));
+            }
 
-            if (!isAdmin && rating.UsuarioId != usuarioId)
+            if (!isAdmin && rating.UsuarioId != usuarioId) {
                 return Result.Failure<bool, DomainError>(RatingError.Unauthorized());
+            }
 
             context.Ratings.Remove(rating);
             await context.SaveChangesAsync();
@@ -196,10 +198,11 @@ public class RatingService(
     /// <returns>Promedio de puntuación o 0 si no hay valoraciones</returns>
     public async Task<Result<double, DomainError>> GetAverageRatingAsync(long productoId) {
         try {
-            var ratings = await context.Ratings.Where(r => r.ProductoId == productoId).ToListAsync();
+            List<Models.Rating> ratings = await context.Ratings.Where(r => r.ProductoId == productoId).ToListAsync();
 
-            if (!ratings.Any())
+            if (!ratings.Any()) {
                 return Result.Success<double, DomainError>(0.0);
+            }
 
             return Result.Success<double, DomainError>(ratings.Average(r => r.Puntuacion));
         } catch (Exception ex) {
@@ -217,7 +220,7 @@ public class RatingService(
     /// <returns>True si puede valorar o error</returns>
     public async Task<Result<bool, DomainError>> CanUserRateProductAsync(long usuarioId, long productoId) {
         try {
-            var hasPurchased = await context.Purchases
+            bool hasPurchased = await context.Purchases
                 .Where(p => p.CompradorId == usuarioId)
                 .SelectMany(p => p.Products)
                 .AnyAsync(prod => prod.Id == productoId);
@@ -226,6 +229,19 @@ public class RatingService(
         } catch (Exception ex) {
             logger.LogError(ex, "Error al verificar permisos");
             return Result.Failure<bool, DomainError>(GenericError.DatabaseError("Error"));
+        }
+    }
+
+    private static string ProductDetailsCacheKey(long id) {
+        return $"product_details_{id}";
+    }
+
+    /// <summary>
+    ///     Invalida el OutputCache por tag "productos" después de cada escritura.
+    /// </summary>
+    private async Task InvalidarOutputCacheAsync() {
+        try { await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None); } catch (Exception ex) {
+            logger.LogWarning(ex, "Output cache invalidation error: Tag=productos");
         }
     }
 }

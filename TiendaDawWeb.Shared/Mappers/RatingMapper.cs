@@ -4,7 +4,7 @@ using TiendaDawWeb.Shared.ViewModels;
 namespace TiendaDawWeb.Shared.Mappers;
 
 /// <summary>
-/// OBJETIVO: Centralizar la conversión de valoraciones (Ratings).
+///     OBJETIVO: Centralizar la conversión de valoraciones (Ratings).
 /// </summary>
 public static class RatingMapper {
     public static RatingViewModel ToViewModel(this Rating rating) {

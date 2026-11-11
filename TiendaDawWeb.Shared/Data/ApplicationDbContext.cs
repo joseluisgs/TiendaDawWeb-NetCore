@@ -1,15 +1,12 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using TiendaDawWeb.Shared.Data.Abstractions;
 using TiendaDawWeb.Shared.Data.Interceptors;
 using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.Shared.Data;
 
 /// <summary>
-/// Contexto de base de datos de la aplicación con soporte para Identity
+///     Contexto de base de datos de la aplicación con soporte para Identity
 /// </summary>
 public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, long> {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }

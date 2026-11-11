@@ -1,9 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace TiendaDawWeb.Shared.ViewModels;
 
 /// <summary>
-/// ViewModel para crear/editar valoraciones
+///     ViewModel para crear/editar valoraciones
 /// </summary>
 public class RatingViewModel {
     [Required(ErrorMessage = "La puntuación es obligatoria")]

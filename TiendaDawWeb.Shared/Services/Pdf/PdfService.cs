@@ -4,8 +4,6 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using TiendaDawWeb.Shared.Errors;
-using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Pdf;
 
 namespace TiendaDawWeb.Shared.Services.Pdf;
 
@@ -33,7 +31,7 @@ public class PdfService : IPdfService {
     /// <returns>Bytes del PDF generado o error</returns>
     public async Task<Result<byte[], DomainError>> GenerateInvoicePdfAsync(Models.Purchase purchase) {
         try {
-            var pdfBytes = Document.Create(container => {
+            byte[] pdfBytes = Document.Create(container => {
                 container.Page(page => {
                     page.Size(PageSizes.A4);
                     page.Margin(50);
@@ -42,7 +40,8 @@ public class PdfService : IPdfService {
 
                     page.Header().Height(100).Background(Colors.Grey.Lighten3)
                         .Padding(20).Column(column => {
-                            column.Item().AlignCenter().Text("WALADAW").FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
+                            column.Item().AlignCenter().Text("WALADAW").FontSize(24).Bold()
+                                .FontColor(Colors.Blue.Darken2);
                         });
 
                     page.Content().PaddingVertical(20).Column(column => {
@@ -51,21 +50,24 @@ public class PdfService : IPdfService {
                         column.Item().PaddingTop(10).Text($"Cliente: {purchase.Comprador?.Nombre ?? "N/A"}");
 
                         column.Item().PaddingTop(20).Table(table => {
-                            table.ColumnsDefinition(c => { c.RelativeColumn(3); c.RelativeColumn(1); });
+                            table.ColumnsDefinition(c => {
+                                c.RelativeColumn(3);
+                                c.RelativeColumn();
+                            });
                             table.Header(h => {
                                 h.Cell().Text("Producto").Bold();
                                 h.Cell().Text("Precio").Bold();
                             });
-                            var i = 1;
-                            foreach (var prod in purchase.Products) {
-                                var bg = i++ % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                            int i = 1;
+                            foreach (Models.Product prod in purchase.Products) {
+                                Color bg = i++ % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                                 table.Cell().Background(bg).Text(prod.Nombre);
                                 table.Cell().Background(bg).Text($"{prod.Precio:C}");
                             }
                         });
 
-                        var subtotal = purchase.Total / IvaRate;
-                        var iva = purchase.Total - subtotal;
+                        decimal subtotal = purchase.Total / IvaRate;
+                        decimal iva = purchase.Total - subtotal;
                         column.Item().PaddingTop(20).AlignRight().Text(text => {
                             text.Span($"Subtotal: {subtotal:C}\nIVA: {iva:C}\nTOTAL: {purchase.Total:C}").Bold();
                         });

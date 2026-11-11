@@ -18,7 +18,7 @@ public class ProductMapperTests {
             Imagen = "/uploads/iphone15.jpg"
         };
 
-        var result = product.ToViewModel();
+        ProductViewModel result = product.ToViewModel();
 
         result.Id.Should().Be(1);
         result.Nombre.Should().Be("iPhone 15");
@@ -39,7 +39,7 @@ public class ProductMapperTests {
             Imagen = null
         };
 
-        var result = product.ToViewModel();
+        ProductViewModel result = product.ToViewModel();
 
         result.ImagenUrl.Should().BeNull();
     }
@@ -55,7 +55,7 @@ public class ProductMapperTests {
             ImagenUrl = null
         };
 
-        var result = model.ToEntity(propietarioId: 5, imagenUrl: "/uploads/macbook.jpg");
+        Product result = model.ToEntity(5, "/uploads/macbook.jpg");
 
         result.Nombre.Should().Be("MacBook Pro");
         result.Descripcion.Should().Be("Professional laptop");
@@ -76,7 +76,7 @@ public class ProductMapperTests {
             ImagenUrl = "/existing/image.jpg"
         };
 
-        var result = model.ToEntity(propietarioId: 1, imagenUrl: null);
+        Product result = model.ToEntity(1, null);
 
         result.Imagen.Should().Be("/existing/image.jpg");
     }
@@ -91,7 +91,7 @@ public class ProductMapperTests {
             Categoria = ProductCategory.GAMING
         };
 
-        var result = model.ToEntity(propietarioId: 1, imagenUrl: null, includeId: true);
+        Product result = model.ToEntity(1, null, true);
 
         result.Id.Should().Be(42);
     }
@@ -106,7 +106,7 @@ public class ProductMapperTests {
             Categoria = ProductCategory.ACCESSORIES
         };
 
-        var result = model.ToEntity(propietarioId: 1, imagenUrl: null, includeId: false);
+        Product result = model.ToEntity(1, null);
 
         result.Id.Should().Be(0);
     }
@@ -131,7 +131,7 @@ public class ProductMapperTests {
             ImagenUrl = null
         };
 
-        model.UpdateEntity(product, imagenUrl: "/new/image.jpg");
+        model.UpdateEntity(product, "/new/image.jpg");
 
         product.Nombre.Should().Be("New Name");
         product.Descripcion.Should().Be("New Desc");
@@ -160,7 +160,7 @@ public class ProductMapperTests {
             ImagenUrl = null
         };
 
-        model.UpdateEntity(product, imagenUrl: null);
+        model.UpdateEntity(product, null);
 
         product.Imagen.Should().Be("/existing/image.jpg");
         product.Nombre.Should().Be("Updated Name");

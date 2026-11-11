@@ -1,9 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace TiendaDawWeb.Shared.ViewModels;
 
 /// <summary>
-/// ViewModel para el formulario de login
+///     ViewModel para el formulario de login
 /// </summary>
 public class LoginViewModel {
     [Required(ErrorMessage = "El email es obligatorio")]
@@ -16,8 +14,7 @@ public class LoginViewModel {
     [Display(Name = "Contraseña")]
     public string Password { get; set; } = string.Empty;
 
-    [Display(Name = "Recordarme")]
-    public bool RememberMe { get; set; }
+    [Display(Name = "Recordarme")] public bool RememberMe { get; set; }
 
     public string? ReturnUrl { get; set; }
 }

@@ -1,4 +1,4 @@
-@model TiendaDawWeb.Shared.Models.Purchase
+@model Purchase
 @{
     ViewData["Title"] = $"Detalle de Compra #{Model.Id}";
 }
@@ -27,7 +27,7 @@
                         <div class="col-md-6 mb-3">
                             <h6 class="text-muted">Fecha de Compra</h6>
                             <p class="mb-0">
-                                <i class="bi bi-calendar-event"></i> 
+                                <i class="bi bi-calendar-event"></i>
                                 @Model.FechaCompra.ToString("dd/MM/yyyy HH:mm")
                             </p>
                         </div>
@@ -42,7 +42,7 @@
                         <div class="col-md-6 mb-3">
                             <h6 class="text-muted">Comprador</h6>
                             <p class="mb-0">
-                                <i class="bi bi-person"></i> 
+                                <i class="bi bi-person"></i>
                                 @Model.Comprador.Nombre @Model.Comprador.Apellidos
                             </p>
                             <p class="small text-muted mb-0">@Model.Comprador.Email</p>
@@ -68,52 +68,53 @@
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Vendedor</th>
-                                    <th>Categoría</th>
-                                    <th class="text-end">Precio</th>
-                                </tr>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Vendedor</th>
+                                <th>Categoría</th>
+                                <th class="text-end">Precio</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                @foreach (var producto in Model.Products)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="@producto.ImagenOrDefault" 
-                                                     alt="@producto.Nombre" 
-                                                     class="rounded me-2"
-                                                     style="width: 60px; height: 60px; object-fit: cover;">
-                                                <div>
-                                                    <a href="@Url.Action("Details", "Product", new { id = producto.Id })" class="text-decoration-none">
-                                                        <strong>@producto.Nombre</strong>
-                                                    </a>
-                                                    <br>
-                                                    <small class="text-muted">@producto.Descripcion</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <i class="bi bi-shop"></i> 
-                                            @producto.Propietario.UserName
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">@producto.Categoria</span>
-                                        </td>
-                                        <td class="text-end">
-                                            <strong class="text-success">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
+                            @foreach (var producto in Model.Products) {
                                 <tr>
-                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="@producto.ImagenOrDefault"
+                                                 alt="@producto.Nombre"
+                                                 class="rounded me-2"
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                            <div>
+                                                <a href="@Url.Action("Details", "Product", new { id = producto.Id })"
+                                                   class="text-decoration-none">
+                                                    <strong>@producto.Nombre</strong>
+                                                </a>
+                                                <br>
+                                                <small class="text-muted">@producto.Descripcion</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-shop"></i>
+                                        @producto.Propietario.UserName
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@producto.Categoria</span>
+                                    </td>
                                     <td class="text-end">
-                                        <strong class="text-success fs-5" style="white-space: nowrap;">@Model.Total.ToString("C", new CultureInfo("es-ES"))</strong>
+                                        <strong class="text-success">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
                                     </td>
                                 </tr>
+                            }
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td class="text-end">
+                                    <strong class="text-success fs-5"
+                                            style="white-space: nowrap;">@Model.Total.ToString("C", new CultureInfo("es-ES"))</strong>
+                                </td>
+                            </tr>
                             </tfoot>
                         </table>
                     </div>
@@ -130,7 +131,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="@Url.Action("DownloadPdf", new { id = Model.Id })" 
+                        <a href="@Url.Action("DownloadPdf", new { id = Model.Id })"
                            class="btn btn-danger">
                             <i class="bi bi-file-pdf"></i> Descargar Factura (PDF)
                         </a>
@@ -183,10 +184,10 @@
                         <span class="text-success">GRATIS</span>
                     </div>
                     <hr>
-                        <div class="d-flex justify-content-between">
-                            <strong>Total:</strong>
-                            <strong>@Model.Total.ToString("C", new CultureInfo("es-ES"))</strong>
-                        </div>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong>@Model.Total.ToString("C", new CultureInfo("es-ES"))</strong>
+                    </div>
                 </div>
             </div>
         </div>
@@ -196,14 +197,16 @@
 @section Scripts {
     <style>
         @@media print {
-            .btn, .card-header, nav { display: none !important; }
+            .btn, .card-header, nav {
+                display: none !important;
+            }
         }
     </style>
     <script>
         async function reenviarEmail(purchaseId) {
             event.preventDefault();
             event.stopPropagation();
-            
+
             try {
                 const response = await fetch(`/app/compras/${purchaseId}/reenviaremail`, {
                     method: 'POST',
@@ -211,9 +214,9 @@
                         'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                     }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showToast('Email de confirmación reenviado', 'success');
                 } else {

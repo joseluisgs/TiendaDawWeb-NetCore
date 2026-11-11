@@ -1,7 +1,8 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.AspNetCore.Identity;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Models.Enums;
 using TiendaDawWeb.Shared.Services.Product;
@@ -11,7 +12,8 @@ namespace TiendaDawWeb.Controllers;
 /// <summary>
 ///     Controlador para páginas públicas (sin autenticación requerida)
 /// </summary>
-[OutputCache(Duration = 300, Tags = new[] { "productos" }, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
+[OutputCache(Duration = 300, Tags = new[] { "productos" },
+    VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
 public class PublicController(
     IProductService productService,
     ILogger<PublicController> logger
@@ -19,7 +21,8 @@ public class PublicController(
     /// <summary>
     ///     Página principal con listado de productos.
     /// </summary>
-    [OutputCache(Duration = 300, Tags = new[] { "productos" }, VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
+    [OutputCache(Duration = 300, Tags = new[] { "productos" },
+        VaryByQueryKeys = new[] { "q", "categoria", "minPrecio", "maxPrecio", "page", "size" })]
     public async Task<IActionResult> Index(
         string? q,
         string? categoria,
@@ -30,7 +33,7 @@ public class PublicController(
         string? lang = null) {
         // Manejar cambio de idioma si se proporciona
         if (!string.IsNullOrEmpty(lang)) {
-            var culture = lang.ToLowerInvariant() switch {
+            string culture = lang.ToLowerInvariant() switch {
                 "en" => "en-US",
                 "es" => "es-ES",
                 "fr" => "fr-FR",
@@ -56,7 +59,7 @@ public class PublicController(
             return RedirectToAction("Index", new { q, categoria, minPrecio, maxPrecio, page, size });
         }
 
-        var result = await productService.GetAllAsync();
+        Result<IEnumerable<Product>, DomainError> result = await productService.GetAllAsync();
 
         if (result.IsFailure) {
             logger.LogWarning("Error obteniendo productos: {Error}", result.Error.Message);
@@ -64,26 +67,35 @@ public class PublicController(
         }
 
         // Apply filters
-        var products = result.Value.AsEnumerable();
+        IEnumerable<Product> products = result.Value.AsEnumerable();
 
         // Filtro de búsqueda por nombre
-        if (!string.IsNullOrWhiteSpace(q)) products = products.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
+        if (!string.IsNullOrWhiteSpace(q)) {
+            products = products.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
+        }
 
         // Filtro por categoría
-        if (!string.IsNullOrWhiteSpace(categoria) && Enum.TryParse<ProductCategory>(categoria, out var cat))
+        if (!string.IsNullOrWhiteSpace(categoria) &&
+            Enum.TryParse<ProductCategory>(categoria, out ProductCategory cat)) {
             products = products.Where(p => p.Categoria == cat);
+        }
 
         // Filtro por rango de precio
-        if (minPrecio.HasValue) products = products.Where(p => (float)p.Precio >= minPrecio.Value);
-        if (maxPrecio.HasValue) products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
+        if (minPrecio.HasValue) {
+            products = products.Where(p => (float)p.Precio >= minPrecio.Value);
+        }
+
+        if (maxPrecio.HasValue) {
+            products = products.Where(p => (float)p.Precio <= maxPrecio.Value);
+        }
 
         // Ordenar por fecha de creación descendente
         products = products.OrderByDescending(p => p.CreatedAt);
 
         // Calculate pagination
-        var totalItems = products.Count();
-        var totalPages = (int)Math.Ceiling(totalItems / (double)size);
-        var currentPage = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+        int totalItems = products.Count();
+        int totalPages = (int)Math.Ceiling(totalItems / (double)size);
+        int currentPage = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
 
         // Get page of products
         var pagedProducts = products

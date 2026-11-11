@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TiendaDawWeb.Shared.Data;
-using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.RazorPages.Pages.Admin;
@@ -24,9 +22,9 @@ public class IndexModel(
         ViewModel.ProductosDisponibles = await context.Products
             .CountAsync(p => !p.Deleted && p.CompraId == null);
 
-        var now = DateTime.UtcNow;
-        var hoy = now.Date;
-        var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+        DateTime now = DateTime.UtcNow;
+        DateTime hoy = now.Date;
+        DateTime inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
         var inicioMes = new DateTime(now.Year, now.Month, 1);
 
         ViewModel.ComprasHoy = await context.Purchases.CountAsync(p => p.FechaCompra >= hoy);

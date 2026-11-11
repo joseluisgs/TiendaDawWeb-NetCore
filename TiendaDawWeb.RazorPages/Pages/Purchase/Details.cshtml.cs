@@ -1,7 +1,9 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Purchase;
 using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
@@ -25,17 +27,19 @@ public class DetailsModel(
     /// <param name="id">ID de la compra</param>
     /// <returns>Vista con los detalles de la compra</returns>
     public async Task<IActionResult> OnGetAsync(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var result = await purchaseService.GetByIdAsync(id);
+        Result<PurchaseModel, DomainError> result = await purchaseService.GetByIdAsync(id);
 
         if (result.IsFailure) {
             TempData["Error"] = result.Error.Message;
             return RedirectToPage("/Purchase/Index");
         }
 
-        var purchase = result.Value;
+        PurchaseModel purchase = result.Value;
 
         if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
             TempData["Error"] = "No tienes permiso para ver esta compra";
@@ -52,22 +56,22 @@ public class DetailsModel(
     /// <param name="id">ID de la compra</param>
     /// <returns>JSON con el resultado</returns>
     public async Task<IActionResult> OnPostReenviarEmailAsync(long id) {
-        var user = await userManager.GetUserAsync(User);
+        User? user = await userManager.GetUserAsync(User);
         if (user == null) {
             return new JsonResult(new { success = false, message = "Usuario no autenticado" }) { StatusCode = 401 };
         }
 
-        var purchaseResult = await purchaseService.GetByIdAsync(id);
+        Result<PurchaseModel, DomainError> purchaseResult = await purchaseService.GetByIdAsync(id);
         if (purchaseResult.IsFailure) {
             return new JsonResult(new { success = false, message = "Compra no encontrada" });
         }
 
-        var purchase = purchaseResult.Value;
+        PurchaseModel purchase = purchaseResult.Value;
         if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
             return new JsonResult(new { success = false, message = "No tienes permiso" });
         }
 
-        var result = await purchaseService.SendConfirmationEmailAsync(id);
+        Result<bool, DomainError> result = await purchaseService.SendConfirmationEmailAsync(id);
 
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error.Message });
@@ -82,22 +86,24 @@ public class DetailsModel(
     /// <param name="id">ID de la compra</param>
     /// <returns>Archivo PDF</returns>
     public async Task<IActionResult> OnGetDownloadPdfAsync(long id) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
-        var purchaseResult = await purchaseService.GetByIdAsync(id);
+        Result<PurchaseModel, DomainError> purchaseResult = await purchaseService.GetByIdAsync(id);
         if (purchaseResult.IsFailure) {
             TempData["Error"] = "Compra no encontrada";
             return RedirectToPage("/Purchase/Index");
         }
 
-        var purchase = purchaseResult.Value;
+        PurchaseModel purchase = purchaseResult.Value;
         if (purchase.CompradorId != user.Id && !User.IsInRole("ADMIN")) {
             TempData["Error"] = "No tienes permiso para descargar esta factura";
             return RedirectToPage("/Purchase/Index");
         }
 
-        var pdfResult = await purchaseService.GeneratePdfAsync(id);
+        Result<byte[], DomainError> pdfResult = await purchaseService.GeneratePdfAsync(id);
 
         if (pdfResult.IsFailure) {
             TempData["Error"] = pdfResult.Error.Message;

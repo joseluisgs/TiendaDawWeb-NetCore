@@ -1,17 +1,15 @@
-using Microsoft.EntityFrameworkCore;
+using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Email;
-using CSharpFunctionalExtensions;
 
 namespace TiendaDawWeb.Shared.Services.BackgroundServices;
 
 /// <summary>
-/// Servicio de reportes de productos.
-/// Obtiene productos nuevos y envía notificaciones por email.
+///     Servicio de reportes de productos.
+///     Obtiene productos nuevos y envía notificaciones por email.
 /// </summary>
 public class ProductoReportTask(
     ApplicationDbContext context,
@@ -19,11 +17,11 @@ public class ProductoReportTask(
     ILogger<ProductoReportTask> logger,
     IConfiguration configuration
 ) {
-    private readonly int _days = configuration.GetValue<int>("Scheduler:ProductoReportDays", 7);
+    private readonly int _days = configuration.GetValue("Scheduler:ProductoReportDays", 7);
     private readonly bool _isDevelopment = configuration.GetValue<bool>("IsDevelopment");
 
     /// <summary>
-    /// Ejecuta el reporte de productos nuevos.
+    ///     Ejecuta el reporte de productos nuevos.
     /// </summary>
     public async Task<UnitResult<DomainError>> ExecuteAsync() {
         logger.LogInformation("Ejecutando reporte de productos - Modo: {Modo}",
@@ -39,12 +37,12 @@ public class ProductoReportTask(
     }
 
     /// <summary>
-    /// Obtiene productos creados en los últimos X días.
+    ///     Obtiene productos creados en los últimos X días.
     /// </summary>
     private async Task<Result<IEnumerable<Models.Product>, DomainError>> GetRecentlyCreatedProductsAsync() {
         logger.LogDebug("Obteniendo productos de los ultimos {Dias} dias", _days);
 
-        var productos = await context.Products
+        List<Models.Product> productos = await context.Products
             .Include(p => p.Propietario)
             .Where(p => !p.Deleted && p.CreatedAt >= DateTime.UtcNow.AddDays(-_days))
             .OrderByDescending(p => p.CreatedAt)
@@ -55,7 +53,7 @@ public class ProductoReportTask(
     }
 
     /// <summary>
-    /// Envía emails a todos los usuarios activos con los productos nuevos.
+    ///     Envía emails a todos los usuarios activos con los productos nuevos.
     /// </summary>
     private async Task<UnitResult<DomainError>> SendEmailsToActiveUsersAsync(IEnumerable<Models.Product> productos) {
         if (!productos.Any()) {
@@ -65,7 +63,7 @@ public class ProductoReportTask(
 
         logger.LogInformation("Enviando emails a usuarios activos con {Cantidad} productos", productos.Count());
 
-        var usuarios = await context.Users
+        List<User> usuarios = await context.Users
             .Where(u => !u.Deleted && u.EmailConfirmed)
             .ToListAsync();
 
@@ -74,7 +72,7 @@ public class ProductoReportTask(
             return UnitResult.Success<DomainError>();
         }
 
-        foreach (var user in usuarios) {
+        foreach (User user in usuarios) {
             var email = new EmailMessage {
                 To = user.Email!,
                 Subject = $"Novedades en Tienda: {productos.Count()} productos nuevos",
@@ -91,10 +89,10 @@ public class ProductoReportTask(
     }
 
     /// <summary>
-    /// Genera el cuerpo del email en formato HTML.
+    ///     Genera el cuerpo del email en formato HTML.
     /// </summary>
     private static string GenerateHtmlEmail(IEnumerable<Models.Product> productos, string userName) {
-        var productosHtml = string.Concat(productos.Select(p => string.Format(@"
+        string productosHtml = string.Concat(productos.Select(p => string.Format(@"
             <div style=""border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;"">
                 <h3 style=""margin: 0 0 10px 0;"">{0}</h3>
                 <p style=""margin: 0; color: #666;"">{1}</p>

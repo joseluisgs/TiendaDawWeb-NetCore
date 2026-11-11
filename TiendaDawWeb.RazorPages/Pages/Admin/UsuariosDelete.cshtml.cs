@@ -23,7 +23,7 @@ public class UsuariosDeleteModel(
     /// <param name="id">ID del usuario a eliminar</param>
     /// <returns>Redirect a la lista de usuarios</returns>
     public async Task<IActionResult> OnPostAsync(long id) {
-        var adminUser = await userManager.GetUserAsync(User);
+        User? adminUser = await userManager.GetUserAsync(User);
         if (adminUser == null) {
             TempData["Error"] = "Usuario no autenticado";
             return RedirectToPage("/Admin/Usuarios");
@@ -35,13 +35,13 @@ public class UsuariosDeleteModel(
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var usuario = await context.Users.FindAsync(id);
+        User? usuario = await context.Users.FindAsync(id);
         if (usuario == null) {
             TempData["Error"] = "Usuario no encontrado";
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var hasProductosActivos = await context.Products
+        bool hasProductosActivos = await context.Products
             .IgnoreQueryFilters()
             .Where(p => p.PropietarioId == id && !p.Deleted && p.CompraId == null)
             .AnyAsync();
@@ -52,7 +52,7 @@ public class UsuariosDeleteModel(
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var hasProductosVendidos = await context.Products
+        bool hasProductosVendidos = await context.Products
             .IgnoreQueryFilters()
             .Where(p => p.PropietarioId == id && p.CompraId != null)
             .AnyAsync();
@@ -63,7 +63,7 @@ public class UsuariosDeleteModel(
             return RedirectToPage("/Admin/Usuarios");
         }
 
-        var hasCompras = await context.Purchases
+        bool hasCompras = await context.Purchases
             .AnyAsync(p => p.CompradorId == id);
 
         if (hasCompras) {

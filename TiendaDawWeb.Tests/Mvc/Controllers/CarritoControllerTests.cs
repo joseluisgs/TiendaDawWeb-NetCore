@@ -1,17 +1,15 @@
 #nullable disable
+using System.Reflection;
 using System.Security.Claims;
-using CSharpFunctionalExtensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Controllers;
-using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Carrito;
 using TiendaDawWeb.Shared.Services.Product;
@@ -20,12 +18,12 @@ using TiendaDawWeb.Shared.Services.Purchase;
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
 public class CarritoControllerTests {
-    private readonly Mock<ICarritoService> _mockCarritoService;
-    private readonly Mock<IPurchaseService> _mockPurchaseService;
-    private readonly Mock<IProductService> _mockProductService;
-    private readonly Mock<UserManager<User>> _mockUserManager;
-    private readonly Mock<ILogger<CarritoController>> _mockLogger;
     private readonly CarritoController _controller;
+    private readonly Mock<ICarritoService> _mockCarritoService;
+    private readonly Mock<ILogger<CarritoController>> _mockLogger;
+    private readonly Mock<IProductService> _mockProductService;
+    private readonly Mock<IPurchaseService> _mockPurchaseService;
+    private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly ClaimsPrincipal _userPrincipal;
 
     public CarritoControllerTests() {
@@ -34,7 +32,8 @@ public class CarritoControllerTests {
         _mockProductService = new Mock<IProductService>();
 
         var userStoreMock = new Mock<IUserStore<User>>();
-        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!,
+            null!, null!);
 
         _mockLogger = new Mock<ILogger<CarritoController>>();
 
@@ -60,20 +59,6 @@ public class CarritoControllerTests {
         _controller.Dispose();
     }
 
-    #region Constructor Tests
-
-    [Test]
-    public void Constructor_CreatesInstance() {
-        _controller.Should().NotBeNull();
-    }
-
-    [Test]
-    public void CarritoController_InheritsFromController() {
-        typeof(CarritoController).Should().BeDerivedFrom<Controller>();
-    }
-
-    #endregion
-
     #region Index Tests
 
     [Test]
@@ -81,7 +66,7 @@ public class CarritoControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.Index();
+        IActionResult result = await _controller.Index();
 
         result.Should().BeOfType<RedirectToActionResult>();
         (result as RedirectToActionResult)!.ActionName.Should().Be("Login");
@@ -96,7 +81,7 @@ public class CarritoControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.Add(1);
+        IActionResult result = await _controller.Add(1);
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -110,7 +95,7 @@ public class CarritoControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.AddToCart(1);
+        IActionResult result = await _controller.AddToCart(1);
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -121,7 +106,7 @@ public class CarritoControllerTests {
 
     [Test]
     public void Remove_HasCorrectSignature() {
-        var method = typeof(CarritoController).GetMethod("Remove");
+        MethodInfo method = typeof(CarritoController).GetMethod("Remove");
         method.Should().NotBeNull();
     }
 
@@ -134,7 +119,7 @@ public class CarritoControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.Clear();
+        IActionResult result = await _controller.Clear();
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -148,7 +133,7 @@ public class CarritoControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.Resumen();
+        IActionResult result = await _controller.Resumen();
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
@@ -162,9 +147,23 @@ public class CarritoControllerTests {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
-        var result = await _controller.FinalizarCompra();
+        IActionResult result = await _controller.FinalizarCompra();
 
         result.Should().BeOfType<RedirectToActionResult>();
+    }
+
+    #endregion
+
+    #region Constructor Tests
+
+    [Test]
+    public void Constructor_CreatesInstance() {
+        _controller.Should().NotBeNull();
+    }
+
+    [Test]
+    public void CarritoController_InheritsFromController() {
+        typeof(CarritoController).Should().BeDerivedFrom<Controller>();
     }
 
     #endregion

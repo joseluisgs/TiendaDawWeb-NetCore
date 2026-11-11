@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace TiendaDawWeb.Shared.Helpers;
 
 /// <summary>
@@ -12,7 +10,7 @@ public static class PriceFormatter {
     /// </summary>
     public static string FormatPrice(decimal price) {
         // Tomamos la cultura por defector que hay en el sistema
-        var culture = CultureInfo.CurrentCulture;
+        CultureInfo culture = CultureInfo.CurrentCulture;
         return price.ToString("C2", culture); // C2 = Currency con 2 decimales
     }
 

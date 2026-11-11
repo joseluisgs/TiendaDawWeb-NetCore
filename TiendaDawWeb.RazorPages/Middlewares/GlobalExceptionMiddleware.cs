@@ -1,14 +1,12 @@
-using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
 using TiendaDawWeb.Shared.Exceptions;
 
 namespace TiendaDawWeb.RazorPages.Middlewares;
 
 /// <summary>
-/// Middleware centralizado de manejo de excepciones.
-/// Soporta tanto errores del dominio como excepciones tipadas.
+///     Middleware centralizado de manejo de excepciones.
+///     Soporta tanto errores del dominio como excepciones tipadas.
 /// </summary>
 public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger) {
     public async Task InvokeAsync(HttpContext context) {
@@ -21,7 +19,7 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
     }
 
     private Task HandleExceptionAsync(HttpContext context, Exception exception) {
-        var (statusCode, message, errors) = exception switch {
+        (int statusCode, string message, Dictionary<string, string[]>? errors) = exception switch {
             NotFoundException notFound => (404, notFound.Message, null),
             ValidationException validation => (400, validation.Message, validation.ValidationErrors),
             BusinessException business => (400, business.Message, null),
@@ -37,7 +35,7 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
         context.Response.StatusCode = statusCode;
 
         bool isApiRequest = context.Request.Path.StartsWithSegments("/api") ||
-                           context.Request.Headers["Accept"].ToString().Contains("application/json");
+                            context.Request.Headers["Accept"].ToString().Contains("application/json");
 
         if (isApiRequest) {
             context.Response.ContentType = "application/json";
@@ -54,15 +52,15 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             }));
-        } else {
-            context.Response.Redirect($"/Error?code={statusCode}&message={Uri.EscapeDataString(message)}");
-            return Task.CompletedTask;
         }
+
+        context.Response.Redirect($"/Error?code={statusCode}&message={Uri.EscapeDataString(message)}");
+        return Task.CompletedTask;
     }
 }
 
 /// <summary>
-/// Extensiones para registrar el middleware.
+///     Extensiones para registrar el middleware.
 /// </summary>
 public static class GlobalExceptionMiddlewareExtensions {
     public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder builder) {

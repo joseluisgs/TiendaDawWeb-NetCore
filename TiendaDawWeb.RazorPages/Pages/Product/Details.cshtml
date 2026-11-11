@@ -21,7 +21,7 @@
 @section Scripts
 {
     @* Script original para AJAX comentado para propósitos didácticos *@
-    @* 
+    @*
     <script>
         window.isAuthenticated = @isAuthenticated.ToString().ToLower();
         window.isOwner = @isOwner.ToString().ToLower();
@@ -88,7 +88,7 @@
                             }
                             <div>
                                 <strong
-                                    data-testid="seller-name">@Model.Product.Propietario.Nombre @Model.Product.Propietario.Apellidos</strong>
+                                        data-testid="seller-name">@Model.Product.Propietario.Nombre @Model.Product.Propietario.Apellidos</strong>
                                 <br>
                                 <small class="text-muted"
                                        data-testid="seller-email">@Model.Product.Propietario.Email</small>
@@ -144,9 +144,9 @@
         <div class="row mt-5">
             <div class="col-12">
                 @* Código original con AJAX comentado para propósitos didácticos *@
-                @* 
+                @*
             <div id="ratingSectionAJAX" class="mb-4"></div>
-            <div id="ratingsListAJAX"></div> 
+            <div id="ratingsListAJAX"></div>
             *@
 
                 <component type="typeof(RatingSection)"

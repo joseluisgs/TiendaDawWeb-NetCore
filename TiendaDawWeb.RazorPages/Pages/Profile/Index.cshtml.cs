@@ -13,11 +13,13 @@ public class IndexModel(
     ApplicationDbContext context
 ) : PageModel {
     public User UserProfile { get; set; } = default!;
-    public User Usuario { get { return UserProfile; } }
+    public User Usuario => UserProfile;
 
     public async Task<IActionResult> OnGetAsync() {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return RedirectToPage("/Auth/Login");
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return RedirectToPage("/Auth/Login");
+        }
 
         await context.Entry(user)
             .Collection(u => u.Products)

@@ -1,10 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace TiendaDawWeb.Shared.Models;
 
 /// <summary>
-/// Entidad de item del carrito de compras.
-/// Cada producto solo puede añadirse una vez al carrito (sin cantidad).
+///     Entidad de item del carrito de compras.
+///     Cada producto solo puede añadirse una vez al carrito (sin cantidad).
 /// </summary>
 public class CarritoItem : AuditableEntity {
     /// <summary>ID único del item (PK en SQLite).</summary>

@@ -1,10 +1,8 @@
 using CSharpFunctionalExtensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TiendaDawWeb.Shared.Data;
 using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
-using TiendaDawWeb.Shared.Services.Carrito;
 
 namespace TiendaDawWeb.Shared.Services.Carrito;
 
@@ -18,11 +16,10 @@ public class CarritoService(
     ILogger<CarritoService> logger
 ) : ICarritoService {
     private const string ProductsCacheKey = "all_products";
-    private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
 
     public async Task<Result<IEnumerable<CarritoItem>, DomainError>> GetCarritoByUsuarioIdAsync(long usuarioId) {
         try {
-            var items = await context.CarritoItems
+            List<CarritoItem> items = await context.CarritoItems
                 .Include(c => c.Producto)
                 .ThenInclude(p => p.Propietario)
                 .Where(c => c.UsuarioId == usuarioId)
@@ -38,22 +35,25 @@ public class CarritoService(
 
     public async Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId) {
         try {
-            var producto = await context.Products.FirstOrDefaultAsync(p => p.Id == productoId);
+            Models.Product? producto = await context.Products.FirstOrDefaultAsync(p => p.Id == productoId);
 
-            if (producto == null || producto.Deleted)
+            if (producto == null || producto.Deleted) {
                 return Result.Failure<CarritoItem, DomainError>(ProductError.NotFound(productoId));
+            }
 
-            if (producto.CompraId != null)
+            if (producto.CompraId != null) {
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductNotAvailableWithName(producto.Nombre));
+            }
 
-            if (producto.PropietarioId == usuarioId)
+            if (producto.PropietarioId == usuarioId) {
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductNotAvailableWithName(producto.Nombre));
+            }
 
             if (producto.Reservado) {
-                if (producto.ReservadoPor == usuarioId) {
-                } else if (!producto.ReservadoHasta.HasValue || producto.ReservadoHasta.Value > DateTime.UtcNow) {
+                if (producto.ReservadoPor == usuarioId) { } else if (!producto.ReservadoHasta.HasValue ||
+                                                                     producto.ReservadoHasta.Value > DateTime.UtcNow) {
                     return Result.Failure<CarritoItem, DomainError>(
                         CarritoError.ProductNotAvailableWithName(producto.Nombre));
                 } else {
@@ -63,12 +63,13 @@ public class CarritoService(
                 }
             }
 
-            var existingItem = await context.CarritoItems
+            CarritoItem? existingItem = await context.CarritoItems
                 .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.ProductoId == productoId);
 
-            if (existingItem != null)
+            if (existingItem != null) {
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductAlreadyInCartWithName(producto.Nombre));
+            }
 
             producto.Reservado = true;
             producto.ReservadoHasta = DateTime.UtcNow.AddMinutes(5);
@@ -105,12 +106,13 @@ public class CarritoService(
 
     public async Task<Result<bool, DomainError>> RemoveFromCarritoAsync(long itemId) {
         try {
-            var item = await context.CarritoItems
+            CarritoItem? item = await context.CarritoItems
                 .Include(c => c.Producto)
                 .FirstOrDefaultAsync(c => c.Id == itemId);
 
-            if (item == null)
+            if (item == null) {
                 return Result.Failure<bool, DomainError>(CarritoError.ItemNotFound(itemId));
+            }
 
             if (item.Producto != null) {
                 item.Producto.Reservado = false;
@@ -123,8 +125,9 @@ public class CarritoService(
             await context.SaveChangesAsync();
 
             cache.Remove(ProductsCacheKey);
-            if (item.Producto != null)
+            if (item.Producto != null) {
                 cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
+            }
 
             logger.LogInformation("Eliminado item {ItemId} del carrito", itemId);
 
@@ -138,30 +141,35 @@ public class CarritoService(
 
     public async Task<Result<bool, DomainError>> ClearCarritoAsync(long usuarioId) {
         try {
-            var items = await context.CarritoItems
+            List<CarritoItem> items = await context.CarritoItems
                 .Include(c => c.Producto)
                 .Where(c => c.UsuarioId == usuarioId)
                 .ToListAsync();
 
-            if (items.Count == 0)
+            if (items.Count == 0) {
                 return Result.Success<bool, DomainError>(true);
+            }
 
-            foreach (var item in items)
+            foreach (CarritoItem item in items) {
                 if (item.Producto != null) {
                     item.Producto.Reservado = false;
                     item.Producto.ReservadoHasta = null;
                     item.Producto.ReservadoPor = null;
                 }
+            }
 
             context.CarritoItems.RemoveRange(items);
             await context.SaveChangesAsync();
 
             cache.Remove(ProductsCacheKey);
-            foreach (var item in items)
-                if (item.Producto != null)
+            foreach (CarritoItem item in items) {
+                if (item.Producto != null) {
                     cache.Remove(ProductDetailsCacheKey(item.Producto.Id));
+                }
+            }
 
-            logger.LogInformation("Vaciado carrito del usuario {UsuarioId} y liberadas {Count} reservas", usuarioId, items.Count);
+            logger.LogInformation("Vaciado carrito del usuario {UsuarioId} y liberadas {Count} reservas", usuarioId,
+                items.Count);
 
             return Result.Success<bool, DomainError>(true);
         } catch (Exception ex) {
@@ -173,7 +181,7 @@ public class CarritoService(
 
     public async Task<Result<decimal, DomainError>> GetTotalCarritoAsync(long usuarioId) {
         try {
-            var total = await context.CarritoItems
+            decimal total = await context.CarritoItems
                 .Where(c => c.UsuarioId == usuarioId)
                 .SumAsync(c => c.Precio);
 
@@ -187,7 +195,7 @@ public class CarritoService(
 
     public async Task<Result<int, DomainError>> GetCarritoCountAsync(long usuarioId) {
         try {
-            var count = await context.CarritoItems
+            int count = await context.CarritoItems
                 .Where(c => c.UsuarioId == usuarioId)
                 .CountAsync();
 
@@ -197,5 +205,9 @@ public class CarritoService(
             return Result.Failure<int, DomainError>(
                 GenericError.DatabaseError("Error al contar items"));
         }
+    }
+
+    private static string ProductDetailsCacheKey(long id) {
+        return $"product_details_{id}";
     }
 }

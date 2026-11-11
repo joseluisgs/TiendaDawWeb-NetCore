@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 using TiendaDawWeb.Controllers;
 using TiendaDawWeb.Shared.ViewModels;
 
@@ -20,7 +19,7 @@ public class ErrorHandlingTests {
             HttpContext = httpContext
         };
 
-        var result = controller.Index(404);
+        IActionResult result = controller.Index(404);
 
         Assert.That(result, Is.InstanceOf<ViewResult>());
         var viewResult = (ViewResult)result;
@@ -43,7 +42,7 @@ public class ErrorHandlingTests {
             HttpContext = httpContext
         };
 
-        var result = controller.Index(500);
+        IActionResult result = controller.Index(500);
 
         Assert.That(result, Is.InstanceOf<ViewResult>());
         var viewResult = (ViewResult)result;
@@ -63,7 +62,7 @@ public class ErrorHandlingTests {
             HttpContext = httpContext
         };
 
-        var result = controller.Index(401);
+        IActionResult result = controller.Index(401);
 
         var viewResult = (ViewResult)result;
         var errorModel = (ErrorViewModel)viewResult.Model!;

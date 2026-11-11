@@ -1,6 +1,8 @@
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TiendaDawWeb.Shared.Errors;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Favorite;
 
@@ -25,12 +27,16 @@ public class FavoriteApiController(
     [ValidateAntiForgeryToken]
     [HttpPost]
     public async Task<IActionResult> AddFavorite([FromBody] AddFavoriteRequest request) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        }
 
-        var result = await favoriteService.AddFavoriteAsync(user.Id, request.ProductId);
+        Result<Favorite, DomainError> result = await favoriteService.AddFavoriteAsync(user.Id, request.ProductId);
 
-        if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return BadRequest(new { success = false, message = result.Error.Message });
+        }
 
         return Ok(new { success = true, message = "Producto añadido a favoritos" });
     }
@@ -40,12 +46,16 @@ public class FavoriteApiController(
     /// </summary>
     [HttpDelete("{productId}")]
     public async Task<IActionResult> RemoveFavorite(long productId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        }
 
-        var result = await favoriteService.RemoveFavoriteAsync(user.Id, productId);
+        Result<bool, DomainError> result = await favoriteService.RemoveFavoriteAsync(user.Id, productId);
 
-        if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return BadRequest(new { success = false, message = result.Error.Message });
+        }
 
         return Ok(new { success = true, message = "Producto eliminado de favoritos" });
     }
@@ -55,12 +65,16 @@ public class FavoriteApiController(
     /// </summary>
     [HttpGet("check/{productId}")]
     public async Task<IActionResult> CheckFavorite(long productId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        }
 
-        var result = await favoriteService.IsFavoriteAsync(user.Id, productId);
+        Result<bool, DomainError> result = await favoriteService.IsFavoriteAsync(user.Id, productId);
 
-        if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+        if (result.IsFailure) {
+            return BadRequest(new { success = false, message = result.Error.Message });
+        }
 
         return Ok(new { success = true, isFavorite = result.Value });
     }
@@ -71,22 +85,32 @@ public class FavoriteApiController(
     [ValidateAntiForgeryToken]
     [HttpPost("toggle")]
     public async Task<IActionResult> ToggleFavorite([FromBody] AddFavoriteRequest request) {
-        var user = await userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        User? user = await userManager.GetUserAsync(User);
+        if (user == null) {
+            return Unauthorized(new { success = false, message = "Usuario no autenticado" });
+        }
 
-        var checkResult = await favoriteService.IsFavoriteAsync(user.Id, request.ProductId);
+        Result<bool, DomainError> checkResult = await favoriteService.IsFavoriteAsync(user.Id, request.ProductId);
 
-        if (checkResult.IsFailure) return BadRequest(new { success = false, message = checkResult.Error.Message });
+        if (checkResult.IsFailure) {
+            return BadRequest(new { success = false, message = checkResult.Error.Message });
+        }
 
         if (checkResult.Value) {
             // Remove from favorites
-            var result = await favoriteService.RemoveFavoriteAsync(user.Id, request.ProductId);
-            if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+            Result<bool, DomainError> result = await favoriteService.RemoveFavoriteAsync(user.Id, request.ProductId);
+            if (result.IsFailure) {
+                return BadRequest(new { success = false, message = result.Error.Message });
+            }
+
             return Ok(new { success = true, isFavorite = false, message = "Eliminado de favoritos" });
         } else {
             // Add to favorites
-            var result = await favoriteService.AddFavoriteAsync(user.Id, request.ProductId);
-            if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
+            Result<Favorite, DomainError> result = await favoriteService.AddFavoriteAsync(user.Id, request.ProductId);
+            if (result.IsFailure) {
+                return BadRequest(new { success = false, message = result.Error.Message });
+            }
+
             return Ok(new { success = true, isFavorite = true, message = "Añadido a favoritos" });
         }
     }

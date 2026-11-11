@@ -1,6 +1,5 @@
 @page
 @model TiendaDawWeb.RazorPages.Pages.Profile.IndexModel
-@using System.Globalization
 @{
     ViewData["Title"] = "Mi Perfil";
 }
@@ -20,25 +19,24 @@
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-body text-center">
-                    @if (!string.IsNullOrEmpty(Model.Usuario.Avatar))
-                    {
-                        <img src="@Model.Usuario.Avatar" alt="Avatar" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    @if (!string.IsNullOrEmpty(Model.Usuario.Avatar)) {
+                        <img src="@Model.Usuario.Avatar" alt="Avatar" class="rounded-circle mb-3"
+                             style="width: 150px; height: 150px; object-fit: cover;">
                     }
-                    else
-                    {
-                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                    else {
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3"
                              style="width: 150px; height: 150px;">
                             <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
                         </div>
                     }
-                    
+
                     <h4 class="mb-1">@Model.Usuario.Nombre @Model.Usuario.Apellidos</h4>
                     <p class="text-muted mb-3">@@@Model.Usuario.UserName</p>
-                    
+
                     <a asp-page="/Profile/Edit" class="btn btn-primary w-100 mb-2">
                         <i class="bi bi-pencil"></i> Editar Perfil
                     </a>
-                    
+
                     <a asp-page="/Profile/ChangePassword" class="btn btn-outline-secondary w-100 mb-2">
                         <i class="bi bi-key"></i> Cambiar Contraseña
                     </a>
@@ -122,16 +120,13 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    @if (Model.Usuario.Products.Any(p => !p.Deleted))
-                    {
+                    @if (Model.Usuario.Products.Any(p => !p.Deleted)) {
                         <div class="list-group list-group-flush">
-                            @foreach (var producto in Model.Usuario.Products.Where(p => !p.Deleted).OrderByDescending(p => p.CreatedAt).Take(5))
-                            {
+                            @foreach (var producto in Model.Usuario.Products.Where(p => !p.Deleted).OrderByDescending(p => p.CreatedAt).Take(5)) {
                                 <div class="list-group-item px-0">
                                     <div class="d-flex align-items-center">
-                                        @if (!string.IsNullOrEmpty(producto.Imagen))
-                                        {
-                                            <img src="@producto.Imagen" alt="@producto.Nombre" class="rounded me-3" 
+                                        @if (!string.IsNullOrEmpty(producto.Imagen)) {
+                                            <img src="@producto.Imagen" alt="@producto.Nombre" class="rounded me-3"
                                                  style="width: 60px; height: 60px; object-fit: cover;">
                                         }
                                         <div class="flex-grow-1">
@@ -140,12 +135,10 @@
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-success d-block">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
-                                            @if (producto.CompraId != null)
-                                            {
+                                            @if (producto.CompraId != null) {
                                                 <span class="badge bg-danger">Vendido</span>
                                             }
-                                            else
-                                            {
+                                            else {
                                                 <span class="badge bg-success">Disponible</span>
                                             }
                                         </div>
@@ -154,8 +147,7 @@
                             }
                         </div>
                     }
-                    else
-                    {
+                    else {
                         <p class="text-muted text-center py-4">
                             <i class="bi bi-inbox"></i> No has publicado productos aún
                         </p>
@@ -174,11 +166,9 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    @if (Model.Usuario.Purchases.Any())
-                    {
+                    @if (Model.Usuario.Purchases.Any()) {
                         <div class="list-group list-group-flush">
-                            @foreach (var compra in Model.Usuario.Purchases.OrderByDescending(c => c.FechaCompra).Take(5))
-                            {
+                            @foreach (var compra in Model.Usuario.Purchases.OrderByDescending(c => c.FechaCompra).Take(5)) {
                                 <div class="list-group-item px-0">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -191,7 +181,8 @@
                                         </div>
                                         <div class="text-end">
                                             <strong class="text-success d-block">@compra.Total.ToString("C", new CultureInfo("es-ES"))</strong>
-                                            <a asp-page="/Purchase/Details" asp-route-id="@compra.Id" class="btn btn-sm btn-outline-primary">
+                                            <a asp-page="/Purchase/Details" asp-route-id="@compra.Id"
+                                               class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i> Ver
                                             </a>
                                         </div>
@@ -200,8 +191,7 @@
                             }
                         </div>
                     }
-                    else
-                    {
+                    else {
                         <p class="text-muted text-center py-4">
                             <i class="bi bi-inbox"></i> No has realizado compras aún
                         </p>
