@@ -15,12 +15,9 @@ namespace TiendaDawWeb.Tests.E2E.Blazor;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class BlazorRatingTests : E2ETestBase
-{
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
-        {
+public class BlazorRatingTests : E2ETestBase {
+    public override BrowserNewContextOptions ContextOptions() {
+        return new BrowserNewContextOptions {
             Locale = "es-ES",
             TimezoneId = "Europe/Madrid",
             RecordVideoDir = "TestVideos"
@@ -28,8 +25,7 @@ public class BlazorRatingTests : E2ETestBase
     }
 
     [Test]
-    public async Task ProductDetailsPage_ShouldLoad()
-    {
+    public async Task ProductDetailsPage_ShouldLoad() {
         await Page.GotoAsync($"{BaseTestUrl}/Product/Details/1", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
         await CaptureScreenshotAsync("01-product-details");
 
@@ -40,8 +36,7 @@ public class BlazorRatingTests : E2ETestBase
     }
 
     [Test]
-    public async Task AuthenticatedUser_CanAccessProductDetails()
-    {
+    public async Task AuthenticatedUser_CanAccessProductDetails() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
         await Page.TestId("email-input").FillAsync(CarlosEmail);
         await Page.TestId("password-input").FillAsync(CarlosPassword);

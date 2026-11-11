@@ -6,18 +6,15 @@ using TiendaDawWeb.RazorPages.Pages;
 
 namespace TiendaDawWeb.Tests.RazorPages.ErrorHandling;
 
-public class ErrorPageTests
-{
+public class ErrorPageTests {
     [Test]
-    public void ErrorModel_OnGet_With404_ShouldShowNotFoundMessage()
-    {
+    public void ErrorModel_OnGet_With404_ShouldShowNotFoundMessage() {
         // Arrange
         var pageModel = new ErrorModel();
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 404;
-        pageModel.PageContext = new PageContext
-        {
+        pageModel.PageContext = new PageContext {
             HttpContext = httpContext
         };
 
@@ -31,15 +28,13 @@ public class ErrorPageTests
     }
 
     [Test]
-    public void ErrorModel_OnGet_With500_ShouldShowInternalErrorMessage()
-    {
+    public void ErrorModel_OnGet_With500_ShouldShowInternalErrorMessage() {
         // Arrange
         var pageModel = new ErrorModel();
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 500;
-        pageModel.PageContext = new PageContext
-        {
+        pageModel.PageContext = new PageContext {
             HttpContext = httpContext
         };
 
@@ -52,15 +47,13 @@ public class ErrorPageTests
     }
 
     [Test]
-    public void ErrorModel_OnGet_With401_ShouldShowSessionExpiredMessage()
-    {
+    public void ErrorModel_OnGet_With401_ShouldShowSessionExpiredMessage() {
         // Arrange
         var pageModel = new ErrorModel();
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 401;
-        pageModel.PageContext = new PageContext
-        {
+        pageModel.PageContext = new PageContext {
             HttpContext = httpContext
         };
 
@@ -73,15 +66,13 @@ public class ErrorPageTests
     }
 
     [Test]
-    public void ErrorModel_OnGet_WithNullStatusCode_ShouldUseHttpContextStatusCode()
-    {
+    public void ErrorModel_OnGet_WithNullStatusCode_ShouldUseHttpContextStatusCode() {
         // Arrange
         var pageModel = new ErrorModel();
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 403;
-        pageModel.PageContext = new PageContext
-        {
+        pageModel.PageContext = new PageContext {
             HttpContext = httpContext
         };
 
@@ -94,15 +85,13 @@ public class ErrorPageTests
     }
 
     [Test]
-    public void ErrorModel_OnGet_With200_ShouldConvertTo500()
-    {
+    public void ErrorModel_OnGet_With200_ShouldConvertTo500() {
         // Arrange
         var pageModel = new ErrorModel();
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 200;
-        pageModel.PageContext = new PageContext
-        {
+        pageModel.PageContext = new PageContext {
             HttpContext = httpContext
         };
 

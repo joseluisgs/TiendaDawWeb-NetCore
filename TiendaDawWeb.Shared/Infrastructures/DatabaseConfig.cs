@@ -12,8 +12,7 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// Desarrollo: SQLite (archivo temporal o In-Memory).
 /// Producción: PostgreSQL (requiere connection string en configuration).
 /// </summary>
-public static class DatabaseConfig
-{
+public static class DatabaseConfig {
     /// <summary>
     /// Configura la base de datos según el entorno.
     /// </summary>
@@ -24,15 +23,13 @@ public static class DatabaseConfig
     public static IServiceCollection AddDatabases(
         this IServiceCollection services,
         IConfiguration configuration,
-        IWebHostEnvironment environment)
-    {
+        IWebHostEnvironment environment) {
         var isE2ETest = Environment.GetEnvironmentVariable("E2E_TEST") == "true";
         var isExplicitProduction = environment.EnvironmentName == "Production";
 
         // 🛡️ Solo Production explícito usa PostgreSQL/Redis.
         // Si no se especifica entorno (o es Development/Staging), usa SQLite.
-        if (!isExplicitProduction && !isE2ETest)
-        {
+        if (!isExplicitProduction && !isE2ETest) {
             // 🎓 Desarrollo: SQLite en archivo temporal
             var dbPath = Path.Combine(Path.GetTempPath(), "tiendadb_dev.db");
             if (File.Exists(dbPath)) File.Delete(dbPath);
@@ -46,9 +43,7 @@ public static class DatabaseConfig
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(keepAliveConnection));
             services.AddSingleton(keepAliveConnection);
-        }
-        else if (isE2ETest)
-        {
+        } else if (isE2ETest) {
             // 🎓 Tests E2E: SQLite en archivo temporal (por puerto)
             var port = Environment.GetEnvironmentVariable("SERVER_PORT") ?? "5000";
             var dbPath = Path.Combine(Path.GetTempPath(), $"tiendadb_{port}.db");
@@ -63,9 +58,7 @@ public static class DatabaseConfig
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(keepAliveConnection));
             services.AddSingleton(keepAliveConnection);
-        }
-        else
-        {
+        } else {
             // 🛡️ Producción: PostgreSQL — connection string obligatoria
             var connectionString = configuration.GetConnectionString("PostgreSQL")
                 ?? throw new InvalidOperationException(

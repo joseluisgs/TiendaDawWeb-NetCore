@@ -10,11 +10,9 @@ namespace TiendaDawWeb.Tests.E2E.Admin;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class AdminUserManagementTests : E2ETestBase
-{
+public class AdminUserManagementTests : E2ETestBase {
     [SetUp]
-    public async Task Setup()
-    {
+    public async Task Setup() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync(AdminEmail);
         await Page.TestId("password-input").FillAsync(AdminPassword);
@@ -23,8 +21,7 @@ public class AdminUserManagementTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminCanAccessAdminPanel()
-    {
+    public async Task AdminCanAccessAdminPanel() {
         await Page.GotoAsync($"{BaseTestUrl}/Admin");
         await CaptureScreenshotAsync("01-admin-panel");
 
@@ -34,8 +31,7 @@ public class AdminUserManagementTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminStatsWidget_IsVisible()
-    {
+    public async Task AdminStatsWidget_IsVisible() {
         await Page.GotoAsync($"{BaseTestUrl}/Admin");
         await CaptureScreenshotAsync("01-admin-panel");
 
@@ -46,8 +42,7 @@ public class AdminUserManagementTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminStatsWidget_ShowsStatistics()
-    {
+    public async Task AdminStatsWidget_ShowsStatistics() {
         await Page.GotoAsync($"{BaseTestUrl}/Admin");
         await CaptureScreenshotAsync("01-admin-stats");
 

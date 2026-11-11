@@ -13,22 +13,19 @@ using ProductModel = TiendaDawWeb.Shared.Models.Product;
 
 namespace TiendaDawWeb.Tests.RazorPages.Favorite;
 
-public class FavoriteIndexModelTests
-{
+public class FavoriteIndexModelTests {
     private readonly Mock<IFavoriteService> _mockFavoriteService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly IndexModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public FavoriteIndexModelTests()
-    {
+    public FavoriteIndexModelTests() {
         _mockFavoriteService = new Mock<IFavoriteService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -37,36 +34,31 @@ public class FavoriteIndexModelTests
 
         _model = new IndexModel(
             _mockFavoriteService.Object,
-            _mockUserManager.Object)
-        {
+            _mockUserManager.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void FavoriteIndexModel_CanBeInstantiated()
-    {
+    public void FavoriteIndexModel_CanBeInstantiated() {
         var model = new IndexModel(null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void FavoriteIndexModel_HasProductsProperty()
-    {
+    public void FavoriteIndexModel_HasProductsProperty() {
         var model = new IndexModel(null!, null!);
         model.Products.Should().NotBeNull();
     }
 
     [Test]
-    public void FavoriteIndexModel_ProductosProperty_ReturnsProducts()
-    {
+    public void FavoriteIndexModel_ProductosProperty_ReturnsProducts() {
         var model = new IndexModel(null!, null!);
         model.Productos.Should().BeSameAs(model.Products);
     }
 
     [Test]
-    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -77,11 +69,10 @@ public class FavoriteIndexModelTests
     }
 
     [Test]
-    public async Task OnGetAsync_ReturnsPage_WhenUserFound()
-    {
+    public async Task OnGetAsync_ReturnsPage_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser" };
         var products = new List<ProductModel>();
-        
+
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
         _mockFavoriteService.Setup(s => s.GetUserFavoritesAsync(user.Id))

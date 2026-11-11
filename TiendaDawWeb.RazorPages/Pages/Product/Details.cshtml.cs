@@ -119,13 +119,13 @@ public class DetailsModel(
         }
 
         var result = await productService.DeleteAsync(id, user.Id);
-        
+
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
             Product = (await productService.GetByIdAsync(id)).Value;
             return Page();
         }
-        
+
         await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
         TempData["Success"] = "Producto eliminado correctamente";
         return RedirectToPage("/Product/MyProducts");

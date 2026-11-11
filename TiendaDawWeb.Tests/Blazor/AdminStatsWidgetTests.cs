@@ -13,36 +13,32 @@ using TiendaDawWeb.Shared.Services.Purchase;
 
 namespace TiendaDawWeb.Tests.Blazor;
 
-public class AdminStatsWidgetTests
-{
+public class AdminStatsWidgetTests {
     private readonly Mock<IProductService> _mockProductService;
     private readonly Mock<IPurchaseService> _mockPurchaseService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<ILogger<AdminStatsWidget>> _mockLogger;
 
-    public AdminStatsWidgetTests()
-    {
+    public AdminStatsWidgetTests() {
         _mockProductService = new Mock<IProductService>();
         _mockPurchaseService = new Mock<IPurchaseService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _mockLogger = new Mock<ILogger<AdminStatsWidget>>();
 
-        var users = new List<User>
-        {
+        var users = new List<User> {
             new() { Id = 1, UserName = "user1" },
             new() { Id = 2, UserName = "user2" }
         }.AsQueryable();
-        
+
         _mockUserManager.Setup(u => u.Users)
             .Returns(users);
     }
 
     [Test]
-    public void AdminStatsWidget_Component_CanBeCreated()
-    {
+    public void AdminStatsWidget_Component_CanBeCreated() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -57,8 +53,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasCardStructure()
-    {
+    public void AdminStatsWidget_HasCardStructure() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -73,8 +68,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasCardHeader()
-    {
+    public void AdminStatsWidget_HasCardHeader() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -89,8 +83,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasCardBody()
-    {
+    public void AdminStatsWidget_HasCardBody() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -105,8 +98,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasRefreshButton()
-    {
+    public void AdminStatsWidget_HasRefreshButton() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -121,8 +113,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasAutoRefreshBadge()
-    {
+    public void AdminStatsWidget_HasAutoRefreshBadge() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -137,8 +128,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasStatistics()
-    {
+    public void AdminStatsWidget_HasStatistics() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -153,8 +143,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_DisplaysLastUpdate()
-    {
+    public void AdminStatsWidget_DisplaysLastUpdate() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -169,14 +158,12 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_ImplementsIDisposable()
-    {
+    public void AdminStatsWidget_ImplementsIDisposable() {
         typeof(AdminStatsWidget).Should().Implement<IDisposable>();
     }
 
     [Test]
-    public void AdminStatsWidget_HasRowLayout()
-    {
+    public void AdminStatsWidget_HasRowLayout() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -191,8 +178,7 @@ public class AdminStatsWidgetTests
     }
 
     [Test]
-    public void AdminStatsWidget_HasThreeColumns()
-    {
+    public void AdminStatsWidget_HasThreeColumns() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618

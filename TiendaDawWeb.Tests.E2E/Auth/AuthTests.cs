@@ -18,18 +18,15 @@ namespace TiendaDawWeb.Tests.E2E.Auth;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class AuthTests : E2ETestBase
-{
+public class AuthTests : E2ETestBase {
     [SetUp]
-    public async Task Setup()
-    {
+    public async Task Setup() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await CaptureScreenshotAsync("01-login-page-loaded");
     }
 
     [Test]
-    public async Task EmptyFields_ShouldShowValidationErrors()
-    {
+    public async Task EmptyFields_ShouldShowValidationErrors() {
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("02-validation-errors");
 
@@ -38,29 +35,27 @@ public class AuthTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminLogin_ShouldSucceed()
-    {
+    public async Task AdminLogin_ShouldSucceed() {
         await Page.TestId("email-input").FillAsync(AdminEmail);
         await Page.TestId("password-input").FillAsync(AdminPassword);
         await CaptureScreenshotAsync("03-credentials-filled");
-        
+
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("04-after-login");
-        
+
         await Expect(Page).Not.ToHaveURLAsync(new System.Text.RegularExpressions.Regex(".*/Auth/Login.*"));
         await Expect(Page.Locator(".navbar")).ToContainTextAsync(new System.Text.RegularExpressions.Regex("Admin", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
     }
 
     [Test]
-    public async Task InvalidCredentials_ShouldShowErrorMessage()
-    {
+    public async Task InvalidCredentials_ShouldShowErrorMessage() {
         await Page.TestId("email-input").FillAsync("hacker@maligno.com");
         await Page.TestId("password-input").FillAsync("123456");
         await CaptureScreenshotAsync("05-invalid-credentials");
-        
+
         await Page.TestId("submit-button").ClickAsync();
         await CaptureScreenshotAsync("06-error-message");
-        
+
         var errorSummary = Page.Locator(".validation-summary-errors");
         await Expect(errorSummary).ToContainTextAsync(new System.Text.RegularExpressions.Regex("incorrectos", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
     }

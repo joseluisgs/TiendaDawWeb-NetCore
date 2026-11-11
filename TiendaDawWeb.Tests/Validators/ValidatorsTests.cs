@@ -8,14 +8,11 @@ namespace TiendaDawWeb.Tests.Validators;
 /// <summary>
 /// Tests unitarios para los validadores FluentValidation.
 /// </summary>
-public class ValidatorsTests
-{
+public class ValidatorsTests {
     [Test]
-    public void RegisterValidator_ValidData_Passes()
-    {
+    public void RegisterValidator_ValidData_Passes() {
         var validator = new RegisterViewModelValidator();
-        var model = new RegisterViewModel
-        {
+        var model = new RegisterViewModel {
             Nombre = "Juan",
             Apellidos = "García",
             Email = "juan@test.com",
@@ -28,11 +25,9 @@ public class ValidatorsTests
     }
 
     [Test]
-    public void RegisterValidator_EmptyNombre_Fails()
-    {
+    public void RegisterValidator_EmptyNombre_Fails() {
         var validator = new RegisterViewModelValidator();
-        var model = new RegisterViewModel
-        {
+        var model = new RegisterViewModel {
             Nombre = "",
             Apellidos = "García",
             Email = "juan@test.com",
@@ -46,11 +41,9 @@ public class ValidatorsTests
     }
 
     [Test]
-    public void RegisterValidator_PasswordMismatch_Fails()
-    {
+    public void RegisterValidator_PasswordMismatch_Fails() {
         var validator = new RegisterViewModelValidator();
-        var model = new RegisterViewModel
-        {
+        var model = new RegisterViewModel {
             Nombre = "Juan",
             Apellidos = "García",
             Email = "juan@test.com",
@@ -64,8 +57,7 @@ public class ValidatorsTests
     }
 
     [Test]
-    public void LoginValidator_EmptyEmail_Fails()
-    {
+    public void LoginValidator_EmptyEmail_Fails() {
         var validator = new LoginViewModelValidator();
         var model = new LoginViewModel { Email = "", Password = "Test1234" };
 
@@ -74,8 +66,7 @@ public class ValidatorsTests
     }
 
     [Test]
-    public void LoginValidator_ValidData_Passes()
-    {
+    public void LoginValidator_ValidData_Passes() {
         var validator = new LoginViewModelValidator();
         var model = new LoginViewModel { Email = "test@test.com", Password = "Test1234" };
 

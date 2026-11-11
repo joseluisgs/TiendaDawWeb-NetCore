@@ -17,25 +17,22 @@ using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class RatingControllerTests
-{
+public class RatingControllerTests {
     private readonly Mock<IRatingService> _mockRatingService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<ILogger<RatingController>> _mockLogger;
     private readonly RatingController _controller;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public RatingControllerTests()
-    {
+    public RatingControllerTests() {
         _mockRatingService = new Mock<IRatingService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _mockLogger = new Mock<ILogger<RatingController>>();
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -46,23 +43,20 @@ public class RatingControllerTests
         _controller = new RatingController(
             _mockRatingService.Object,
             _mockUserManager.Object,
-            _mockLogger.Object)
-        {
+            _mockLogger.Object) {
             ControllerContext = new ControllerContext(actionContext)
         };
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
         _controller.Dispose();
     }
 
     #region AddRating Tests
 
     [Test]
-    public async Task AddRating_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task AddRating_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -79,8 +73,7 @@ public class RatingControllerTests
     #region Details Tests
 
     [Test]
-    public async Task Details_ReturnsView_WhenRatingFound()
-    {
+    public async Task Details_ReturnsView_WhenRatingFound() {
         var rating = new Rating { Id = 1, UsuarioId = 1, ProductoId = 1, Puntuacion = 5, Comentario = "Great!" };
         _mockRatingService.Setup(s => s.GetByIdAsync(1))
             .Returns(Task.FromResult(Result.Success<Rating, TiendaDawWeb.Shared.Errors.DomainError>(rating)));
@@ -96,8 +89,7 @@ public class RatingControllerTests
     #region Edit Tests
 
     [Test]
-    public async Task Edit_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Edit_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -107,8 +99,7 @@ public class RatingControllerTests
     }
 
     [Test]
-    public async Task Edit_ReturnsView_WhenOwner()
-    {
+    public async Task Edit_ReturnsView_WhenOwner() {
         var user = new User { Id = 1, UserName = "testuser" };
         var rating = new Rating { Id = 1, UsuarioId = 1, ProductoId = 1, Puntuacion = 5, Comentario = "Great!" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
@@ -128,8 +119,7 @@ public class RatingControllerTests
     #region Edit (POST) Tests
 
     [Test]
-    public async Task EditPost_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task EditPost_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -144,8 +134,7 @@ public class RatingControllerTests
     #region Delete Tests
 
     [Test]
-    public async Task Delete_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Delete_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 

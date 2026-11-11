@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Errors;
 /// <summary>
 /// Errores relacionados con compras.
 /// </summary>
-public static class PurchaseError
-{
+public static class PurchaseError {
     public static BusinessRuleError EmptyCarrito() =>
         new("No se puede crear una compra con el carrito vacío");
 

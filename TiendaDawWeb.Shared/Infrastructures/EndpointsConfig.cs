@@ -9,15 +9,13 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// <summary>
 /// Configuración de endpoints de la aplicación.
 /// </summary>
-public static class EndpointsConfig
-{
+public static class EndpointsConfig {
     /// <summary>
     /// Configura los endpoints MVC y Blazor.
     /// </summary>
     /// <param name="app">Application builder.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static Microsoft.AspNetCore.Builder.IApplicationBuilder MapAppEndpoints(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)
-    {
+    public static Microsoft.AspNetCore.Builder.IApplicationBuilder MapAppEndpoints(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) {
         var webApp = (Microsoft.AspNetCore.Builder.WebApplication)app;
 
         Log.Information("🛣️ Mapeando endpoints MVC...");

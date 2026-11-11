@@ -7,21 +7,18 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// <summary>
 /// Extensiones de configuración de archivos estáticos.
 /// </summary>
-public static class StaticFilesConfig
-{
+public static class StaticFilesConfig {
     /// <summary>
     /// Configura archivos estáticos para el directorio uploads.
     /// </summary>
-    public static WebApplication ConfigureStaticFiles(this WebApplication app)
-    {
+    public static WebApplication ConfigureStaticFiles(this WebApplication app) {
         var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         var uploadPath = Path.Combine(webRootPath, "uploads");
 
         // 🛡️ Crear directorio si no existe (evita DirectoryNotFoundException en arranque)
         Directory.CreateDirectory(uploadPath);
 
-        app.UseStaticFiles(new StaticFileOptions
-        {
+        app.UseStaticFiles(new StaticFileOptions {
             FileProvider = new PhysicalFileProvider(uploadPath),
             RequestPath = "/uploads"
         });

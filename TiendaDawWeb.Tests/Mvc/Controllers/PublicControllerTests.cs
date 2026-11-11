@@ -16,42 +16,36 @@ using TiendaDawWeb.Shared.Services.Product;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class PublicControllerTests
-{
+public class PublicControllerTests {
     private readonly Mock<IProductService> _mockProductService;
     private readonly Mock<ILogger<PublicController>> _mockLogger;
     private readonly PublicController _controller;
 
-    public PublicControllerTests()
-    {
+    public PublicControllerTests() {
         _mockProductService = new Mock<IProductService>();
         _mockLogger = new Mock<ILogger<PublicController>>();
-        
+
         var httpContext = new DefaultHttpContext();
         var actionDescriptor = new ControllerActionDescriptor();
         var actionContext = new ActionContext(httpContext, new RouteData(), actionDescriptor);
 
         _controller = new PublicController(
             _mockProductService.Object,
-            _mockLogger.Object)
-        {
+            _mockLogger.Object) {
             ControllerContext = new ControllerContext(actionContext)
         };
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
         _controller.Dispose();
     }
 
     #region Index Tests
 
     [Test]
-    public async Task Index_ReturnsView_WithProducts()
-    {
-        var products = new List<Product>
-        {
+    public async Task Index_ReturnsView_WithProducts() {
+        var products = new List<Product> {
             new() { Id = 1, Nombre = "Product 1", Precio = 100, Categoria = ProductCategory.SMARTPHONES },
             new() { Id = 2, Nombre = "Product 2", Precio = 200, Categoria = ProductCategory.LAPTOPS }
         };
@@ -67,8 +61,7 @@ public class PublicControllerTests
     }
 
     [Test]
-    public async Task Index_ReturnsEmptyList_WhenServiceFails()
-    {
+    public async Task Index_ReturnsEmptyList_WhenServiceFails() {
         _mockProductService.Setup(s => s.GetAllAsync())
             .Returns(Task.FromResult(Result.Failure<IEnumerable<Product>, DomainError>(ProductError.NotFound(0))));
 
@@ -78,18 +71,15 @@ public class PublicControllerTests
     }
 
     [Test]
-    public async Task Index_Redirects_WhenLangProvided()
-    {
+    public async Task Index_Redirects_WhenLangProvided() {
         var result = await _controller.Index(q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12, lang: "en");
 
         result.Should().BeOfType<RedirectToActionResult>();
     }
 
     [Test]
-    public async Task Index_WithSearchQuery_ReturnsFilteredProducts()
-    {
-        var products = new List<Product>
-        {
+    public async Task Index_WithSearchQuery_ReturnsFilteredProducts() {
+        var products = new List<Product> {
             new() { Id = 1, Nombre = "Laptop", Precio = 1000, Categoria = ProductCategory.LAPTOPS }
         };
 
@@ -102,10 +92,8 @@ public class PublicControllerTests
     }
 
     [Test]
-    public async Task Index_WithCategory_ReturnsFilteredProducts()
-    {
-        var products = new List<Product>
-        {
+    public async Task Index_WithCategory_ReturnsFilteredProducts() {
+        var products = new List<Product> {
             new() { Id = 1, Nombre = "Phone", Precio = 500, Categoria = ProductCategory.SMARTPHONES }
         };
 
@@ -118,10 +106,8 @@ public class PublicControllerTests
     }
 
     [Test]
-    public async Task Index_WithPriceRange_ReturnsFilteredProducts()
-    {
-        var products = new List<Product>
-        {
+    public async Task Index_WithPriceRange_ReturnsFilteredProducts() {
+        var products = new List<Product> {
             new() { Id = 1, Nombre = "Product", Precio = 150, Categoria = ProductCategory.AUDIO }
         };
 
@@ -134,10 +120,8 @@ public class PublicControllerTests
     }
 
     [Test]
-    public async Task Index_WithPagination_ReturnsPagedResults()
-    {
-        var products = Enumerable.Range(1, 12).Select(i => new Product
-        {
+    public async Task Index_WithPagination_ReturnsPagedResults() {
+        var products = Enumerable.Range(1, 12).Select(i => new Product {
             Id = i,
             Nombre = $"Product {i}",
             Precio = i * 10,

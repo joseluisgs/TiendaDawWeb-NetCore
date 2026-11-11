@@ -15,21 +15,18 @@ namespace TiendaDawWeb.Tests.Integration;
 /// Each test creates its own isolated database.
 /// </summary>
 [NonParallelizable]
-public class ProductIntegrationTests
-{
+public class ProductIntegrationTests {
     #region Create Product Tests
 
     [Test]
-    public async Task CreateProduct_WithValidData_SavesToDatabase()
-    {
+    public async Task CreateProduct_WithValidData_SavesToDatabase() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
         db.Users.Add(user);
 
-        var product = new Product
-        {
+        var product = new Product {
             Nombre = "Test Product",
             Descripcion = "A test product",
             Precio = 99.99m,
@@ -45,8 +42,7 @@ public class ProductIntegrationTests
     }
 
     [Test]
-    public async Task GetAllProducts_ReturnsOnlyNonDeleted()
-    {
+    public async Task GetAllProducts_ReturnsOnlyNonDeleted() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
@@ -69,8 +65,7 @@ public class ProductIntegrationTests
     }
 
     [Test]
-    public async Task DeleteProduct_SoftDeletes()
-    {
+    public async Task DeleteProduct_SoftDeletes() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
@@ -78,8 +73,7 @@ public class ProductIntegrationTests
         db.Users.Add(user);
         await db.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "To Delete",
             Descripcion = "Desc",
@@ -100,14 +94,12 @@ public class ProductIntegrationTests
     }
 
     [Test]
-    public async Task Product_Propietario_Relationship_Works()
-    {
+    public async Task Product_Propietario_Relationship_Works() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
         var user = new User { Id = 200, UserName = "owner", Email = "owner@test.com", Nombre = "Owner", Apellidos = "User", Rol = "USER" };
-        var product = new Product
-        {
+        var product = new Product {
             Id = 200,
             Nombre = "Owner Product",
             Descripcion = "Desc",
@@ -134,8 +126,7 @@ public class ProductIntegrationTests
     #region Favorite Tests (With Include - SQLite supports this!)
 
     [Test]
-    public async Task Favorite_AddAndQuery_Works()
-    {
+    public async Task Favorite_AddAndQuery_Works() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
@@ -164,8 +155,7 @@ public class ProductIntegrationTests
     }
 
     [Test]
-    public async Task GetUserFavoritesAsync_ReturnsProducts()
-    {
+    public async Task GetUserFavoritesAsync_ReturnsProducts() {
         await using var fixture = new IntegrationTestFixture();
 
         var user = new User { Id = 100, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
@@ -191,16 +181,14 @@ public class ProductIntegrationTests
     }
 
     [Test]
-    public async Task Carrito_AddItem_Works()
-    {
+    public async Task Carrito_AddItem_Works() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
         var user = new User { Id = 400, Email = "user@test.com", UserName = "user", Nombre = "User", Apellidos = "Test", Rol = "USER" };
         var owner = new User { Id = 401, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER" };
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 401,
             Nombre = "Cart Product",
             Precio = 300,
@@ -213,8 +201,7 @@ public class ProductIntegrationTests
         db.Products.Add(product);
         await db.SaveChangesAsync();
 
-        var cartItem = new CarritoItem
-        {
+        var cartItem = new CarritoItem {
             UsuarioId = 400,
             ProductoId = 401,
             Precio = 300,
@@ -237,16 +224,14 @@ public class ProductIntegrationTests
     #region Purchase Tests
 
     [Test]
-    public async Task Purchase_CreateAndQuery_Works()
-    {
+    public async Task Purchase_CreateAndQuery_Works() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
         var user = new User { Id = 500, Email = "buyer@test.com", UserName = "buyer", Nombre = "Buyer", Apellidos = "User", Rol = "USER" };
         var owner = new User { Id = 501, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "User", Rol = "USER" };
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 501,
             Nombre = "Purchased Product",
             Precio = 1000,
@@ -259,8 +244,7 @@ public class ProductIntegrationTests
         db.Products.Add(product);
         await db.SaveChangesAsync();
 
-        var purchase = new Purchase
-        {
+        var purchase = new Purchase {
             Id = 100,
             CompradorId = 500,
             FechaCompra = DateTime.UtcNow,
@@ -284,16 +268,14 @@ public class ProductIntegrationTests
     #region Rating Tests
 
     [Test]
-    public async Task Rating_AddAndQuery_Works()
-    {
+    public async Task Rating_AddAndQuery_Works() {
         await using var fixture = new IntegrationTestFixture();
         var db = fixture.Context;
 
         var user = new User { Id = 600, Email = "rater@test.com", UserName = "rater", Nombre = "Rater", Apellidos = "User", Rol = "USER" };
         var owner = new User { Id = 601, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "User", Rol = "USER" };
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 601,
             Nombre = "Rated Product",
             Precio = 500,
@@ -305,8 +287,7 @@ public class ProductIntegrationTests
         db.Products.Add(product);
         await db.SaveChangesAsync();
 
-        var rating = new Rating
-        {
+        var rating = new Rating {
             UsuarioId = 600,
             ProductoId = 601,
             Puntuacion = 4,
@@ -332,15 +313,13 @@ public class ProductIntegrationTests
 /// Fixture that creates an isolated SQLite database for each test.
 /// Automatically cleans up the database file when disposed.
 /// </summary>
-public class IntegrationTestFixture : IDisposable, IAsyncDisposable
-{
+public class IntegrationTestFixture : IDisposable, IAsyncDisposable {
     private readonly SqliteConnection _connection;
     public readonly ApplicationDbContext Context;
     public readonly FavoriteService FavoriteService;
     private bool _disposed;
 
-    public IntegrationTestFixture()
-    {
+    public IntegrationTestFixture() {
         var dbPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.db");
         _connection = new SqliteConnection($"Data Source={dbPath}");
         _connection.Open();
@@ -355,20 +334,16 @@ public class IntegrationTestFixture : IDisposable, IAsyncDisposable
         FavoriteService = new FavoriteService(Context, new Mock<ILogger<FavoriteService>>().Object);
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        if (!_disposed)
-        {
+    public async ValueTask DisposeAsync() {
+        if (!_disposed) {
             await Context.DisposeAsync();
             await _connection.CloseAsync();
             _disposed = true;
         }
     }
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
+    public void Dispose() {
+        if (!_disposed) {
             Context.Dispose();
             _connection.Close();
             _disposed = true;

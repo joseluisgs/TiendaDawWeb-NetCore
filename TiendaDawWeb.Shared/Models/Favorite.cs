@@ -4,8 +4,7 @@ namespace TiendaDawWeb.Shared.Models;
 /// Entidad de relación Many-to-Many entre Usuario y Producto para Favoritos.
 /// Representa un producto marcado como favorito por un usuario.
 /// </summary>
-public class Favorite : AuditableEntity
-{
+public class Favorite : AuditableEntity {
     /// <summary>ID único del favorito (PK en SQLite).</summary>
     public long Id { get; set; }
 

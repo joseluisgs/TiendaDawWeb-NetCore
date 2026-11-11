@@ -6,8 +6,7 @@ namespace TiendaDawWeb.Shared.Models;
 /// Clase base abstracta para entidades con auditoría de timestamps.
 /// Proporciona campos comunes para seguimiento de creación y modificación.
 /// </summary>
-public abstract class AuditableEntity : ITimestamped
-{
+public abstract class AuditableEntity : ITimestamped {
     /// <summary>Fecha de creación del registro (se asigna en INSERT).</summary>
     public DateTime CreatedAt { get; set; }
 

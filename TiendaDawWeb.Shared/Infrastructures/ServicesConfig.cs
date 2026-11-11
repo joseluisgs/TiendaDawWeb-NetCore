@@ -18,13 +18,11 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// <summary>
 /// Extensiones de configuración de servicios de negocio.
 /// </summary>
-public static class ServicesConfig
-{
+public static class ServicesConfig {
     /// <summary>
     /// Registra todos los servicios de negocio en el contenedor de dependencias.
     /// </summary>
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services) {
         Log.Information("⚙️ Registrando servicios de negocio...");
         return services
             .AddScoped<IProductService, ProductService>()
@@ -43,8 +41,7 @@ public static class ServicesConfig
     /// <summary>
     /// Registra los seeders de datos de ejemplo (roles, usuarios y catálogo).
     /// </summary>
-    public static IServiceCollection AddSeeders(this IServiceCollection services)
-    {
+    public static IServiceCollection AddSeeders(this IServiceCollection services) {
         Log.Information("🌱 Registrando seeders de datos de ejemplo...");
         return services
             .AddScoped<RolesSeeder>()
@@ -55,8 +52,7 @@ public static class ServicesConfig
     /// <summary>
     /// Configura las tareas programadas de background jobs.
     /// </summary>
-    public static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
-    {
+    public static IServiceCollection AddBackgroundJobs(this IServiceCollection services) {
         Log.Information("📰 Configurando Background Jobs...");
         services.AddScoped<ProductoReportTask>();
         return services.AddHostedService<BackgroundJobService>();
@@ -65,8 +61,7 @@ public static class ServicesConfig
     /// <summary>
     /// Configura los servicios de limpieza automática.
     /// </summary>
-    public static IServiceCollection AddCleanupServices(this IServiceCollection services)
-    {
+    public static IServiceCollection AddCleanupServices(this IServiceCollection services) {
         Log.Information("🧹 Configurando servicios de limpieza...");
         services.AddHostedService<CarritoCleanupService>();
         return services.AddHostedService<ReservaCleanupService>();

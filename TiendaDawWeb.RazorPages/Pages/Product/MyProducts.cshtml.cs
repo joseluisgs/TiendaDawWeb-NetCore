@@ -37,14 +37,14 @@ public class MyProductsModel(
         if (user == null) return RedirectToPage("/Auth/Login");
 
         var result = await productService.DeleteAsync(id, user.Id);
-        
+
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
         } else {
             await outputCacheStore.EvictByTagAsync("productos", CancellationToken.None);
             TempData["Success"] = "Producto eliminado correctamente";
         }
-        
+
         return RedirectToPage("/Product/MyProducts");
     }
 }

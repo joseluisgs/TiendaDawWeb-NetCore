@@ -6,8 +6,7 @@ namespace TiendaDawWeb.Shared.Models;
 /// Entidad de item del carrito de compras.
 /// Cada producto solo puede añadirse una vez al carrito (sin cantidad).
 /// </summary>
-public class CarritoItem : AuditableEntity
-{
+public class CarritoItem : AuditableEntity {
     /// <summary>ID único del item (PK en SQLite).</summary>
     public long Id { get; set; }
 

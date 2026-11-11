@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Models.Enums;
 /// <summary>
 /// Categorías de productos disponibles en el marketplace
 /// </summary>
-public enum ProductCategory
-{
+public enum ProductCategory {
     SMARTPHONES,
     LAPTOPS,
     AUDIO,

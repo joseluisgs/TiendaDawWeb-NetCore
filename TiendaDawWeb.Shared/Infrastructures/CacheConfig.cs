@@ -11,8 +11,7 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// Desarrollo: MemoryCache + DistributedMemoryCache.
 /// Producción: Redis (OutputCache + MemoryCache distribuido + Session).
 /// </summary>
-public static class CacheConfig
-{
+public static class CacheConfig {
     /// <summary>
     /// Configura caché y sesión según el entorno.
     /// </summary>
@@ -23,13 +22,11 @@ public static class CacheConfig
     public static IServiceCollection AddCaching(
         this IServiceCollection services,
         IConfiguration configuration,
-        IWebHostEnvironment environment)
-    {
+        IWebHostEnvironment environment) {
         var isExplicitProduction = environment.EnvironmentName == "Production";
 
         // 🛡️ Solo Production explícito usa Redis. Si no, MemoryCache.
-        if (!isExplicitProduction)
-        {
+        if (!isExplicitProduction) {
             // 🎓 Desarrollo: MemoryCache (en memoria, sin distribuir)
             Log.Information("💾 Desarrollo: Configurando MemoryCache...");
             services.AddMemoryCache();
@@ -37,15 +34,12 @@ public static class CacheConfig
 
             Log.Information("💾 Desarrollo: Configurando Session con DistributedMemoryCache...");
             services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
+            services.AddSession(options => {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-        }
-        else
-        {
+        } else {
             // 🛡️ Producción: Redis para caché distribuida y sesión
             var redisConnection = configuration.GetConnectionString("Redis")
                 ?? throw new InvalidOperationException(
@@ -53,29 +47,24 @@ public static class CacheConfig
                     "Configura ConnectionStrings:Redis en appsettings.json.");
 
             Log.Information("🔴 Producción: Configurando Redis...");
-            services.AddStackExchangeRedisCache(options =>
-            {
+            services.AddStackExchangeRedisCache(options => {
                 options.Configuration = redisConnection;
                 options.InstanceName = "TiendaDawWeb:";
             });
 
             // OutputCache con Redis como backend distribuido
-            services.AddOutputCache(options =>
-            {
-                options.AddBasePolicy(builder =>
-                {
+            services.AddOutputCache(options => {
+                options.AddBasePolicy(builder => {
                     builder.Expire(TimeSpan.FromSeconds(300));
                 });
             });
 
             // Sesión con Redis
-            services.AddStackExchangeRedisCache(options =>
-            {
+            services.AddStackExchangeRedisCache(options => {
                 options.Configuration = redisConnection;
                 options.InstanceName = "TiendaDawWeb:Session:";
             });
-            services.AddSession(options =>
-            {
+            services.AddSession(options => {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
@@ -92,8 +81,7 @@ public static class CacheConfig
     /// </summary>
     /// <param name="app">Application builder.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)
-    {
+    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) {
         Log.Information("🗂️ Aplicando middleware de OutputCache...");
         app.UseOutputCache();
         return app;

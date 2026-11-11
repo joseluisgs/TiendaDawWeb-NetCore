@@ -14,8 +14,7 @@ public class ExternalCallbackModel(
     SignInManager<User> signInManager,
     UserManager<User> userManager,
     ILogger<ExternalCallbackModel> logger
-) : PageModel
-{
+) : PageModel {
     /// <summary>
     ///     Procesa el callback del proveedor OAuth y autentica al usuario.
     /// </summary>

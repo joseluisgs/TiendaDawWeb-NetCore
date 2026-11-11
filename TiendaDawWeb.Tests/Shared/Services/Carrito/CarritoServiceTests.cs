@@ -10,16 +10,14 @@ using TiendaDawWeb.Shared.Services.Carrito;
 
 namespace TiendaDawWeb.Tests.Shared.Services.Carrito;
 
-public class CarritoServiceTests
-{
+public class CarritoServiceTests {
     private ApplicationDbContext Context = null!;
     private CarritoService _service = null!;
     private Mock<ILogger<CarritoService>> _loggerMock = null!;
     private MemoryCache _memoryCache = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -30,8 +28,7 @@ public class CarritoServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         Context.Dispose();
         _memoryCache.Dispose();
     }
@@ -39,8 +36,7 @@ public class CarritoServiceTests
     #region GetCarritoByUsuarioIdAsync Tests
 
     [Test]
-    public async Task GetCarritoByUsuarioIdAsync_ReturnsEmptyList_WhenEmpty()
-    {
+    public async Task GetCarritoByUsuarioIdAsync_ReturnsEmptyList_WhenEmpty() {
         var result = await _service.GetCarritoByUsuarioIdAsync(1);
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
@@ -52,8 +48,7 @@ public class CarritoServiceTests
     #region AddToCarritoAsync Tests
 
     [Test]
-    public async Task AddToCarritoAsync_AddsItem()
-    {
+    public async Task AddToCarritoAsync_AddsItem() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, Deleted = false };
         Context.Users.Add(user);
@@ -67,15 +62,13 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task AddToCarritoAsync_ReturnsFailure_ProductNotFound()
-    {
+    public async Task AddToCarritoAsync_ReturnsFailure_ProductNotFound() {
         var result = await _service.AddToCarritoAsync(1, 999);
         result.IsSuccess.Should().BeFalse();
     }
 
     [Test]
-    public async Task AddToCarritoAsync_ReturnsFailure_ProductDeleted()
-    {
+    public async Task AddToCarritoAsync_ReturnsFailure_ProductDeleted() {
         var product = new Product { Id = 1, Nombre = "Product", Deleted = true };
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
@@ -85,8 +78,7 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task AddToCarritoAsync_ReturnsFailure_ProductAlreadySold()
-    {
+    public async Task AddToCarritoAsync_ReturnsFailure_ProductAlreadySold() {
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false, CompraId = 1 };
         Context.Products.Add(product);
         await Context.SaveChangesAsync();
@@ -96,8 +88,7 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task AddToCarritoAsync_ReturnsFailure_ProductAlreadyInCart()
-    {
+    public async Task AddToCarritoAsync_ReturnsFailure_ProductAlreadyInCart() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false };
         var existingItem = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
@@ -111,8 +102,7 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task AddToCarritoAsync_SetsReservation()
-    {
+    public async Task AddToCarritoAsync_SetsReservation() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false };
         Context.Users.Add(user);
@@ -131,8 +121,7 @@ public class CarritoServiceTests
     #region RemoveFromCarritoAsync Tests
 
     [Test]
-    public async Task RemoveFromCarritoAsync_RemovesItem()
-    {
+    public async Task RemoveFromCarritoAsync_RemovesItem() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Deleted = false };
         var item = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
@@ -148,10 +137,8 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task RemoveFromCarritoAsync_ReleasesProductReservation()
-    {
-        var product = new Product
-        {
+    public async Task RemoveFromCarritoAsync_ReleasesProductReservation() {
+        var product = new Product {
             Id = 1,
             Nombre = "Product",
             Deleted = false,
@@ -172,8 +159,7 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task RemoveFromCarritoAsync_ReturnsFailure_ItemNotFound()
-    {
+    public async Task RemoveFromCarritoAsync_ReturnsFailure_ItemNotFound() {
         var result = await _service.RemoveFromCarritoAsync(999);
         result.IsSuccess.Should().BeFalse();
     }
@@ -183,8 +169,7 @@ public class CarritoServiceTests
     #region ClearCarritoAsync Tests
 
     [Test]
-    public async Task ClearCarritoAsync_ClearsAllItems()
-    {
+    public async Task ClearCarritoAsync_ClearsAllItems() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var item1 = new CarritoItem { Id = 1, UsuarioId = 1, ProductoId = 1, Precio = 100 };
         var item2 = new CarritoItem { Id = 2, UsuarioId = 1, ProductoId = 2, Precio = 200 };
@@ -199,8 +184,7 @@ public class CarritoServiceTests
     }
 
     [Test]
-    public async Task ClearCarritoAsync_ReturnsSuccess_WhenEmpty()
-    {
+    public async Task ClearCarritoAsync_ReturnsSuccess_WhenEmpty() {
         var result = await _service.ClearCarritoAsync(999);
         result.IsSuccess.Should().BeTrue();
     }
@@ -210,8 +194,7 @@ public class CarritoServiceTests
     #region GetTotalCarritoAsync Tests
 
     [Test]
-    public async Task GetTotalCarritoAsync_ReturnsZero_WhenEmpty()
-    {
+    public async Task GetTotalCarritoAsync_ReturnsZero_WhenEmpty() {
         var result = await _service.GetTotalCarritoAsync(999);
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(0);
@@ -222,8 +205,7 @@ public class CarritoServiceTests
     #region GetCarritoCountAsync Tests
 
     [Test]
-    public async Task GetCarritoCountAsync_ReturnsZero_WhenEmpty()
-    {
+    public async Task GetCarritoCountAsync_ReturnsZero_WhenEmpty() {
         var result = await _service.GetCarritoCountAsync(999);
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(0);

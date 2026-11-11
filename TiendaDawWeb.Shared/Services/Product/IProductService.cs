@@ -8,8 +8,7 @@ namespace TiendaDawWeb.Shared.Services.Product;
 /// Interfaz de servicio para gestión de productos del marketplace.
 /// Define las operaciones CRUD y búsqueda de productos.
 /// </summary>
-public interface IProductService
-{
+public interface IProductService {
     /// <summary>Obtiene un producto por su ID.</summary>
     /// <param name="id">ID del producto.</param>
     /// <returns>Resultado con el producto o error.</returns>

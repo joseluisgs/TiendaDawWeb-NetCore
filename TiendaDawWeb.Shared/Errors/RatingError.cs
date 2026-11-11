@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Errors;
 /// <summary>
 /// Errores relacionados con valoraciones.
 /// </summary>
-public static class RatingError
-{
+public static class RatingError {
     public static BusinessRuleError ProductNotPurchased() =>
         new("Solo puedes valorar productos que hayas comprado");
 

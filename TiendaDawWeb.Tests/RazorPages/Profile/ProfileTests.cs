@@ -14,22 +14,19 @@ using TiendaDawWeb.Shared.Models;
 
 namespace TiendaDawWeb.Tests.RazorPages.Profile;
 
-public class ProfileIndexModelTests
-{
+public class ProfileIndexModelTests {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<ApplicationDbContext> _mockContext;
     private readonly IndexModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public ProfileIndexModelTests()
-    {
+    public ProfileIndexModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _mockContext = new Mock<ApplicationDbContext>(new Microsoft.EntityFrameworkCore.DbContextOptions<ApplicationDbContext>());
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -38,36 +35,31 @@ public class ProfileIndexModelTests
 
         _model = new IndexModel(
             _mockUserManager.Object,
-            _mockContext.Object)
-        {
+            _mockContext.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void ProfileIndexModel_CanBeInstantiated()
-    {
+    public void ProfileIndexModel_CanBeInstantiated() {
         var model = new IndexModel(null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void ProfileIndexModel_HasUserProfileProperty()
-    {
+    public void ProfileIndexModel_HasUserProfileProperty() {
         var model = new IndexModel(null!, null!);
         model.UserProfile.Should().Be(default(User));
     }
 
     [Test]
-    public void ProfileIndexModel_UsuarioProperty_ReturnsUserProfile()
-    {
+    public void ProfileIndexModel_UsuarioProperty_ReturnsUserProfile() {
         var model = new IndexModel(null!, null!);
         model.Usuario.Should().BeSameAs(model.UserProfile);
     }
 
     [Test]
-    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -78,24 +70,21 @@ public class ProfileIndexModelTests
     }
 }
 
-public class PasskeysModelTests
-{
+public class PasskeysModelTests {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<PasskeysModel>> _mockLogger;
     private readonly PasskeysModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public PasskeysModelTests()
-    {
+    public PasskeysModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
             new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<User>>().Object, null!, null!, null!, null!);
         _mockLogger = new Mock<ILogger<PasskeysModel>>();
 
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -105,23 +94,20 @@ public class PasskeysModelTests
         _model = new PasskeysModel(
             _mockUserManager.Object,
             _mockSignInManager.Object,
-            _mockLogger.Object)
-        {
+            _mockLogger.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void PasskeysModel_CanBeInstantiated()
-    {
+    public void PasskeysModel_CanBeInstantiated() {
         var model = new PasskeysModel(null!, null!, null!);
         model.Should().NotBeNull();
         model.Passkeys.Should().BeEmpty();
     }
 
     [Test]
-    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -132,8 +118,7 @@ public class PasskeysModelTests
     }
 
     [Test]
-    public async Task OnGetAsync_ReturnsPageWithPasskeys_WhenUserFound()
-    {
+    public async Task OnGetAsync_ReturnsPageWithPasskeys_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
         _mockUserManager.Setup(u => u.GetPasskeysAsync(user))
@@ -146,8 +131,7 @@ public class PasskeysModelTests
     }
 
     [Test]
-    public async Task OnPostCreationOptions_ReturnsNotFound_WhenUserNotFound()
-    {
+    public async Task OnPostCreationOptions_ReturnsNotFound_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -157,8 +141,7 @@ public class PasskeysModelTests
     }
 
     [Test]
-    public async Task OnPostCreationOptions_ReturnsJson_WhenUserFound()
-    {
+    public async Task OnPostCreationOptions_ReturnsJson_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser", Email = "test@test.com" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
         _mockUserManager.Setup(u => u.GetUserIdAsync(user)).ReturnsAsync("1");
@@ -172,8 +155,7 @@ public class PasskeysModelTests
     }
 
     [Test]
-    public async Task OnPostAttestation_ReturnsBadRequest_WhenCredentialInvalid()
-    {
+    public async Task OnPostAttestation_ReturnsBadRequest_WhenCredentialInvalid() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
         _mockSignInManager.Setup(s => s.PerformPasskeyAttestationAsync(It.IsAny<string>()))
@@ -186,8 +168,7 @@ public class PasskeysModelTests
     }
 
     [Test]
-    public async Task OnPostEliminar_ReturnsRedirectWithError_WhenIdNotBase64()
-    {
+    public async Task OnPostEliminar_ReturnsRedirectWithError_WhenIdNotBase64() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
 
@@ -203,8 +184,7 @@ public class PasskeysModelTests
     /// <summary>
     ///     TempData de prueba: en runtime lo inyecta el framework con su proveedor.
     /// </summary>
-    private static TempDataDictionary CrearTempData(HttpContext httpContext)
-    {
+    private static TempDataDictionary CrearTempData(HttpContext httpContext) {
         var provider = new Mock<ITempDataProvider>();
         provider.Setup(p => p.LoadTempData(It.IsAny<HttpContext>()))
             .Returns(new Dictionary<string, object>());

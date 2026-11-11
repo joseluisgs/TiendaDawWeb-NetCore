@@ -9,15 +9,12 @@ namespace TiendaDawWeb.Shared.Mappers;
 /// RAZÓN: Aplica el principio DRY (Don't Repeat Yourself). Evita que los controladores 
 /// tengan código repetitivo de asignación de propiedades, facilitando el mantenimiento.
 /// </summary>
-public static class ProductMapper
-{
+public static class ProductMapper {
     /// <summary>
     /// Convierte un Producto (Base de Datos) a un ProductViewModel (Vista).
     /// </summary>
-    public static ProductViewModel ToViewModel(this Product product)
-    {
-        return new ProductViewModel
-        {
+    public static ProductViewModel ToViewModel(this Product product) {
+        return new ProductViewModel {
             Id = product.Id,
             Nombre = product.Nombre,
             Descripcion = product.Descripcion,
@@ -34,10 +31,8 @@ public static class ProductMapper
     /// <param name="propietarioId">ID del usuario que realiza la acción.</param>
     /// <param name="imagenUrl">URL de la imagen ya procesada por el storage.</param>
     /// <param name="includeId">Si true, incluye el ID del modelo en la entidad.</param>
-    public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl, bool includeId = false)
-    {
-        var product = new Product
-        {
+    public static Product ToEntity(this ProductViewModel model, long propietarioId, string? imagenUrl, bool includeId = false) {
+        var product = new Product {
             Nombre = model.Nombre,
             Descripcion = model.Descripcion,
             Precio = model.Precio,
@@ -45,19 +40,18 @@ public static class ProductMapper
             PropietarioId = propietarioId,
             Imagen = imagenUrl ?? model.ImagenUrl
         };
-        
+
         if (includeId)
             product.Id = model.Id;
-        
+
         return product;
     }
-    
+
     /// <summary>
     /// Actualiza una entidad existente con los datos del viewmodel.
     /// Útil para no crear objetos nuevos en memoria si no es necesario.
     /// </summary>
-    public static void UpdateEntity(this ProductViewModel model, Product product, string? imagenUrl)
-    {
+    public static void UpdateEntity(this ProductViewModel model, Product product, string? imagenUrl) {
         product.Nombre = model.Nombre;
         product.Descripcion = model.Descripcion;
         product.Precio = model.Precio;

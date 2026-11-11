@@ -9,14 +9,12 @@ namespace TiendaDawWeb.Shared.Data;
 /// correcto — roles primero, porque los usuarios no pueden recibir un rol que
 /// aún no existe, y productos al final, porque necesitan usuarios.
 /// </summary>
-public static class SeedData
-{
+public static class SeedData {
     /// <summary>
     /// Siembra roles, usuarios y catálogo de productos si faltan.
     /// Idempotente: una BD ya poblada no se modifica.
     /// </summary>
-    public static async Task InitializeAsync(IServiceProvider serviceProvider)
-    {
+    public static async Task InitializeAsync(IServiceProvider serviceProvider) {
         var logger = serviceProvider
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger(typeof(SeedData));

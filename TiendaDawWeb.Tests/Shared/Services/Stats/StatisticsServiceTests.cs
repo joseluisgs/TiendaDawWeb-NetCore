@@ -8,14 +8,12 @@ using TiendaDawWeb.Shared.Services.Stats;
 
 namespace TiendaDawWeb.Tests.Shared.Services;
 
-public class StatisticsServiceTests
-{
+public class StatisticsServiceTests {
     private ApplicationDbContext _context = null!;
     private StatisticsService _service = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -24,24 +22,21 @@ public class StatisticsServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         _context.Dispose();
     }
 
     #region GetSalesByCategoryAsync Tests
 
     [Test]
-    public async Task GetSalesByCategoryAsync_ReturnsEmpty_WhenNoProducts()
-    {
+    public async Task GetSalesByCategoryAsync_ReturnsEmpty_WhenNoProducts() {
         var result = await _service.GetSalesByCategoryAsync();
 
         result.Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetSalesByCategoryAsync_ReturnsSalesByCategory()
-    {
+    public async Task GetSalesByCategoryAsync_ReturnsSalesByCategory() {
         var user = new User { Id = 1, UserName = "testuser" };
         var product1 = new Product { Id = 1, Nombre = "Product1", Categoria = ProductCategory.SMARTPHONES, CompraId = 1, PropietarioId = 1, Propietario = user };
         var product2 = new Product { Id = 2, Nombre = "Product2", Categoria = ProductCategory.SMARTPHONES, CompraId = 2, PropietarioId = 1, Propietario = user };
@@ -62,16 +57,14 @@ public class StatisticsServiceTests
     #region GetMonthlySalesAsync Tests
 
     [Test]
-    public async Task GetMonthlySalesAsync_ReturnsEmpty_WhenNoPurchases()
-    {
+    public async Task GetMonthlySalesAsync_ReturnsEmpty_WhenNoPurchases() {
         var result = await _service.GetMonthlySalesAsync();
 
         result.Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetMonthlySalesAsync_ReturnsMonthlySales()
-    {
+    public async Task GetMonthlySalesAsync_ReturnsMonthlySales() {
         var user = new User { Id = 1, UserName = "testuser" };
         var fechaAnterior = DateTime.UtcNow.AddMonths(-2);
         var fechaReciente = DateTime.UtcNow.AddMonths(-1);
@@ -92,16 +85,14 @@ public class StatisticsServiceTests
     #region GetTopBuyersAsync Tests
 
     [Test]
-    public async Task GetTopBuyersAsync_ReturnsEmpty_WhenNoPurchases()
-    {
+    public async Task GetTopBuyersAsync_ReturnsEmpty_WhenNoPurchases() {
         var result = await _service.GetTopBuyersAsync();
 
         result.Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetTopBuyersAsync_ReturnsTopBuyers()
-    {
+    public async Task GetTopBuyersAsync_ReturnsTopBuyers() {
         var user1 = new User { Id = 1, Nombre = "Juan", Apellidos = "Pérez" };
         var user2 = new User { Id = 2, Nombre = "María", Apellidos = "López" };
         var purchase1 = new TiendaDawWeb.Shared.Models.Purchase { Id = 1, CompradorId = 1, Comprador = user1, Total = 100 };
@@ -120,8 +111,7 @@ public class StatisticsServiceTests
     }
 
     [Test]
-    public async Task GetTopBuyersAsync_ReturnsLimitedResults()
-    {
+    public async Task GetTopBuyersAsync_ReturnsLimitedResults() {
         var users = Enumerable.Range(1, 15).Select(i => new User { Id = i, UserName = $"user{i}" }).ToList();
         var purchases = users.Select((u, i) => new TiendaDawWeb.Shared.Models.Purchase { Id = i + 1, CompradorId = u.Id, Comprador = u, Total = 100 }).ToList();
         _context.Users.AddRange(users);
@@ -138,16 +128,14 @@ public class StatisticsServiceTests
     #region GetTopSellersAsync Tests
 
     [Test]
-    public async Task GetTopSellersAsync_ReturnsEmpty_WhenNoSoldProducts()
-    {
+    public async Task GetTopSellersAsync_ReturnsEmpty_WhenNoSoldProducts() {
         var result = await _service.GetTopSellersAsync();
 
         result.Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetTopSellersAsync_ReturnsTopSellers()
-    {
+    public async Task GetTopSellersAsync_ReturnsTopSellers() {
         var user1 = new User { Id = 1, Nombre = "Carlos", Apellidos = "García" };
         var user2 = new User { Id = 2, Nombre = "Ana", Apellidos = "Martín" };
         var product1 = new Product { Id = 1, Nombre = "P1", PropietarioId = 1, Propietario = user1, CompraId = 1 };
@@ -166,8 +154,7 @@ public class StatisticsServiceTests
     }
 
     [Test]
-    public async Task GetTopSellersAsync_IgnoresUnsoldProducts()
-    {
+    public async Task GetTopSellersAsync_IgnoresUnsoldProducts() {
         var user = new User { Id = 1, Nombre = "Pedro", Apellidos = "Sánchez" };
         var soldProduct = new Product { Id = 1, Nombre = "Sold", PropietarioId = 1, Propietario = user, CompraId = 1 };
         var unsoldProduct = new Product { Id = 2, Nombre = "Unsold", PropietarioId = 1, Propietario = user, CompraId = null };

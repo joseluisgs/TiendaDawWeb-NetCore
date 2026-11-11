@@ -8,20 +8,17 @@ using TiendaDawWeb.Shared.Services.Stats;
 
 namespace TiendaDawWeb.Tests.Blazor;
 
-public class VentasMensualesChartTests
-{
+public class VentasMensualesChartTests {
     private readonly Mock<IStatisticsService> _mockStatsService;
     private readonly Mock<ILogger<VentasMensualesChart>> _mockLogger;
 
-    public VentasMensualesChartTests()
-    {
+    public VentasMensualesChartTests() {
         _mockStatsService = new Mock<IStatisticsService>();
         _mockLogger = new Mock<ILogger<VentasMensualesChart>>();
     }
 
     [Test]
-    public void VentasMensualesChart_Component_CanBeCreated()
-    {
+    public void VentasMensualesChart_Component_CanBeCreated() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -34,14 +31,12 @@ public class VentasMensualesChartTests
     }
 
     [Test]
-    public void VentasMensualesChart_ImplementsIDisposable()
-    {
+    public void VentasMensualesChart_ImplementsIDisposable() {
         typeof(VentasMensualesChart).Should().Implement<IDisposable>();
     }
 
     [Test]
-    public void VentasMensualesChart_HasCardStructure()
-    {
+    public void VentasMensualesChart_HasCardStructure() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -54,8 +49,7 @@ public class VentasMensualesChartTests
     }
 
     [Test]
-    public void VentasMensualesChart_HasWarningHeader()
-    {
+    public void VentasMensualesChart_HasWarningHeader() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -68,8 +62,7 @@ public class VentasMensualesChartTests
     }
 
     [Test]
-    public void VentasMensualesChart_HasRefreshButton()
-    {
+    public void VentasMensualesChart_HasRefreshButton() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -82,8 +75,7 @@ public class VentasMensualesChartTests
     }
 
     [Test]
-    public void VentasMensualesChart_HasAutoRefreshBadge()
-    {
+    public void VentasMensualesChart_HasAutoRefreshBadge() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618

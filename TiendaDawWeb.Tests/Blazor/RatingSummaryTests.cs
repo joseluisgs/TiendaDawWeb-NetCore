@@ -9,17 +9,14 @@ using TiendaDawWeb.Shared.Services.Rating;
 
 namespace TiendaDawWeb.Tests.Blazor;
 
-public class RatingSummaryTests
-{
+public class RatingSummaryTests {
     private readonly Mock<ILogger<RatingSummary>> _mockLogger;
 
-    public RatingSummaryTests()
-    {
+    public RatingSummaryTests() {
         _mockLogger = new Mock<ILogger<RatingSummary>>();
     }
 
-    private IRatingStore CreateMockRatingStore()
-    {
+    private IRatingStore CreateMockRatingStore() {
         var mock = new Mock<IRatingStore>();
         var emptyObservable = Observable.Empty<RatingState>();
         mock.Setup(x => x.State).Returns(emptyObservable);
@@ -27,8 +24,7 @@ public class RatingSummaryTests
     }
 
     [Test]
-    public void RatingSummary_Component_CanBeCreated()
-    {
+    public void RatingSummary_Component_CanBeCreated() {
 #pragma warning disable CS0618
         using var ctx = new Bunit.TestContext();
 #pragma warning restore CS0618
@@ -41,8 +37,7 @@ public class RatingSummaryTests
     }
 
     [Test]
-    public void RatingSummary_ImplementsIDisposable()
-    {
+    public void RatingSummary_ImplementsIDisposable() {
         typeof(RatingSummary).Should().Implement<IDisposable>();
     }
 }

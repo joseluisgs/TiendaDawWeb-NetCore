@@ -14,10 +14,8 @@ namespace TiendaDawWeb.Tests.Middleware;
 /// documentada, no una decisión de seguridad.
 /// </summary>
 [TestFixture]
-public class SecurityHeadersMiddlewareTests
-{
-    private static async Task<DefaultHttpContext> InvocarAsync(string path)
-    {
+public class SecurityHeadersMiddlewareTests {
+    private static async Task<DefaultHttpContext> InvocarAsync(string path) {
         var context = new DefaultHttpContext { Request = { Path = path, Method = HttpMethods.Get } };
         context.Response.Body = new MemoryStream();
 
@@ -28,8 +26,7 @@ public class SecurityHeadersMiddlewareTests
     }
 
     [Test]
-    public async Task Invoke_LlevaContentSecurityPolicy()
-    {
+    public async Task Invoke_LlevaContentSecurityPolicy() {
         var context = await InvocarAsync("/");
 
         var csp = context.Response.Headers["Content-Security-Policy"].ToString();
@@ -40,8 +37,7 @@ public class SecurityHeadersMiddlewareTests
     }
 
     [Test]
-    public async Task Invoke_PoliticaPermiteLosRecursosQueLaWebUsaDeVerdad()
-    {
+    public async Task Invoke_PoliticaPermiteLosRecursosQueLaWebUsaDeVerdad() {
         var context = await InvocarAsync("/");
 
         var csp = context.Response.Headers["Content-Security-Policy"].ToString();
@@ -53,8 +49,7 @@ public class SecurityHeadersMiddlewareTests
     }
 
     [Test]
-    public async Task Invoke_NoEnviaXssProtection()
-    {
+    public async Task Invoke_NoEnviaXssProtection() {
         var context = await InvocarAsync("/");
 
         context.Response.Headers.ContainsKey("X-XSS-Protection").Should().BeFalse(
@@ -62,8 +57,7 @@ public class SecurityHeadersMiddlewareTests
     }
 
     [Test]
-    public async Task Invoke_OtrasCabecerasDeSeguridad_SiguenPresentes()
-    {
+    public async Task Invoke_OtrasCabecerasDeSeguridad_SiguenPresentes() {
         var context = await InvocarAsync("/");
 
         context.Response.Headers["X-Content-Type-Options"].ToString().Should().Be("nosniff");

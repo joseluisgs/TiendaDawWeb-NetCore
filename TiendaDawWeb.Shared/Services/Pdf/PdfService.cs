@@ -49,7 +49,7 @@ public class PdfService : IPdfService {
                         column.Item().Text($"FACTURA #{purchase.Id}").FontSize(20).Bold();
                         column.Item().Text($"Fecha: {purchase.FechaCompra:dd/MM/yyyy}");
                         column.Item().PaddingTop(10).Text($"Cliente: {purchase.Comprador?.Nombre ?? "N/A"}");
-                        
+
                         column.Item().PaddingTop(20).Table(table => {
                             table.ColumnsDefinition(c => { c.RelativeColumn(3); c.RelativeColumn(1); });
                             table.Header(h => {
@@ -76,8 +76,7 @@ public class PdfService : IPdfService {
             }).GeneratePdf();
 
             return Result.Success<byte[], DomainError>(pdfBytes);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.LogError(ex, "Error al generar PDF");
             return Result.Failure<byte[], DomainError>(PurchaseError.PdfGenerationFailed(ex.Message));
         }

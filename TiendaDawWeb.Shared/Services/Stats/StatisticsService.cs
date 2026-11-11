@@ -9,18 +9,15 @@ namespace TiendaDawWeb.Shared.Services.Stats;
 /// Servicio de estadísticas para el panel de administración.
 /// Calcula ventas por categoría, mensuales, y tops de compradores/vendedores.
 /// </summary>
-public class StatisticsService(ApplicationDbContext context) : IStatisticsService
-{
+public class StatisticsService(ApplicationDbContext context) : IStatisticsService {
     /// <summary>
     /// Obtiene las ventas agrupadas por categoría con porcentaje.
     /// </summary>
-    public async Task<IEnumerable<CategorySalesDto>> GetSalesByCategoryAsync()
-    {
+    public async Task<IEnumerable<CategorySalesDto>> GetSalesByCategoryAsync() {
         var data = await context.Products
             .Where(p => p.CompraId != null)
             .GroupBy(p => p.Categoria)
-            .Select(g => new
-            {
+            .Select(g => new {
                 Categoria = g.Key,
                 Cantidad = g.Count()
             })
@@ -29,8 +26,7 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
 
         var total = data.Sum(x => x.Cantidad);
 
-        return data.Select(x => new CategorySalesDto
-        {
+        return data.Select(x => new CategorySalesDto {
             Categoria = x.Categoria,
             Cantidad = x.Cantidad,
             Porcentaje = total > 0 ? (double)x.Cantidad * 100 / total : 0
@@ -41,16 +37,14 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     /// Obtiene las ventas mensuales de los últimos X meses.
     /// </summary>
     /// <param name="months">Número de meses hacia atrás (por defecto 12).</param>
-    public async Task<IEnumerable<MonthlySalesDto>> GetMonthlySalesAsync(int months = 12)
-    {
+    public async Task<IEnumerable<MonthlySalesDto>> GetMonthlySalesAsync(int months = 12) {
         var haceMeses = DateTime.UtcNow.AddMonths(-months);
         var culture = new CultureInfo("es-ES");
 
         var data = await context.Purchases
             .Where(p => p.FechaCompra >= haceMeses)
             .GroupBy(p => new { p.FechaCompra.Year, p.FechaCompra.Month })
-            .Select(g => new
-            {
+            .Select(g => new {
                 Año = g.Key.Year,
                 Mes = g.Key.Month,
                 TotalVentas = g.Sum(p => p.Total),
@@ -60,8 +54,7 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
             .ThenBy(x => x.Mes)
             .ToListAsync();
 
-        return data.Select(x => new MonthlySalesDto
-        {
+        return data.Select(x => new MonthlySalesDto {
             Año = x.Año,
             Mes = x.Mes,
             NombreMes = culture.DateTimeFormat.GetMonthName(x.Mes),
@@ -74,12 +67,10 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     /// Obtiene los mejores compradores orderedados por total de compras.
     /// </summary>
     /// <param name="top">Número de compradores a devolver (por defecto 10).</param>
-    public async Task<IEnumerable<TopBuyerDto>> GetTopBuyersAsync(int top = 10)
-    {
+    public async Task<IEnumerable<TopBuyerDto>> GetTopBuyersAsync(int top = 10) {
         return await context.Purchases
             .GroupBy(p => new { p.CompradorId, p.Comprador.Nombre, p.Comprador.Apellidos })
-            .Select(g => new TopBuyerDto
-            {
+            .Select(g => new TopBuyerDto {
                 CompradorId = g.Key.CompradorId,
                 Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 TotalCompras = g.Count(),
@@ -94,13 +85,11 @@ public class StatisticsService(ApplicationDbContext context) : IStatisticsServic
     /// Obtiene los mejores vendedores ordenados por productos vendidos.
     /// </summary>
     /// <param name="top">Número de vendedores a devolver (por defecto 10).</param>
-    public async Task<IEnumerable<TopSellerDto>> GetTopSellersAsync(int top = 10)
-    {
+    public async Task<IEnumerable<TopSellerDto>> GetTopSellersAsync(int top = 10) {
         return await context.Products
             .Where(p => p.CompraId != null)
             .GroupBy(p => new { p.PropietarioId, p.Propietario.Nombre, p.Propietario.Apellidos })
-            .Select(g => new TopSellerDto
-            {
+            .Select(g => new TopSellerDto {
                 PropietarioId = g.Key.PropietarioId,
                 Nombre = $"{g.Key.Nombre} {g.Key.Apellidos}".Trim(),
                 ProductosVendidos = g.Count()

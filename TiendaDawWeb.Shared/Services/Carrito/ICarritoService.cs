@@ -8,8 +8,7 @@ namespace TiendaDawWeb.Shared.Services.Carrito;
 /// Servicio para la gestión del carrito de compras
 /// Sin cantidad - cada producto solo puede añadirse una vez (coincide con Spring Boot original)
 /// </summary>
-public interface ICarritoService
-{
+public interface ICarritoService {
     /// <summary>
     /// Obtiene todos los items del carrito de un usuario
     /// </summary>

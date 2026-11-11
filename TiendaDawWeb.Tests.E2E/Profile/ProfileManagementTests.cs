@@ -10,11 +10,9 @@ namespace TiendaDawWeb.Tests.E2E.Profile;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class ProfileManagementTests : E2ETestBase
-{
+public class ProfileManagementTests : E2ETestBase {
     [SetUp]
-    public async Task Setup()
-    {
+    public async Task Setup() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync(PruebaEmail);
         await Page.TestId("password-input").FillAsync(PruebaPassword);
@@ -23,8 +21,7 @@ public class ProfileManagementTests : E2ETestBase
     }
 
     [Test]
-    public async Task UserIsLoggedIn()
-    {
+    public async Task UserIsLoggedIn() {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-logged-in");
 

@@ -8,15 +8,13 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// <summary>
 /// Configuración de localización y culturas soportadas.
 /// </summary>
-public static class LocalizationConfig
-{
+public static class LocalizationConfig {
     /// <summary>
     /// Configura la localización con recursos RESX.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <returns>IServiceCollection.</returns>
-    public static IServiceCollection AddAppLocalization(this IServiceCollection services)
-    {
+    public static IServiceCollection AddAppLocalization(this IServiceCollection services) {
         Log.Information("🌍 Configurando localización...");
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -31,10 +29,8 @@ public static class LocalizationConfig
     /// </summary>
     /// <param name="app">Application builder.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseAppLocalization(this Microsoft.AspNetCore.Builder.IApplicationBuilder app)
-    {
-        var supportedCultures = new[]
-        {
+    public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseAppLocalization(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) {
+        var supportedCultures = new[] {
             new CultureInfo("es-ES"),
             new CultureInfo("en-US"),
             new CultureInfo("fr-FR"),
@@ -42,8 +38,7 @@ public static class LocalizationConfig
             new CultureInfo("pt-PT")
         };
 
-        var localizationOptions = new RequestLocalizationOptions
-        {
+        var localizationOptions = new RequestLocalizationOptions {
             DefaultRequestCulture = new RequestCulture("es-ES"),
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures,
@@ -51,14 +46,12 @@ public static class LocalizationConfig
         };
 
         // Configurar QueryStringRequestCultureProvider para usar 'lang' en lugar de 'culture'
-        var queryProvider = new QueryStringRequestCultureProvider
-        {
+        var queryProvider = new QueryStringRequestCultureProvider {
             QueryStringKey = "lang",
             UIQueryStringKey = "lang"
         };
 
-        localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider>
-        {
+        localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider> {
             queryProvider,
             new CookieRequestCultureProvider(),
             new AcceptLanguageHeaderRequestCultureProvider()

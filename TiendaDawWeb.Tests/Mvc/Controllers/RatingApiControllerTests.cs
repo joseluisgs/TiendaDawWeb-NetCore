@@ -17,25 +17,22 @@ using TiendaDawWeb.Shared.Services.Rating;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class RatingApiControllerTests
-{
+public class RatingApiControllerTests {
     private readonly Mock<IRatingService> _mockRatingService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<ILogger<RatingApiController>> _mockLogger;
     private readonly RatingApiController _controller;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public RatingApiControllerTests()
-    {
+    public RatingApiControllerTests() {
         _mockRatingService = new Mock<IRatingService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _mockLogger = new Mock<ILogger<RatingApiController>>();
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -46,28 +43,24 @@ public class RatingApiControllerTests
         _controller = new RatingApiController(
             _mockRatingService.Object,
             _mockUserManager.Object,
-            _mockLogger.Object)
-        {
+            _mockLogger.Object) {
             ControllerContext = new ControllerContext(actionContext)
         };
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
     }
 
     #region Constructor Tests
 
     [Test]
-    public void Constructor_CreatesInstance()
-    {
+    public void Constructor_CreatesInstance() {
         _controller.Should().NotBeNull();
     }
 
     [Test]
-    public void RatingApiController_InheritsFromControllerBase()
-    {
+    public void RatingApiController_InheritsFromControllerBase() {
         typeof(RatingApiController).Should().BeDerivedFrom<ControllerBase>();
     }
 
@@ -76,8 +69,7 @@ public class RatingApiControllerTests
     #region GetProductRatings Tests
 
     [Test]
-    public async Task GetProductRatings_ReturnsBadRequest_WhenServiceFails()
-    {
+    public async Task GetProductRatings_ReturnsBadRequest_WhenServiceFails() {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(1))
             .ReturnsAsync(Result.Failure<IEnumerable<Rating>, DomainError>(RatingError.NotFound(1)));
 
@@ -87,10 +79,8 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task GetProductRatings_ReturnsRatings_WhenSuccessful()
-    {
-        var ratings = new List<Rating>
-        {
+    public async Task GetProductRatings_ReturnsRatings_WhenSuccessful() {
+        var ratings = new List<Rating> {
             new() { Id = 1, Puntuacion = 5, Comentario = "Great!" }
         };
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(1))
@@ -102,8 +92,7 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task GetProductRatings_ReturnsEmptyList_WhenNoRatings()
-    {
+    public async Task GetProductRatings_ReturnsEmptyList_WhenNoRatings() {
         _mockRatingService.Setup(s => s.GetByProductoIdAsync(999))
             .ReturnsAsync(Result.Success<IEnumerable<Rating>, DomainError>(new List<Rating>()));
 
@@ -117,8 +106,7 @@ public class RatingApiControllerTests
     #region GetUserRating Tests
 
     [Test]
-    public async Task GetUserRating_ReturnsUnauthorized_WhenUserNotFound()
-    {
+    public async Task GetUserRating_ReturnsUnauthorized_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -128,8 +116,7 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task GetUserRating_ReturnsOk_WhenUserFound_NoRating()
-    {
+    public async Task GetUserRating_ReturnsOk_WhenUserFound_NoRating() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
@@ -142,8 +129,7 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task GetUserRating_ReturnsOk_WhenUserFound_WithRating()
-    {
+    public async Task GetUserRating_ReturnsOk_WhenUserFound_WithRating() {
         var user = new User { Id = 1, UserName = "testuser" };
         var rating = new Rating { Id = 1, UsuarioId = 1, ProductoId = 1, Puntuacion = 5 };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
@@ -161,8 +147,7 @@ public class RatingApiControllerTests
     #region AddRating Tests
 
     [Test]
-    public async Task AddRating_ReturnsUnauthorized_WhenUserNotFound()
-    {
+    public async Task AddRating_ReturnsUnauthorized_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -173,8 +158,7 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task AddRating_ReturnsBadRequest_WhenRatingInvalid()
-    {
+    public async Task AddRating_ReturnsBadRequest_WhenRatingInvalid() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
@@ -186,8 +170,7 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task AddRating_ReturnsBadRequest_WhenServiceFails()
-    {
+    public async Task AddRating_ReturnsBadRequest_WhenServiceFails() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
@@ -201,8 +184,7 @@ public class RatingApiControllerTests
     }
 
     [Test]
-    public async Task AddRating_ReturnsOk_WhenSuccessful()
-    {
+    public async Task AddRating_ReturnsOk_WhenSuccessful() {
         var user = new User { Id = 1, UserName = "testuser" };
         var rating = new Rating { Id = 1, UsuarioId = 1, ProductoId = 1, Puntuacion = 5, Comentario = "Great!" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))

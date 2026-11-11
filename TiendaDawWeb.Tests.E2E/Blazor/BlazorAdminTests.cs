@@ -10,12 +10,9 @@ namespace TiendaDawWeb.Tests.E2E.Blazor;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class BlazorAdminTests : E2ETestBase
-{
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
-        {
+public class BlazorAdminTests : E2ETestBase {
+    public override BrowserNewContextOptions ContextOptions() {
+        return new BrowserNewContextOptions {
             Locale = "es-ES",
             TimezoneId = "Europe/Madrid",
             RecordVideoDir = "TestVideos"
@@ -23,8 +20,7 @@ public class BlazorAdminTests : E2ETestBase
     }
 
     [SetUp]
-    public async Task Setup()
-    {
+    public async Task Setup() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
         await Page.TestId("email-input").FillAsync(AdminEmail);
         await Page.TestId("password-input").FillAsync(AdminPassword);
@@ -33,8 +29,7 @@ public class BlazorAdminTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminStatsWidget_ShouldLoad_WhenVisitingAdminPage()
-    {
+    public async Task AdminStatsWidget_ShouldLoad_WhenVisitingAdminPage() {
         await Page.GotoAsync($"{BaseTestUrl}/Admin", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
         await CaptureScreenshotAsync("01-admin-page");
 
@@ -48,8 +43,7 @@ public class BlazorAdminTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminStatsWidget_ShouldShowStatistics_WhenAdminIsLoggedIn()
-    {
+    public async Task AdminStatsWidget_ShouldShowStatistics_WhenAdminIsLoggedIn() {
         await Page.GotoAsync($"{BaseTestUrl}/Admin", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
         await CaptureScreenshotAsync("02-admin-stats");
 
@@ -63,8 +57,7 @@ public class BlazorAdminTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminPage_ShouldContainWidgets_WhenAdminIsLoggedIn()
-    {
+    public async Task AdminPage_ShouldContainWidgets_WhenAdminIsLoggedIn() {
         await Page.GotoAsync($"{BaseTestUrl}/Admin", new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
         await CaptureScreenshotAsync("03-admin-widgets");
 

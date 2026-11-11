@@ -10,25 +10,18 @@ namespace TiendaDawWeb.RazorPages.Middlewares;
 /// Middleware centralizado de manejo de excepciones.
 /// Soporta tanto errores del dominio como excepciones tipadas.
 /// </summary>
-public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
-{
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
-        {
+public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger) {
+    public async Task InvokeAsync(HttpContext context) {
+        try {
             await next(context);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "🚨 ERROR en {Path}: {Message}", context.Request.Path, ex.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        var (statusCode, message, errors) = exception switch
-        {
+    private Task HandleExceptionAsync(HttpContext context, Exception exception) {
+        var (statusCode, message, errors) = exception switch {
             NotFoundException notFound => (404, notFound.Message, null),
             ValidationException validation => (400, validation.Message, validation.ValidationErrors),
             BusinessException business => (400, business.Message, null),
@@ -46,12 +39,10 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
         bool isApiRequest = context.Request.Path.StartsWithSegments("/api") ||
                            context.Request.Headers["Accept"].ToString().Contains("application/json");
 
-        if (isApiRequest)
-        {
+        if (isApiRequest) {
             context.Response.ContentType = "application/json";
 
-            var response = new
-            {
+            var response = new {
                 success = false,
                 message,
                 errorType = exception.GetType().Name.Replace("Exception", ""),
@@ -59,14 +50,11 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
                 timestamp = DateTime.UtcNow.ToString("o")
             };
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
-            {
+            return context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             }));
-        }
-        else
-        {
+        } else {
             context.Response.Redirect($"/Error?code={statusCode}&message={Uri.EscapeDataString(message)}");
             return Task.CompletedTask;
         }
@@ -76,10 +64,8 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
 /// <summary>
 /// Extensiones para registrar el middleware.
 /// </summary>
-public static class GlobalExceptionMiddlewareExtensions
-{
-    public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder builder)
-    {
+public static class GlobalExceptionMiddlewareExtensions {
+    public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder builder) {
         return builder.UseMiddleware<GlobalExceptionMiddleware>();
     }
 }

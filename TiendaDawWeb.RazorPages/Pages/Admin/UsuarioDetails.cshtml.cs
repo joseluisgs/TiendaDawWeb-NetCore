@@ -69,8 +69,7 @@ public class UsuarioDetailsModel(
         if (result.Succeeded) {
             logger.LogInformation("Rol de usuario {UserId} cambiado a {Role}", id, nuevoRol);
             TempData["Success"] = $"Rol cambiado a {nuevoRol}";
-        }
-        else {
+        } else {
             TempData["Error"] = "Error al cambiar el rol";
         }
 

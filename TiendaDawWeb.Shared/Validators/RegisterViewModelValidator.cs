@@ -7,10 +7,8 @@ namespace TiendaDawWeb.Shared.Validators;
 /// Validador FluentValidation para el registro de usuarios.
 /// Reglas de cascada: si un campo falla, los dependientes también.
 /// </summary>
-public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel>
-{
-    public RegisterViewModelValidator()
-    {
+public class RegisterViewModelValidator : AbstractValidator<RegisterViewModel> {
+    public RegisterViewModelValidator() {
         RuleFor(x => x.Nombre)
             .NotEmpty().WithMessage("El nombre es obligatorio")
             .MaximumLength(100).WithMessage("El nombre no puede tener más de 100 caracteres");
