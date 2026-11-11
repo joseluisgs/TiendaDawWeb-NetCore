@@ -16,15 +16,12 @@ public class CarritoService(
     ApplicationDbContext context,
     IMemoryCache cache,
     ILogger<CarritoService> logger
-) : ICarritoService
-{
+) : ICarritoService {
     private const string ProductsCacheKey = "all_products";
     private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
 
-    public async Task<Result<IEnumerable<CarritoItem>, DomainError>> GetCarritoByUsuarioIdAsync(long usuarioId)
-    {
-        try
-        {
+    public async Task<Result<IEnumerable<CarritoItem>, DomainError>> GetCarritoByUsuarioIdAsync(long usuarioId) {
+        try {
             var items = await context.CarritoItems
                 .Include(c => c.Producto)
                 .ThenInclude(p => p.Propietario)
@@ -32,19 +29,15 @@ public class CarritoService(
                 .ToListAsync();
 
             return Result.Success<IEnumerable<CarritoItem>, DomainError>(items);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al obtener carrito del usuario {UsuarioId}", usuarioId);
             return Result.Failure<IEnumerable<CarritoItem>, DomainError>(
                 GenericError.DatabaseError("Error al obtener el carrito"));
         }
     }
 
-    public async Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId)
-    {
-        try
-        {
+    public async Task<Result<CarritoItem, DomainError>> AddToCarritoAsync(long usuarioId, long productoId) {
+        try {
             var producto = await context.Products.FirstOrDefaultAsync(p => p.Id == productoId);
 
             if (producto == null || producto.Deleted)
@@ -58,18 +51,12 @@ public class CarritoService(
                 return Result.Failure<CarritoItem, DomainError>(
                     CarritoError.ProductNotAvailableWithName(producto.Nombre));
 
-            if (producto.Reservado)
-            {
-                if (producto.ReservadoPor == usuarioId)
-                {
-                }
-                else if (!producto.ReservadoHasta.HasValue || producto.ReservadoHasta.Value > DateTime.UtcNow)
-                {
+            if (producto.Reservado) {
+                if (producto.ReservadoPor == usuarioId) {
+                } else if (!producto.ReservadoHasta.HasValue || producto.ReservadoHasta.Value > DateTime.UtcNow) {
                     return Result.Failure<CarritoItem, DomainError>(
                         CarritoError.ProductNotAvailableWithName(producto.Nombre));
-                }
-                else
-                {
+                } else {
                     producto.Reservado = false;
                     producto.ReservadoHasta = null;
                     producto.ReservadoPor = null;
@@ -87,8 +74,7 @@ public class CarritoService(
             producto.ReservadoHasta = DateTime.UtcNow.AddMinutes(5);
             producto.ReservadoPor = usuarioId;
 
-            var nuevoItem = new CarritoItem
-            {
+            var nuevoItem = new CarritoItem {
                 UsuarioId = usuarioId,
                 ProductoId = productoId,
                 Precio = producto.Precio,
@@ -106,14 +92,10 @@ public class CarritoService(
                 productoId, usuarioId, producto.ReservadoHasta);
 
             return Result.Success<CarritoItem, DomainError>(nuevoItem);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
+        } catch (DbUpdateConcurrencyException) {
             logger.LogWarning("Conflicto de concurrencia al agregar al carrito");
             return Result.Failure<CarritoItem, DomainError>(CarritoError.ConcurrencyConflict());
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al agregar producto {ProductoId} al carrito del usuario {UsuarioId}", productoId,
                 usuarioId);
             return Result.Failure<CarritoItem, DomainError>(
@@ -121,10 +103,8 @@ public class CarritoService(
         }
     }
 
-    public async Task<Result<bool, DomainError>> RemoveFromCarritoAsync(long itemId)
-    {
-        try
-        {
+    public async Task<Result<bool, DomainError>> RemoveFromCarritoAsync(long itemId) {
+        try {
             var item = await context.CarritoItems
                 .Include(c => c.Producto)
                 .FirstOrDefaultAsync(c => c.Id == itemId);
@@ -132,8 +112,7 @@ public class CarritoService(
             if (item == null)
                 return Result.Failure<bool, DomainError>(CarritoError.ItemNotFound(itemId));
 
-            if (item.Producto != null)
-            {
+            if (item.Producto != null) {
                 item.Producto.Reservado = false;
                 item.Producto.ReservadoHasta = null;
                 item.Producto.ReservadoPor = null;
@@ -150,19 +129,15 @@ public class CarritoService(
             logger.LogInformation("Eliminado item {ItemId} del carrito", itemId);
 
             return Result.Success<bool, DomainError>(true);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al eliminar item {ItemId} del carrito", itemId);
             return Result.Failure<bool, DomainError>(
                 GenericError.DatabaseError("Error al eliminar del carrito"));
         }
     }
 
-    public async Task<Result<bool, DomainError>> ClearCarritoAsync(long usuarioId)
-    {
-        try
-        {
+    public async Task<Result<bool, DomainError>> ClearCarritoAsync(long usuarioId) {
+        try {
             var items = await context.CarritoItems
                 .Include(c => c.Producto)
                 .Where(c => c.UsuarioId == usuarioId)
@@ -172,8 +147,7 @@ public class CarritoService(
                 return Result.Success<bool, DomainError>(true);
 
             foreach (var item in items)
-                if (item.Producto != null)
-                {
+                if (item.Producto != null) {
                     item.Producto.Reservado = false;
                     item.Producto.ReservadoHasta = null;
                     item.Producto.ReservadoPor = null;
@@ -190,45 +164,35 @@ public class CarritoService(
             logger.LogInformation("Vaciado carrito del usuario {UsuarioId} y liberadas {Count} reservas", usuarioId, items.Count);
 
             return Result.Success<bool, DomainError>(true);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al vaciar carrito del usuario {UsuarioId}", usuarioId);
             return Result.Failure<bool, DomainError>(
                 GenericError.DatabaseError("Error al vaciar el carrito"));
         }
     }
 
-    public async Task<Result<decimal, DomainError>> GetTotalCarritoAsync(long usuarioId)
-    {
-        try
-        {
+    public async Task<Result<decimal, DomainError>> GetTotalCarritoAsync(long usuarioId) {
+        try {
             var total = await context.CarritoItems
                 .Where(c => c.UsuarioId == usuarioId)
                 .SumAsync(c => c.Precio);
 
             return Result.Success<decimal, DomainError>(total);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al calcular total del carrito del usuario {UsuarioId}", usuarioId);
             return Result.Failure<decimal, DomainError>(
                 GenericError.DatabaseError("Error al calcular total"));
         }
     }
 
-    public async Task<Result<int, DomainError>> GetCarritoCountAsync(long usuarioId)
-    {
-        try
-        {
+    public async Task<Result<int, DomainError>> GetCarritoCountAsync(long usuarioId) {
+        try {
             var count = await context.CarritoItems
                 .Where(c => c.UsuarioId == usuarioId)
                 .CountAsync();
 
             return Result.Success<int, DomainError>(count);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al contar items del carrito del usuario {UsuarioId}", usuarioId);
             return Result.Failure<int, DomainError>(
                 GenericError.DatabaseError("Error al contar items"));

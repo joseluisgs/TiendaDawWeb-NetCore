@@ -114,8 +114,7 @@ public class PasskeysModel(
 
             if (result.Succeeded)
                 logger.LogInformation("Passkey eliminada para usuario {UserId}", user.Id);
-        }
-        catch (FormatException) {
+        } catch (FormatException) {
             TempData["Error"] = "El identificador de la passkey no es válido";
         }
 

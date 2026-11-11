@@ -5,8 +5,7 @@ namespace TiendaDawWeb.Shared.ViewModels;
 /// <summary>
 /// ViewModel para el formulario de login
 /// </summary>
-public class LoginViewModel
-{
+public class LoginViewModel {
     [Required(ErrorMessage = "El email es obligatorio")]
     [EmailAddress(ErrorMessage = "Email no válido")]
     [Display(Name = "Email")]

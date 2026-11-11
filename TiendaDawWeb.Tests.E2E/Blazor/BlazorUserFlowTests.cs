@@ -10,12 +10,9 @@ namespace TiendaDawWeb.Tests.E2E.Blazor;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class BlazorUserFlowTests : E2ETestBase
-{
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
-        {
+public class BlazorUserFlowTests : E2ETestBase {
+    public override BrowserNewContextOptions ContextOptions() {
+        return new BrowserNewContextOptions {
             Locale = "es-ES",
             TimezoneId = "Europe/Madrid",
             RecordVideoDir = "TestVideos"
@@ -23,8 +20,7 @@ public class BlazorUserFlowTests : E2ETestBase
     }
 
     [Test]
-    public async Task LoginAsUser_ShouldShowUserName()
-    {
+    public async Task LoginAsUser_ShouldShowUserName() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync(CarlosEmail);
         await Page.TestId("password-input").FillAsync(CarlosPassword);
@@ -35,8 +31,7 @@ public class BlazorUserFlowTests : E2ETestBase
     }
 
     [Test]
-    public async Task PublicPage_ShouldLoad()
-    {
+    public async Task PublicPage_ShouldLoad() {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public");
 
@@ -44,8 +39,7 @@ public class BlazorUserFlowTests : E2ETestBase
     }
 
     [Test]
-    public async Task Search_ShouldWork()
-    {
+    public async Task Search_ShouldWork() {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await Page.TestId("search-input").FillAsync("iPhone");
         await Page.TestId("search-button").ClickAsync();

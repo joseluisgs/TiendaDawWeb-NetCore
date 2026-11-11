@@ -12,11 +12,9 @@ namespace TiendaDawWeb.Tests.E2E.Security;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class SecurityHeadersTests : E2ETestBase
-{
+public class SecurityHeadersTests : E2ETestBase {
     [Test]
-    public async Task Home_LlevaContentSecurityPolicy()
-    {
+    public async Task Home_LlevaContentSecurityPolicy() {
         var respuesta = await Page.GotoAsync($"{BaseTestUrl}/");
 
         Assert.That(respuesta, Is.Not.Null);
@@ -29,8 +27,7 @@ public class SecurityHeadersTests : E2ETestBase
     }
 
     [Test]
-    public async Task Home_NoEnviaXssProtection()
-    {
+    public async Task Home_NoEnviaXssProtection() {
         var respuesta = await Page.GotoAsync($"{BaseTestUrl}/");
 
         Assert.That(respuesta, Is.Not.Null);

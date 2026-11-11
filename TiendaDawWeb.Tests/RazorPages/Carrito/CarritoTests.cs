@@ -13,24 +13,21 @@ using TiendaDawWeb.Shared.Services.Product;
 
 namespace TiendaDawWeb.Tests.RazorPages.Carrito;
 
-public class CarritoIndexModelTests
-{
+public class CarritoIndexModelTests {
     private readonly Mock<ICarritoService> _mockCarritoService;
     private readonly Mock<IProductService> _mockProductService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly IndexModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public CarritoIndexModelTests()
-    {
+    public CarritoIndexModelTests() {
         _mockCarritoService = new Mock<ICarritoService>();
         _mockProductService = new Mock<IProductService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -40,36 +37,31 @@ public class CarritoIndexModelTests
         _model = new IndexModel(
             _mockCarritoService.Object,
             _mockProductService.Object,
-            _mockUserManager.Object)
-        {
+            _mockUserManager.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void CarritoIndexModel_CanBeInstantiated()
-    {
+    public void CarritoIndexModel_CanBeInstantiated() {
         var model = new IndexModel(null!, null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void CarritoIndexModel_HasCarritoItemsProperty()
-    {
+    public void CarritoIndexModel_HasCarritoItemsProperty() {
         var model = new IndexModel(null!, null!, null!);
         model.CarritoItems.Should().NotBeNull();
     }
 
     [Test]
-    public void CarritoIndexModel_ItemsProperty_ReturnsCarritoItems()
-    {
+    public void CarritoIndexModel_ItemsProperty_ReturnsCarritoItems() {
         var model = new IndexModel(null!, null!, null!);
         model.Items.Should().BeSameAs(model.CarritoItems);
     }
 
     [Test]
-    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -80,11 +72,10 @@ public class CarritoIndexModelTests
     }
 
     [Test]
-    public async Task OnGetAsync_ReturnsPage_WhenUserFound()
-    {
+    public async Task OnGetAsync_ReturnsPage_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser" };
         var items = new List<CarritoItem>();
-        
+
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
         _mockCarritoService.Setup(s => s.GetCarritoByUsuarioIdAsync(user.Id))
@@ -97,8 +88,7 @@ public class CarritoIndexModelTests
     }
 
     [Test]
-    public async Task OnPostAddAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnPostAddAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -109,8 +99,7 @@ public class CarritoIndexModelTests
     }
 
     [Test]
-    public async Task OnPostRemoveAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnPostRemoveAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -120,8 +109,7 @@ public class CarritoIndexModelTests
     }
 
     [Test]
-    public async Task OnPostClearAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnPostClearAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -131,22 +119,19 @@ public class CarritoIndexModelTests
     }
 }
 
-public class CarritoAddModelTests
-{
+public class CarritoAddModelTests {
     private readonly Mock<ICarritoService> _mockCarritoService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly AddModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public CarritoAddModelTests()
-    {
+    public CarritoAddModelTests() {
         _mockCarritoService = new Mock<ICarritoService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -155,22 +140,19 @@ public class CarritoAddModelTests
 
         _model = new AddModel(
             _mockCarritoService.Object,
-            _mockUserManager.Object)
-        {
+            _mockUserManager.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void CarritoAddModel_CanBeInstantiated()
-    {
+    public void CarritoAddModel_CanBeInstantiated() {
         var model = new AddModel(null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public async Task OnGetAsync_ReturnsUnauthorized_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_ReturnsUnauthorized_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -180,22 +162,19 @@ public class CarritoAddModelTests
     }
 }
 
-public class CarritoRemoveModelTests
-{
+public class CarritoRemoveModelTests {
     private readonly Mock<ICarritoService> _mockCarritoService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly RemoveModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public CarritoRemoveModelTests()
-    {
+    public CarritoRemoveModelTests() {
         _mockCarritoService = new Mock<ICarritoService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -204,22 +183,19 @@ public class CarritoRemoveModelTests
 
         _model = new RemoveModel(
             _mockCarritoService.Object,
-            _mockUserManager.Object)
-        {
+            _mockUserManager.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void CarritoRemoveModel_CanBeInstantiated()
-    {
+    public void CarritoRemoveModel_CanBeInstantiated() {
         var model = new RemoveModel(null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public async Task OnGetAsync_ReturnsUnauthorized_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_ReturnsUnauthorized_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 

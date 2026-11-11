@@ -31,7 +31,7 @@ public class ErrorController(
             _ => "Ha ocurrido un error inesperado en la plataforma."
         };
 
-        logger.LogError("Error detectado: {StatusCode} | Path: {Path} | RequestId: {RequestId}", 
+        logger.LogError("Error detectado: {StatusCode} | Path: {Path} | RequestId: {RequestId}",
             code, HttpContext.Items["OriginalPath"], model.RequestId);
 
         return View("Error", model);

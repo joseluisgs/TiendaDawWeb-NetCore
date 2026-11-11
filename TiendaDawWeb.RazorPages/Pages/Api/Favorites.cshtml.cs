@@ -40,8 +40,8 @@ public class FavoritesModel(
             if (removeResult.IsFailure) {
                 return new JsonResult(new { success = false, message = removeResult.Error });
             }
-            return new JsonResult(new { 
-                success = true, 
+            return new JsonResult(new {
+                success = true,
                 isFavorite = false,
                 message = "Eliminado de favoritos"
             });
@@ -50,8 +50,8 @@ public class FavoritesModel(
             if (addResult.IsFailure) {
                 return new JsonResult(new { success = false, message = addResult.Error });
             }
-            return new JsonResult(new { 
-                success = true, 
+            return new JsonResult(new {
+                success = true,
                 isFavorite = true,
                 message = "Añadido a favoritos"
             });
@@ -70,13 +70,13 @@ public class FavoritesModel(
         }
 
         var result = await favoriteService.RemoveFavoriteAsync(user.Id, productoId);
-        
+
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }
 
-        return new JsonResult(new { 
-            success = true, 
+        return new JsonResult(new {
+            success = true,
             message = "Eliminado de favoritos"
         });
     }

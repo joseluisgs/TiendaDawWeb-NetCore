@@ -10,8 +10,7 @@ using Result = CSharpFunctionalExtensions.Result;
 
 namespace TiendaDawWeb.Tests.Shared.Services.BackgroundServices;
 
-public class EmailBackgroundServiceTests
-{
+public class EmailBackgroundServiceTests {
     private Mock<ILogger<EmailBackgroundService>> _loggerMock = null!;
     private Mock<IServiceProvider> _serviceProviderMock = null!;
     private Mock<IServiceScope> _serviceScopeMock = null!;
@@ -20,8 +19,7 @@ public class EmailBackgroundServiceTests
     private Channel<EmailMessage> _emailChannel = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         _loggerMock = new Mock<ILogger<EmailBackgroundService>>();
         _serviceProviderMock = new Mock<IServiceProvider>();
         _serviceScopeMock = new Mock<IServiceScope>();
@@ -39,20 +37,15 @@ public class EmailBackgroundServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
-        try
-        {
+    public void TearDown() {
+        try {
             _emailChannel.Writer.Complete();
-        }
-        catch
-        {
+        } catch {
         }
     }
 
     [Test]
-    public void Constructor_CanBeCreated()
-    {
+    public void Constructor_CanBeCreated() {
         var service = new EmailBackgroundService(
             _emailChannel,
             _serviceProviderMock.Object,
@@ -62,8 +55,7 @@ public class EmailBackgroundServiceTests
     }
 
     [Test]
-    public void Constructor_SetsDependencies()
-    {
+    public void Constructor_SetsDependencies() {
         var service = new EmailBackgroundService(
             _emailChannel,
             _serviceProviderMock.Object,
@@ -73,8 +65,7 @@ public class EmailBackgroundServiceTests
     }
 
     [Test]
-    public void EmailBackgroundService_ImplementsBackgroundService()
-    {
+    public void EmailBackgroundService_ImplementsBackgroundService() {
         var service = new EmailBackgroundService(
             _emailChannel,
             _serviceProviderMock.Object,
@@ -84,8 +75,7 @@ public class EmailBackgroundServiceTests
     }
 
     [Test]
-    public void EmailBackgroundService_CanBeDisposed()
-    {
+    public void EmailBackgroundService_CanBeDisposed() {
         var service = new EmailBackgroundService(
             _emailChannel,
             _serviceProviderMock.Object,
@@ -96,8 +86,7 @@ public class EmailBackgroundServiceTests
     }
 
     [Test]
-    public void Constructor_AcceptsUnboundedChannel()
-    {
+    public void Constructor_AcceptsUnboundedChannel() {
         var unboundedChannel = Channel.CreateUnbounded<EmailMessage>();
         var service = new EmailBackgroundService(
             unboundedChannel,
@@ -108,8 +97,7 @@ public class EmailBackgroundServiceTests
     }
 
     [Test]
-    public void Constructor_AcceptsBoundedChannel()
-    {
+    public void Constructor_AcceptsBoundedChannel() {
         var boundedChannel = Channel.CreateBounded<EmailMessage>(100);
         var service = new EmailBackgroundService(
             boundedChannel,

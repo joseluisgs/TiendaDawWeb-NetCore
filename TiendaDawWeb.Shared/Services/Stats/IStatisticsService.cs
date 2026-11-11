@@ -5,8 +5,7 @@ namespace TiendaDawWeb.Shared.Services.Stats;
 /// <summary>
 /// Interfaz del servicio de estadísticas.
 /// </summary>
-public interface IStatisticsService
-{
+public interface IStatisticsService {
     /// <summary>Obtiene las ventas agrupadas por categoría.</summary>
     Task<IEnumerable<CategorySalesDto>> GetSalesByCategoryAsync();
 

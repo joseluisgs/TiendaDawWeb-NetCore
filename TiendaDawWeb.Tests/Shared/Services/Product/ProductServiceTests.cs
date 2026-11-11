@@ -12,8 +12,7 @@ using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Tests.Shared.Services;
 
-public class ProductServiceTests
-{
+public class ProductServiceTests {
     private ApplicationDbContext Context = null!;
     private ProductService _service = null!;
     private Mock<ILogger<ProductService>> _loggerMock = null!;
@@ -21,8 +20,7 @@ public class ProductServiceTests
     private MemoryCache MemoryCache = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -34,8 +32,7 @@ public class ProductServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         Context.Dispose();
         MemoryCache.Dispose();
     }
@@ -43,8 +40,7 @@ public class ProductServiceTests
     #region GetByIdAsync Tests
 
     [Test]
-    public async Task GetByIdAsync_ReturnsProduct_WhenExists()
-    {
+    public async Task GetByIdAsync_ReturnsProduct_WhenExists() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user, Deleted = false };
         Context.Users.Add(user);
@@ -58,16 +54,14 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task GetByIdAsync_ReturnsFailure_WhenNotExists()
-    {
+    public async Task GetByIdAsync_ReturnsFailure_WhenNotExists() {
         var result = await _service.GetByIdAsync(999);
 
         result.IsSuccess.Should().BeFalse();
     }
 
     [Test]
-    public async Task GetByIdAsync_ReturnsFailure_WhenDeleted()
-    {
+    public async Task GetByIdAsync_ReturnsFailure_WhenDeleted() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Deleted", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Propietario = user, Deleted = true };
         Context.Users.Add(user);
@@ -84,8 +78,7 @@ public class ProductServiceTests
     #region GetAllAsync Tests
 
     [Test]
-    public async Task GetAllAsync_ReturnsAllProducts()
-    {
+    public async Task GetAllAsync_ReturnsAllProducts() {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
         Context.Products.AddRange(
@@ -102,8 +95,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task GetAllAsync_ReturnsEmpty_WhenNoProducts()
-    {
+    public async Task GetAllAsync_ReturnsEmpty_WhenNoProducts() {
         var result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
@@ -111,8 +103,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task GetAllAsync_ExcludesDeletedProducts()
-    {
+    public async Task GetAllAsync_ExcludesDeletedProducts() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
             new Product { Id = 1, Nombre = "Active", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false },
@@ -129,8 +120,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task GetAllAsync_ExcludesSoldProducts()
-    {
+    public async Task GetAllAsync_ExcludesSoldProducts() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
             new Product { Id = 1, Nombre = "Available", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
@@ -151,8 +141,7 @@ public class ProductServiceTests
     #region SearchAsync Tests
 
     [Test]
-    public async Task SearchAsync_FiltersByName()
-    {
+    public async Task SearchAsync_FiltersByName() {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
         Context.Products.AddRange(
@@ -170,8 +159,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task SearchAsync_FiltersByCategory()
-    {
+    public async Task SearchAsync_FiltersByCategory() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
             new Product { Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
@@ -188,8 +176,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task SearchAsync_FiltersByNameAndCategory()
-    {
+    public async Task SearchAsync_FiltersByNameAndCategory() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.AddRange(
             new Product { Id = 1, Nombre = "iPhone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null },
@@ -206,8 +193,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task SearchAsync_ReturnsEmpty_WhenNoMatch()
-    {
+    public async Task SearchAsync_ReturnsEmpty_WhenNoMatch() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.Add(
             new Product { Id = 1, Nombre = "Phone", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null }
@@ -222,8 +208,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task SearchAsync_CaseInsensitive()
-    {
+    public async Task SearchAsync_CaseInsensitive() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Products.Add(
             new Product { Id = 1, Nombre = "IPHONE", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false, CompraId = null }
@@ -242,8 +227,7 @@ public class ProductServiceTests
     #region CreateAsync Tests
 
     [Test]
-    public async Task CreateAsync_CreatesProduct()
-    {
+    public async Task CreateAsync_CreatesProduct() {
         var product = new Product { Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
 
         var result = await _service.CreateAsync(product);
@@ -254,8 +238,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task CreateAsync_GeneratesId()
-    {
+    public async Task CreateAsync_GeneratesId() {
         var product = new Product { Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
 
         var result = await _service.CreateAsync(product);
@@ -265,8 +248,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task CreateAsync_SetsCreatedAt()
-    {
+    public async Task CreateAsync_SetsCreatedAt() {
         var before = DateTime.UtcNow.AddSeconds(-1);
         var product = new Product { Nombre = "New", Descripcion = "Desc", Precio = 150, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
 
@@ -277,8 +259,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task CreateAsync_InvalidPrice_ReturnsFailure()
-    {
+    public async Task CreateAsync_InvalidPrice_ReturnsFailure() {
         var product = new Product { Nombre = "Invalid", Descripcion = "Desc", Precio = -10, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
 
         var result = await _service.CreateAsync(product);
@@ -292,8 +273,7 @@ public class ProductServiceTests
     #region UpdateAsync Tests
 
     [Test]
-    public async Task UpdateAsync_UpdatesProduct()
-    {
+    public async Task UpdateAsync_UpdatesProduct() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Old Name", Descripcion = "Old Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
         Context.Users.Add(user);
@@ -311,8 +291,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task UpdateAsync_ReturnsFailure_WhenNotExists()
-    {
+    public async Task UpdateAsync_ReturnsFailure_WhenNotExists() {
         var product = new Product { Id = 999, Nombre = "Ghost", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
 
         var result = await _service.UpdateAsync(999, product, 1);
@@ -321,8 +300,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task UpdateAsync_OnlyUpdatesAllowedFields()
-    {
+    public async Task UpdateAsync_OnlyUpdatesAllowedFields() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
         Context.Users.Add(user);
@@ -344,8 +322,7 @@ public class ProductServiceTests
     #region DeleteAsync Tests
 
     [Test]
-    public async Task DeleteAsync_MarksAsDeleted()
-    {
+    public async Task DeleteAsync_MarksAsDeleted() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
         Context.Users.Add(user);
@@ -361,16 +338,14 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task DeleteAsync_ReturnsFailure_WhenNotExists()
-    {
+    public async Task DeleteAsync_ReturnsFailure_WhenNotExists() {
         var result = await _service.DeleteAsync(999, 1, false);
 
         result.IsSuccess.Should().BeFalse();
     }
 
     [Test]
-    public async Task DeleteAsync_AdminCanDeleteAnyProduct()
-    {
+    public async Task DeleteAsync_AdminCanDeleteAnyProduct() {
         var owner = new User { Id = 1, Email = "owner@test.com", UserName = "owner" };
         var admin = new User { Id = 2, Email = "admin@test.com", UserName = "admin" };
         var product = new Product { Id = 1, Nombre = "Test", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
@@ -391,8 +366,7 @@ public class ProductServiceTests
     #region Cache Invalidation Tests
 
     [Test]
-    public async Task CreateAsync_InvalidatesCache()
-    {
+    public async Task CreateAsync_InvalidatesCache() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
@@ -411,8 +385,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task UpdateAsync_InvalidatesCache()
-    {
+    public async Task UpdateAsync_InvalidatesCache() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Original", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
         Context.Users.Add(user);
@@ -430,8 +403,7 @@ public class ProductServiceTests
     }
 
     [Test]
-    public async Task DeleteAsync_InvalidatesCache()
-    {
+    public async Task DeleteAsync_InvalidatesCache() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "ToDelete", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, PropietarioId = 1, Deleted = false };
         Context.Users.Add(user);

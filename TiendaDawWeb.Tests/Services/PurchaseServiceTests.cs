@@ -15,14 +15,12 @@ namespace TiendaDawWeb.Tests.Services;
 /// <summary>
 /// Tests unitarios para PurchaseService con EF Core InMemory.
 /// </summary>
-public class PurchaseServiceTests
-{
+public class PurchaseServiceTests {
     private static PurchaseService CreateService(
         ApplicationDbContext context,
         ICarritoService? carritoService = null,
         IPdfService? pdfService = null,
-        IEmailService? emailService = null)
-    {
+        IEmailService? emailService = null) {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var logger = Mock.Of<ILogger<PurchaseService>>();
         return new PurchaseService(
@@ -35,8 +33,7 @@ public class PurchaseServiceTests
             logger);
     }
 
-    private static ApplicationDbContext CreateContext()
-    {
+    private static ApplicationDbContext CreateContext() {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -44,8 +41,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByUserAsync_NoPurchases_ReturnsEmpty()
-    {
+    public async Task GetByUserAsync_NoPurchases_ReturnsEmpty() {
         await using var context = CreateContext();
         var service = CreateService(context);
         var result = await service.GetByUserAsync(1);
@@ -55,8 +51,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByUserAsync_WithPurchases_ReturnsPurchases()
-    {
+    public async Task GetByUserAsync_WithPurchases_ReturnsPurchases() {
         await using var context = CreateContext();
         var user = new User { UserName = "test", Email = "test@test.com" };
         context.Users.Add(user);

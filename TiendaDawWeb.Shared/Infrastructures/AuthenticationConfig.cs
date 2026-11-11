@@ -11,20 +11,17 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// <summary>
 /// Configuración de autenticación y autorización con ASP.NET Core Identity.
 /// </summary>
-public static class AuthenticationConfig
-{
+public static class AuthenticationConfig {
     /// <summary>
     /// Configura Identity con cookies de autenticación.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <param name="configuration">Configuración de la aplicación.</param>
     /// <returns>IServiceCollection.</returns>
-    public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
-    {
+    public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration) {
         Log.Information("🔐 Configurando ASP.NET Core Identity...");
 
-        services.AddIdentity<User, IdentityRole<long>>(options =>
-        {
+        services.AddIdentity<User, IdentityRole<long>>(options => {
             // 🛡️ Esquema 3: añade la tabla AspNetUserPasskeys. Sin esta línea Identity
             // crea el esquema antiguo y guardar una passkey falla al escribir.
             options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
@@ -49,8 +46,7 @@ public static class AuthenticationConfig
 
         Log.Information("🔐 Configurando cookies de autenticación...");
 
-        services.ConfigureApplicationCookie(options =>
-        {
+        services.ConfigureApplicationCookie(options => {
             options.LoginPath = "/Auth/Login";
             options.LogoutPath = "/Auth/Logout";
             options.AccessDeniedPath = "/Auth/AccessDenied";

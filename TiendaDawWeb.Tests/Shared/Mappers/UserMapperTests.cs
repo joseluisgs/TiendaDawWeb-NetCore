@@ -5,13 +5,10 @@ using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Tests.Shared.Mappers;
 
-public class UserMapperTests
-{
+public class UserMapperTests {
     [Test]
-    public void ToEntity_MapsAllProperties_Success()
-    {
-        var model = new RegisterViewModel
-        {
+    public void ToEntity_MapsAllProperties_Success() {
+        var model = new RegisterViewModel {
             Nombre = "Juan",
             Apellidos = "García López",
             Email = "juan@example.com",
@@ -32,10 +29,8 @@ public class UserMapperTests
     }
 
     [Test]
-    public void ToEntity_UsesCustomAvatar_WhenProvided()
-    {
-        var model = new RegisterViewModel
-        {
+    public void ToEntity_UsesCustomAvatar_WhenProvided() {
+        var model = new RegisterViewModel {
             Nombre = "María",
             Apellidos = "Pérez",
             Email = "maria@example.com",
@@ -50,10 +45,8 @@ public class UserMapperTests
     }
 
     [Test]
-    public void ToEntity_SetsDefaultAvatar_WithEmailHash()
-    {
-        var model = new RegisterViewModel
-        {
+    public void ToEntity_SetsDefaultAvatar_WithEmailHash() {
+        var model = new RegisterViewModel {
             Nombre = "Test",
             Apellidos = "User",
             Email = "test@example.com",
@@ -68,13 +61,10 @@ public class UserMapperTests
     }
 }
 
-public class RatingMapperTests
-{
+public class RatingMapperTests {
     [Test]
-    public void ToViewModel_MapsProperties_Success()
-    {
-        var rating = new Rating
-        {
+    public void ToViewModel_MapsProperties_Success() {
+        var rating = new Rating {
             Id = 1,
             Puntuacion = 5,
             Comentario = "Excellent product!",
@@ -89,10 +79,8 @@ public class RatingMapperTests
     }
 
     [Test]
-    public void ToViewModel_HandlesNullComment_Success()
-    {
-        var rating = new Rating
-        {
+    public void ToViewModel_HandlesNullComment_Success() {
+        var rating = new Rating {
             Id = 1,
             Puntuacion = 3,
             Comentario = null,
@@ -106,10 +94,8 @@ public class RatingMapperTests
     }
 
     [Test]
-    public void ToEntity_CreatesRating_Success()
-    {
-        var model = new RatingViewModel
-        {
+    public void ToEntity_CreatesRating_Success() {
+        var model = new RatingViewModel {
             Puntuacion = 4,
             Comentario = "Good quality",
             ProductoId = 200
@@ -124,10 +110,8 @@ public class RatingMapperTests
     }
 
     [Test]
-    public void ToEntity_HandlesNullComment_Success()
-    {
-        var model = new RatingViewModel
-        {
+    public void ToEntity_HandlesNullComment_Success() {
+        var model = new RatingViewModel {
             Puntuacion = 5,
             Comentario = null,
             ProductoId = 100

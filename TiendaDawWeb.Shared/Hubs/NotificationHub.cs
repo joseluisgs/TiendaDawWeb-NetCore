@@ -8,8 +8,7 @@ namespace TiendaDawWeb.Shared.Web.Hubs;
 /// RAZÓN: Actúa como el punto central de conexión entre el servidor y todos los navegadores abiertos.
 /// Permite enviar mensajes a usuarios específicos o a todo el mundo (Broadcast).
 /// </summary>
-public class NotificationHub : Hub
-{
+public class NotificationHub : Hub {
     // Este Hub puede estar vacío si solo enviamos mensajes del Server -> Client.
     // Pero podríamos añadir métodos aquí si los clientes quisieran enviarse mensajes entre sí.
 }

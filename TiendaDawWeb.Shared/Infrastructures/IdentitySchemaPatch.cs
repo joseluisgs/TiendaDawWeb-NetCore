@@ -14,8 +14,7 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// sin tocar los datos existentes, de modo que el arranque único cubre el esquema
 /// completo tanto en una BD nueva como en una vieja.
 /// </summary>
-public static class IdentitySchemaPatch
-{
+public static class IdentitySchemaPatch {
     /// <summary>Tabla de passkeys que añade el esquema 3 de Identity.</summary>
     private const string TablaPasskeys = "AspNetUserPasskeys";
 
@@ -51,10 +50,8 @@ public static class IdentitySchemaPatch
     /// </summary>
     /// <param name="context">Contexto de la aplicación.</param>
     /// <returns>Task</returns>
-    public static async Task CompletarAsync(ApplicationDbContext context)
-    {
-        if (await TablaExisteAsync(context))
-        {
+    public static async Task CompletarAsync(ApplicationDbContext context) {
+        if (await TablaExisteAsync(context)) {
             return;
         }
 
@@ -63,8 +60,7 @@ public static class IdentitySchemaPatch
             : null;
 
         // InMemory (tests) u otro proveedor: no hay esquema relacional que tocar.
-        if (ddl is null)
-        {
+        if (ddl is null) {
             return;
         }
 
@@ -77,17 +73,14 @@ public static class IdentitySchemaPatch
     /// </summary>
     /// <param name="context">Contexto de la aplicación.</param>
     /// <returns>true si la tabla está creada.</returns>
-    private static async Task<bool> TablaExisteAsync(ApplicationDbContext context)
-    {
+    private static async Task<bool> TablaExisteAsync(ApplicationDbContext context) {
         var conexion = context.Database.GetDbConnection();
         var abierta = conexion.State == ConnectionState.Open;
-        if (!abierta)
-        {
+        if (!abierta) {
             await conexion.OpenAsync();
         }
 
-        try
-        {
+        try {
             using var comando = conexion.CreateCommand();
             comando.CommandText = context.Database.IsSqlite()
                 ? $"SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '{TablaPasskeys}'"
@@ -95,11 +88,8 @@ public static class IdentitySchemaPatch
 
             var resultado = await comando.ExecuteScalarAsync();
             return Convert.ToInt32(resultado) > 0;
-        }
-        finally
-        {
-            if (!abierta)
-            {
+        } finally {
+            if (!abierta) {
                 await conexion.CloseAsync();
             }
         }

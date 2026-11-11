@@ -25,10 +25,10 @@ public class RatingsModel(
     public async Task<IActionResult> OnGetProductRatingAsync([FromQuery] long productId) {
         var averageResult = await ratingService.GetAverageRatingAsync(productId);
         var ratingsResult = await ratingService.GetByProductoIdAsync(productId);
-        
+
         var average = averageResult.IsSuccess ? averageResult.Value : 0;
         var ratings = ratingsResult.IsSuccess ? ratingsResult.Value.ToList() : new List<Rating>();
-        
+
         var user = await userManager.GetUserAsync(User);
         var userRating = ratings.FirstOrDefault(r => r.UsuarioId == user?.Id);
         var hasRated = userRating != null;
@@ -61,9 +61,9 @@ public class RatingsModel(
         }
 
         var userRating = ratingsResult.Value.FirstOrDefault(r => r.UsuarioId == user.Id);
-        
-        return new JsonResult(new { 
-            rated = userRating != null, 
+
+        return new JsonResult(new {
+            rated = userRating != null,
             rating = userRating?.Puntuacion ?? 0,
             comment = userRating?.Comentario ?? ""
         });
@@ -85,15 +85,15 @@ public class RatingsModel(
         }
 
         var result = await ratingService.AddRatingAsync(user.Id, request.ProductId, request.Rating, request.Comment ?? "");
-        
+
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }
 
-        return new JsonResult(new { 
-            success = true, 
+        return new JsonResult(new {
+            success = true,
             message = "Valoración guardada correctamente",
-            rating = request.Rating 
+            rating = request.Rating
         });
     }
 
@@ -123,15 +123,15 @@ public class RatingsModel(
         }
 
         var result = await ratingService.UpdateRatingAsync(userRating.Id, user.Id, request.Rating, request.Comment ?? "");
-        
+
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }
 
-        return new JsonResult(new { 
-            success = true, 
+        return new JsonResult(new {
+            success = true,
             message = "Valoración actualizada correctamente",
-            rating = request.Rating 
+            rating = request.Rating
         });
     }
 
@@ -157,7 +157,7 @@ public class RatingsModel(
         }
 
         var result = await ratingService.DeleteRatingAsync(userRating.Id, user.Id);
-        
+
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }

@@ -6,8 +6,7 @@ namespace TiendaDawWeb.Shared.Models;
 /// Entidad de valoración de un producto por un usuario.
 /// Representa una review con puntuación y comentario opcional.
 /// </summary>
-public class Rating : AuditableEntity
-{
+public class Rating : AuditableEntity {
     /// <summary>ID único de la valoración (PK en SQLite).</summary>
     public long Id { get; set; }
 

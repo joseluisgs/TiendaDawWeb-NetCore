@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Dto.Stats;
 /// <summary>
 /// DTO para compradores top.
 /// </summary>
-public class TopBuyerDto
-{
+public class TopBuyerDto {
     /// <summary>ID del comprador.</summary>
     public long CompradorId { get; set; }
     /// <summary>Nombre del comprador.</summary>

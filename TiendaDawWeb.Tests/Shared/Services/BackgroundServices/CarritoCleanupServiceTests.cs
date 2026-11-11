@@ -12,15 +12,13 @@ using TiendaDawWeb.Shared.Services.BackgroundServices;
 
 namespace TiendaDawWeb.Tests.Shared.Services.BackgroundServices;
 
-public class CarritoCleanupServiceTests
-{
+public class CarritoCleanupServiceTests {
     private ApplicationDbContext _context = null!;
     private Mock<ILogger<CarritoCleanupService>> _loggerMock = null!;
     private MemoryConfiguration _configuration = null!;
     private CarritoCleanupService _service = null!;
 
-    private class MemoryConfiguration : IConfiguration
-    {
+    private class MemoryConfiguration : IConfiguration {
         private readonly Dictionary<string, string> _values = new();
         public string? this[string key] { get => _values.TryGetValue(key, out var v) ? v : null; set => _values[key] = value!; }
         public IConfigurationSection GetSection(string key) => new MemoryConfigurationSection(key, _values);
@@ -28,8 +26,7 @@ public class CarritoCleanupServiceTests
         public IChangeToken GetReloadToken() => new FakeChangeToken();
     }
 
-    private class MemoryConfigurationSection : IConfigurationSection
-    {
+    private class MemoryConfigurationSection : IConfigurationSection {
         private readonly string _key;
         private readonly Dictionary<string, string> _values;
         public string? this[string key] { get => _values.TryGetValue(key, out var v) ? v : null; set => _values[key] = value!; }
@@ -42,21 +39,18 @@ public class CarritoCleanupServiceTests
         public IChangeToken GetReloadToken() => new FakeChangeToken();
     }
 
-    private class FakeChangeToken : IChangeToken
-    {
+    private class FakeChangeToken : IChangeToken {
         public bool HasChanged => false;
         public bool ActiveChangeCallbacks => false;
         public IDisposable RegisterChangeCallback(Action<object?> callback, object? state) => Disposable.Empty;
     }
 
-    private static class Disposable
-    {
+    private static class Disposable {
         public static IDisposable Empty { get; } = new Mock<IDisposable>().Object;
     }
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -69,15 +63,13 @@ public class CarritoCleanupServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         _service?.Dispose();
         _context.Dispose();
     }
 
     [Test]
-    public void Constructor_SetsDefaultConfigurationValues()
-    {
+    public void Constructor_SetsDefaultConfigurationValues() {
         var serviceProviderMock = new Mock<IServiceProvider>();
 
         _service = new CarritoCleanupService(serviceProviderMock.Object, _loggerMock.Object, _configuration);
@@ -87,8 +79,7 @@ public class CarritoCleanupServiceTests
     }
 
     [Test]
-    public void CleanupInterval_CanBeCustomized()
-    {
+    public void CleanupInterval_CanBeCustomized() {
         var customConfig = new MemoryConfiguration();
         customConfig["Carrito:CleanupIntervalMinutes"] = "30";
         customConfig["Carrito:ExpirationMinutes"] = "720";
@@ -102,8 +93,7 @@ public class CarritoCleanupServiceTests
     }
 
     [Test]
-    public void CarritoCleanupService_CanBeCreated()
-    {
+    public void CarritoCleanupService_CanBeCreated() {
         var serviceProviderMock = new Mock<IServiceProvider>();
 
         _service = new CarritoCleanupService(serviceProviderMock.Object, _loggerMock.Object, _configuration);
@@ -112,8 +102,7 @@ public class CarritoCleanupServiceTests
     }
 
     [Test]
-    public void CarritoCleanupService_ImplementsIHostedService()
-    {
+    public void CarritoCleanupService_ImplementsIHostedService() {
         var serviceProviderMock = new Mock<IServiceProvider>();
 
         _service = new CarritoCleanupService(serviceProviderMock.Object, _loggerMock.Object, _configuration);

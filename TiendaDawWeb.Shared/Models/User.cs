@@ -8,8 +8,7 @@ namespace TiendaDawWeb.Shared.Models;
 /// Entidad de usuario con soporte de ASP.NET Core Identity.
 /// Hereda de IdentityUser para autenticación con email/password.
 /// </summary>
-public class User : IdentityUser<long>, ITimestamped
-{
+public class User : IdentityUser<long>, ITimestamped {
     /// <summary>Fecha de creación del registro en UTC.</summary>
     public DateTime CreatedAt { get; set; }
 

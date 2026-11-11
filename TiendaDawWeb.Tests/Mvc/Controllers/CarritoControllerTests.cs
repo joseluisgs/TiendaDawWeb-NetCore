@@ -19,8 +19,7 @@ using TiendaDawWeb.Shared.Services.Purchase;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class CarritoControllerTests
-{
+public class CarritoControllerTests {
     private readonly Mock<ICarritoService> _mockCarritoService;
     private readonly Mock<IPurchaseService> _mockPurchaseService;
     private readonly Mock<IProductService> _mockProductService;
@@ -29,19 +28,17 @@ public class CarritoControllerTests
     private readonly CarritoController _controller;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public CarritoControllerTests()
-    {
+    public CarritoControllerTests() {
         _mockCarritoService = new Mock<ICarritoService>();
         _mockPurchaseService = new Mock<IPurchaseService>();
         _mockProductService = new Mock<IProductService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _mockLogger = new Mock<ILogger<CarritoController>>();
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -53,29 +50,25 @@ public class CarritoControllerTests
             _mockPurchaseService.Object,
             _mockProductService.Object,
             _mockUserManager.Object,
-            _mockLogger.Object)
-        {
+            _mockLogger.Object) {
             ControllerContext = new ControllerContext(actionContext)
         };
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
         _controller.Dispose();
     }
 
     #region Constructor Tests
 
     [Test]
-    public void Constructor_CreatesInstance()
-    {
+    public void Constructor_CreatesInstance() {
         _controller.Should().NotBeNull();
     }
 
     [Test]
-    public void CarritoController_InheritsFromController()
-    {
+    public void CarritoController_InheritsFromController() {
         typeof(CarritoController).Should().BeDerivedFrom<Controller>();
     }
 
@@ -84,8 +77,7 @@ public class CarritoControllerTests
     #region Index Tests
 
     [Test]
-    public async Task Index_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Index_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
@@ -100,8 +92,7 @@ public class CarritoControllerTests
     #region Add Tests
 
     [Test]
-    public async Task Add_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Add_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
@@ -115,8 +106,7 @@ public class CarritoControllerTests
     #region AddToCart Tests
 
     [Test]
-    public async Task AddToCart_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task AddToCart_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
@@ -130,8 +120,7 @@ public class CarritoControllerTests
     #region Remove Tests
 
     [Test]
-    public void Remove_HasCorrectSignature()
-    {
+    public void Remove_HasCorrectSignature() {
         var method = typeof(CarritoController).GetMethod("Remove");
         method.Should().NotBeNull();
     }
@@ -141,8 +130,7 @@ public class CarritoControllerTests
     #region Clear Tests
 
     [Test]
-    public async Task Clear_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Clear_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
@@ -156,8 +144,7 @@ public class CarritoControllerTests
     #region Resumen Tests
 
     [Test]
-    public async Task Resumen_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Resumen_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
@@ -171,8 +158,7 @@ public class CarritoControllerTests
     #region FinalizarCompra Tests
 
     [Test]
-    public async Task FinalizarCompra_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task FinalizarCompra_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 

@@ -18,8 +18,7 @@ using TiendaDawWeb.Shared.Web.Hubs;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class ProductControllerTests
-{
+public class ProductControllerTests {
     private readonly Mock<IProductService> _mockProductService;
     private readonly Mock<IStorageService> _mockStorageService;
     private readonly Mock<IFavoriteService> _mockFavoriteService;
@@ -27,19 +26,18 @@ public class ProductControllerTests
     private readonly Mock<ILogger<ProductController>> _mockLogger;
     private readonly ProductController _controller;
 
-    public ProductControllerTests()
-    {
+    public ProductControllerTests() {
         _mockProductService = new Mock<IProductService>();
         _mockStorageService = new Mock<IStorageService>();
         _mockFavoriteService = new Mock<IFavoriteService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         _mockLogger = new Mock<ILogger<ProductController>>();
-        
+
         var outputCacheStoreMock = new Mock<Microsoft.AspNetCore.OutputCaching.IOutputCacheStore>();
-        
+
         _controller = new ProductController(
             _mockProductService.Object,
             _mockStorageService.Object,
@@ -50,16 +48,14 @@ public class ProductControllerTests
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
         _controller.Dispose();
     }
 
     #region Create Tests
 
     [Test]
-    public void Create_ReturnsView()
-    {
+    public void Create_ReturnsView() {
         var result = _controller.Create();
         result.Should().BeOfType<ViewResult>();
     }
@@ -69,8 +65,7 @@ public class ProductControllerTests
     #region MyProducts Tests
 
     [Test]
-    public async Task MyProducts_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task MyProducts_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 
@@ -84,8 +79,7 @@ public class ProductControllerTests
     #region Delete Tests
 
     [Test]
-    public async Task Delete_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Delete_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 

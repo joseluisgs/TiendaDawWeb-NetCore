@@ -11,8 +11,7 @@ namespace TiendaDawWeb.Shared.Data;
 /// <summary>
 /// Contexto de base de datos de la aplicación con soporte para Identity
 /// </summary>
-public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, long>
-{
+public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, long> {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public DbSet<Product> Products => Set<Product>();
@@ -21,8 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
     public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<CarritoItem> CarritoItems => Set<CarritoItem>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
         base.OnConfiguring(optionsBuilder);
 
         optionsBuilder.AddInterceptors(new TimestampInterceptor());
@@ -31,12 +29,10 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
     }
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
+    protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
 
-        builder.Entity<User>(entity =>
-        {
+        builder.Entity<User>(entity => {
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Apellidos).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Rol).IsRequired().HasMaxLength(50);
@@ -54,8 +50,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        builder.Entity<Product>(entity =>
-        {
+        builder.Entity<Product>(entity => {
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
@@ -80,8 +75,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             entity.HasQueryFilter(p => !p.Deleted);
         });
 
-        builder.Entity<Purchase>(entity =>
-        {
+        builder.Entity<Purchase>(entity => {
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.FechaCompra).IsRequired();
@@ -99,8 +93,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        builder.Entity<Rating>(entity =>
-        {
+        builder.Entity<Rating>(entity => {
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Puntuacion).IsRequired();
@@ -122,8 +115,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             entity.HasQueryFilter(r => !r.Producto.Deleted);
         });
 
-        builder.Entity<Favorite>(entity =>
-        {
+        builder.Entity<Favorite>(entity => {
             entity.HasKey(e => e.Id);
 
             entity.ConfigureTimestamps();
@@ -143,8 +135,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<long>, 
             entity.HasQueryFilter(f => !f.Producto.Deleted);
         });
 
-        builder.Entity<CarritoItem>(entity =>
-        {
+        builder.Entity<CarritoItem>(entity => {
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Precio).IsRequired().HasPrecision(18, 2);

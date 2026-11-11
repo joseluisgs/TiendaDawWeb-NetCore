@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Errors;
 /// <summary>
 /// Errores relacionados con usuarios.
 /// </summary>
-public static class UserError
-{
+public static class UserError {
     public static UnauthorizedError InvalidCredentials() =>
         UnauthorizedError.InvalidCredentials();
 

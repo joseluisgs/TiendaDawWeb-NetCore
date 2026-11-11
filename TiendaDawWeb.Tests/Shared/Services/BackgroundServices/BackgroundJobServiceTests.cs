@@ -7,11 +7,9 @@ using TiendaDawWeb.Shared.Services.BackgroundServices;
 
 namespace TiendaDawWeb.Tests.Shared.Services.BackgroundServices;
 
-public class BackgroundJobServiceTests
-{
+public class BackgroundJobServiceTests {
     [Test]
-    public void BackgroundJobService_CanBeCreated()
-    {
+    public void BackgroundJobService_CanBeCreated() {
         var serviceProviderMock = new Mock<IServiceProvider>();
         var loggerMock = new Mock<ILogger<BackgroundJobService>>();
         var environmentMock = new Mock<IHostEnvironment>();
@@ -25,8 +23,7 @@ public class BackgroundJobServiceTests
     }
 
     [Test]
-    public void BackgroundJobService_ImplementsBackgroundService()
-    {
+    public void BackgroundJobService_ImplementsBackgroundService() {
         var serviceProviderMock = new Mock<IServiceProvider>();
         var loggerMock = new Mock<ILogger<BackgroundJobService>>();
         var environmentMock = new Mock<IHostEnvironment>();
@@ -40,8 +37,7 @@ public class BackgroundJobServiceTests
     }
 
     [Test]
-    public void BackgroundJobService_HasRequiredDependencies()
-    {
+    public void BackgroundJobService_HasRequiredDependencies() {
         var serviceProviderMock = new Mock<IServiceProvider>();
         var loggerMock = new Mock<ILogger<BackgroundJobService>>();
         var environmentMock = new Mock<IHostEnvironment>();
@@ -55,8 +51,7 @@ public class BackgroundJobServiceTests
     }
 
     [Test]
-    public void BackgroundJobService_CanBeDisposed()
-    {
+    public void BackgroundJobService_CanBeDisposed() {
         var serviceProviderMock = new Mock<IServiceProvider>();
         var loggerMock = new Mock<ILogger<BackgroundJobService>>();
         var environmentMock = new Mock<IHostEnvironment>();

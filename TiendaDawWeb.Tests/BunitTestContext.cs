@@ -12,8 +12,7 @@ namespace TiendaDawWeb.Tests;
 /// RAZÓN: Es una clase de infraestructura de testing. Centraliza la creación y destrucción del BunitContext 
 /// para evitar fugas de memoria y duplicidad de código en los tests de componentes.
 /// </summary>
-public abstract class BunitTestContext : IDisposable
-{
+public abstract class BunitTestContext : IDisposable {
     private BunitContext? _context;
 
     protected BunitContext Context => _context ?? throw new InvalidOperationException("BunitContext is not initialized.");
@@ -21,30 +20,26 @@ public abstract class BunitTestContext : IDisposable
     protected IServiceCollection Services => Context.Services;
 
     [SetUp]
-    public void SetupContext()
-    {
+    public void SetupContext() {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         _context = new BunitContext();
     }
 
     [TearDown]
-    public void TearDownContext()
-    {
+    public void TearDownContext() {
         _context?.Dispose();
         _context = null;
     }
 
     public IRenderedComponent<TComponent> RenderComponent<TComponent>(Action<ComponentParameterCollectionBuilder<TComponent>>? parameterBuilder = null)
-        where TComponent : IComponent
-    {
+        where TComponent : IComponent {
         return parameterBuilder is null
             ? Context.Render<TComponent>()
             : Context.Render<TComponent>(parameterBuilder);
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         _context?.Dispose();
     }
 }

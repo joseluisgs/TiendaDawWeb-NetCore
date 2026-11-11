@@ -14,8 +14,7 @@ namespace TiendaDawWeb.RazorPages.Pages.Auth;
 public class ExternalModel(
     IAuthenticationSchemeProvider schemeProvider,
     ILogger<ExternalModel> logger
-) : PageModel
-{
+) : PageModel {
     /// <summary>
     ///     Inicia login externo: redirige al proveedor OAuth.
     /// </summary>

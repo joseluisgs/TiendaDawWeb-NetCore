@@ -11,16 +11,13 @@ namespace TiendaDawWeb.Shared.Data.Seed;
 /// </summary>
 public class RolesSeeder(
     RoleManager<IdentityRole<long>> roleManager,
-    ILogger<RolesSeeder> logger)
-{
+    ILogger<RolesSeeder> logger) {
     /// <summary>Roles que usa la aplicación.</summary>
     public static readonly string[] Roles = ["ADMIN", "MODERATOR", "USER"];
 
     /// <summary>Crea los roles que falten. No toca los que ya existen.</summary>
-    public async Task SeedAsync()
-    {
-        foreach (var roleName in Roles)
-        {
+    public async Task SeedAsync() {
+        foreach (var roleName in Roles) {
             if (await roleManager.RoleExistsAsync(roleName))
                 continue;
 

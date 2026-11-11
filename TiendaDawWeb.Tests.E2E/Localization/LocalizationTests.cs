@@ -13,12 +13,9 @@ namespace TiendaDawWeb.Tests.E2E.Localization;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class LocalizationTests : E2ETestBase
-{
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
-        {
+public class LocalizationTests : E2ETestBase {
+    public override BrowserNewContextOptions ContextOptions() {
+        return new BrowserNewContextOptions {
             Locale = "es-ES",
             TimezoneId = "Europe/Madrid",
             RecordVideoDir = "TestVideos"
@@ -26,8 +23,7 @@ public class LocalizationTests : E2ETestBase
     }
 
     [Test]
-    public async Task ChangeLanguage_ShouldSwitchBetweenEsAndEn()
-    {
+    public async Task ChangeLanguage_ShouldSwitchBetweenEsAndEn() {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public-spanish");
 
@@ -36,12 +32,12 @@ public class LocalizationTests : E2ETestBase
 
         await Page.Locator(".nav-link.dropdown-toggle:has(.bi-globe)").ClickAsync();
         await CaptureScreenshotAsync("02-language-dropdown");
-        
+
         await Page.Locator("a.dropdown-item:has-text('English')").ClickAsync();
         await CaptureScreenshotAsync("03-public-english");
 
         await Expect(searchLabel).ToHaveTextAsync("Search");
-        
+
         var searchInput = Page.TestId("search-input");
         await Expect(searchInput).ToHaveAttributeAsync("placeholder", "Search products...");
     }

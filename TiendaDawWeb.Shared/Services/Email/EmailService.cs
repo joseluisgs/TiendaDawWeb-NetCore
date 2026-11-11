@@ -17,8 +17,7 @@ public class EmailService(
     IConfiguration configuration,
     ILogger<EmailService> logger,
     Channel<EmailMessage> emailChannel
-) : IEmailService
-{
+) : IEmailService {
     private readonly Channel<EmailMessage> _emailChannel = emailChannel;
 
     /// <summary>
@@ -27,8 +26,7 @@ public class EmailService(
     /// <param name="toEmail">Email del destinatario</param>
     /// <param name="userName">Nombre del usuario</param>
     /// <returns>True si se envió o error</returns>
-    public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName)
-    {
+    public async Task<Result<bool, DomainError>> SendWelcomeEmailAsync(string toEmail, string userName) {
         var subject = "Bienvenido a WalaDaw!";
         var body = $@"<html><body><h1>Hola {userName},</h1><p>Gracias por registrarte.</p></body></html>";
         return await SendEmailAsync(toEmail, subject, body);
@@ -42,10 +40,9 @@ public class EmailService(
     /// <param name="pdfAttachment">Bytes del PDF de factura</param>
     /// <returns>True si se envió o error</returns>
     public async Task<Result<bool, DomainError>> SendPurchaseConfirmationEmailAsync(
-        string toEmail, Models.Purchase purchase, byte[]? pdfAttachment = null)
-    {
+        string toEmail, Models.Purchase purchase, byte[]? pdfAttachment = null) {
         var subject = $"Confirmación de compra #{purchase.Id} - WalaDaw";
-        
+
         var productosHtml = purchase.Products.Select(p => $@"
             <tr style='background-color: #f8f9fa;'>
                 <td style='padding: 12px; border: 1px solid #dee2e6;'>{p.Nombre}</td>
@@ -132,12 +129,10 @@ public class EmailService(
     /// <param name="attachmentName">Nombre del adjunto</param>
     /// <returns>True si se enviou o error</returns>
     public async Task<Result<bool, DomainError>> SendEmailAsync(
-        string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null)
-    {
+        string toEmail, string subject, string body, byte[]? attachment = null, string? attachmentName = null) {
         logger.LogInformation("Intentando enviar email a {To} - Asunto: {Subject}", toEmail, subject);
 
-        try
-        {
+        try {
             var smtpHost = configuration["Email:SmtpHost"];
             var smtpPortRaw = configuration["Email:SmtpPort"] ?? "587";
             var smtpUser = configuration["Email:SmtpUser"];
@@ -145,9 +140,8 @@ public class EmailService(
             var fromEmail = configuration["Email:FromEmail"] ?? smtpUser;
             var fromName = configuration["Email:FromName"] ?? "WalaDaw";
 
-            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser) || 
-                smtpHost.StartsWith("${") || smtpPortRaw.StartsWith("${"))
-            {
+            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUser) ||
+                smtpHost.StartsWith("${") || smtpPortRaw.StartsWith("${")) {
                 logger.LogWarning("Configuracion SMTP no disponible o incompleta para {To}", toEmail);
                 return Result.Success<bool, DomainError>(true);
             }
@@ -174,9 +168,7 @@ public class EmailService(
             logger.LogInformation("Email enviado exitosamente a {To}", toEmail);
 
             return Result.Success<bool, DomainError>(true);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error al enviar email a {Email}", toEmail);
             return Result.Failure<bool, DomainError>(
                 GenericError.UnexpectedError($"Error al enviar email: {ex.Message}"));
@@ -187,8 +179,7 @@ public class EmailService(
     ///     Encola un mensaje de email para procesamiento asíncrono.
     /// </summary>
     /// <param name="emailMessage">Mensaje a encolar</param>
-    public void EnqueueEmail(EmailMessage emailMessage)
-    {
+    public void EnqueueEmail(EmailMessage emailMessage) {
         _emailChannel.Writer.TryWrite(emailMessage);
         logger.LogDebug("Email encolado para: {To}", emailMessage.To);
     }

@@ -17,11 +17,9 @@ namespace TiendaDawWeb.Tests.E2E.Products;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class ProductCreationTests : E2ETestBase
-{
+public class ProductCreationTests : E2ETestBase {
     [Test]
-    public async Task UserCanCreateProductWithImage()
-    {
+    public async Task UserCanCreateProductWithImage() {
         await LoginAsync(AdminEmail, AdminPassword);
 
         var productName = $"Producto con Imagen {DateTime.UtcNow:yyyyMMddHHmmss}";
@@ -34,8 +32,7 @@ public class ProductCreationTests : E2ETestBase
         await Page.Locator("select[name*='Categoria'], select[id*='Categoria']").SelectOptionAsync("SMARTPHONES");
 
         var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures", "test-product.svg"));
-        if (File.Exists(projectRoot))
-        {
+        if (File.Exists(projectRoot)) {
             await Page.Locator("input[type='file']").SetInputFilesAsync(projectRoot);
         }
 
@@ -46,13 +43,12 @@ public class ProductCreationTests : E2ETestBase
             new() { Timeout = 20000 });
 
         await Expect(Page.Locator("h1").First).ToContainTextAsync(
-            new System.Text.RegularExpressions.Regex(productName, System.Text.RegularExpressions.RegexOptions.IgnoreCase), 
+            new System.Text.RegularExpressions.Regex(productName, System.Text.RegularExpressions.RegexOptions.IgnoreCase),
             new() { Timeout = 10000 });
     }
 
     [Test]
-    public async Task ProductAppearsInPublicListAfterCreation()
-    {
+    public async Task ProductAppearsInPublicListAfterCreation() {
         await LoginAsync(AdminEmail, AdminPassword);
 
         var productName = $"Buscable {DateTime.UtcNow:yyyyMMddHHmmss}";
@@ -64,8 +60,7 @@ public class ProductCreationTests : E2ETestBase
         await Page.Locator("select[name*='Categoria'], select[id*='Categoria']").SelectOptionAsync("ACCESSORIES");
 
         var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures", "test-product.svg"));
-        if (File.Exists(projectRoot))
-        {
+        if (File.Exists(projectRoot)) {
             await Page.Locator("input[type='file']").SetInputFilesAsync(projectRoot);
         }
 
@@ -80,8 +75,7 @@ public class ProductCreationTests : E2ETestBase
     }
 
     [Test]
-    public async Task ProductOwnerCannotRateOwnProduct()
-    {
+    public async Task ProductOwnerCannotRateOwnProduct() {
         await LoginAsync(AdminEmail, AdminPassword);
 
         var productName = $"Mi Producto {DateTime.UtcNow:yyyyMMddHHmmss}";
@@ -93,8 +87,7 @@ public class ProductCreationTests : E2ETestBase
         await Page.Locator("select[name*='Categoria'], select[id*='Categoria']").SelectOptionAsync("SMARTPHONES");
 
         var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Fixtures", "test-product.svg"));
-        if (File.Exists(projectRoot))
-        {
+        if (File.Exists(projectRoot)) {
             await Page.Locator("input[type='file']").SetInputFilesAsync(projectRoot);
         }
 
@@ -109,8 +102,7 @@ public class ProductCreationTests : E2ETestBase
     }
 
     [Test]
-    public async Task CreateProductWithoutImage()
-    {
+    public async Task CreateProductWithoutImage() {
         await LoginAsync(AdminEmail, AdminPassword);
 
         var productName = $"Sin Imagen {DateTime.UtcNow:yyyyMMddHHmmss}";
@@ -128,12 +120,11 @@ public class ProductCreationTests : E2ETestBase
             new() { Timeout = 20000 });
 
         await Expect(Page.Locator("h1").First).ToContainTextAsync(
-            new System.Text.RegularExpressions.Regex(productName, System.Text.RegularExpressions.RegexOptions.IgnoreCase), 
+            new System.Text.RegularExpressions.Regex(productName, System.Text.RegularExpressions.RegexOptions.IgnoreCase),
             new() { Timeout = 10000 });
     }
 
-    private async Task LoginAsync(string email, string password)
-    {
+    private async Task LoginAsync(string email, string password) {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync(email);
         await Page.TestId("password-input").FillAsync(password);

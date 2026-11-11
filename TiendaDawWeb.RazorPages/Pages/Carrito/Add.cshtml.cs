@@ -19,14 +19,14 @@ public class AddModel(
         }
 
         var result = await carritoService.AddToCarritoAsync(user.Id, productoId);
-        
+
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }
 
         var countResult = await carritoService.GetCarritoCountAsync(user.Id);
-        return new JsonResult(new { 
-            success = true, 
+        return new JsonResult(new {
+            success = true,
             message = "Producto añadido al carrito",
             count = countResult.IsSuccess ? countResult.Value : 0
         });

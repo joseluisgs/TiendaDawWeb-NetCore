@@ -5,24 +5,20 @@ using TiendaDawWeb.Controllers;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class HomeControllerTests
-{
+public class HomeControllerTests {
     private readonly HomeController _controller;
 
-    public HomeControllerTests()
-    {
+    public HomeControllerTests() {
         _controller = new HomeController();
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
         _controller.Dispose();
     }
 
     [Test]
-    public void Index_RedirectsToPublic_WithSearchQuery()
-    {
+    public void Index_RedirectsToPublic_WithSearchQuery() {
         var result = _controller.Index(search: "test", q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
         result.Should().BeOfType<RedirectToActionResult>();
@@ -34,8 +30,7 @@ public class HomeControllerTests
     }
 
     [Test]
-    public void Index_RedirectsToPublic_WithQParameter()
-    {
+    public void Index_RedirectsToPublic_WithQParameter() {
         var result = _controller.Index(search: null, q: "laptop", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
         result.Should().BeOfType<RedirectToActionResult>();
@@ -45,8 +40,7 @@ public class HomeControllerTests
     }
 
     [Test]
-    public void Index_RedirectsToPublic_WithCategory()
-    {
+    public void Index_RedirectsToPublic_WithCategory() {
         var result = _controller.Index(search: null, q: null, categoria: "electronics", minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
         result.Should().BeOfType<RedirectToActionResult>();
@@ -55,8 +49,7 @@ public class HomeControllerTests
     }
 
     [Test]
-    public void Index_RedirectsToPublic_WithPriceRange()
-    {
+    public void Index_RedirectsToPublic_WithPriceRange() {
         var result = _controller.Index(search: null, q: null, categoria: null, minPrecio: 100, maxPrecio: 500, page: 1, size: 12);
 
         result.Should().BeOfType<RedirectToActionResult>();
@@ -66,8 +59,7 @@ public class HomeControllerTests
     }
 
     [Test]
-    public void Index_RedirectsToPublic_WithPagination()
-    {
+    public void Index_RedirectsToPublic_WithPagination() {
         var result = _controller.Index(search: null, q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 3, size: 24);
 
         result.Should().BeOfType<RedirectToActionResult>();
@@ -77,8 +69,7 @@ public class HomeControllerTests
     }
 
     [Test]
-    public void Index_PrefersSearchOverQ()
-    {
+    public void Index_PrefersSearchOverQ() {
         var result = _controller.Index(search: "priority", q: "secondary", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
         result.Should().BeOfType<RedirectToActionResult>();
@@ -87,8 +78,7 @@ public class HomeControllerTests
     }
 
     [Test]
-    public void Index_RedirectsWithAllParameters()
-    {
+    public void Index_RedirectsWithAllParameters() {
         var result = _controller.Index(
             search: "phone",
             q: null,

@@ -12,8 +12,7 @@ Log.Logger = SerilogConfig.Configure().CreateLogger();
 var options = WebRootConfig.CreateOptionsWithArgs(args);
 // 🛡️ Si no se especifica ASPNETCORE_ENVIRONMENT, usar Development por defecto
 // (dotnet run sin launchSettings.json usa Production por defecto)
-if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
-{
+if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))) {
     Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 }
 
@@ -92,13 +91,10 @@ app.UseSecurityHeaders();
 // Rate Limiting - Protege contra DDoS y fuerza bruta
 app.UseRateLimiting();
 
-if (!isDevelopment)
-{
+if (!isDevelopment) {
     app.UseHsts();
     app.UseHttpsRedirection();
-}
-else
-{
+} else {
     Log.Information("🔓 Modo desarrollo: HTTP permitido (sin redirección HTTPS)");
 }
 
@@ -106,8 +102,7 @@ else
 // (JSON para APIs, redirect para MVC). Reemplaza UseExceptionHandler("/Error").
 app.UseGlobalExceptionHandler();
 
-if (!isDevelopment)
-{
+if (!isDevelopment) {
     app.UseHsts();
 }
 
@@ -138,25 +133,19 @@ PrintStartupInfo(isDevelopment, configuration);
 // ▶️ ARRANQUE DE LA APLICACIÓN
 // ============================================================================
 
-try
-{
+try {
     app.Run();
-}
-catch (Exception ex)
-{
+} catch (Exception ex) {
     Log.Fatal(ex, "💥 La aplicación falló al iniciar");
     throw;
-}
-finally
-{
+} finally {
     Log.CloseAndFlush();
 }
 
 /// <summary>
 /// Imprime en los logs la información de inicio de la aplicación.
 /// </summary>
-static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration)
-{
+static void PrintStartupInfo(bool isDevelopment, IConfiguration configuration) {
     var urls = configuration["ASPNETCORE_URLS"]?.Split(';') ?? new[] { "http://localhost:5000" };
     var firstUrl = urls.FirstOrDefault() ?? "http://localhost:5000";
     var protocol = firstUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "https" : "http";

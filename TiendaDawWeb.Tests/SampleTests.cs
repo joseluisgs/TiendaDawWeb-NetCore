@@ -1,10 +1,8 @@
 namespace TiendaDawWeb.Tests;
 
-public class SampleTests
-{
+public class SampleTests {
     [Test]
-    public void SimpleTest_Passes()
-    {
+    public void SimpleTest_Passes() {
         Assert.Pass("Test project compiles successfully!");
     }
 }

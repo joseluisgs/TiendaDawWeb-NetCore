@@ -7,8 +7,7 @@ namespace TiendaDawWeb.Shared.ViewModels;
 /// <summary>
 /// ViewModel para formularios de producto
 /// </summary>
-public class ProductViewModel
-{
+public class ProductViewModel {
     public long Id { get; set; }
 
     [Required(ErrorMessage = "El nombre del producto es obligatorio")]

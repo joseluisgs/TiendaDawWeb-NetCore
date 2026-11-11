@@ -53,7 +53,7 @@ public class EditModel(
 
     public async Task<IActionResult> OnPostAsync() {
         logger.LogInformation("OnPostAsync llamado, ModelState.IsValid: {IsValid}", ModelState.IsValid);
-        
+
         if (!ModelState.IsValid) {
             logger.LogWarning("ModelState inválido: {Errors}", ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)));
             await LoadProductData(Input.Id);

@@ -13,11 +13,9 @@ namespace TiendaDawWeb.Tests.E2E.Products;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class ProductFlowTests : E2ETestBase
-{
+public class ProductFlowTests : E2ETestBase {
     [Test]
-    public async Task Search_ShouldFindIphoneAndNavigateToDetails()
-    {
+    public async Task Search_ShouldFindIphoneAndNavigateToDetails() {
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("01-public-page");
 

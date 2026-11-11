@@ -38,8 +38,7 @@ public class StorageService : IStorageService {
             await using (var stream = new FileStream(filePath, FileMode.Create)) await file.CopyToAsync(stream);
             var relativePath = $"/{_uploadPath}/{folder}/{fileName}";
             return Result.Success<string, DomainError>(relativePath);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.LogError(ex, "Error guardando archivo");
             return Result.Failure<string, DomainError>(ProductError.InvalidData($"Error: {ex.Message}"));
         }
@@ -54,8 +53,7 @@ public class StorageService : IStorageService {
                 _logger.LogInformation("Archivo eliminado: {FilePath}", filePath);
             }
             return Result.Success<bool, DomainError>(true);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.LogError(ex, "Error eliminando archivo {FilePath}", filePath);
             return Result.Failure<bool, DomainError>(ProductError.InvalidData($"Error: {ex.Message}"));
         }

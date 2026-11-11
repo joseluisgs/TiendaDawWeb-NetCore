@@ -6,10 +6,8 @@ namespace TiendaDawWeb.Shared.Validators;
 /// <summary>
 /// Validador FluentValidation para el login.
 /// </summary>
-public class LoginViewModelValidator : AbstractValidator<LoginViewModel>
-{
-    public LoginViewModelValidator()
-    {
+public class LoginViewModelValidator : AbstractValidator<LoginViewModel> {
+    public LoginViewModelValidator() {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("El email es obligatorio")
             .EmailAddress().WithMessage("Email no válido");

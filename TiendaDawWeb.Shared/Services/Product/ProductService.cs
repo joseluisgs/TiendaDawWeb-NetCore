@@ -19,8 +19,7 @@ public class ProductService(
     IMemoryCache cache,
     IHubContext<NotificationHub> hubContext,
     ILogger<ProductService> logger
-) : IProductService
-{
+) : IProductService {
     private const string ProductsCacheKey = "all_products";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
 
@@ -28,13 +27,10 @@ public class ProductService(
     /// Obtiene un producto por su ID con caché.
     /// Devuelve: Result.Success(Producto) | Result.Failure(NotFound)
     /// </summary>
-    public async Task<Result<Models.Product, DomainError>> GetByIdAsync(long id)
-    {
-        try
-        {
+    public async Task<Result<Models.Product, DomainError>> GetByIdAsync(long id) {
+        try {
             var cacheKey = ProductDetailsCacheKey(id);
-            var cachedProduct = await cache.GetOrCreateAsync(cacheKey, async entry =>
-            {
+            var cachedProduct = await cache.GetOrCreateAsync(cacheKey, async entry => {
                 entry.AbsoluteExpirationRelativeToNow = CacheDuration;
                 var product = await context.Products
                     .Include(p => p.Propietario)
@@ -43,16 +39,13 @@ public class ProductService(
                 return product;
             });
 
-            if (cachedProduct is null)
-            {
+            if (cachedProduct is null) {
                 logger.LogWarning("Producto con ID {Id} no encontrado", id);
                 return Result.Failure<Models.Product, DomainError>(ProductError.NotFound(id));
             }
 
             return Result.Success<Models.Product, DomainError>(cachedProduct);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error obteniendo producto {ProductId}", id);
             return Result.Failure<Models.Product, DomainError>(ProductError.InvalidData($"Error: {ex.Message}"));
         }
@@ -62,12 +55,9 @@ public class ProductService(
     /// Obtiene todos los productos disponibles con caché.
     /// Devuelve: Result.Success(List) | Result.Failure nunca
     /// </summary>
-    public async Task<Result<IEnumerable<Models.Product>, DomainError>> GetAllAsync()
-    {
-        try
-        {
-            var products = await cache.GetOrCreateAsync(ProductsCacheKey, async entry =>
-            {
+    public async Task<Result<IEnumerable<Models.Product>, DomainError>> GetAllAsync() {
+        try {
+            var products = await cache.GetOrCreateAsync(ProductsCacheKey, async entry => {
                 entry.AbsoluteExpirationRelativeToNow = CacheDuration;
                 return await context.Products
                     .Include(p => p.Propietario)
@@ -79,9 +69,7 @@ public class ProductService(
 
             return Result.Success<IEnumerable<Models.Product>, DomainError>(
                 products ?? new List<Models.Product>());
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error obteniendo productos");
             return Result.Failure<IEnumerable<Models.Product>, DomainError>(
                 ProductError.InvalidData($"Error: {ex.Message}"));
@@ -92,10 +80,8 @@ public class ProductService(
     /// Busca productos por nombre y categoría con filtros opcionales.
     /// Devuelve: Result.Success(List) | Result.Failure nunca
     /// </summary>
-    public async Task<Result<IEnumerable<Models.Product>, DomainError>> SearchAsync(string? nombre, string? categoria)
-    {
-        try
-        {
+    public async Task<Result<IEnumerable<Models.Product>, DomainError>> SearchAsync(string? nombre, string? categoria) {
+        try {
             var query = context.Products
                 .Include(p => p.Propietario)
                 .Include(p => p.Ratings)
@@ -110,9 +96,7 @@ public class ProductService(
             var products = await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
 
             return Result.Success<IEnumerable<Models.Product>, DomainError>(products);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error buscando productos");
             return Result.Failure<IEnumerable<Models.Product>, DomainError>(
                 ProductError.InvalidData($"Error: {ex.Message}"));
@@ -123,26 +107,21 @@ public class ProductService(
     /// Crea un nuevo producto.
     /// Devuelve: Result.Success(Producto) | Result.Failure(InvalidPrice)
     /// </summary>
-    public async Task<Result<Models.Product, DomainError>> CreateAsync(Models.Product product)
-    {
+    public async Task<Result<Models.Product, DomainError>> CreateAsync(Models.Product product) {
         if (product.Precio <= 0)
             return Result.Failure<Models.Product, DomainError>(ProductError.InvalidPrice());
 
-        try
-        {
+        try {
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
             return Result.Success<Models.Product, DomainError>(product)
-                .Tap(p =>
-                {
+                .Tap(p => {
                     cache.Remove(ProductsCacheKey);
                     logger.LogInformation("Producto creado: {ProductId}", p.Id);
                     NotifyNewProduct(p);
                 });
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error creando producto: {Message}", ex.Message);
             return Result.Failure<Models.Product, DomainError>(ProductError.InvalidData($"Error al crear producto: {ex.Message}"));
         }
@@ -152,8 +131,7 @@ public class ProductService(
     /// Actualiza un producto existente (solo el propietario puede actualizar).
     /// Devuelve: Result.Success(Producto) | Result.Failure(NotFound/NotOwner)
     /// </summary>
-    public async Task<Result<Models.Product, DomainError>> UpdateAsync(long id, Models.Product updatedProduct, long userId)
-    {
+    public async Task<Result<Models.Product, DomainError>> UpdateAsync(long id, Models.Product updatedProduct, long userId) {
         var product = await context.Products
             .Include(p => p.Propietario)
             .Include(p => p.Ratings)
@@ -174,8 +152,7 @@ public class ProductService(
         await context.SaveChangesAsync();
 
         return Result.Success<Models.Product, DomainError>(product)
-            .Tap(p =>
-            {
+            .Tap(p => {
                 cache.Remove(ProductsCacheKey);
                 cache.Remove(ProductDetailsCacheKey(id));
                 logger.LogInformation("Producto actualizado: {ProductId}", id);
@@ -187,8 +164,7 @@ public class ProductService(
     /// No permite eliminar productos ya vendidos.
     /// Devuelve: Result.Success(true) | Result.Failure(NotFound/NotOwner/CannotDeleteSold)
     /// </summary>
-    public async Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false)
-    {
+    public async Task<Result<bool, DomainError>> DeleteAsync(long id, long userId, bool isAdmin = false) {
         var producto = await context.Products
             .Include(p => p.Compra)
             .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
@@ -215,20 +191,15 @@ public class ProductService(
 
     private static string ProductDetailsCacheKey(long id) => $"product_details_{id}";
 
-    private void NotifyNewProduct(Models.Product product)
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
+    private void NotifyNewProduct(Models.Product product) {
+        _ = Task.Run(async () => {
+            try {
                 await hubContext.Clients.All.SendAsync("ReceiveNotification",
                     "¡Nuevo Producto!",
                     $"Se ha publicado: {product.Nombre}",
                     product.Id);
                 logger.LogDebug("Notificación SignalR enviada tras crear producto: {ProductId}", product.Id);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 logger.LogWarning(ex, "Error en notificación SignalR al crear producto: {ProductId}", product.Id);
             }
         });

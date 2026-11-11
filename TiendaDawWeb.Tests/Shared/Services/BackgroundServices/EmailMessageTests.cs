@@ -3,13 +3,10 @@ using TiendaDawWeb.Shared.Services.Email;
 
 namespace TiendaDawWeb.Tests.Shared.Services.BackgroundServices;
 
-public class EmailMessageTests
-{
+public class EmailMessageTests {
     [Test]
-    public void Constructor_WithRequiredProperties_CreatesMessage()
-    {
-        var message = new EmailMessage
-        {
+    public void Constructor_WithRequiredProperties_CreatesMessage() {
+        var message = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "Test Body"
@@ -21,10 +18,8 @@ public class EmailMessageTests
     }
 
     [Test]
-    public void PropertySetters_WorkCorrectly()
-    {
-        var message = new EmailMessage
-        {
+    public void PropertySetters_WorkCorrectly() {
+        var message = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "Test Body",
@@ -42,10 +37,8 @@ public class EmailMessageTests
     }
 
     [Test]
-    public void DefaultIsHtml_IsFalse()
-    {
-        var message = new EmailMessage
-        {
+    public void DefaultIsHtml_IsFalse() {
+        var message = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "Test Body"
@@ -55,10 +48,8 @@ public class EmailMessageTests
     }
 
     [Test]
-    public void Attachment_CanBeNull()
-    {
-        var message = new EmailMessage
-        {
+    public void Attachment_CanBeNull() {
+        var message = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "Test Body",
@@ -69,10 +60,8 @@ public class EmailMessageTests
     }
 
     [Test]
-    public void AttachmentName_CanBeNull()
-    {
-        var message = new EmailMessage
-        {
+    public void AttachmentName_CanBeNull() {
+        var message = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "Test Body",
@@ -83,10 +72,8 @@ public class EmailMessageTests
     }
 
     [Test]
-    public void IsHtml_CanBeSetToTrue()
-    {
-        var message = new EmailMessage
-        {
+    public void IsHtml_CanBeSetToTrue() {
+        var message = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "<html>Test</html>",
@@ -97,10 +84,8 @@ public class EmailMessageTests
     }
 
     [Test]
-    public void AllProperties_CanBeInitialized()
-    {
-        var message = new EmailMessage
-        {
+    public void AllProperties_CanBeInitialized() {
+        var message = new EmailMessage {
             To = "recipient@example.com",
             Subject = "Complete Test",
             Body = "<html><body>Test</body></html>",

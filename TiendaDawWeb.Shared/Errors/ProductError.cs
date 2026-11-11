@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Errors;
 /// <summary>
 /// Errores del dominio de productos (HTTP 404, 409, 400).
 /// </summary>
-public static class ProductError
-{
+public static class ProductError {
     /// <summary>Crea error para producto no encontrado.</summary>
     /// <param name="id">ID del producto.</param>
     /// <returns>NotFoundError (HTTP 404).</returns>
