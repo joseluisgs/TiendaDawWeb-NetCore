@@ -26,8 +26,8 @@ public class CartCountController(
         }
 
         var result = await carritoService.GetCarritoCountAsync(user.Id);
-        
-        return Ok(new { 
+
+        return Ok(new {
             count = result.IsSuccess ? result.Value : 0
         });
     }

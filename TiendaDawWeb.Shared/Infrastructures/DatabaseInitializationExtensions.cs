@@ -10,13 +10,11 @@ public class DatabaseInitializer { }
 /// <summary>
 /// Extension methods para inicialización de base de datos.
 /// </summary>
-public static class DatabaseInitializationExtensions
-{
+public static class DatabaseInitializationExtensions {
     /// <summary>
     /// Inicializa la base de datos SQLite In-Memory.
     /// </summary>
-    public static async Task InitializeDatabaseAsync(this WebApplication app, bool isDevelopment)
-    {
+    public static async Task InitializeDatabaseAsync(this WebApplication app, bool isDevelopment) {
         Log.Information("🗄️ Inicializando base de datos...");
 
         using var scope = app.Services.CreateScope();

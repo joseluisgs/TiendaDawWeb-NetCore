@@ -7,8 +7,7 @@ namespace TiendaDawWeb.Shared.Models;
 /// Entidad de producto del marketplace.
 /// Representa un artículo en venta con información de precio, categoría y estado.
 /// </summary>
-public class Product : AuditableEntity
-{
+public class Product : AuditableEntity {
     /// <summary>ID único del producto (PK en SQLite).</summary>
     public long Id { get; set; }
 
@@ -90,8 +89,7 @@ public class Product : AuditableEntity
     /// Realiza un soft-delete del producto.
     /// </summary>
     /// <param name="deletedBy">ID del usuario que elimina el producto.</param>
-    public void SoftDelete(string deletedBy)
-    {
+    public void SoftDelete(string deletedBy) {
         Deleted = true;
         DeletedAt = DateTime.UtcNow;
         DeletedBy = deletedBy;

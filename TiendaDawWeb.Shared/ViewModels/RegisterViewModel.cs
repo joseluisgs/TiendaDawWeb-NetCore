@@ -5,8 +5,7 @@ namespace TiendaDawWeb.Shared.ViewModels;
 /// <summary>
 /// ViewModel para el formulario de registro
 /// </summary>
-public class RegisterViewModel
-{
+public class RegisterViewModel {
     [Required(ErrorMessage = "El nombre es obligatorio")]
     [StringLength(100, ErrorMessage = "El nombre no puede tener más de 100 caracteres")]
     [Display(Name = "Nombre")]

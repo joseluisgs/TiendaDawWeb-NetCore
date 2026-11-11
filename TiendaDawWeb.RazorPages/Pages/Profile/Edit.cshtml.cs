@@ -56,14 +56,12 @@ public class EditModel(
                 if (result.IsSuccess) {
                     if (!string.IsNullOrEmpty(user.Avatar)) await storageService.DeleteFileAsync(user.Avatar);
                     user.Avatar = result.Value;
-                }
-                else {
+                } else {
                     TempData["Error"] = "Error al guardar el avatar: " + result.Error.Message;
                     UserProfile = user;
                     return Page();
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 logger.LogError(ex, "Error al procesar avatar para usuario {UserId}", user.Id);
                 TempData["Error"] = "Error al procesar la imagen";
                 UserProfile = user;
@@ -78,7 +76,7 @@ public class EditModel(
             return RedirectToPage("/Profile/Index");
         }
 
-        TempData["Error"] = "Error al actualizar el perfil: " + 
+        TempData["Error"] = "Error al actualizar el perfil: " +
                             string.Join(", ", updateResult.Errors.Select(e => e.Description));
         UserProfile = user;
         return Page();
@@ -94,8 +92,7 @@ public class EditModel(
                 user.Avatar = null;
                 await userManager.UpdateAsync(user);
                 TempData["Success"] = "Avatar eliminado correctamente";
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 logger.LogError(ex, "Error al eliminar avatar para usuario {UserId}", user.Id);
                 TempData["Error"] = "Error al eliminar el avatar";
             }

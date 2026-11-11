@@ -11,16 +11,14 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
 namespace TiendaDawWeb.Tests.Shared.Services;
 
-public class EmailServiceTests
-{
+public class EmailServiceTests {
     private Mock<IConfiguration> _configurationMock = null!;
     private Mock<ILogger<EmailService>> _loggerMock = null!;
     private Channel<EmailMessage> _emailChannel = null!;
     private EmailService _service = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         _configurationMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<EmailService>>();
         _emailChannel = Channel.CreateUnbounded<EmailMessage>();
@@ -28,16 +26,14 @@ public class EmailServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         _emailChannel.Writer.Complete();
     }
 
     #region SendWelcomeEmailAsync Tests
 
     [Test]
-    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured()
-    {
+    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
         _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
 
         var result = await _service.SendWelcomeEmailAsync("test@example.com", "TestUser");
@@ -46,8 +42,7 @@ public class EmailServiceTests
     }
 
     [Test]
-    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder()
-    {
+    public async Task SendWelcomeEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder() {
         _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns("${SmtpHost}");
 
         var result = await _service.SendWelcomeEmailAsync("test@example.com", "TestUser");
@@ -60,12 +55,10 @@ public class EmailServiceTests
     #region SendPurchaseConfirmationEmailAsync Tests
 
     [Test]
-    public async Task SendPurchaseConfirmationEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured()
-    {
+    public async Task SendPurchaseConfirmationEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
         _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
 
-        var purchase = new PurchaseModel
-        {
+        var purchase = new PurchaseModel {
             Id = 1,
             Total = 100,
             FechaCompra = DateTime.UtcNow,
@@ -83,8 +76,7 @@ public class EmailServiceTests
     #region SendEmailAsync Tests
 
     [Test]
-    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured()
-    {
+    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpNotConfigured() {
         _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns((string)null!);
 
         var result = await _service.SendEmailAsync(
@@ -97,8 +89,7 @@ public class EmailServiceTests
     }
 
     [Test]
-    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder()
-    {
+    public async Task SendEmailAsync_ReturnsSuccess_WhenSmtpHostIsPlaceholder() {
         _configurationMock.Setup(c => c["Email:SmtpHost"]).Returns("${SmtpHost}");
 
         var result = await _service.SendEmailAsync(
@@ -115,10 +106,8 @@ public class EmailServiceTests
     #region EnqueueEmail Tests
 
     [Test]
-    public void EnqueueEmail_EnqueuesMessage_Success()
-    {
-        var emailMessage = new EmailMessage
-        {
+    public void EnqueueEmail_EnqueuesMessage_Success() {
+        var emailMessage = new EmailMessage {
             To = "test@example.com",
             Subject = "Test Subject",
             Body = "Test Body"

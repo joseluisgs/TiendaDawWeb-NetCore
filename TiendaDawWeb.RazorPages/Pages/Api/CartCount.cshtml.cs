@@ -26,8 +26,8 @@ public class CartCountModel(
         }
 
         var result = await carritoService.GetCarritoCountAsync(user.Id);
-        
-        return new JsonResult(new { 
+
+        return new JsonResult(new {
             count = result.IsSuccess ? result.Value : 0
         });
     }

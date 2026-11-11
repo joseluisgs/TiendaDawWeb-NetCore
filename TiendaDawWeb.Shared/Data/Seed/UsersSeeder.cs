@@ -13,20 +13,16 @@ namespace TiendaDawWeb.Shared.Data.Seed;
 /// </summary>
 public class UsersSeeder(
     UserManager<User> userManager,
-    ILogger<UsersSeeder> logger)
-{
+    ILogger<UsersSeeder> logger) {
     /// <summary>Crea los usuarios que falten y les asigna su rol.</summary>
-    public async Task SeedAsync()
-    {
+    public async Task SeedAsync() {
         var creados = 0;
 
-        foreach (var semilla in SeedCredentials.Usuarios)
-        {
+        foreach (var semilla in SeedCredentials.Usuarios) {
             if (await userManager.FindByEmailAsync(semilla.Email) is not null)
                 continue;
 
-            var usuario = new User
-            {
+            var usuario = new User {
                 Nombre = semilla.Nombre,
                 Apellidos = semilla.Apellidos,
                 Email = semilla.Email,
@@ -37,8 +33,7 @@ public class UsersSeeder(
             };
 
             var result = await userManager.CreateAsync(usuario, semilla.Password);
-            if (!result.Succeeded)
-            {
+            if (!result.Succeeded) {
                 logger.LogError("Error al crear usuario {Email}: {Errors}",
                     semilla.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
                 continue;

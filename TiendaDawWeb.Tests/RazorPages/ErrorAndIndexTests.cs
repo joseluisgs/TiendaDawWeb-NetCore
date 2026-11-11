@@ -8,11 +8,9 @@ using TiendaDawWeb.RazorPages.Pages;
 
 namespace TiendaDawWeb.Tests.RazorPages;
 
-public class ErrorModelTests
-{
+public class ErrorModelTests {
     [Test]
-    public void OnGet_SetsRequestId()
-    {
+    public void OnGet_SetsRequestId() {
         var httpContext = new DefaultHttpContext();
         var pageContext = new PageContext { HttpContext = httpContext };
 
@@ -23,8 +21,7 @@ public class ErrorModelTests
     }
 
     [Test]
-    public void OnGet_UsesTraceIdentifier()
-    {
+    public void OnGet_UsesTraceIdentifier() {
         var httpContext = new DefaultHttpContext();
         var pageContext = new PageContext { HttpContext = httpContext };
 
@@ -35,45 +32,38 @@ public class ErrorModelTests
     }
 
     [Test]
-    public void ShowRequestId_ReturnsTrue_WhenRequestIdIsNotEmpty()
-    {
+    public void ShowRequestId_ReturnsTrue_WhenRequestIdIsNotEmpty() {
         var model = new ErrorModel { RequestId = "test-id" };
         model.ShowRequestId.Should().BeTrue();
     }
 
     [Test]
-    public void ShowRequestId_ReturnsFalse_WhenRequestIdIsNull()
-    {
+    public void ShowRequestId_ReturnsFalse_WhenRequestIdIsNull() {
         var model = new ErrorModel { RequestId = null };
         model.ShowRequestId.Should().BeFalse();
     }
 
     [Test]
-    public void ShowRequestId_ReturnsFalse_WhenRequestIdIsEmpty()
-    {
+    public void ShowRequestId_ReturnsFalse_WhenRequestIdIsEmpty() {
         var model = new ErrorModel { RequestId = string.Empty };
         model.ShowRequestId.Should().BeFalse();
     }
 
     [Test]
-    public void ErrorModel_CanBeInstantiated()
-    {
+    public void ErrorModel_CanBeInstantiated() {
         var model = new ErrorModel();
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void ErrorModel_HasCorrectAttributes()
-    {
+    public void ErrorModel_HasCorrectAttributes() {
         typeof(ErrorModel).Should().BeDerivedFrom<PageModel>();
     }
 }
 
-public class IndexModelTests
-{
+public class IndexModelTests {
     [Test]
-    public void OnGet_RedirectsToPublicIndex()
-    {
+    public void OnGet_RedirectsToPublicIndex() {
         var model = new IndexModel();
         var result = model.OnGet(search: null, q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
@@ -83,8 +73,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_WithSearchQuery_PassesQueryToRedirect()
-    {
+    public void OnGet_WithSearchQuery_PassesQueryToRedirect() {
         var model = new IndexModel();
         var result = model.OnGet(search: "test", q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
@@ -95,8 +84,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_WithQParameter_PassesQueryToRedirect()
-    {
+    public void OnGet_WithQParameter_PassesQueryToRedirect() {
         var model = new IndexModel();
         var result = model.OnGet(search: null, q: "laptop", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
@@ -107,8 +95,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_PrefersSearchOverQ()
-    {
+    public void OnGet_PrefersSearchOverQ() {
         var model = new IndexModel();
         var result = model.OnGet(search: "priority", q: "secondary", categoria: null, minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
@@ -118,8 +105,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_WithCategory_PassesCategoryToRedirect()
-    {
+    public void OnGet_WithCategory_PassesCategoryToRedirect() {
         var model = new IndexModel();
         var result = model.OnGet(search: null, q: null, categoria: "electronics", minPrecio: null, maxPrecio: null, page: 1, size: 12);
 
@@ -130,8 +116,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_WithPriceRange_PassesPricesToRedirect()
-    {
+    public void OnGet_WithPriceRange_PassesPricesToRedirect() {
         var model = new IndexModel();
         var result = model.OnGet(search: null, q: null, categoria: null, minPrecio: 100, maxPrecio: 500, page: 1, size: 12);
 
@@ -142,8 +127,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_WithPagination_PassesPageToRedirect()
-    {
+    public void OnGet_WithPagination_PassesPageToRedirect() {
         var model = new IndexModel();
         var result = model.OnGet(search: null, q: null, categoria: null, minPrecio: null, maxPrecio: null, page: 3, size: 24);
 
@@ -154,8 +138,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void OnGet_WithAllParameters_RedirectsWithAll()
-    {
+    public void OnGet_WithAllParameters_RedirectsWithAll() {
         var model = new IndexModel();
         var result = model.OnGet(
             search: "phone",
@@ -177,8 +160,7 @@ public class IndexModelTests
     }
 
     [Test]
-    public void IndexModel_CanBeInstantiated()
-    {
+    public void IndexModel_CanBeInstantiated() {
         var model = new IndexModel();
         model.Should().NotBeNull();
     }

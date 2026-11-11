@@ -10,11 +10,9 @@ namespace TiendaDawWeb.Tests.E2E.Auth;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class RegistrationTests : E2ETestBase
-{
+public class RegistrationTests : E2ETestBase {
     [Test]
-    public async Task UserCanRegister_WithValidData()
-    {
+    public async Task UserCanRegister_WithValidData() {
         string id = System.Guid.NewGuid().ToString().Substring(0, 8);
         string email = $"newuser_{id}@test.com";
 
@@ -33,8 +31,7 @@ public class RegistrationTests : E2ETestBase
     }
 
     [Test]
-    public async Task Registration_ValidationErrors_Work()
-    {
+    public async Task Registration_ValidationErrors_Work() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Register");
         await CaptureScreenshotAsync("01-register-page");
 
@@ -50,8 +47,7 @@ public class RegistrationTests : E2ETestBase
     }
 
     [Test]
-    public async Task LoginPage_Loads()
-    {
+    public async Task LoginPage_Loads() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await CaptureScreenshotAsync("01-login-page");
 

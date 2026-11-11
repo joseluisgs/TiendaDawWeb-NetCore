@@ -45,8 +45,7 @@ public class ReservaCleanupService(
                 await context.SaveChangesAsync();
                 logger.LogInformation("Limpieza de reservas completada: {Count} productos liberados", expiredReservations.Count);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error durante la limpieza de reservas");
         }
     }

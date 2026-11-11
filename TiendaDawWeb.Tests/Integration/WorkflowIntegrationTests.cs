@@ -24,13 +24,11 @@ namespace TiendaDawWeb.Tests.Integration;
 /// Tests use real SQLite database with all services.
 /// </summary>
 [NonParallelizable]
-public class WorkflowIntegrationTests
-{
+public class WorkflowIntegrationTests {
     #region Rating Validation Tests
 
     [Test]
-    public async Task Rating_CannotRateWithoutPurchase_Fails()
-    {
+    public async Task Rating_CannotRateWithoutPurchase_Fails() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -39,8 +37,7 @@ public class WorkflowIntegrationTests
         services.Context.Users.AddRange(rater, seller);
         await services.Context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "Product to Rate",
             Precio = 100,
@@ -56,8 +53,7 @@ public class WorkflowIntegrationTests
     }
 
     [Test]
-    public async Task Rating_CannotRateTwice_Fails()
-    {
+    public async Task Rating_CannotRateTwice_Fails() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -65,8 +61,7 @@ public class WorkflowIntegrationTests
         var seller = new User { Id = 2, Email = "seller@test.com", UserName = "seller", Nombre = "Seller", Apellidos = "User", Rol = "USER" };
         services.Context.Users.AddRange(rater, seller);
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "Product",
             Precio = 100,
@@ -79,8 +74,7 @@ public class WorkflowIntegrationTests
         var purchase = new Purchase { Id = 1, CompradorId = 1, FechaCompra = DateTime.UtcNow, Total = 100 };
         services.Context.Purchases.Add(purchase);
 
-        var rating = new Rating
-        {
+        var rating = new Rating {
             UsuarioId = 1,
             ProductoId = 100,
             Puntuacion = 4,
@@ -99,8 +93,7 @@ public class WorkflowIntegrationTests
     #region Duplicate Protection Tests
 
     [Test]
-    public async Task Favorite_CannotAddDuplicate_Fails()
-    {
+    public async Task Favorite_CannotAddDuplicate_Fails() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -120,8 +113,7 @@ public class WorkflowIntegrationTests
     }
 
     [Test]
-    public async Task Carrito_CannotAddDuplicateProduct_Fails()
-    {
+    public async Task Carrito_CannotAddDuplicateProduct_Fails() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -129,8 +121,7 @@ public class WorkflowIntegrationTests
         var owner = new User { Id = 2, Email = "owner@test.com", UserName = "owner", Nombre = "Owner", Apellidos = "Test", Rol = "USER" };
         services.Context.Users.AddRange(user, owner);
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "Product",
             Precio = 100,
@@ -154,8 +145,7 @@ public class WorkflowIntegrationTests
     #region Cache Invalidation Tests
 
     [Test]
-    public async Task Product_Create_InvalidatesCache()
-    {
+    public async Task Product_Create_InvalidatesCache() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -163,8 +153,7 @@ public class WorkflowIntegrationTests
         await services.Context.Users.AddAsync(user);
         await services.Context.SaveChangesAsync();
 
-        var product1 = new Product
-        {
+        var product1 = new Product {
             Nombre = "Product 1",
             Descripcion = "Desc",
             Precio = 100,
@@ -177,8 +166,7 @@ public class WorkflowIntegrationTests
         var result1 = await services.ProductService.GetAllAsync();
         result1.Value.Should().HaveCount(1);
 
-        var product2 = new Product
-        {
+        var product2 = new Product {
             Nombre = "Product 2",
             Descripcion = "Desc",
             Precio = 200,
@@ -193,8 +181,7 @@ public class WorkflowIntegrationTests
     }
 
     [Test]
-    public async Task Product_Delete_InvalidatesCache()
-    {
+    public async Task Product_Delete_InvalidatesCache() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -202,8 +189,7 @@ public class WorkflowIntegrationTests
         await services.Context.Users.AddAsync(user);
         await services.Context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "To Delete",
             Descripcion = "Desc",
@@ -228,16 +214,14 @@ public class WorkflowIntegrationTests
     #region Soft Delete Tests
 
     [Test]
-    public async Task Product_SoftDelete_MarksAsDeleted_StillInDb()
-    {
+    public async Task Product_SoftDelete_MarksAsDeleted_StillInDb() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
         services.Context.Users.Add(user);
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "To Delete",
             Precio = 100,
@@ -263,16 +247,14 @@ public class WorkflowIntegrationTests
     #region Concurrency Simulation Tests
 
     [Test]
-    public async Task Product_UpdateMultipleTimes_AllSucceed()
-    {
+    public async Task Product_UpdateMultipleTimes_AllSucceed() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test", Nombre = "Test", Apellidos = "User", Rol = "USER" };
         services.Context.Users.Add(user);
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "Original",
             Precio = 100,
@@ -297,8 +279,7 @@ public class WorkflowIntegrationTests
     #region Concurrency Tests
 
     [Test]
-    public async Task Concurrency_TwoUsersTryToBuySameProduct_OnlyOneSucceeds()
-    {
+    public async Task Concurrency_TwoUsersTryToBuySameProduct_OnlyOneSucceeds() {
         await using var fixture = new WorkflowTestFixture();
         var db = fixture.Context;
 
@@ -307,8 +288,7 @@ public class WorkflowIntegrationTests
         var buyer2 = new User { Id = 3, Email = "buyer2@test.com", UserName = "buyer2", Nombre = "Buyer2", Apellidos = "User", Rol = "USER" };
         db.Users.AddRange(seller, buyer1, buyer2);
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "Unique Product",
             Precio = 500,
@@ -319,8 +299,7 @@ public class WorkflowIntegrationTests
         };
         db.Products.Add(product);
 
-        var purchase = new Purchase
-        {
+        var purchase = new Purchase {
             Id = 1,
             CompradorId = 2,
             FechaCompra = DateTime.UtcNow,
@@ -343,8 +322,7 @@ public class WorkflowIntegrationTests
     #region Purchase Service Tests
 
     [Test]
-    public async Task Purchase_Create_Success()
-    {
+    public async Task Purchase_Create_Success() {
         await using var fixture = new WorkflowTestFixture();
         var db = fixture.Context;
 
@@ -357,8 +335,7 @@ public class WorkflowIntegrationTests
         var product2 = new Product { Id = 101, Nombre = "Product 2", Precio = 200, Categoria = ProductCategory.LAPTOPS, PropietarioId = 1, Deleted = false };
         db.Products.AddRange(product1, product2);
 
-        var purchase = new Purchase
-        {
+        var purchase = new Purchase {
             Id = 1,
             CompradorId = 2,
             FechaCompra = DateTime.UtcNow,
@@ -383,8 +360,7 @@ public class WorkflowIntegrationTests
     #region Carrito Cleanup Tests
 
     [Test]
-    public async Task Carrito_ReservedProduct_ExpiresCorrectly()
-    {
+    public async Task Carrito_ReservedProduct_ExpiresCorrectly() {
         await using var fixture = new WorkflowTestFixture();
         var services = fixture.Services;
 
@@ -393,8 +369,7 @@ public class WorkflowIntegrationTests
         services.Context.Users.AddRange(user, owner);
         await services.Context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Id = 100,
             Nombre = "Reserved Product",
             Precio = 100,
@@ -430,15 +405,13 @@ public class WorkflowIntegrationTests
 /// <summary>
 /// Fixture for workflow tests with all services.
 /// </summary>
-public class WorkflowTestFixture : IDisposable, IAsyncDisposable
-{
+public class WorkflowTestFixture : IDisposable, IAsyncDisposable {
     private readonly SqliteConnection _connection;
     public readonly WorkflowServices Services;
     public readonly ApplicationDbContext Context;
     private bool _disposed;
 
-    public WorkflowTestFixture()
-    {
+    public WorkflowTestFixture() {
         var dbPath = Path.Combine(Path.GetTempPath(), $"workflow_{Guid.NewGuid()}.db");
         _connection = new SqliteConnection($"Data Source={dbPath}");
         _connection.Open();
@@ -454,8 +427,7 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
         var loggerMock = new Mock<ILogger<ProductService>>();
         var hubContextMock = new Mock<IHubContext<NotificationHub>>();
 
-        Services = new WorkflowServices
-        {
+        Services = new WorkflowServices {
             Context = Context,
             ProductService = new ProductService(Context, memoryCache, hubContextMock.Object, loggerMock.Object),
             CarritoService = new CarritoService(Context, memoryCache, new Mock<ILogger<CarritoService>>().Object),
@@ -472,20 +444,16 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
         };
     }
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
+    public void Dispose() {
+        if (!_disposed) {
             Services.Context.Dispose();
             _connection.Close();
             _disposed = true;
         }
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        if (!_disposed)
-        {
+    public async ValueTask DisposeAsync() {
+        if (!_disposed) {
             await Services.Context.DisposeAsync();
             await _connection.CloseAsync();
             _disposed = true;
@@ -493,8 +461,7 @@ public class WorkflowTestFixture : IDisposable, IAsyncDisposable
     }
 }
 
-public class WorkflowServices
-{
+public class WorkflowServices {
     public required ApplicationDbContext Context { get; set; }
     public required ProductService ProductService { get; set; }
     public required CarritoService CarritoService { get; set; }

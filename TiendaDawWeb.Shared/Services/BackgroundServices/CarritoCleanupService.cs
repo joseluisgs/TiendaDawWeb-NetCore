@@ -44,8 +44,7 @@ public class CarritoCleanupService(
                 await context.SaveChangesAsync();
                 logger.LogInformation("Limpieza completada: {Count} items eliminados", expiredItems.Count);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logger.LogError(ex, "Error durante la limpieza de carritos");
         }
     }

@@ -9,20 +9,17 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// <summary>
 /// Configuración de SignalR para notificaciones en tiempo real.
 /// </summary>
-public static class SignalRExtensions
-{
+public static class SignalRExtensions {
     /// <summary>
     /// Configura SignalR con el NotificationHub.
     /// </summary>
     /// <param name="services">Colección de servicios.</param>
     /// <returns>IServiceCollection.</returns>
-    public static IServiceCollection AddAppSignalR(this IServiceCollection services)
-    {
+    public static IServiceCollection AddAppSignalR(this IServiceCollection services) {
         Log.Information("🔔 Configurando SignalR...");
 
         services.AddSignalR()
-            .AddHubOptions<NotificationHub>(options =>
-            {
+            .AddHubOptions<NotificationHub>(options => {
                 options.EnableDetailedErrors = true;
                 options.MaximumReceiveMessageSize = 1024 * 4;
                 options.KeepAliveInterval = TimeSpan.FromSeconds(15);

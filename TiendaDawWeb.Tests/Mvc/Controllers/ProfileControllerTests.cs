@@ -18,8 +18,7 @@ using TiendaDawWeb.Shared.Services.Storage;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class ProfileControllerTests
-{
+public class ProfileControllerTests {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ApplicationDbContext> _mockContext;
@@ -28,8 +27,7 @@ public class ProfileControllerTests
     private readonly ProfileController _controller;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public ProfileControllerTests()
-    {
+    public ProfileControllerTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
@@ -38,9 +36,8 @@ public class ProfileControllerTests
         _mockContext = new Mock<ApplicationDbContext>(new Microsoft.EntityFrameworkCore.DbContextOptions<ApplicationDbContext>());
         _mockStorageService = new Mock<IStorageService>();
         _mockLogger = new Mock<ILogger<ProfileController>>();
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -53,23 +50,20 @@ public class ProfileControllerTests
             _mockSignInManager.Object,
             _mockContext.Object,
             _mockStorageService.Object,
-            _mockLogger.Object)
-        {
+            _mockLogger.Object) {
             ControllerContext = new ControllerContext(actionContext)
         };
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
+    public void OneTimeTearDown() {
         _controller.Dispose();
     }
 
     #region Index Tests
 
     [Test]
-    public async Task Index_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Index_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -84,8 +78,7 @@ public class ProfileControllerTests
     #region Edit (GET) Tests
 
     [Test]
-    public async Task Edit_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Edit_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -96,8 +89,7 @@ public class ProfileControllerTests
     }
 
     [Test]
-    public async Task Edit_ReturnsView_WhenUserFound()
-    {
+    public async Task Edit_ReturnsView_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync(user);
@@ -113,8 +105,7 @@ public class ProfileControllerTests
     #region ChangePassword (GET) Tests
 
     [Test]
-    public void ChangePassword_ReturnsView()
-    {
+    public void ChangePassword_ReturnsView() {
         var result = _controller.ChangePassword();
 
         result.Should().BeOfType<ViewResult>();
@@ -125,8 +116,7 @@ public class ProfileControllerTests
     #region Edit (POST) Tests
 
     [Test]
-    public async Task EditPost_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task EditPost_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -141,8 +131,7 @@ public class ProfileControllerTests
     #region Passkeys Tests
 
     [Test]
-    public async Task Passkeys_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task Passkeys_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -153,8 +142,7 @@ public class ProfileControllerTests
     }
 
     [Test]
-    public async Task Passkeys_ReturnsViewWithList_WhenUserFound()
-    {
+    public async Task Passkeys_ReturnsViewWithList_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
         _mockUserManager.Setup(u => u.GetPasskeysAsync(user))
@@ -167,8 +155,7 @@ public class ProfileControllerTests
     }
 
     [Test]
-    public async Task PasskeyCreationOptions_ReturnsNotFound_WhenUserNotFound()
-    {
+    public async Task PasskeyCreationOptions_ReturnsNotFound_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -178,8 +165,7 @@ public class ProfileControllerTests
     }
 
     [Test]
-    public async Task PasskeyCreationOptions_ReturnsJson_WhenUserFound()
-    {
+    public async Task PasskeyCreationOptions_ReturnsJson_WhenUserFound() {
         var user = new User { Id = 1, UserName = "testuser", Email = "test@test.com" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
         _mockUserManager.Setup(u => u.GetUserIdAsync(user)).ReturnsAsync("1");
@@ -193,8 +179,7 @@ public class ProfileControllerTests
     }
 
     [Test]
-    public async Task PasskeyEliminar_ReturnsRedirectWithError_WhenIdNotBase64()
-    {
+    public async Task PasskeyEliminar_ReturnsRedirectWithError_WhenIdNotBase64() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
 
@@ -209,8 +194,7 @@ public class ProfileControllerTests
     }
 
     [Test]
-    public async Task PasskeyEliminar_RemovesPasskey_WhenIdValid()
-    {
+    public async Task PasskeyEliminar_RemovesPasskey_WhenIdValid() {
         var user = new User { Id = 1, UserName = "testuser" };
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal)).ReturnsAsync(user);
         _mockUserManager.Setup(u => u.RemovePasskeyAsync(user, It.IsAny<byte[]>()))
@@ -231,8 +215,7 @@ public class ProfileControllerTests
     /// <summary>
     ///     TempData de prueba: en runtime lo inyecta el framework con su proveedor.
     /// </summary>
-    private static TempDataDictionary CrearTempData(HttpContext httpContext)
-    {
+    private static TempDataDictionary CrearTempData(HttpContext httpContext) {
         var provider = new Mock<ITempDataProvider>();
         provider.Setup(p => p.LoadTempData(It.IsAny<HttpContext>()))
             .Returns(new Dictionary<string, object?>());

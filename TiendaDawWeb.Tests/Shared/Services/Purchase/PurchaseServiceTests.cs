@@ -16,8 +16,7 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
 namespace TiendaDawWeb.Tests.Shared.Services.Purchase;
 
-public class PurchaseServiceTests
-{
+public class PurchaseServiceTests {
     private ApplicationDbContext _context = null!;
     private Mock<ICarritoService> _carritoServiceMock = null!;
     private Mock<IPdfService> _pdfServiceMock = null!;
@@ -27,8 +26,7 @@ public class PurchaseServiceTests
     private PurchaseService _service = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -49,16 +47,14 @@ public class PurchaseServiceTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         _context.Dispose();
     }
 
     #region GetByIdAsync Tests
 
     [Test]
-    public async Task GetByIdAsync_ReturnsPurchase_WhenExists()
-    {
+    public async Task GetByIdAsync_ReturnsPurchase_WhenExists() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
         _context.Users.Add(user);
@@ -72,16 +68,14 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByIdAsync_ReturnsFailure_WhenNotExists()
-    {
+    public async Task GetByIdAsync_ReturnsFailure_WhenNotExists() {
         var result = await _service.GetByIdAsync(999);
 
         result.IsSuccess.Should().BeFalse();
     }
 
     [Test]
-    public async Task GetByIdAsync_IncludesProducts()
-    {
+    public async Task GetByIdAsync_IncludesProducts() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var product = new Product { Id = 1, Nombre = "Product", Descripcion = "Desc", Precio = 100, Categoria = ProductCategory.SMARTPHONES, Deleted = false };
         var purchase = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
@@ -102,8 +96,7 @@ public class PurchaseServiceTests
     #region GetByUserAsync Tests
 
     [Test]
-    public async Task GetByUserAsync_ReturnsPurchases()
-    {
+    public async Task GetByUserAsync_ReturnsPurchases() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var purchase1 = new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow };
         var purchase2 = new PurchaseModel { Id = 2, CompradorId = 1, Total = 200, FechaCompra = DateTime.UtcNow };
@@ -118,8 +111,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByUserAsync_ReturnsEmpty_WhenNoPurchases()
-    {
+    public async Task GetByUserAsync_ReturnsEmpty_WhenNoPurchases() {
         var result = await _service.GetByUserAsync(999);
 
         result.IsSuccess.Should().BeTrue();
@@ -127,12 +119,10 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByUserAsync_PaginatesResults()
-    {
+    public async Task GetByUserAsync_PaginatesResults() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         _context.Users.Add(user);
-        for (int i = 1; i <= 15; i++)
-        {
+        for (int i = 1; i <= 15; i++) {
             _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = DateTime.UtcNow });
         }
         await _context.SaveChangesAsync();
@@ -144,8 +134,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByUserAsync_ReturnsDifferentUsersPurchases()
-    {
+    public async Task GetByUserAsync_ReturnsDifferentUsersPurchases() {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
         _context.Users.AddRange(user1, user2);
@@ -167,8 +156,7 @@ public class PurchaseServiceTests
     #region GetAllAsync Tests
 
     [Test]
-    public async Task GetAllAsync_ReturnsAllPurchases()
-    {
+    public async Task GetAllAsync_ReturnsAllPurchases() {
         var user1 = new User { Id = 1, Email = "test1@test.com", UserName = "test1" };
         var user2 = new User { Id = 2, Email = "test2@test.com", UserName = "test2" };
         _context.Users.AddRange(user1, user2);
@@ -185,8 +173,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetAllAsync_ReturnsEmpty_WhenNoPurchases()
-    {
+    public async Task GetAllAsync_ReturnsEmpty_WhenNoPurchases() {
         var result = await _service.GetAllAsync();
 
         result.IsSuccess.Should().BeTrue();
@@ -194,12 +181,10 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetAllAsync_PaginatesResults()
-    {
+    public async Task GetAllAsync_PaginatesResults() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         _context.Users.Add(user);
-        for (int i = 1; i <= 15; i++)
-        {
+        for (int i = 1; i <= 15; i++) {
             _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = DateTime.UtcNow });
         }
         await _context.SaveChangesAsync();
@@ -215,8 +200,7 @@ public class PurchaseServiceTests
     #region GetByDateRangeAsync Tests
 
     [Test]
-    public async Task GetByDateRangeAsync_ReturnsPurchasesInRange()
-    {
+    public async Task GetByDateRangeAsync_ReturnsPurchasesInRange() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var now = DateTime.UtcNow;
         _context.Users.Add(user);
@@ -234,8 +218,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByDateRangeAsync_ReturnsEmpty_WhenNoMatch()
-    {
+    public async Task GetByDateRangeAsync_ReturnsEmpty_WhenNoMatch() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         _context.Users.Add(user);
         _context.Purchases.Add(new PurchaseModel { Id = 1, CompradorId = 1, Total = 100, FechaCompra = DateTime.UtcNow });
@@ -248,13 +231,11 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GetByDateRangeAsync_PaginatesResults()
-    {
+    public async Task GetByDateRangeAsync_PaginatesResults() {
         var user = new User { Id = 1, Email = "test@test.com", UserName = "test" };
         var now = DateTime.UtcNow;
         _context.Users.Add(user);
-        for (int i = 1; i <= 15; i++)
-        {
+        for (int i = 1; i <= 15; i++) {
             _context.Purchases.Add(new PurchaseModel { Id = i, CompradorId = 1, Total = i * 100, FechaCompra = now.AddDays(-i) });
         }
         await _context.SaveChangesAsync();
@@ -270,8 +251,7 @@ public class PurchaseServiceTests
     #region CreatePurchaseFromCarritoAsync Tests
 
     [Test]
-    public async Task CreatePurchaseFromCarritoAsync_ReturnsFailure_WhenEmptyCart()
-    {
+    public async Task CreatePurchaseFromCarritoAsync_ReturnsFailure_WhenEmptyCart() {
         _carritoServiceMock.Setup(c => c.GetCarritoByUsuarioIdAsync(It.IsAny<long>()))
             .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(Enumerable.Empty<CarritoItem>()));
 
@@ -281,8 +261,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task CreatePurchaseFromCarritoAsync_ReturnsFailure_WhenUserNotExists()
-    {
+    public async Task CreatePurchaseFromCarritoAsync_ReturnsFailure_WhenUserNotExists() {
         _carritoServiceMock.Setup(c => c.GetCarritoByUsuarioIdAsync(It.IsAny<long>()))
             .ReturnsAsync(Result.Success<IEnumerable<CarritoItem>, DomainError>(Enumerable.Empty<CarritoItem>()));
 
@@ -296,8 +275,7 @@ public class PurchaseServiceTests
     #region GeneratePdfAsync Tests
 
     [Test]
-    public async Task GeneratePdfAsync_ReturnsPdf()
-    {
+    public async Task GeneratePdfAsync_ReturnsPdf() {
         _pdfServiceMock.Setup(p => p.GenerateInvoicePdfAsync(It.IsAny<PurchaseModel>()))
             .ReturnsAsync(Result.Success<byte[], DomainError>(new byte[] { 1, 2, 3 }));
 
@@ -314,8 +292,7 @@ public class PurchaseServiceTests
     }
 
     [Test]
-    public async Task GeneratePdfAsync_ReturnsFailure_WhenNotExists()
-    {
+    public async Task GeneratePdfAsync_ReturnsFailure_WhenNotExists() {
         var result = await _service.GeneratePdfAsync(999);
 
         result.IsSuccess.Should().BeFalse();

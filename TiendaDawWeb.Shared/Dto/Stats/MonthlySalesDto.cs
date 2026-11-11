@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Dto.Stats;
 /// <summary>
 /// DTO para ventas mensuales.
 /// </summary>
-public class MonthlySalesDto
-{
+public class MonthlySalesDto {
     /// <summary>Año de la venta.</summary>
     public int Año { get; set; }
     /// <summary>Mes de la venta (1-12).</summary>

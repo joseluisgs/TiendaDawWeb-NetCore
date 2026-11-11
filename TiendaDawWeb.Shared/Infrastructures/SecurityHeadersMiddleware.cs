@@ -7,12 +7,10 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// Middleware de headers de seguridad HTTP.
 /// Añade headers de protección contra ataques comunes web.
 /// </summary>
-public class SecurityHeadersMiddleware(RequestDelegate next)
-{
+public class SecurityHeadersMiddleware(RequestDelegate next) {
     private readonly RequestDelegate _next = next;
 
-    private static readonly Dictionary<string, string> SecurityHeaders = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly Dictionary<string, string> SecurityHeaders = new(StringComparer.OrdinalIgnoreCase) {
         ["X-Content-Type-Options"] = "nosniff",
         ["X-Frame-Options"] = "DENY",
         ["Content-Security-Policy"] =
@@ -37,10 +35,8 @@ public class SecurityHeadersMiddleware(RequestDelegate next)
     /// El paso siguiente es externalizarlos a ficheros .js para poder quitarlo.
     /// </summary>
     /// <param name="context">Contexto HTTP de la petición en curso.</param>
-    public async Task InvokeAsync(HttpContext context)
-    {
-        foreach (var header in SecurityHeaders)
-        {
+    public async Task InvokeAsync(HttpContext context) {
+        foreach (var header in SecurityHeaders) {
             context.Response.Headers.TryAdd(header.Key, header.Value);
         }
 
@@ -51,13 +47,11 @@ public class SecurityHeadersMiddleware(RequestDelegate next)
 /// <summary>
 /// Extensiones para registro del middleware.
 /// </summary>
-public static class SecurityHeadersMiddlewareExtensions
-{
+public static class SecurityHeadersMiddlewareExtensions {
     /// <summary>Registra el middleware de headers de seguridad.</summary>
     /// <param name="app">Constructor de la aplicación.</param>
     /// <returns>IApplicationBuilder.</returns>
-    public static IApplicationBuilder UseSecurityHeaders(this IApplicationBuilder app)
-    {
+    public static IApplicationBuilder UseSecurityHeaders(this IApplicationBuilder app) {
         return app.UseMiddleware<SecurityHeadersMiddleware>();
     }
 }

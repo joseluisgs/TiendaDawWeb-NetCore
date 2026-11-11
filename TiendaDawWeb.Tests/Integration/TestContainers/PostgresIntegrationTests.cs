@@ -12,21 +12,16 @@ namespace TiendaDawWeb.Tests.Integration.TestContainers;
 /// Cada test usa un contexto fresh con base de datos única.
 /// </summary>
 [TestFixture]
-public class PostgresIntegrationTests
-{
+public class PostgresIntegrationTests {
     private PostgresFixture _fixture = null!;
     private int _dbCounter;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
-    {
-        try
-        {
+    public async Task OneTimeSetUp() {
+        try {
             _fixture = new PostgresFixture();
             await _fixture.StartAsync();
-        }
-        catch (DockerUnavailableException ex)
-        {
+        } catch (DockerUnavailableException ex) {
             // Sin Docker no hay PostgreSQL que levantar: se omiten estos tests en
             // lugar de fallar, para que `dotnet test` funcione en cualquier máquina.
             Assert.Ignore($"Docker no disponible: tests de PostgreSQL omitidos ({ex.Message})");
@@ -34,14 +29,12 @@ public class PostgresIntegrationTests
     }
 
     [OneTimeTearDown]
-    public async Task OneTimeTearDown()
-    {
+    public async Task OneTimeTearDown() {
         if (_fixture is not null)
             await _fixture.StopAsync();
     }
 
-    private async Task<ApplicationDbContext> CreateFreshContextAsync()
-    {
+    private async Task<ApplicationDbContext> CreateFreshContextAsync() {
         var dbName = $"tiendadaw_{Interlocked.Increment(ref _dbCounter)}";
         var context = _fixture.CreateIsolatedContext(dbName);
         await context.Database.EnsureCreatedAsync();
@@ -49,16 +42,14 @@ public class PostgresIntegrationTests
     }
 
     [Test]
-    public async Task Product_Create_SavesToPostgres()
-    {
+    public async Task Product_Create_SavesToPostgres() {
         await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "testuser", Email = "test@test.com" };
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Nombre = "Laptop Dell",
             Precio = 999.99m,
             Descripcion = "Laptop de prueba",
@@ -75,17 +66,15 @@ public class PostgresIntegrationTests
         saved.Precio.Should().Be(999.99m);
     }
 
-                [Test]
-    public async Task Product_SoftDelete_MarksAsDeleted()
-    {
+    [Test]
+    public async Task Product_SoftDelete_MarksAsDeleted() {
         await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "user2", Email = "user2@test.com" };
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Nombre = "Producto a borrar",
             Precio = 10m,
             Descripcion = "Test",
@@ -110,16 +99,14 @@ public class PostgresIntegrationTests
     }
 
     [Test]
-    public async Task Purchase_Create_SavesToPostgres()
-    {
+    public async Task Purchase_Create_SavesToPostgres() {
         await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "buyer", Email = "buyer@test.com" };
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var purchase = new Purchase
-        {
+        var purchase = new Purchase {
             CompradorId = user.Id,
             Total = 150m,
             FechaCompra = DateTime.UtcNow
@@ -133,16 +120,14 @@ public class PostgresIntegrationTests
     }
 
     [Test]
-    public async Task Rating_Create_SavesToPostgres()
-    {
+    public async Task Rating_Create_SavesToPostgres() {
         await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "rater", Email = "rater@test.com" };
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Nombre = "Producto rateable",
             Precio = 50m,
             Descripcion = "Test",
@@ -153,8 +138,7 @@ public class PostgresIntegrationTests
         context.Products.Add(product);
         await context.SaveChangesAsync();
 
-        var rating = new Rating
-        {
+        var rating = new Rating {
             UsuarioId = user.Id,
             ProductoId = product.Id,
             Puntuacion = 5,
@@ -170,16 +154,14 @@ public class PostgresIntegrationTests
     }
 
     [Test]
-    public async Task Favorite_AddAndQuery_Works()
-    {
+    public async Task Favorite_AddAndQuery_Works() {
         await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "favuser", Email = "fav@test.com" };
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var product = new Product
-        {
+        var product = new Product {
             Nombre = "Favorito",
             Precio = 30m,
             Descripcion = "Test",
@@ -190,8 +172,7 @@ public class PostgresIntegrationTests
         context.Products.Add(product);
         await context.SaveChangesAsync();
 
-        var favorite = new Favorite
-        {
+        var favorite = new Favorite {
             UsuarioId = user.Id,
             ProductoId = product.Id
         };
@@ -204,8 +185,7 @@ public class PostgresIntegrationTests
     }
 
     [Test]
-    public async Task Product_QueryWithFilters_Works()
-    {
+    public async Task Product_QueryWithFilters_Works() {
         await using var context = await CreateFreshContextAsync();
 
         var user = new User { UserName = "filter", Email = "filter@test.com" };

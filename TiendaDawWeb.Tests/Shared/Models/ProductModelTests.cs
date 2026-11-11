@@ -4,13 +4,10 @@ using TiendaDawWeb.Shared.Models.Enums;
 
 namespace TiendaDawWeb.Tests.Shared.Models;
 
-public class ProductTests
-{
+public class ProductTests {
     [Test]
-    public void Product_CanSetAllProperties()
-    {
-        var product = new Product
-        {
+    public void Product_CanSetAllProperties() {
+        var product = new Product {
             Id = 1,
             Nombre = "iPhone 15",
             Descripcion = "Latest iPhone",
@@ -45,10 +42,8 @@ public class ProductTests
     }
 
     [Test]
-    public void Product_SupportsCollections()
-    {
-        var product = new Product
-        {
+    public void Product_SupportsCollections() {
+        var product = new Product {
             Favorites = new List<Favorite>(),
             Ratings = new List<Rating>()
         };
@@ -58,18 +53,15 @@ public class ProductTests
     }
 
     [Test]
-    public void Product_DefaultReservado_IsFalse()
-    {
+    public void Product_DefaultReservado_IsFalse() {
         var product = new Product();
         product.Reservado.Should().BeFalse();
     }
 
     [Test]
-    public void Product_CanSetDeletedProperties()
-    {
+    public void Product_CanSetDeletedProperties() {
         var now = DateTime.UtcNow;
-        var product = new Product
-        {
+        var product = new Product {
             Deleted = true,
             DeletedAt = now,
             DeletedBy = "admin"
@@ -81,60 +73,51 @@ public class ProductTests
     }
 
     [Test]
-    public void ImagenOrDefault_ReturnsDefault_WhenNull()
-    {
+    public void ImagenOrDefault_ReturnsDefault_WhenNull() {
         var product = new Product { Imagen = null };
 
         product.ImagenOrDefault.Should().Be("/images/default-product.svg");
     }
 
     [Test]
-    public void ImagenOrDefault_ReturnsDefault_WhenEmpty()
-    {
+    public void ImagenOrDefault_ReturnsDefault_WhenEmpty() {
         var product = new Product { Imagen = string.Empty };
 
         product.ImagenOrDefault.Should().Be("/images/default-product.svg");
     }
 
     [Test]
-    public void ImagenOrDefault_ReturnsHttpUrl_WhenHttp()
-    {
+    public void ImagenOrDefault_ReturnsHttpUrl_WhenHttp() {
         var product = new Product { Imagen = "https://example.com/image.jpg" };
 
         product.ImagenOrDefault.Should().Be("https://example.com/image.jpg");
     }
 
     [Test]
-    public void ImagenOrDefault_ReturnsSlashUrl_WhenSlash()
-    {
+    public void ImagenOrDefault_ReturnsSlashUrl_WhenSlash() {
         var product = new Product { Imagen = "/uploads/image.jpg" };
 
         product.ImagenOrDefault.Should().Be("/uploads/image.jpg");
     }
 
     [Test]
-    public void ImagenOrDefault_ReturnsRelativePath_WithPrefix()
-    {
+    public void ImagenOrDefault_ReturnsRelativePath_WithPrefix() {
         var product = new Product { Imagen = "uploads/image.jpg" };
 
         product.ImagenOrDefault.Should().Be("/uploads/uploads/image.jpg");
     }
 
     [Test]
-    public void RatingPromedio_ReturnsZero_WhenNoRatings()
-    {
+    public void RatingPromedio_ReturnsZero_WhenNoRatings() {
         var product = new Product { Ratings = new List<Rating>() };
 
         product.RatingPromedio.Should().Be(0);
     }
 
     [Test]
-    public void RatingPromedio_ReturnsAverage_WhenHasRatings()
-    {
-        var product = new Product
-        {
-            Ratings = new List<Rating>
-            {
+    public void RatingPromedio_ReturnsAverage_WhenHasRatings() {
+        var product = new Product {
+            Ratings = new List<Rating> {
                 new Rating { Puntuacion = 4 },
                 new Rating { Puntuacion = 5 },
                 new Rating { Puntuacion = 3 }
@@ -145,8 +128,7 @@ public class ProductTests
     }
 
     [Test]
-    public void SoftDelete_SetsDeletedProperties()
-    {
+    public void SoftDelete_SetsDeletedProperties() {
         var product = new Product();
 
         product.SoftDelete("User-123");
@@ -157,8 +139,7 @@ public class ProductTests
     }
 
     [Test]
-    public void SoftDelete_SetsDeletedAtToNow()
-    {
+    public void SoftDelete_SetsDeletedAtToNow() {
         var product = new Product();
         var beforeCall = DateTime.UtcNow.AddSeconds(-1);
 
@@ -168,15 +149,11 @@ public class ProductTests
     }
 }
 
-public class RatingTests
-{
+public class RatingTests {
     [Test]
-    public void Rating_CalculatesAverage_SingleRating()
-    {
-        var product = new Product
-        {
-            Ratings = new List<Rating>
-            {
+    public void Rating_CalculatesAverage_SingleRating() {
+        var product = new Product {
+            Ratings = new List<Rating> {
                 new Rating { Puntuacion = 5 }
             }
         };
@@ -185,12 +162,9 @@ public class RatingTests
     }
 
     [Test]
-    public void Rating_CalculatesAverage_AllFiveRatings()
-    {
-        var product = new Product
-        {
-            Ratings = new List<Rating>
-            {
+    public void Rating_CalculatesAverage_AllFiveRatings() {
+        var product = new Product {
+            Ratings = new List<Rating> {
                 new Rating { Puntuacion = 1 },
                 new Rating { Puntuacion = 2 },
                 new Rating { Puntuacion = 3 },
@@ -203,13 +177,10 @@ public class RatingTests
     }
 }
 
-public class FavoriteTests
-{
+public class FavoriteTests {
     [Test]
-    public void Favorite_CreatesRelationship()
-    {
-        var favorite = new Favorite
-        {
+    public void Favorite_CreatesRelationship() {
+        var favorite = new Favorite {
             UsuarioId = 1,
             ProductoId = 100
         };
@@ -219,13 +190,10 @@ public class FavoriteTests
     }
 }
 
-public class CarritoItemTests
-{
+public class CarritoItemTests {
     [Test]
-    public void CarritoItem_HasPrice()
-    {
-        var item = new CarritoItem
-        {
+    public void CarritoItem_HasPrice() {
+        var item = new CarritoItem {
             Precio = 99.99m
         };
 
@@ -233,13 +201,10 @@ public class CarritoItemTests
     }
 }
 
-public class PurchaseTests
-{
+public class PurchaseTests {
     [Test]
-    public void Purchase_CalculatesTotal()
-    {
-        var purchase = new Purchase
-        {
+    public void Purchase_CalculatesTotal() {
+        var purchase = new Purchase {
             Total = 299.99m
         };
 
@@ -247,8 +212,7 @@ public class PurchaseTests
     }
 
     [Test]
-    public void Purchase_DefaultDate_IsNow()
-    {
+    public void Purchase_DefaultDate_IsNow() {
         var before = DateTime.UtcNow.AddSeconds(-1);
         var purchase = new Purchase();
         var after = DateTime.UtcNow.AddSeconds(1);
@@ -258,11 +222,9 @@ public class PurchaseTests
     }
 }
 
-public class UserTests
-{
+public class UserTests {
     [Test]
-    public void User_HasDefaultValues()
-    {
+    public void User_HasDefaultValues() {
         var user = new User();
 
         user.Rol.Should().Be("USER");

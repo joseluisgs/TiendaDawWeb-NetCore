@@ -8,18 +8,15 @@ using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Tests.ErrorHandling;
 
-public class ErrorHandlingTests
-{
+public class ErrorHandlingTests {
     [Test]
-    public void ErrorController_Index_With404_ShouldReturnErrorView()
-    {
+    public void ErrorController_Index_With404_ShouldReturnErrorView() {
         var loggerMock = new Mock<ILogger<ErrorController>>();
         var controller = new ErrorController(loggerMock.Object);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 404;
-        controller.ControllerContext = new ControllerContext
-        {
+        controller.ControllerContext = new ControllerContext {
             HttpContext = httpContext
         };
 
@@ -36,15 +33,13 @@ public class ErrorHandlingTests
     }
 
     [Test]
-    public void ErrorController_Index_With500_ShouldReturnErrorView()
-    {
+    public void ErrorController_Index_With500_ShouldReturnErrorView() {
         var loggerMock = new Mock<ILogger<ErrorController>>();
         var controller = new ErrorController(loggerMock.Object);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 500;
-        controller.ControllerContext = new ControllerContext
-        {
+        controller.ControllerContext = new ControllerContext {
             HttpContext = httpContext
         };
 
@@ -58,15 +53,13 @@ public class ErrorHandlingTests
     }
 
     [Test]
-    public void ErrorController_Index_With401_ShouldReturnErrorView()
-    {
+    public void ErrorController_Index_With401_ShouldReturnErrorView() {
         var loggerMock = new Mock<ILogger<ErrorController>>();
         var controller = new ErrorController(loggerMock.Object);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.StatusCode = 401;
-        controller.ControllerContext = new ControllerContext
-        {
+        controller.ControllerContext = new ControllerContext {
             HttpContext = httpContext
         };
 

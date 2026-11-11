@@ -24,8 +24,7 @@ public sealed record UsuarioSeed(
 /// (≥8 caracteres, mayúscula y dígito) para que sean válidas al crearlas
 /// con UserManager.
 /// </summary>
-public static class SeedCredentials
-{
+public static class SeedCredentials {
     /// <summary>Usuario administrador (rol ADMIN).</summary>
     public const string AdminEmail = "admin@waladaw.com";
 

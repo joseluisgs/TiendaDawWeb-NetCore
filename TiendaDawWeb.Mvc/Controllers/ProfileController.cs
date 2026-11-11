@@ -91,8 +91,7 @@ public class ProfileController(
                 // Eliminar avatar anterior si existe
                 if (!string.IsNullOrEmpty(user.Avatar)) await storageService.DeleteFileAsync(user.Avatar);
                 user.Avatar = result.Value;
-            }
-            else {
+            } else {
                 TempData["Error"] = "Error al guardar el avatar: " + result.Error.Message;
                 return View(user);
             }
@@ -279,8 +278,7 @@ public class ProfileController(
 
             if (result.Succeeded)
                 logger.LogInformation("Passkey eliminada para usuario {UserId}", user.Id);
-        }
-        catch (FormatException) {
+        } catch (FormatException) {
             TempData["Error"] = "El identificador de la passkey no es válido";
         }
 

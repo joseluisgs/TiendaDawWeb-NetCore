@@ -6,13 +6,10 @@ using TiendaDawWeb.Shared.ViewModels;
 
 namespace TiendaDawWeb.Tests.Shared.Mappers;
 
-public class ProductMapperTests
-{
+public class ProductMapperTests {
     [Test]
-    public void ToViewModel_MapsAllProperties_Success()
-    {
-        var product = new Product
-        {
+    public void ToViewModel_MapsAllProperties_Success() {
+        var product = new Product {
             Id = 1,
             Nombre = "iPhone 15",
             Descripcion = "Latest iPhone model",
@@ -32,10 +29,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void ToViewModel_HandlesNullImagen_Success()
-    {
-        var product = new Product
-        {
+    public void ToViewModel_HandlesNullImagen_Success() {
+        var product = new Product {
             Id = 1,
             Nombre = "Test",
             Descripcion = "Desc",
@@ -50,10 +45,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void ToEntity_CreatesEntity_Success()
-    {
-        var model = new ProductViewModel
-        {
+    public void ToEntity_CreatesEntity_Success() {
+        var model = new ProductViewModel {
             Id = 0,
             Nombre = "MacBook Pro",
             Descripcion = "Professional laptop",
@@ -73,10 +66,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void ToEntity_UsesImagenUrl_WhenImagenUrlProvided()
-    {
-        var model = new ProductViewModel
-        {
+    public void ToEntity_UsesImagenUrl_WhenImagenUrlProvided() {
+        var model = new ProductViewModel {
             Id = 0,
             Nombre = "Test",
             Descripcion = "Desc",
@@ -91,10 +82,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void ToEntity_WithIncludeId_SetsId_Success()
-    {
-        var model = new ProductViewModel
-        {
+    public void ToEntity_WithIncludeId_SetsId_Success() {
+        var model = new ProductViewModel {
             Id = 42,
             Nombre = "Test",
             Descripcion = "Desc",
@@ -108,10 +97,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void ToEntity_WithoutIncludeId_DoesNotSetId_Success()
-    {
-        var model = new ProductViewModel
-        {
+    public void ToEntity_WithoutIncludeId_DoesNotSetId_Success() {
+        var model = new ProductViewModel {
             Id = 42,
             Nombre = "Test",
             Descripcion = "Desc",
@@ -125,10 +112,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void UpdateEntity_UpdatesAllProperties_Success()
-    {
-        var product = new Product
-        {
+    public void UpdateEntity_UpdatesAllProperties_Success() {
+        var product = new Product {
             Id = 1,
             Nombre = "Old Name",
             Descripcion = "Old Desc",
@@ -137,8 +122,7 @@ public class ProductMapperTests
             Imagen = "/old/image.jpg"
         };
 
-        var model = new ProductViewModel
-        {
+        var model = new ProductViewModel {
             Id = 1,
             Nombre = "New Name",
             Descripcion = "New Desc",
@@ -157,10 +141,8 @@ public class ProductMapperTests
     }
 
     [Test]
-    public void UpdateEntity_DoesNotUpdateImagen_WhenNull_Success()
-    {
-        var product = new Product
-        {
+    public void UpdateEntity_DoesNotUpdateImagen_WhenNull_Success() {
+        var product = new Product {
             Id = 1,
             Nombre = "Name",
             Descripcion = "Desc",
@@ -169,8 +151,7 @@ public class ProductMapperTests
             Imagen = "/existing/image.jpg"
         };
 
-        var model = new ProductViewModel
-        {
+        var model = new ProductViewModel {
             Id = 1,
             Nombre = "Updated Name",
             Descripcion = "Desc",

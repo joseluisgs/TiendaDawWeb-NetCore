@@ -83,8 +83,7 @@ public class FavoriteApiController(
             var result = await favoriteService.RemoveFavoriteAsync(user.Id, request.ProductId);
             if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });
             return Ok(new { success = true, isFavorite = false, message = "Eliminado de favoritos" });
-        }
-        else {
+        } else {
             // Add to favorites
             var result = await favoriteService.AddFavoriteAsync(user.Id, request.ProductId);
             if (result.IsFailure) return BadRequest(new { success = false, message = result.Error.Message });

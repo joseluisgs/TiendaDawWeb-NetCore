@@ -19,14 +19,12 @@ namespace TiendaDawWeb.Tests.Integration;
 /// con UserManager de verdad.
 /// </summary>
 [TestFixture]
-public class IdentitySchemaPatchTests
-{
+public class IdentitySchemaPatchTests {
     private SqliteConnection _conexion = null!;
     private ServiceProvider _provider = null!;
 
     [SetUp]
-    public void Setup()
-    {
+    public void Setup() {
         // SQLite en memoria: la conexión se mantiene abierta; si se cierra,
         // la base de datos desaparece con ella.
         _conexion = new SqliteConnection("DataSource=:memory:");
@@ -38,16 +36,15 @@ public class IdentitySchemaPatchTests
 
         // Mismo esquema que AuthenticationConfig: sin Version3 no existe la
         // tabla de passkeys y no habría nada que parchear.
-        servicios.AddIdentityCore<User>(options =>
-            {
-                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 8;
-                options.User.RequireUniqueEmail = true;
-            })
+        servicios.AddIdentityCore<User>(options => {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 8;
+            options.User.RequireUniqueEmail = true;
+        })
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         _provider = servicios.BuildServiceProvider();
@@ -55,15 +52,13 @@ public class IdentitySchemaPatchTests
     }
 
     [TearDown]
-    public void TearDown()
-    {
+    public void TearDown() {
         _provider.Dispose();
         _conexion.Dispose();
     }
 
     [Test]
-    public async Task Completar_EnBdViejaSinPasskeys_CreaTablaYPermiteGuardarPasskey()
-    {
+    public async Task Completar_EnBdViejaSinPasskeys_CreaTablaYPermiteGuardarPasskey() {
         var context = _provider.GetRequiredService<ApplicationDbContext>();
 
         // Se simula una BD de producción creada con el esquema anterior.
@@ -99,8 +94,7 @@ public class IdentitySchemaPatchTests
     }
 
     [Test]
-    public async Task Completar_CuandoLaTablaYaExiste_NoHaceNada()
-    {
+    public async Task Completar_CuandoLaTablaYaExiste_NoHaceNada() {
         var context = _provider.GetRequiredService<ApplicationDbContext>();
 
         // En una BD nueva EnsureCreated ya ha creado la tabla: el parche es
@@ -111,8 +105,7 @@ public class IdentitySchemaPatchTests
     }
 
     [Test]
-    public async Task Completar_DosVecesSeguidas_NoFalla()
-    {
+    public async Task Completar_DosVecesSeguidas_NoFalla() {
         var context = _provider.GetRequiredService<ApplicationDbContext>();
         await context.Database.ExecuteSqlRawAsync("DROP TABLE \"AspNetUserPasskeys\"");
 

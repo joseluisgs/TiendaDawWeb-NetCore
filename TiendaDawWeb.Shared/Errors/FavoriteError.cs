@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Errors;
 /// <summary>
 /// Errores relacionados con favoritos.
 /// </summary>
-public static class FavoriteError
-{
+public static class FavoriteError {
     public static ConflictError AlreadyExists() =>
         new("Este producto ya está en tus favoritos");
 

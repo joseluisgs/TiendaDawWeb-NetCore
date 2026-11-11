@@ -17,11 +17,9 @@ using TiendaDawWeb.Shared.Services.Purchase;
 
 namespace TiendaDawWeb.Tests.Mvc.Controllers;
 
-public class AdminControllerTests
-{
+public class AdminControllerTests {
     [Test]
-    public void Constructor_CreatesInstance()
-    {
+    public void Constructor_CreatesInstance() {
         var mockContext = new Mock<ApplicationDbContext>(new Microsoft.EntityFrameworkCore.DbContextOptions<ApplicationDbContext>());
         var userStoreMock = new Mock<IUserStore<User>>();
         var mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
@@ -43,14 +41,12 @@ public class AdminControllerTests
     }
 
     [Test]
-    public void AdminController_InheritsFromController()
-    {
+    public void AdminController_InheritsFromController() {
         typeof(AdminController).Should().BeDerivedFrom<Microsoft.AspNetCore.Mvc.Controller>();
     }
 
     [Test]
-    public void AdminController_HasAdminAuthorizeAttribute()
-    {
+    public void AdminController_HasAdminAuthorizeAttribute() {
         var attributes = typeof(AdminController).GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true);
         attributes.Should().NotBeEmpty();
         var authAttr = attributes.First() as Microsoft.AspNetCore.Authorization.AuthorizeAttribute;
@@ -58,8 +54,7 @@ public class AdminControllerTests
     }
 
     [Test]
-    public void AdminController_HasAdminRouteAttribute()
-    {
+    public void AdminController_HasAdminRouteAttribute() {
         var controllerType = typeof(AdminController);
         var routeAttributes = controllerType.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.RouteAttribute), true);
         routeAttributes.Should().NotBeEmpty();

@@ -84,7 +84,7 @@ public class IndexModel(
         if (user == null) return RedirectToPage("/Auth/Login");
 
         var result = await carritoService.RemoveFromCarritoAsync(itemId);
-        
+
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
         } else {
@@ -103,7 +103,7 @@ public class IndexModel(
         if (user == null) return RedirectToPage("/Auth/Login");
 
         var result = await carritoService.ClearCarritoAsync(user.Id);
-        
+
         if (result.IsFailure) {
             TempData["Error"] = result.Error;
         } else {

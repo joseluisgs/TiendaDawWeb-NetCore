@@ -9,14 +9,12 @@ namespace TiendaDawWeb.Tests.Integration.TestContainers;
 /// Fixture que levanta PostgreSQL en Docker para tests de integración.
 /// Se ejecuta una vez por suite (OneTimeSetUp/OneTimeTearDown).
 /// </summary>
-public sealed class PostgresFixture
-{
+public sealed class PostgresFixture {
     private PostgreSqlContainer? _container;
 
     public string ConnectionString => _container!.GetConnectionString();
 
-    public async Task StartAsync()
-    {
+    public async Task StartAsync() {
         _container = new PostgreSqlBuilder("postgres:17-alpine")
             .WithDatabase("tiendadaw_test")
             .WithUsername("postgres")
@@ -26,8 +24,7 @@ public sealed class PostgresFixture
         await _container.StartAsync();
     }
 
-    public async Task StopAsync()
-    {
+    public async Task StopAsync() {
         if (_container is not null)
             await _container.DisposeAsync();
     }
@@ -35,8 +32,7 @@ public sealed class PostgresFixture
     /// <summary>
     /// Crea un DbContext con base de datos unique por test (aislamiento total).
     /// </summary>
-    public ApplicationDbContext CreateIsolatedContext(string dbName)
-    {
+    public ApplicationDbContext CreateIsolatedContext(string dbName) {
         var isolatedCs = ConnectionString.Replace("tiendadaw_test", dbName);
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(isolatedCs)

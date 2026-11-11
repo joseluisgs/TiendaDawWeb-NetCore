@@ -13,22 +13,19 @@ using PurchaseModel = TiendaDawWeb.Shared.Models.Purchase;
 
 namespace TiendaDawWeb.Tests.RazorPages.Purchase;
 
-public class PurchaseIndexModelTests
-{
+public class PurchaseIndexModelTests {
     private readonly Mock<IPurchaseService> _mockPurchaseService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly IndexModel _model;
     private readonly ClaimsPrincipal _userPrincipal;
 
-    public PurchaseIndexModelTests()
-    {
+    public PurchaseIndexModelTests() {
         _mockPurchaseService = new Mock<IPurchaseService>();
-        
+
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
-        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+
+        _userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1")
         }, "mock"));
 
@@ -37,29 +34,25 @@ public class PurchaseIndexModelTests
 
         _model = new IndexModel(
             _mockPurchaseService.Object,
-            _mockUserManager.Object)
-        {
+            _mockUserManager.Object) {
             PageContext = pageContext
         };
     }
 
     [Test]
-    public void PurchaseIndexModel_CanBeInstantiated()
-    {
+    public void PurchaseIndexModel_CanBeInstantiated() {
         var model = new IndexModel(null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void PurchaseIndexModel_HasPurchasesProperty()
-    {
+    public void PurchaseIndexModel_HasPurchasesProperty() {
         var model = new IndexModel(null!, null!);
         model.Purchases.Should().NotBeNull();
     }
 
     [Test]
-    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound()
-    {
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.GetUserAsync(_userPrincipal))
             .ReturnsAsync((User)null!);
 
@@ -70,42 +63,36 @@ public class PurchaseIndexModelTests
     }
 }
 
-public class PurchaseConfirmacionModelTests
-{
+public class PurchaseConfirmacionModelTests {
     private readonly Mock<IPurchaseService> _mockPurchaseService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly ClaimsPrincipal _authenticatedUser;
 
-    public PurchaseConfirmacionModelTests()
-    {
+    public PurchaseConfirmacionModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _mockPurchaseService = new Mock<IPurchaseService>();
 
-        _authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
+        _authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] {
             new Claim(ClaimTypes.NameIdentifier, "1"),
             new Claim(ClaimTypes.Name, "testuser")
         }, "TestAuthType"));
     }
 
     [Test]
-    public void ConfirmacionModel_CanBeInstantiated()
-    {
+    public void ConfirmacionModel_CanBeInstantiated() {
         var model = new ConfirmacionModel(null!, null!);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void ConfirmacionModel_HasPurchaseProperty()
-    {
+    public void ConfirmacionModel_HasPurchaseProperty() {
         var model = new ConfirmacionModel(null!, null!);
         model.Purchase.Should().Be(default(PurchaseModel));
     }
 
     [Test]
-    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotAuthenticated()
-    {
+    public async Task OnGetAsync_RedirectsToLogin_WhenUserNotAuthenticated() {
         _mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync((User)null!);
 

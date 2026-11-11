@@ -16,38 +16,32 @@ using IdentitySignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace TiendaDawWeb.Tests.RazorPages.Auth;
 
-public class AccessDeniedModelTests
-{
+public class AccessDeniedModelTests {
     [Test]
-    public void OnGet_DoesNotThrow()
-    {
+    public void OnGet_DoesNotThrow() {
         var model = new AccessDeniedModel();
         var act = () => model.OnGet();
         act.Should().NotThrow();
     }
 
     [Test]
-    public void AccessDeniedModel_CanBeInstantiated()
-    {
+    public void AccessDeniedModel_CanBeInstantiated() {
         var model = new AccessDeniedModel();
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void AccessDeniedModel_HasCorrectAttributes()
-    {
+    public void AccessDeniedModel_HasCorrectAttributes() {
         typeof(AccessDeniedModel).Should().BeDerivedFrom<PageModel>();
     }
 }
 
-public class LogoutModelTests
-{
+public class LogoutModelTests {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<LogoutModel>> _mockLogger;
 
-    public LogoutModelTests()
-    {
+    public LogoutModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
@@ -56,21 +50,18 @@ public class LogoutModelTests
     }
 
     [Test]
-    public void LogoutModel_CanBeInstantiated()
-    {
+    public void LogoutModel_CanBeInstantiated() {
         var model = new LogoutModel(_mockSignInManager.Object);
         model.Should().NotBeNull();
     }
 }
 
-public class LoginModelTests
-{
+public class LoginModelTests {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<LoginModel>> _mockLogger;
 
-    public LoginModelTests()
-    {
+    public LoginModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
@@ -79,86 +70,76 @@ public class LoginModelTests
     }
 
     [Test]
-    public void LoginModel_CanBeInstantiated()
-    {
+    public void LoginModel_CanBeInstantiated() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void LoginModel_HasEmailProperty()
-    {
+    public void LoginModel_HasEmailProperty() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Email.Should().BeEmpty();
     }
 
     [Test]
-    public void LoginModel_HasPasswordProperty()
-    {
+    public void LoginModel_HasPasswordProperty() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Password.Should().BeEmpty();
     }
 
     [Test]
-    public void LoginModel_HasRememberMeProperty()
-    {
+    public void LoginModel_HasRememberMeProperty() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.RememberMe.Should().BeFalse();
     }
 
     [Test]
-    public void LoginModel_HasReturnUrlProperty()
-    {
+    public void LoginModel_HasReturnUrlProperty() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.ReturnUrl.Should().BeNull();
     }
 
     [Test]
-    public void OnGet_SetsReturnUrl()
-    {
+    public void OnGet_SetsReturnUrl() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.OnGet("/some-return-url");
         model.ReturnUrl.Should().Be("/some-return-url");
     }
 
     [Test]
-    public void OnGet_SetsReturnUrlToNull_WhenNullProvided()
-    {
+    public void OnGet_SetsReturnUrlToNull_WhenNullProvided() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.OnGet(null);
         model.ReturnUrl.Should().BeNull();
     }
 
     [Test]
-    public async Task OnPostAsync_ReturnsPage_WhenModelStateInvalid()
-    {
+    public async Task OnPostAsync_ReturnsPage_WhenModelStateInvalid() {
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.ModelState.AddModelError("Error", "Invalid model");
-        
+
         var result = await model.OnPostAsync();
-        
+
         result.Should().BeOfType<PageResult>();
     }
 
     [Test]
-    public async Task OnPostAsync_ReturnsPage_WhenUserNotFound()
-    {
+    public async Task OnPostAsync_ReturnsPage_WhenUserNotFound() {
         _mockUserManager.Setup(u => u.FindByEmailAsync(It.IsAny<string>()))
             .ReturnsAsync((User)null!);
-        
+
         var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Email = "test@example.com";
         model.Password = "password";
-        
+
         var result = await model.OnPostAsync();
-        
+
         result.Should().BeOfType<PageResult>();
         model.ModelState.Should().ContainKey(string.Empty);
     }
 
     [Test]
-    public async Task OnPostPasskeyRequestOptionsAsync_ReturnsJson_WhenNoEmail()
-    {
+    public async Task OnPostPasskeyRequestOptionsAsync_ReturnsJson_WhenNoEmail() {
         _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(It.IsAny<User>()))
             .ReturnsAsync("{}");
 
@@ -170,8 +151,7 @@ public class LoginModelTests
     }
 
     [Test]
-    public async Task OnPostPasskeyRequestOptionsAsync_LooksUpUser_WhenEmailProvided()
-    {
+    public async Task OnPostPasskeyRequestOptionsAsync_LooksUpUser_WhenEmailProvided() {
         var user = new User { Id = 1, UserName = "test@example.com", Email = "test@example.com" };
         _mockUserManager.Setup(u => u.FindByEmailAsync("test@example.com")).ReturnsAsync(user);
         _mockSignInManager.Setup(s => s.MakePasskeyRequestOptionsAsync(user))
@@ -185,8 +165,7 @@ public class LoginModelTests
     }
 
     [Test]
-    public async Task OnPostPasskeyAssertionAsync_ReturnsUnauthorized_WhenSignatureInvalid()
-    {
+    public async Task OnPostPasskeyAssertionAsync_ReturnsUnauthorized_WhenSignatureInvalid() {
         _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
             .ReturnsAsync(IdentitySignInResult.Failed);
 
@@ -198,16 +177,14 @@ public class LoginModelTests
     }
 
     [Test]
-    public async Task OnPostPasskeyAssertionAsync_ReturnsJsonWithDestino_WhenSignatureValid()
-    {
+    public async Task OnPostPasskeyAssertionAsync_ReturnsJsonWithDestino_WhenSignatureValid() {
         var httpContext = new DefaultHttpContext();
         var pageContext = new PageContext { HttpContext = httpContext };
 
         _mockSignInManager.Setup(s => s.PasskeySignInAsync(It.IsAny<string>()))
             .ReturnsAsync(IdentitySignInResult.Success);
 
-        var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object)
-        {
+        var model = new LoginModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object) {
             PageContext = pageContext
         };
 
@@ -223,14 +200,12 @@ public class LoginModelTests
     }
 }
 
-public class RegisterModelTests
-{
+public class RegisterModelTests {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<SignInManager<User>> _mockSignInManager;
     private readonly Mock<ILogger<RegisterModel>> _mockLogger;
 
-    public RegisterModelTests()
-    {
+    public RegisterModelTests() {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _mockSignInManager = new Mock<SignInManager<User>>(_mockUserManager.Object,
@@ -239,36 +214,31 @@ public class RegisterModelTests
     }
 
     [Test]
-    public void RegisterModel_CanBeInstantiated()
-    {
+    public void RegisterModel_CanBeInstantiated() {
         var model = new RegisterModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Should().NotBeNull();
     }
 
     [Test]
-    public void RegisterModel_HasInputProperty()
-    {
+    public void RegisterModel_HasInputProperty() {
         var model = new RegisterModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Input.Should().BeNull();
     }
 
     [Test]
-    public void RegisterModel_HasNombreProperty()
-    {
+    public void RegisterModel_HasNombreProperty() {
         var model = new RegisterModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Nombre.Should().BeNull();
     }
 
     [Test]
-    public void RegisterModel_HasPasswordProperty()
-    {
+    public void RegisterModel_HasPasswordProperty() {
         var model = new RegisterModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.Password.Should().BeNull();
     }
 
     [Test]
-    public void RegisterModel_HasConfirmPasswordProperty()
-    {
+    public void RegisterModel_HasConfirmPasswordProperty() {
         var model = new RegisterModel(_mockUserManager.Object, _mockSignInManager.Object, _mockLogger.Object);
         model.ConfirmPassword.Should().BeNull();
     }

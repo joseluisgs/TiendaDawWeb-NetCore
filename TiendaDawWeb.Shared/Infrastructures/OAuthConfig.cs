@@ -18,8 +18,7 @@ namespace TiendaDawWeb.Shared.Web.Infrastructures;
 /// ASP.NET Core Identity que trae SignInManager.GetExternalLoginInfoAsync()
 /// y la tabla AspNetUserLogins para vinculación.
 /// </summary>
-public static class OAuthConfig
-{
+public static class OAuthConfig {
     /// <summary>
     /// Registra las puertas externas activadas en la configuración.
     /// </summary>
@@ -28,80 +27,58 @@ public static class OAuthConfig
     /// <returns>IServiceCollection para encadenar.</returns>
     public static IServiceCollection AddOAuthDoors(
         this IServiceCollection services,
-        IConfiguration configuration)
-    {
+        IConfiguration configuration) {
         // Un único AddAuthentication() como menú de puertas: los esquemas
         // defaults (Identity Cookies) ya los puso AuthenticationConfig, aquí solo se
         // añaden esquemas de proveedores encima.
         var auth = services.AddAuthentication();
 
-        if (configuration.GetValue<bool>("Auth:Google:Enabled"))
-        {
+        if (configuration.GetValue<bool>("Auth:Google:Enabled")) {
             var clientId = configuration["Google:ClientId"];
             var clientSecret = configuration["Google:ClientSecret"];
-            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-            {
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
                 Log.Warning("🚪 Auth:Google:Enabled=true pero falta credenciales — puerta NO registrada");
-            }
-            else
-            {
-                auth.AddGoogle(options =>
-                {
+            } else {
+                auth.AddGoogle(options => {
                     options.ClientId = clientId;
                     options.ClientSecret = clientSecret;
                     options.UsePkce = true;
                 });
                 Log.Information("🚪 Puerta de login externo activa: Google");
             }
-        }
-        else
-        {
+        } else {
             Log.Information("🚪 Auth:Google:Enabled=false — puerta desactivada");
         }
 
-        if (configuration.GetValue<bool>("Auth:GitHub:Enabled"))
-        {
+        if (configuration.GetValue<bool>("Auth:GitHub:Enabled")) {
             var clientId = configuration["GitHub:ClientId"];
             var clientSecret = configuration["GitHub:ClientSecret"];
-            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-            {
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
                 Log.Warning("🚪 Auth:GitHub:Enabled=true pero falta credenciales — puerta NO registrada");
-            }
-            else
-            {
-                auth.AddGitHub(options =>
-                {
+            } else {
+                auth.AddGitHub(options => {
                     options.ClientId = clientId;
                     options.ClientSecret = clientSecret;
                 });
                 Log.Information("🚪 Puerta de login externo activa: GitHub");
             }
-        }
-        else
-        {
+        } else {
             Log.Information("🚪 Auth:GitHub:Enabled=false — puerta desactivada");
         }
 
-        if (configuration.GetValue<bool>("Auth:Microsoft:Enabled"))
-        {
+        if (configuration.GetValue<bool>("Auth:Microsoft:Enabled")) {
             var clientId = configuration["Microsoft:ClientId"];
             var clientSecret = configuration["Microsoft:ClientSecret"];
-            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-            {
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
                 Log.Warning("🚪 Auth:Microsoft:Enabled=true pero falta credenciales — puerta NO registrada");
-            }
-            else
-            {
-                auth.AddMicrosoftAccount(options =>
-                {
+            } else {
+                auth.AddMicrosoftAccount(options => {
                     options.ClientId = clientId;
                     options.ClientSecret = clientSecret;
                 });
                 Log.Information("🚪 Puerta de login externo activa: Microsoft");
             }
-        }
-        else
-        {
+        } else {
             Log.Information("🚪 Auth:Microsoft:Enabled=false — puerta desactivada");
         }
 

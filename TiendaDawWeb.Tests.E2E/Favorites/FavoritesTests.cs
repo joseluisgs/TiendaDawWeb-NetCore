@@ -13,12 +13,9 @@ namespace TiendaDawWeb.Tests.E2E.Favorites;
  */
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class FavoritesTests : E2ETestBase
-{
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
-        {
+public class FavoritesTests : E2ETestBase {
+    public override BrowserNewContextOptions ContextOptions() {
+        return new BrowserNewContextOptions {
             Locale = "es-ES",
             TimezoneId = "Europe/Madrid",
             RecordVideoDir = "TestVideos"
@@ -26,8 +23,7 @@ public class FavoritesTests : E2ETestBase
     }
 
     [Test]
-    public async Task ToggleFavorite_ShouldWorkWithNewUser()
-    {
+    public async Task ToggleFavorite_ShouldWorkWithNewUser() {
         string id = System.Guid.NewGuid().ToString().Substring(0, 8);
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Register");
         await CaptureScreenshotAsync("01-register-page");
@@ -44,7 +40,7 @@ public class FavoritesTests : E2ETestBase
 
         await Page.GotoAsync($"{BaseTestUrl}/Public");
         await CaptureScreenshotAsync("03-product-list");
-        
+
         var products = Page.TestId("product-card");
         await Expect(products.First).ToBeVisibleAsync();
 

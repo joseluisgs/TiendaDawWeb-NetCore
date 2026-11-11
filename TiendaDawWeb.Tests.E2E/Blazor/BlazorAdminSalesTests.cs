@@ -10,12 +10,9 @@ namespace TiendaDawWeb.Tests.E2E.Blazor;
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [TestFixture]
-public class BlazorAdminSalesTests : E2ETestBase
-{
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
-        {
+public class BlazorAdminSalesTests : E2ETestBase {
+    public override BrowserNewContextOptions ContextOptions() {
+        return new BrowserNewContextOptions {
             Locale = "es-ES",
             TimezoneId = "Europe/Madrid",
             RecordVideoDir = "TestVideos"
@@ -23,8 +20,7 @@ public class BlazorAdminSalesTests : E2ETestBase
     }
 
     [Test]
-    public async Task Purchase_ShouldUpdateAdminStatistics()
-    {
+    public async Task Purchase_ShouldUpdateAdminStatistics() {
         string id = System.Guid.NewGuid().ToString().Substring(0, 8);
         string buyerEmail = $"admin_buyer_{id}@test.com";
 
@@ -45,8 +41,7 @@ public class BlazorAdminSalesTests : E2ETestBase
         await Page.TestId("search-button").ClickAsync();
         await CaptureScreenshotAsync("04-search-product");
 
-        if (await Page.TestId("add-to-cart-button").CountAsync() > 0)
-        {
+        if (await Page.TestId("add-to-cart-button").CountAsync() > 0) {
             await Page.TestId("add-to-cart-button").ClickAsync();
             await CaptureScreenshotAsync("05-added-to-cart");
             await Page.WaitForTimeoutAsync(1000);
@@ -70,8 +65,7 @@ public class BlazorAdminSalesTests : E2ETestBase
     }
 
     [Test]
-    public async Task AdminStatsWidget_ShouldShowStatistics()
-    {
+    public async Task AdminStatsWidget_ShouldShowStatistics() {
         await Page.GotoAsync($"{BaseTestUrl}/Auth/Login");
         await Page.TestId("email-input").FillAsync(AdminEmail);
         await Page.TestId("password-input").FillAsync(AdminPassword);

@@ -19,14 +19,14 @@ public class RemoveModel(
         }
 
         var result = await carritoService.RemoveFromCarritoAsync(itemId);
-        
+
         if (result.IsFailure) {
             return new JsonResult(new { success = false, message = result.Error });
         }
 
         var countResult = await carritoService.GetCarritoCountAsync(user.Id);
-        return new JsonResult(new { 
-            success = true, 
+        return new JsonResult(new {
+            success = true,
             message = "Producto eliminado del carrito",
             count = countResult.IsSuccess ? countResult.Value : 0
         });

@@ -3,8 +3,7 @@ namespace TiendaDawWeb.Shared.Errors;
 /// <summary>
 /// Errores específicos del carrito de compras.
 /// </summary>
-public static class CarritoError
-{
+public static class CarritoError {
     public static NotFoundError ItemNotFound(long id) =>
         NotFoundError.FromId(id, "Item del carrito");
 

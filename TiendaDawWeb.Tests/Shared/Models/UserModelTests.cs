@@ -6,13 +6,10 @@ using TiendaDawWeb.Shared.Models.Enums;
 
 namespace TiendaDawWeb.Tests.Shared.Models;
 
-public class AuditableEntityTests
-{
+public class AuditableEntityTests {
     [Test]
-    public void AuditableEntity_CanSetAuditFields()
-    {
-        var entity = new TestAuditableEntity
-        {
+    public void AuditableEntity_CanSetAuditFields() {
+        var entity = new TestAuditableEntity {
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             CreatedBy = "admin",
@@ -28,13 +25,10 @@ public class AuditableEntityTests
     private class TestAuditableEntity : AuditableEntity { }
 }
 
-public class UserModelTests
-{
+public class UserModelTests {
     [Test]
-    public void User_CanSetProperties()
-    {
-        var user = new User
-        {
+    public void User_CanSetProperties() {
+        var user = new User {
             Id = 1,
             UserName = "testuser",
             Email = "test@example.com",
@@ -62,24 +56,20 @@ public class UserModelTests
     }
 
     [Test]
-    public void User_HasDefaultRol()
-    {
+    public void User_HasDefaultRol() {
         var user = new User();
         user.Rol.Should().Be("USER");
     }
 
     [Test]
-    public void User_CanHaveNullAvatar()
-    {
+    public void User_CanHaveNullAvatar() {
         var user = new User { Avatar = null };
         user.Avatar.Should().BeNull();
     }
 
     [Test]
-    public void User_SupportsCollections()
-    {
-        var user = new User
-        {
+    public void User_SupportsCollections() {
+        var user = new User {
             Products = new List<Product>(),
             Purchases = new List<Purchase>(),
             Favorites = new List<Favorite>(),
@@ -95,11 +85,9 @@ public class UserModelTests
     }
 
     [Test]
-    public void User_CanSetAuditFields()
-    {
+    public void User_CanSetAuditFields() {
         var now = DateTime.UtcNow;
-        var user = new User
-        {
+        var user = new User {
             CreatedAt = now,
             UpdatedAt = now.AddHours(1),
             CreatedBy = "admin",
@@ -113,11 +101,9 @@ public class UserModelTests
     }
 
     [Test]
-    public void User_CanSetDeletedProperties()
-    {
+    public void User_CanSetDeletedProperties() {
         var now = DateTime.UtcNow;
-        var user = new User
-        {
+        var user = new User {
             Deleted = true,
             DeletedAt = now,
             DeletedBy = "admin"
@@ -129,37 +115,31 @@ public class UserModelTests
     }
 
     [Test]
-    public void User_CanHaveNullDeletedAt()
-    {
+    public void User_CanHaveNullDeletedAt() {
         var user = new User { Deleted = false, DeletedAt = null, DeletedBy = null };
         user.DeletedAt.Should().BeNull();
         user.DeletedBy.Should().BeNull();
     }
 
     [Test]
-    public void User_CanImplementITimestamped()
-    {
+    public void User_CanImplementITimestamped() {
         var user = new User();
         var timestamped = user as ITimestamped;
-        
+
         timestamped.Should().NotBeNull();
     }
 
     [Test]
-    public void User_ImplementsIdentityUser()
-    {
+    public void User_ImplementsIdentityUser() {
         var user = new User();
         user.Should().BeAssignableTo<IdentityUser<long>>();
     }
 }
 
-public class RatingModelTests
-{
+public class RatingModelTests {
     [Test]
-    public void Rating_CanSetProperties()
-    {
-        var rating = new Rating
-        {
+    public void Rating_CanSetProperties() {
+        var rating = new Rating {
             Id = 1,
             Puntuacion = 5,
             Comentario = "Great!",
@@ -175,27 +155,22 @@ public class RatingModelTests
     }
 
     [Test]
-    public void Rating_DefaultPuntuacion_IsZero()
-    {
+    public void Rating_DefaultPuntuacion_IsZero() {
         var rating = new Rating();
         rating.Puntuacion.Should().Be(0);
     }
 
     [Test]
-    public void Rating_CanHaveNullComentario()
-    {
+    public void Rating_CanHaveNullComentario() {
         var rating = new Rating { Comentario = null };
         rating.Comentario.Should().BeNull();
     }
 }
 
-public class FavoriteModelTests
-{
+public class FavoriteModelTests {
     [Test]
-    public void Favorite_CreatesRelationship()
-    {
-        var favorite = new Favorite
-        {
+    public void Favorite_CreatesRelationship() {
+        var favorite = new Favorite {
             Id = 1,
             UsuarioId = 5,
             ProductoId = 50
@@ -207,13 +182,10 @@ public class FavoriteModelTests
     }
 }
 
-public class CarritoItemModelTests
-{
+public class CarritoItemModelTests {
     [Test]
-    public void CarritoItem_CanSetProperties()
-    {
-        var item = new CarritoItem
-        {
+    public void CarritoItem_CanSetProperties() {
+        var item = new CarritoItem {
             Id = 1,
             UsuarioId = 10,
             ProductoId = 100,
@@ -227,20 +199,16 @@ public class CarritoItemModelTests
     }
 
     [Test]
-    public void CarritoItem_CanHaveNullRowVersion()
-    {
+    public void CarritoItem_CanHaveNullRowVersion() {
         var item = new CarritoItem();
         item.RowVersion.Should().BeNull();
     }
 }
 
-public class PurchaseModelTests
-{
+public class PurchaseModelTests {
     [Test]
-    public void Purchase_CanSetProperties()
-    {
-        var purchase = new Purchase
-        {
+    public void Purchase_CanSetProperties() {
+        var purchase = new Purchase {
             Id = 1,
             Total = 299.99m,
             CompradorId = 10,
@@ -254,19 +222,15 @@ public class PurchaseModelTests
     }
 
     [Test]
-    public void Purchase_DefaultTotal_IsZero()
-    {
+    public void Purchase_DefaultTotal_IsZero() {
         var purchase = new Purchase();
         purchase.Total.Should().Be(0);
     }
 
     [Test]
-    public void Purchase_CanAddProducts()
-    {
-        var purchase = new Purchase
-        {
-            Products = new List<Product>
-            {
+    public void Purchase_CanAddProducts() {
+        var purchase = new Purchase {
+            Products = new List<Product> {
                 new Product { Id = 1, Nombre = "Product 1" },
                 new Product { Id = 2, Nombre = "Product 2" }
             }
@@ -276,11 +240,9 @@ public class PurchaseModelTests
     }
 }
 
-public class ProductCategoryTests
-{
+public class ProductCategoryTests {
     [Test]
-    public void ProductCategory_HasAllValues()
-    {
+    public void ProductCategory_HasAllValues() {
         var categories = Enum.GetValues<ProductCategory>();
         categories.Should().Contain(ProductCategory.SMARTPHONES);
         categories.Should().Contain(ProductCategory.LAPTOPS);
@@ -290,8 +252,7 @@ public class ProductCategoryTests
     }
 
     [Test]
-    public void ProductCategory_Count_IsFive()
-    {
+    public void ProductCategory_Count_IsFive() {
         var categories = Enum.GetValues<ProductCategory>();
         categories.Length.Should().Be(5);
     }
