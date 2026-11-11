@@ -8,7 +8,7 @@ using TiendaDawWeb.Shared.Blazor.Admin;
 using TiendaDawWeb.Shared.Models;
 using TiendaDawWeb.Shared.Services.Product;
 using TiendaDawWeb.Shared.Services.Purchase;
-using TestContext = Bunit.TestContext;
+using TestContext = Bunit.BunitContext;
 
 namespace TiendaDawWeb.Tests.Blazor;
 

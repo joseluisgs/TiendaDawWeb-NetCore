@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TiendaDawWeb.Shared.Blazor.Admin.Charts;
 using TiendaDawWeb.Shared.Services.Stats;
-using TestContext = Bunit.TestContext;
+using TestContext = Bunit.BunitContext;
 
 namespace TiendaDawWeb.Tests.Blazor;
 
