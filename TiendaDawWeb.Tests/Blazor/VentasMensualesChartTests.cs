@@ -20,9 +20,7 @@ public class VentasMensualesChartTests {
 
     [Test]
     public void VentasMensualesChart_Component_CanBeCreated() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
@@ -38,9 +36,7 @@ public class VentasMensualesChartTests {
 
     [Test]
     public void VentasMensualesChart_HasCardStructure() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
@@ -51,9 +47,7 @@ public class VentasMensualesChartTests {
 
     [Test]
     public void VentasMensualesChart_HasWarningHeader() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
@@ -64,9 +58,7 @@ public class VentasMensualesChartTests {
 
     [Test]
     public void VentasMensualesChart_HasRefreshButton() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 
@@ -77,9 +69,7 @@ public class VentasMensualesChartTests {
 
     [Test]
     public void VentasMensualesChart_HasAutoRefreshBadge() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockStatsService.Object);
         ctx.Services.AddSingleton(_mockLogger.Object);
 

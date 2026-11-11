@@ -26,9 +26,7 @@ public class RatingSectionTests {
 
     [Test]
     public void RatingSection_Component_CanBeCreated() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(CreateMockRatingStore());
         ctx.Services.AddSingleton(_mockLogger.Object);
 

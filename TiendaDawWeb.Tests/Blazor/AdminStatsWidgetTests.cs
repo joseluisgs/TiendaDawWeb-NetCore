@@ -39,9 +39,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_Component_CanBeCreated() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -54,9 +52,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasCardStructure() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -69,9 +65,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasCardHeader() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -84,9 +78,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasCardBody() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -99,9 +91,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasRefreshButton() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -114,9 +104,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasAutoRefreshBadge() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -129,9 +117,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasStatistics() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -144,9 +130,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_DisplaysLastUpdate() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -164,9 +148,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasRowLayout() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
@@ -179,9 +161,7 @@ public class AdminStatsWidgetTests {
 
     [Test]
     public void AdminStatsWidget_HasThreeColumns() {
-#pragma warning disable CS0618
         using var ctx = new TestContext();
-#pragma warning restore CS0618
         ctx.Services.AddSingleton(_mockProductService.Object);
         ctx.Services.AddSingleton(_mockPurchaseService.Object);
         ctx.Services.AddSingleton(_mockUserManager.Object);
