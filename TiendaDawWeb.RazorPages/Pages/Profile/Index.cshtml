@@ -134,7 +134,7 @@
                                             <small class="text-muted">@producto.Categoria</small>
                                         </div>
                                         <div class="text-end">
-                                            <strong class="text-success d-block">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
+                                            <strong class="text-success d-block">@PriceFormatter.FormatPrice(producto.Precio)</strong>
                                             @if (producto.CompraId != null) {
                                                 <span class="badge bg-danger">Vendido</span>
                                             }
