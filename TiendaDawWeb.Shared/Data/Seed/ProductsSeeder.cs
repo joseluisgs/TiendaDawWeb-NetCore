@@ -67,7 +67,7 @@ public class ProductsSeeder(
                 Precio = 1199.0m,
                 Categoria = ProductCategory.SMARTPHONES,
                 PropietarioId = usuario,
-                Imagen = "https://medias.lapostemobile.fr/fiche_mobile/layer/9724_Layer_2.png"
+                Imagen = "https://ssr.col.movistar.es/api/v3/get-pic/content/dam/movistar/estaticos/imagenes/dispositivos/apple/iphone/iphone-17-pro-max-azul-oscuro-01.png"
             },
             new Product {
                 Nombre = "Samsung Galaxy S24 Ultra",
