@@ -55,7 +55,7 @@
                                                          style="width: 50px; height: 50px; object-fit: cover;">
                                                     <div>
                                                         <small class="fw-bold d-block">@product.Nombre</small>
-                                                        <small class="text-muted">@product.Precio.ToString("C", new CultureInfo("es-ES"))</small>
+                                                        <small class="text-muted">@PriceFormatter.FormatPrice(product.Precio)</small>
                                                     </div>
                                                 </div>
                                             </div>

@@ -54,8 +54,7 @@
                 @* Código original con AJAX comentado para propósitos didácticos *@
                 @* <script>loadRatings();</script> *@
 
-  pe="tyndaDawWeb.Shared.Blazor.Ratings.RatingSummary)"
-                           render-mode="ServerPrerendered"
+                <component type="typeof(TiendaDawWeb.Shared.Blazor.Ratings.RatingSummary)" render-mode="ServerPrerendered"
                            param-ProductId="@Model.Id"/>
             </div>
 

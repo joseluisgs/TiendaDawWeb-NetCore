@@ -102,7 +102,7 @@
                                         <span class="badge bg-secondary">@producto.Categoria</span>
                                     </td>
                                     <td class="text-end">
-                                        <strong class="text-success">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</strong>
+                                        <strong class="text-success">@PriceFormatter.FormatPrice(producto.Precio)</strong>
                                     </td>
                                 </tr>
                             }

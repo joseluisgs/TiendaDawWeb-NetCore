@@ -44,7 +44,7 @@
                                 </div>
                                 <div class="col-md-2 text-center">
                                     <label class="small text-muted">Precio</label>
-                                    <p class="fw-bold text-primary">@item.Precio.ToString("C2", new CultureInfo("es-ES"))</p>
+                                    <p class="fw-bold text-primary">@PriceFormatter.FormatPrice(item.Precio)</p>
                                 </div>
                                 <div class="col-md-2 text-end">
                                     <form method="post" asp-page-handler="Remove" class="d-inline">
