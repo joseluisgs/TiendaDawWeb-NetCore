@@ -1,10 +1,10 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using TiendaDawWeb.Shared.Helpers;
 
 namespace TiendaDawWeb.Mvc.TagHelpers;
 
 /// <summary>
-///     Tag Helper para formatear precios con símbolo de euro
+///     Tag Helper para formatear precios con la moneda de la cultura actual
 ///     Uso: <price value="199.99"></price> o <price value="199.99" />
 /// </summary>
 [HtmlTargetElement("price", Attributes = "value")]
@@ -16,7 +16,8 @@ public class PriceTagHelper : TagHelper {
         output.Attributes.SetAttribute("class", "price");
         output.Attributes.SetAttribute("data-testid", "product-price");
 
-        string formattedPrice = Value.ToString("C2", new CultureInfo("es-ES"));
-        output.Content.SetContent(formattedPrice);
+        // Moneda de la cultura de la petición (cookie de idioma) vía PriceFormatter:
+        // es-ES → "1.199,99 €", en-US → "$1,199.00". Antes iba fijo a es-ES.
+        output.Content.SetContent(PriceFormatter.FormatPrice(Value));
     }
 }

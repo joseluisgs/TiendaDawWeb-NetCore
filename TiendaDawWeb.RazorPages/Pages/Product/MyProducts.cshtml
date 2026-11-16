@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="card-text fw-bold text-primary">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</p>
+                        <p class="card-text fw-bold text-primary">@PriceFormatter.FormatPrice(producto.Precio)</p>
                         <div class="d-flex gap-2">
                             <a asp-page="/Product/Details" asp-route-id="@producto.Id"
                                class="btn btn-primary btn-sm flex-grow-1">

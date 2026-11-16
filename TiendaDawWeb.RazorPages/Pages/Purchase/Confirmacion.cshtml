@@ -70,7 +70,7 @@
                                     <td>
                                         <span class="badge bg-secondary">@producto.Categoria</span>
                                     </td>
-                                    <td class="text-end">@producto.Precio.ToString("C", new CultureInfo("es-ES"))</td>
+                                    <td class="text-end">@PriceFormatter.FormatPrice(producto.Precio)</td>
                                 </tr>
                             }
                             </tbody>

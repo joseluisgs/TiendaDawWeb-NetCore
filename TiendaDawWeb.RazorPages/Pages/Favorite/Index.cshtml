@@ -50,7 +50,7 @@
                             }
                         </div>
                         <h4 class="text-primary mb-3">
-                            @producto.Precio.ToString("C", new CultureInfo("es-ES"))
+                            @PriceFormatter.FormatPrice(producto.Precio)
                         </h4>
                         <div class="d-flex gap-2">
                             <a asp-page="/Product/Details" asp-route-id="@producto.Id"
